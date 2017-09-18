@@ -5,12 +5,12 @@
 #define CATCH_CONFIG_MAIN
 #include "private/ext/catch.hpp"
 
-#include "private/common/utils_impl.hpp"
+#include <measurement_kit/common/detail/utils.hpp>
 #include "private/net/builtin_ca_bundle.hpp"
 
 using namespace mk;
 
 TEST_CASE("The builtin CA bundle is equal to the one in test/fixtures") {
-    REQUIRE(*slurpv_impl<uint8_t>("./test/fixtures/saved_ca_bundle.pem") ==
+    REQUIRE(*slurpv<uint8_t>("./test/fixtures/saved_ca_bundle.pem") ==
             net::builtin_ca_bundle());
 }

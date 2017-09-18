@@ -2,7 +2,7 @@
 // Measurement-kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
-#include "private/common/utils.hpp"
+#include <measurement_kit/common/detail/utils.hpp>
 #include "private/ooni/constants.hpp"
 #include "private/ooni/http_header_field_manipulation.hpp"
 #include "private/ooni/utils.hpp"
@@ -14,8 +14,8 @@ namespace ooni {
 using namespace mk::report;
 
 void compare_headers_response(http::Headers headers,
-                             Var<http::Response> response, Var<report::Entry> entry,
-                             Var<Logger> logger) {
+                             SharedPtr<http::Response> response, SharedPtr<report::Entry> entry,
+                             SharedPtr<Logger> logger) {
     if (response->body.empty()) {
         logger->warn("empty response body");
         (*entry)["tampering"]["total"] = true;
@@ -23,9 +23,9 @@ void compare_headers_response(http::Headers headers,
         return;
     }
 
-    nlohmann::json resp;
+    Json resp;
     try {
-        resp = nlohmann::json::parse(response->body);
+        resp = Json::parse(response->body);
     } catch (const std::invalid_argument &) {
         logger->warn("response body not valid JSON");
         (*entry)["tampering"]["total"] = true;
@@ -45,7 +45,7 @@ void compare_headers_response(http::Headers headers,
 
     // ooni-probe behavior to report header keys in the request or response
     // but not both. (case-sensitive, and ignoring values)
-    nlohmann::json resp_headers = resp["headers_dict"];
+    Json resp_headers = resp["headers_dict"];
     std::set<std::string> req_keys, resp_keys, diff;
     for (auto it = headers.begin(); it != headers.end(); ++it) {
         req_keys.insert(it->first);
@@ -67,9 +67,9 @@ void compare_headers_response(http::Headers headers,
 }
 
 void http_header_field_manipulation(std::string /*input*/, Settings options,
-                                    Callback<Var<report::Entry>> callback,
-                                    Var<Reactor> reactor, Var<Logger> logger) {
-    Var<Entry> entry(new Entry);
+                                    Callback<SharedPtr<report::Entry>> callback,
+                                    SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
+    SharedPtr<Entry> entry(new Entry);
     (*entry)["tampering"] = Entry::object();
     (*entry)["tampering"]["total"] = nullptr;
     (*entry)["tampering"]["request_line_capitalization"] = nullptr;
@@ -95,12 +95,12 @@ void http_header_field_manipulation(std::string /*input*/, Settings options,
 
     templates::http_request(
         entry, options, headers, body,
-        [=](Error err, Var<http::Response> response) {
+        [=](Error err, SharedPtr<http::Response> response) {
             if (err) {
                 logger->debug(
                     "http_header_field_manipulation: http-request error: %s",
-                    err.explain().c_str());
-                (*entry)["failure"] = err.as_ooni_error();
+                    err.what());
+                (*entry)["failure"] = err.reason;
             }
 
             if (!response) {
@@ -109,9 +109,8 @@ void http_header_field_manipulation(std::string /*input*/, Settings options,
                 try {
                     compare_headers_response(headers, response, entry, logger);
                 } catch (const std::exception &exc) {
-                    (*entry)["failure"] = exc.what();
-                    logger->warn("exception in "
-                                 "compare_headers_response(): %s",
+                    (*entry)["failure"] = exc.what(); // XXX
+                    logger->warn("exception in compare_headers_response(): %s",
                                  exc.what());
                 }
             }

@@ -61,12 +61,13 @@ int main(int argc, char **argv) {
     print_setting(settings, "policy");
     std::cout << "> tool: " << tool << "\n";
 
-    loop_with_initial_event([=]() {
+    SharedPtr<Reactor> reactor = Reactor::make();
+    reactor->run_with_initial_event([=]() {
         mk::mlabns::query(
-            tool, [](Error error, mk::mlabns::Reply reply) {
+            tool, [=](Error error, mk::mlabns::Reply reply) {
                 if (error) {
                     std::cout << "< error: " << (int)error << "\n";
-                    break_loop();
+                    reactor->stop();
                     return;
                 }
                 std::cout << "< city: " << reply.city << "\n";
@@ -79,7 +80,7 @@ int main(int argc, char **argv) {
                 std::cout << "< fqdn: " << reply.fqdn << "\n";
                 std::cout << "< site: " << reply.site << "\n";
                 std::cout << "< country: " << reply.country << "\n";
-                break_loop();
+                reactor->stop();
             }, settings);
     });
 

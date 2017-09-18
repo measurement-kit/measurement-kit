@@ -13,17 +13,17 @@ namespace mk {
 namespace net {
 
 void connect(std::string address, int port,
-             Callback<Error, Var<Transport>> callback,
+             Callback<Error, SharedPtr<Transport>> callback,
              Settings settings = {},
-             Var<Reactor> reactor = Reactor::global(),
-             Var<Logger> logger = Logger::global());
+             SharedPtr<Reactor> reactor = Reactor::global(),
+             SharedPtr<Logger> logger = Logger::global());
 
-using ConnectManyCb = Callback<Error, std::vector<Var<Transport>>>;
+using ConnectManyCb = Callback<Error, std::vector<SharedPtr<Transport>>>;
 
 void connect_many(std::string address, int port, int num,
         ConnectManyCb callback, Settings settings = {},
-        Var<Reactor> reactor = Reactor::global(),
-        Var<Logger> logger = Logger::global());
+        SharedPtr<Reactor> reactor = Reactor::global(),
+        SharedPtr<Logger> logger = Logger::global());
 
 } // namespace net
 } // namespace mk

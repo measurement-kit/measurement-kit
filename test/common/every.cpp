@@ -5,16 +5,15 @@
 #define CATCH_CONFIG_MAIN
 #include "private/ext/catch.hpp"
 
-#include "private/common/every.hpp"
-
-#include "private/common/every.hpp"
+#include <measurement_kit/common/detail/utils.hpp>
+#include <measurement_kit/common/detail/every.hpp>
 
 #include <measurement_kit/common.hpp>
 
 using namespace mk;
 
 TEST_CASE("The every() template works") {
-    Var<Reactor> reactor = Reactor::make();
+    SharedPtr<Reactor> reactor = Reactor::make();
 
     SECTION("When the delay is negative we get an error") {
         Error final_err;

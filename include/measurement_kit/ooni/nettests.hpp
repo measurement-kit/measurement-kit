@@ -9,44 +9,44 @@
 namespace mk {
 namespace ooni {
 
-void captiveportal(std::string, Settings, Callback<Var<report::Entry>>,
-                    Var<Reactor> = Reactor::global(),
-                    Var<Logger> = Logger::global());
+void captiveportal(std::string, Settings, Callback<SharedPtr<report::Entry>>,
+                    SharedPtr<Reactor> = Reactor::global(),
+                    SharedPtr<Logger> = Logger::global());
 
-void dns_injection(std::string, Settings, Callback<Var<report::Entry>>,
-                   Var<Reactor> = Reactor::global(),
-                   Var<Logger> = Logger::global());
+void dns_injection(std::string, Settings, Callback<SharedPtr<report::Entry>>,
+                   SharedPtr<Reactor> = Reactor::global(),
+                   SharedPtr<Logger> = Logger::global());
 
-void http_invalid_request_line(Settings, Callback<Var<report::Entry>>,
-                               Var<Reactor> = Reactor::global(),
-                               Var<Logger> = Logger::global());
+void http_invalid_request_line(Settings, Callback<SharedPtr<report::Entry>>,
+                               SharedPtr<Reactor> = Reactor::global(),
+                               SharedPtr<Logger> = Logger::global());
 
-void tcp_connect(std::string, Settings, Callback<Var<report::Entry>>,
-                 Var<Reactor> = Reactor::global(),
-                 Var<Logger> = Logger::global());
+void tcp_connect(std::string, Settings, Callback<SharedPtr<report::Entry>>,
+                 SharedPtr<Reactor> = Reactor::global(),
+                 SharedPtr<Logger> = Logger::global());
 
 void web_connectivity(std::string input, Settings,
-                      Callback<Var<report::Entry>>,
-                      Var<Reactor> = Reactor::global(),
-                      Var<Logger> = Logger::global());
+                      Callback<SharedPtr<report::Entry>>,
+                      SharedPtr<Reactor> = Reactor::global(),
+                      SharedPtr<Logger> = Logger::global());
 
 void meek_fronted_requests(std::string input, Settings,
-                           Callback<Var<report::Entry>>,
-                           Var<Reactor> = Reactor::global(),
-                           Var<Logger> = Logger::global());
+                           Callback<SharedPtr<report::Entry>>,
+                           SharedPtr<Reactor> = Reactor::global(),
+                           SharedPtr<Logger> = Logger::global());
 
 void http_header_field_manipulation(std::string input, Settings,
-                                    Callback<Var<report::Entry>>,
-                                    Var<Reactor> = Reactor::global(),
-                                    Var<Logger> = Logger::global());
+                                    Callback<SharedPtr<report::Entry>>,
+                                    SharedPtr<Reactor> = Reactor::global(),
+                                    SharedPtr<Logger> = Logger::global());
 
-void telegram(Settings, Callback<Var<report::Entry>>,
-              Var<Reactor> = Reactor::global(),
-              Var<Logger> = Logger::global());
+void telegram(Settings, Callback<SharedPtr<report::Entry>>,
+              SharedPtr<Reactor> = Reactor::global(),
+              SharedPtr<Logger> = Logger::global());
   
-void facebook_messenger(Settings, Callback<Var<report::Entry>>,
-                        Var<Reactor> = Reactor::global(),
-                        Var<Logger> = Logger::global());
+void facebook_messenger(Settings, Callback<SharedPtr<report::Entry>>,
+                        SharedPtr<Reactor> = Reactor::global(),
+                        SharedPtr<Logger> = Logger::global());
 
 } // namespace ooni
 } // namespace mk

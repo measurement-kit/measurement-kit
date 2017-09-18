@@ -6,6 +6,7 @@
 
 #include "private/net/emitter.hpp"
 #include "private/net/utils.hpp"
+#include <measurement_kit/common/detail/utils.hpp>
 #include <cassert>
 #include <cerrno>
 #include <event2/buffer.h>
@@ -19,12 +20,11 @@
 #include <measurement_kit/common/non_copyable.hpp>
 #include <measurement_kit/common/non_movable.hpp>
 #include <measurement_kit/common/reactor.hpp>
-#include <measurement_kit/common/utils.hpp>
 #include <measurement_kit/net/buffer.hpp>
 #include <measurement_kit/net/error.hpp>
 #include <measurement_kit/net/transport.hpp>
 #include <measurement_kit/net/utils.hpp>
-#include <measurement_kit/portable/sys/socket.h>
+#include <measurement_kit/common/portable/sys/socket.h>
 #include <new>
 #include <openssl/err.h>
 #include <ostream>
@@ -56,10 +56,10 @@ static inline std::string map_bufferevent_event(short what) {
 
 class Connection : public EmitterBase, public NonMovable, public NonCopyable {
   public:
-    static Var<Transport> make(bufferevent *bev, Var<Reactor> reactor,
-                               Var<Logger> logger) {
+    static SharedPtr<Transport> make(bufferevent *bev, SharedPtr<Reactor> reactor,
+                               SharedPtr<Logger> logger) {
         Connection *conn = new Connection(bev, reactor, logger);
-        conn->self = Var<Transport>(conn);
+        conn->self = SharedPtr<Transport>(conn);
         return conn->self;
     }
 
@@ -189,7 +189,7 @@ class Connection : public EmitterBase, public NonMovable, public NonCopyable {
             }
         }
 
-        logger->warn("Got error: %s", sys_error.as_ooni_error().c_str());
+        logger->warn("Got error: %s", sys_error.what());
         emit_error(sys_error);
     }
 
@@ -218,7 +218,7 @@ class Connection : public EmitterBase, public NonMovable, public NonCopyable {
     }
 
   private:
-    Connection(bufferevent *bev, Var<Reactor> reactor, Var<Logger> logger)
+    Connection(bufferevent *bev, SharedPtr<Reactor> reactor, SharedPtr<Logger> logger)
         : EmitterBase{reactor, logger} {
 
         this->bev = bev;
@@ -229,7 +229,7 @@ class Connection : public EmitterBase, public NonMovable, public NonCopyable {
     }
 
     bufferevent *bev = nullptr;
-    Var<Transport> self;
+    SharedPtr<Transport> self;
     Callback<> close_cb;
     bool suppressed_eof = false;
     bool shutdown_called = false;

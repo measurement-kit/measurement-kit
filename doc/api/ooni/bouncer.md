@@ -11,7 +11,7 @@ MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 class BouncerReply {
   public:
     nlohmann::json response;
-    static ErrorOr<Var<BouncerReply>> create(std::string, Var<Logger>);
+    static ErrorOr<SharedPtr<BouncerReply>> create(std::string, SharedPtr<Logger>);
     ErrorOr<std::string> get_collector();
     ErrorOr<std::string> get_collector_alternate(std::string type);
     ErrorOr<std::string> get_name();
@@ -26,8 +26,8 @@ class BouncerReply {
 void mk::ooni::bouncer::post_net_tests(std::string base_bouncer_url, 
                     std::string test_name, std::string test_version,
                     std::list<std::string> helpers, 
-		    Callback<Error, Var<BouncerReply>> cb, Settings settings,
-                    Var<Reactor> reactor, Var<Logger> logger);
+		    Callback<Error, SharedPtr<BouncerReply>> cb, Settings settings,
+                    SharedPtr<Reactor> reactor, SharedPtr<Logger> logger);
 ```
 
 # STABILITY

@@ -16,7 +16,7 @@ namespace utils {
  * in input any valid JSON (`null`, numbers, strings, lists, objects).
  */
 
-report::Entry compute_ping(report::Entry &test_s2c, Var<Logger> logger) {
+report::Entry compute_ping(report::Entry &test_s2c, SharedPtr<Logger> logger) {
 
     try {
         // Note: do static cast to make sure it's convertible to a double
@@ -48,7 +48,7 @@ report::Entry compute_ping(report::Entry &test_s2c, Var<Logger> logger) {
 }
 
 report::Entry compute_speed(report::Entry &sender_or_receiver_data,
-                            const char *speed_type, Var<Logger> logger) {
+                            const char *speed_type, SharedPtr<Logger> logger) {
     /*
      * This algorithm computes the speed in a way that is similar to the one
      * implemented by OOKLA, as documented here:
@@ -82,7 +82,7 @@ report::Entry compute_speed(report::Entry &sender_or_receiver_data,
     return nullptr;
 }
 
-report::Entry compute_simple_stats(report::Entry &entry, Var<Logger> logger) {
+report::Entry compute_simple_stats(report::Entry &entry, SharedPtr<Logger> logger) {
     report::Entry test_s2c;
     report::Entry test_c2s;
     report::Entry simple_stats;
@@ -123,7 +123,7 @@ report::Entry compute_simple_stats(report::Entry &entry, Var<Logger> logger) {
     return simple_stats;
 }
 
-report::Entry compute_advanced_stats(report::Entry &entry, Var<Logger>) {
+report::Entry compute_advanced_stats(report::Entry &entry, SharedPtr<Logger>) {
     /*
      * Typically we have just one entry. But see above comment.
      */

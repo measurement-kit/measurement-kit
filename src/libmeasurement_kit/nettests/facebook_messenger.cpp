@@ -1,6 +1,6 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software. See AUTHORS and LICENSE for more
-// information on the copying conditions.
+// Measurement-kit is free software under the BSD license. See AUTHORS
+// and LICENSE for more information on the copying conditions.
 
 #include <private/nettests/runnable.hpp>
 
@@ -18,7 +18,7 @@ FacebookMessengerTest::FacebookMessengerTest() : BaseTest() {
 }
 
 void FacebookMessengerRunnable::main(std::string /*input*/, Settings options,
-                            Callback<Var<report::Entry>> cb) {
+                            Callback<SharedPtr<report::Entry>> cb) {
     ooni::facebook_messenger(options, cb, reactor, logger);
 }
 

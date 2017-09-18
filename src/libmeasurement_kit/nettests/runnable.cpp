@@ -2,12 +2,12 @@
 // Measurement-kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
-#include "private/common/fmap.hpp"
-#include "private/common/parallel.hpp"
-#include "private/common/range.hpp"
+#include <measurement_kit/common/detail/fmap.hpp>
+#include <measurement_kit/common/detail/parallel.hpp>
+#include <measurement_kit/common/detail/range.hpp>
 #include "private/nettests/runnable.hpp"
 
-#include "private/common/utils.hpp"
+#include <measurement_kit/common/detail/utils.hpp>
 #include "private/ooni/utils.hpp"
 #include "private/nettests/utils.hpp"
 
@@ -32,14 +32,14 @@ Runnable::~Runnable() {
 
 void Runnable::setup(std::string) {}
 void Runnable::teardown(std::string) {}
-void Runnable::main(std::string, Settings, Callback<Var<report::Entry>> cb) {
-    reactor->call_soon([=]() { cb(Var<report::Entry>{new report::Entry}); });
+void Runnable::main(std::string, Settings, Callback<SharedPtr<report::Entry>> cb) {
+    reactor->call_soon([=]() { cb(SharedPtr<report::Entry>{new report::Entry}); });
 }
 void Runnable::fixup_entry(report::Entry &) {}
 
 void Runnable::run_next_measurement(size_t thread_id, Callback<Error> cb,
                                     size_t num_entries,
-                                    Var<size_t> current_entry) {
+                                    SharedPtr<size_t> current_entry) {
     logger->debug("net_test: running next measurement");
 
     double max_rt = options.get("max_runtime", -1.0);
@@ -83,7 +83,7 @@ void Runnable::run_next_measurement(size_t thread_id, Callback<Error> cb,
     setup(next_input);
 
     logger->debug("net_test: running with input %s", next_input.c_str());
-    main(next_input, options, [=](Var<report::Entry> test_keys) {
+    main(next_input, options, [=](SharedPtr<report::Entry> test_keys) {
         report::Entry entry;
         entry["input"] = next_input;
         // Make sure the input is `null` rather than empty string
@@ -208,8 +208,7 @@ void Runnable::geoip_lookup(Callback<> cb) {
                     probe_cc = *GeoipCache::thread_local_instance()
                        ->resolve_country_code(country_path, ip, logger);
                 } catch (const Error &err) {
-                    logger->warn("cannot lookup country code: %s",
-                                 err.explain().c_str());
+                    logger->warn("cannot lookup country code: %s", err.what());
                 }
                 if (probe_cc != "ZZ") {
                     logger->info("Your country: %s", probe_cc.c_str());
@@ -224,8 +223,7 @@ void Runnable::geoip_lookup(Callback<> cb) {
                     probe_asn = *GeoipCache::thread_local_instance()
                         ->resolve_asn(asn_path, ip, logger);
                 } catch (const Error &err) {
-                    logger->warn("cannot lookup asn: %s",
-                                 err.explain().c_str());
+                    logger->warn("cannot lookup asn: %s", err.what());
                 }
                 if (probe_asn != "AS0") {
                     logger->info("Your ISP identifier: %s", probe_asn.c_str());
@@ -301,7 +299,7 @@ void Runnable::query_bouncer(Callback<Error> cb) {
     logger->info("Contacting bouncer: %s", bouncer.c_str());
     ooni::bouncer::post_net_tests(
         bouncer, test_name, test_version, test_helpers_bouncer_names(),
-        [=](Error error, Var<BouncerReply> reply) {
+        [=](Error error, SharedPtr<BouncerReply> reply) {
             if (error) {
                 cb(error);
                 return;
@@ -367,7 +365,7 @@ void Runnable::begin(Callback<Error> cb) {
                     open_report([=](Error error) {
                         if (error) {
                             logger->warn("Cannot open report: %s",
-                                         error.explain().c_str());
+                                         error.what());
                             // FALLTHROUGH
                         }
                         logger->progress(0.1, "open report");
@@ -389,7 +387,7 @@ void Runnable::begin(Callback<Error> cb) {
                         size_t num_entries = inputs.size();
 
                         // Run `parallelism` measurements in parallel
-                        Var<size_t> current_entry(new size_t(0));
+                        SharedPtr<size_t> current_entry(new size_t(0));
                         mk::parallel(mk::fmap<size_t, Continuation<Error>>(
                                          mk::range<size_t>(
                                              options.get("parallelism", 3)),

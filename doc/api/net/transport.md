@@ -95,13 +95,13 @@ class Transport {
  * Syntactic sugar:
  */
 
-void write(Var<Transport> txp, Buffer buf, Callback<Error> cb);
+void write(SharedPtr<Transport> txp, Buffer buf, Callback<Error> cb);
 
-void readn(Var<Transport> txp, Var<Buffer> buff, size_t n, Callback<Error> cb,
-           Var<Reactor> reactor = Reactor::global());
+void readn(SharedPtr<Transport> txp, SharedPtr<Buffer> buff, size_t n, Callback<Error> cb,
+           SharedPtr<Reactor> reactor = Reactor::global());
 
-void read(Var<Transport> t, Var<Buffer> buff, Callback<Error> callback,
-          Var<Reactor> reactor = Reactor::global());
+void read(SharedPtr<Transport> t, SharedPtr<Buffer> buff, Callback<Error> callback,
+          SharedPtr<Reactor> reactor = Reactor::global());
 
 ```
 
@@ -143,7 +143,7 @@ transport->close([=]() {
 ```
 
 This will guarantee that you notice if a `Transport` is not actually closed
-because there are still references to `Var<Transport>` around.
+because there are still references to `SharedPtr<Transport>` around.
 
 ## As data recorder
 
@@ -222,9 +222,9 @@ the `readn()` function with `n` equal to `1`.
 
 # BUGS
 
-We typically pass around the `Transport` as a `Var<Transport>`. Since `Var` is
+We typically pass around the `Transport` as a `SharedPtr<Transport>`. Since `SharedPtr` is
 a shared pointer, this means that a `Transport` may not be closed, after the
-`close()` method is called, unless all `Var`s pointing to it are cleared. For
+`close()` method is called, unless all `SharedPtr`s pointing to it are cleared. For
 this reason, we added a callback to `close()`, so you know the code is not
 working correctly if the program stalls when it would be supposed to continue
 after `close()`. This is a bit rough but it currently works. In the future, it

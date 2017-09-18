@@ -3,7 +3,7 @@
 // and LICENSE for more information on the copying conditions.
 
 #include "../cmdline.hpp"
-#include <measurement_kit/ext/json.hpp>
+#include <measurement_kit/common/json.hpp>
 #include <measurement_kit/ndt.hpp>
 
 namespace ndt {
@@ -73,7 +73,7 @@ int main(std::list<Callback<BaseTest &>> &initializers, int argc, char **argv) {
 
     ndt_init(initializers, test)
           .on_entry([](std::string s) {
-              nlohmann::json doc = nlohmann::json::parse(s);
+              Json doc = Json::parse(s);
               auto simple = doc["test_keys"]["simple"];
               auto advanced = doc["test_keys"]["advanced"];
               printf("\nTest summary\n");

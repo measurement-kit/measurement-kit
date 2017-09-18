@@ -4,7 +4,7 @@
 #ifndef PRIVATE_DNS_SYSTEM_RESOLVER_HPP
 #define PRIVATE_DNS_SYSTEM_RESOLVER_HPP
 
-#include "private/common/mock.hpp"
+#include <measurement_kit/common/detail/mock.hpp>
 #include <measurement_kit/dns.hpp>
 
 #include "../dns/getaddrinfo_async.hpp"
@@ -14,8 +14,8 @@ namespace dns {
 
 template <MK_MOCK(getaddrinfo), MK_MOCK(inet_ntop)>
 void system_resolver(QueryClass dns_class, QueryType dns_type, std::string name,
-                     Settings settings, Var<Reactor> reactor,
-                     Var<Logger> logger, Callback<Error, Var<Message>> cb) {
+                     Settings settings, SharedPtr<Reactor> reactor,
+                     SharedPtr<Logger> logger, Callback<Error, SharedPtr<Message>> cb) {
     Query query;
     addrinfo hints = {};
     /*
@@ -62,7 +62,7 @@ void system_resolver(QueryClass dns_class, QueryType dns_type, std::string name,
     query.qclass = dns_class;
     query.name = name;
 
-    Var<Message> message{new Message};
+    SharedPtr<Message> message{new Message};
     message->queries.push_back(query);
 
     getaddrinfo_async<getaddrinfo, inet_ntop>(name, hints, reactor, logger, [

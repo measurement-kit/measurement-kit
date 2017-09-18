@@ -44,7 +44,7 @@ static int cb_message_complete(http_parser *p) {
 namespace mk {
 namespace http {
 
-ResponseParserNg::ResponseParserNg(Var<Logger> logger) {
+ResponseParserNg::ResponseParserNg(SharedPtr<Logger> logger) {
     logger_ = logger;
     http_parser_settings_init(&settings_);
     settings_.on_message_begin = cb_message_begin;

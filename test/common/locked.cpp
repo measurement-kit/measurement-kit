@@ -4,8 +4,8 @@
 
 #define CATCH_CONFIG_MAIN
 #include "private/ext/catch.hpp"
-#include "private/common/locked.hpp"
 
+#include <measurement_kit/common/detail/locked.hpp>
 #include <measurement_kit/common.hpp>
 
 TEST_CASE("The locked template works") {

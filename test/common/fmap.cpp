@@ -5,9 +5,7 @@
 #define CATCH_CONFIG_MAIN
 #include "private/ext/catch.hpp"
 
-#include "private/common/fmap.hpp"
-
-#include "private/common/fmap.hpp"
+#include <measurement_kit/common/detail/fmap.hpp>
 
 #include <measurement_kit/common.hpp>
 

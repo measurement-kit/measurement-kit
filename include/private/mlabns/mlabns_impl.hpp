@@ -4,14 +4,13 @@
 #ifndef PRIVATE_MLABNS_MLABNS_IMPL_HPP
 #define PRIVATE_MLABNS_MLABNS_IMPL_HPP
 
-#include "private/common/json.hpp"
-#include "private/common/mock.hpp"
+#include <measurement_kit/common/json.hpp>
+#include <measurement_kit/common/detail/mock.hpp>
 
 #include <measurement_kit/ext.hpp>
 #include <measurement_kit/http.hpp>
 #include <measurement_kit/mlabns.hpp>
-
-using json = nlohmann::json;
+#include <regex>
 
 namespace mk {
 namespace mlabns {
@@ -60,7 +59,7 @@ static inline ErrorOr<std::string> as_query(Settings &settings) {
 
 template <MK_MOCK_AS(http::request_json_no_body, request_json_no_body)>
 void query_impl(std::string tool, Callback<Error, Reply> callback,
-                Settings settings, Var<Reactor> reactor, Var<Logger> logger) {
+                Settings settings, SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
     ErrorOr<std::string> query = as_query(settings);
     if (!query) {
         callback(query.as_error(), Reply());
@@ -79,10 +78,10 @@ void query_impl(std::string tool, Callback<Error, Reply> callback,
     logger->debug("query mlabns for tool %s", tool.c_str());
     logger->debug("mlabns url: %s", url.c_str());
     request_json_no_body("GET", url, {},
-        [callback, logger](Error error, Var<http::Response> /*response*/,
-                           nlohmann::json json_response) {
+        [callback, logger](Error error, SharedPtr<http::Response> /*response*/,
+                           Json json_response) {
             if (error) {
-                logger->warn("mlabns: HTTP error: %s", error.explain().c_str());
+                logger->warn("mlabns: HTTP error: %s", error.what());
                 callback(error, Reply());
                 return;
             }
@@ -98,8 +97,7 @@ void query_impl(std::string tool, Callback<Error, Reply> callback,
                 reply.country = node.at("country");
             });
             if (err) {
-                logger->warn("mlabns: cannot parse json: %s",
-                             err.explain().c_str());
+                logger->warn("mlabns: cannot parse json: %s", err.what());
             } else {
                 logger->info("Discovered mlab test server: %s",
                              reply.fqdn.c_str());

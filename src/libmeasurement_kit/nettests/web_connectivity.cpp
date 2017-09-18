@@ -2,8 +2,8 @@
 // Measurement-kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
+#include <measurement_kit/common/detail/utils.hpp>
 #include "private/nettests/runnable.hpp"
-
 #include <measurement_kit/nettests.hpp>
 #include <measurement_kit/ooni.hpp>
 
@@ -19,7 +19,7 @@ WebConnectivityTest::WebConnectivityTest() : BaseTest() {
 }
 
 void WebConnectivityRunnable::main(std::string input, Settings options,
-                                   Callback<Var<report::Entry>> cb) {
+                                   Callback<SharedPtr<report::Entry>> cb) {
     ooni::web_connectivity(input, options, cb, reactor, logger);
 }
 

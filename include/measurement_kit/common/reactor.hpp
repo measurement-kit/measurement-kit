@@ -7,76 +7,117 @@
 #include <measurement_kit/common/callback.hpp>
 #include <measurement_kit/common/error.hpp>
 #include <measurement_kit/common/socket.hpp>
-#include <measurement_kit/common/var.hpp>
+#include <measurement_kit/common/shared_ptr.hpp>
 
-// Deprecated since v0.4.x
 struct event_base;
-
-#define MK_POLLIN 1 << 0
-#define MK_POLLOUT 1 << 1
 
 namespace mk {
 
+/// \brief `Reactor` reacts to I/O events and manages delayed calls. Most MK
+/// objects reference a specific Reactor.
+///
+/// Reactor is an abstract interface because there may be different
+/// implementations. The default implementation uses libevent as backend.
+///
+/// \note Albeit Reactor allows to perform asynchronous I/O on sockets,
+/// by calling select() or equivalent, more performant system APIs, typically
+/// you want to use code in mk::net to implement asynchronous I/O. In fact,
+/// code in mk::net uses the proactor pattern that is more efficient to
+/// perform asynchronous I/O, especially under Windows. The feature exposed
+/// by Reactor is there mainly to interface with third-party libraries
+/// such as, for example, c-ares.
+///
+/// Throughout the documentation we will call `I/O thread` the thread that
+/// is currently blocked in Reactor::run() dispatching events.
+///
+/// \since v0.1.0.
+///
+/// Originally Reactor was called `Poller` but was renamed in MK v0.2.0. It
+/// was significantly reworked in MK v0.4.0, v0.7.0. and v0.8.0.
 class Reactor {
   public:
-    static Var<Reactor> make();
-    static Var<Reactor> global();
+    /// `make()` returns an instance of the default Reactor.
+    /// \note The first time a reactor is created, libevent is configured
+    /// to be thread safe _and_, on Unix, we ignore SIGPIPE.
+    static SharedPtr<Reactor> make();
+
+    /// `global()` returns the global instance of the default Reactor.
+    static SharedPtr<Reactor> global();
+
+    /// `~Reactor()` destroys any allocated resources.
     virtual ~Reactor();
 
-    virtual void run_in_background_thread(Callback<> &&cb) = 0;
+    /// \brief `call_in_thread()` schedules the execution of \p cb
+    /// inside a background thread created on demand. A maximum
+    /// of three such threads can be active at any time. Additionally
+    /// scheduled callback will wait for a thread to be ready to
+    /// serve them. When there are no further callbacks to execute,
+    /// background threads will exit, to save resources.
+    ///
+    /// \throw std::exception (or a derived class) if it is not
+    /// possible to create a background thread or schedule the callback.
+    ///
+    /// If \p cb throws an exception of type std::exception (or
+    /// derived from it), such exception is swallowed.
+    virtual void call_in_thread(Callback<> &&cb) = 0;
+
+    /// \brief `call_soon() schedules the execution of \p cb in the
+    /// I/O thread as soon as possible.
+    ///
+    /// \throw std::exception (or a derived class) if it is not
+    /// possible to schedule the callback.
+    ///
+    /// \bug Any exception thrown by the callback will not be swallowed
+    /// and will thus cause the stack to unwind.
     virtual void call_soon(Callback<> &&cb) = 0;
-    virtual void call_later(double, Callback<> &&cb) = 0;
 
-    // Backward compatibility names
-    void loop_with_initial_event(Callback<> &&cb) {
-        run_with_initial_event(std::move(cb));
-    }
-    void loop() { run(); }
-    void break_loop() { stop(); }
+    /// \brief `call_later()` is like `call_soon()` except that the callback
+    /// is scheduled `time` seconds in the future.
+    ///
+    /// \bug if \p time is negative, the callback will never be called.
+    virtual void call_later(double time, Callback<> &&cb) = 0;
 
-    /*
-        POSIX API for dealing with sockets. Slower than APIs in net,
-        especially under Windows, but suitable to integrate with other
-        async libraries such as c-ares and perhaps others.
-    */
-    virtual void pollfd(
-                socket_t sockfd,
-                short events,
-                double timeout,
-                Callback<Error, short> &&callback
-        ) = 0;
+    /// \brief `pollin()` will monitor \p sockfd for readability.
+    /// \param sockfd is the socket to monitor for readability. On Unix
+    /// system, this can actually be any file descriptor.
+    /// \param timeout is the timeout in seconds. Passing a negative
+    /// value will imply no timeout.
+    /// \param cb is the callback to be called. The Error argument will
+    /// be TimeoutError if the timeout expired, NoError otherwise.
+    virtual void pollin(socket_t sockfd, double timeout,
+                        Callback<Error> &&cb) = 0;
 
-    // Backward compatibility API
-    void pollfd(socket_t sockfd, short events, Callback<Error, short> &&cb,
-                double timeout = -1.0) {
-        pollfd(sockfd, events, timeout, std::move(cb));
-    }
+    /// `pollout()` is like pollin() but for writability.
+    virtual void pollout(socket_t sockfd, double timeout,
+                         Callback<Error> &&cb) = 0;
 
-    // Deprecated since v0.4.x
+    /// \brief `get_event_base()` returns libevent's event base.
+    /// \throw std::exception (or a derived class) if the backend is not
+    /// libevent and you are trying to access the event base.
+    /// \note we configure the event base to be thread safe using
+    /// libevent API.
     virtual event_base *get_event_base() = 0;
 
+    /// \brief `run_with_initial_event` is syntactic sugar for calling
+    /// call_soon() immediately followed by run().
     void run_with_initial_event(Callback<> &&cb);
+
+    /// \brief `run()` blocks processing I/O events and delayed calls.
+    /// \throw std::exception (or a derived class) if it is not possible
+    /// to start the reactor. A common case where this happens is when
+    /// the reactor is already running.
+    /// \note This function will return if there is no pending I/O and no
+    /// delayed calls (either registered to run in background threads
+    /// or in the I/O thread). This behavior changed in MK v0.8.0 before
+    /// which run() blocked until stop() was called.
     virtual void run() = 0;
+
+    /// \brief `stop()` signals to the I/O loop to stop. If the reactor
+    /// is not running yet, this method has no effect.
+    /// \throw std::exception (or a derived class) if it is not possible
+    /// to stop the reactor.
     virtual void stop() = 0;
 };
-
-void call_soon(Callback<> &&, Var<Reactor> = Reactor::global());
-void call_later(double, Callback<> &&, Var<Reactor> = Reactor::global());
-void loop_with_initial_event(Callback<> &&, Var<Reactor> = Reactor::global());
-void loop(Var<Reactor> = Reactor::global());
-void break_loop(Var<Reactor> = Reactor::global());
-
-// Introduced as aliases in v0.4.x
-inline void run_with_initial_event(Callback<> &&callback,
-        Var<Reactor> reactor = Reactor::global()) {
-    loop_with_initial_event(std::move(callback), reactor);
-}
-inline void run(Var<Reactor> reactor = Reactor::global()) {
-    loop(reactor);
-}
-inline void stop(Var<Reactor> reactor = Reactor::global()) {
-    break_loop(reactor);
-}
 
 } // namespace mk
 #endif
