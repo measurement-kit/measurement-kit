@@ -107,6 +107,19 @@ std::string random_str_uppercase(size_t length) {
     return random_within_charset(num_upper, length);
 }
 
+std::string random_str_lower_alpha(size_t length) {
+    static const std::string lower =
+            "abcdefghijklmnopqrstuvwxyz"  // lowercase
+        ;
+    return random_within_charset(lower, length);
+}
+
+std::string random_tld() {
+    static const std::vector<std::string> tlds
+        { ".com", ".net", ".org", ".info", ".test", ".invalid" };
+    return random_choice(tlds);
+}
+
 void dump_settings(Settings &s, std::string prefix, Var<Logger> logger) {
     logger->log(MK_LOG_DEBUG2, "%s: {", prefix.c_str());
     for (auto pair : s) {
