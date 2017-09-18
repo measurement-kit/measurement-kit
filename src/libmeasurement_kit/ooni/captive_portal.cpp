@@ -163,8 +163,6 @@ static void http_many(SharedPtr<Entry> entry, Callback<Error> all_done_cb,
     mk::parallel(continuations, all_done_cb, 3);
 }
 
-// this is the only test that doesn't follow the pattern of those above.
-// this hostname should always resolve to this IP.
 static void dns_msft_ncsi(SharedPtr<Entry> entry, Callback<Error> done_cb,
         Settings options, SharedPtr<Reactor> reactor,
         SharedPtr<Logger> logger) {
