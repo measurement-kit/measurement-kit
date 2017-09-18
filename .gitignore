@@ -75,7 +75,6 @@
 /test/common/maybe
 /test/common/parallel
 /test/common/range
-/test/common/sandbox
 /test/common/settings
 /test/common/shared_ptr
 /test/common/utils
@@ -109,6 +108,7 @@
 /test/net/socks5
 /test/net/transport
 /test/net/utils
+/test/nettests/captive_portal
 /test/nettests/dash
 /test/nettests/dns_injection
 /test/nettests/facebook_messenger

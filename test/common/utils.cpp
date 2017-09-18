@@ -63,6 +63,22 @@ TEST_CASE("random_str_uppercase() really generates only uppercase") {
     REQUIRE(found_upper);
 }
 
+TEST_CASE("random_str_lower_alpha() does what it should") {
+    std::string lower_alpha = "abcdefghijklmnopqrstuvwxyz"; // works in my locale
+    for (auto x : mk::random_str_lower_alpha(1024)) {
+        REQUIRE(lower_alpha.find(x) != std::string::npos);
+    }
+}
+
+TEST_CASE("random_tld() does what it should") {
+    std::vector<std::string> tlds =
+        { ".com", ".net", ".org", ".info", ".test", ".invalid" };
+    for (size_t i = 0; i < 100; i++) {
+        auto x = mk::random_tld();
+        REQUIRE(std::find(tlds.begin(), tlds.end(), x) != tlds.end());
+    }
+}
+
 TEST_CASE("split(std::string s) works properly in the common case") {
     REQUIRE((mk::split(" 34    43  17 11 ") == std::list<std::string>{
                 {"", "34", "43", "17", "11"}
