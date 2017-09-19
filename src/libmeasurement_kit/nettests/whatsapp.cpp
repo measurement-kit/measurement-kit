@@ -17,9 +17,9 @@ WhatsappTest::WhatsappTest() : BaseTest() {
     runnable->needs_input = false;
 }
 
-void WhatsappRunnable::main(std::string input, Settings options,
+void WhatsappRunnable::main(std::string /*input*/, Settings options,
                             Callback<Var<report::Entry>> cb) {
-    ooni::whatsapp(input, options, cb, reactor, logger);
+    ooni::whatsapp(options, cb, reactor, logger);
 }
 
 } // namespace nettests

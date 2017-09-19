@@ -478,8 +478,7 @@ static void http_many(const std::vector<std::string> urls,
     return;
 }
 
-void whatsapp(std::string input, Settings options,
-              Callback<Var<report::Entry>> callback,
+void whatsapp(Settings options, Callback<Var<report::Entry>> callback,
               Var<Reactor> reactor, Var<Logger> logger) {
     std::vector<std::string>
         WHATSAPP_REG_URLS = { "https://v.whatsapp.net/v2/register" };

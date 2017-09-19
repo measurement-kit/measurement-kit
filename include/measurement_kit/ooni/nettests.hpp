@@ -48,8 +48,7 @@ void facebook_messenger(Settings, Callback<SharedPtr<report::Entry>>,
                         SharedPtr<Reactor> = Reactor::global(),
                         SharedPtr<Logger> = Logger::global());
 
-void whatsapp(std::string input, Settings,
-              Callback<Var<report::Entry>>,
+void whatsapp(Settings, Callback<Var<report::Entry>>,
               Var<Reactor> = Reactor::global(),
               Var<Logger> = Logger::global());
 
