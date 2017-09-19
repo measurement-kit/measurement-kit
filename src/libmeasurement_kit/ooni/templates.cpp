@@ -6,6 +6,7 @@
 
 #include <event2/dns.h>
 
+#include "private/net/emitter.hpp"
 #include "private/ooni/utils.hpp"
 
 namespace mk {
@@ -187,11 +188,15 @@ void tcp_connect(Settings options, Callback<Error, Var<net::Transport>> cb,
                  Var<Reactor> reactor, Var<Logger> logger) {
     ErrorOr<int> port = options["port"].as_noexcept<int>();
     if (!port) {
-        cb(port.as_error(), nullptr);
+        cb(port.as_error(),
+                Var<net::Transport>{
+                        std::make_shared<net::Emitter>(reactor, logger)});
         return;
     }
     if (options["host"] == "") {
-        cb(MissingRequiredHostError(), nullptr);
+        cb(MissingRequiredHostError(),
+                Var<net::Transport>{
+                        std::make_shared<net::Emitter>(reactor, logger)});
         return;
     }
     net::connect(options["host"], *port, cb, options, reactor, logger);
