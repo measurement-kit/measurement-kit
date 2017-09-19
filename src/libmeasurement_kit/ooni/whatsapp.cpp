@@ -507,21 +507,6 @@ void whatsapp(Settings options, Callback<Var<report::Entry>> callback,
     logger->info("starting whatsapp");
     Var<Entry> entry(new Entry);
 
-//    // XXX pick smaller random subset of endpoints to test?
-//    http_many(WHATSAPP_REG_URLS, "registration_server", entry, [=](Error err) {
-//        logger->info("done testing whatsapp registration");
-//        http_many(WHATSAPP_WEB_URLS, "whatsapp_registration", entry, [=](Error err) {
-//            logger->info("done testing whatsapp web");
-//            dns_many(WHATSAPP_ENDPOINT_HOSTNAMES, entry,
-//                    [=](Error err, std::vector<std::string> ips) {
-//                logger->info("done dns-testing whatsapp endpoints");
-//                tcp_many(ips, entry, [=](Error err) {
-//                    logger->info("done tcp-testing whatsapp endpoints");
-//                    callback(entry);
-//                }, reactor, logger);
-//            }, reactor, logger);
-//        }, reactor, logger);
-//    }, reactor, logger);
     mk::fcompose(
         mk::fcompose_policy_async(),
         [=](Callback<> cb) {
