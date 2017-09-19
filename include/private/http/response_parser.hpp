@@ -181,9 +181,25 @@ class ResponseParserNg : public NonCopyable, public NonMovable {
     size_t parser_execute(const void *p, size_t n) {
         size_t x =
             http_parser_execute(&parser_, &settings_, (const char *)p, n);
-        if (parser_.upgrade) {
-            throw UpgradeError();
-        }
+        // FIX: I initially coded `upgrade` as the following commented out code
+        // does, because I did read [the documentation of http-parser](
+        // https://github.com/nodejs/http-parser#the-special-problem-of-upgrade)
+        // but it seems that is written more with servers in mind.
+        //
+        // For a client, unless `upgrade` is requested by us, the resulting
+        // headers are just informational and, as such, we can continue.
+        //
+        // For reference see: <https://tools.ietf.org/html/rfc7230#section-6.7>.
+        //
+        // This fixes for example the `http://aseansec.org/` URL.
+        //
+        // I am going to keep the code below commented out and this comment
+        // so the choices I made are clear and documented.
+        //
+        // if (parser_.upgrade) {
+        //    throw UpgradeError();
+        // }
+        //
         if (x != n) {
             throw ParserError(map_parser_error_());
         }

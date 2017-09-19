@@ -31,14 +31,19 @@ TEST_CASE("ResponseParserNg deals with an UPGRADE request") {
     std::string data;
 
     data = "";
-    data += "HTTP/1.1 101 Switching Protocols\r\n";
+    data += "HTTP/1.1 200 Okay\r\n";
     data += "Content-Type: text/plain\r\n";
     data += "Connection: upgrade\r\n";
-    data += "Upgrade: websockets\r\n";
+    data += "Upgrade: h2s\r\n";
     data += "Server: Antani/1.0.0.0\r\n";
+    data += "Content-Length: 1\r\n";
     data += "\r\n";
+    data += "x";
 
-    REQUIRE_THROWS_AS(parser.feed(data), UpgradeError);
+    // Note: after #1365, this should not throw because now we're
+    // tolerating UPGRADE, which in responses is only an advertisement
+    // of the server capabilities, and nothing else.
+    parser.feed(data);
 }
 
 TEST_CASE("ResponseParserNg works as expected") {
