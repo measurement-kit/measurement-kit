@@ -310,8 +310,7 @@ static void tcp_many(std::vector<std::string> ips,
     }
 
     auto tcp_cb = [=](std::string ip, int port) {
-        return [=](Error err, Var<net::Transport> txp) {
-            bool close_txp = true; // if connected, we must disconnect
+        return [=](Error connect_err, Var<net::Transport> txp) {
             Entry result = {
                 {"ip", ip},
                 {"port", port},
@@ -319,11 +318,10 @@ static void tcp_many(std::vector<std::string> ips,
                     {{"success", nullptr},
                     {"failure", nullptr}}},
             };
-            if (!!err) {
+            if (!!connect_err) {
                 logger->info("tcp failure to %s:%d", ip.c_str(), port);
                 result["status"]["success"] = false;
-                result["status"]["failure"] = err.as_ooni_error();
-                close_txp = false;
+                result["status"]["failure"] = connect_err.as_ooni_error();
             } else {
                 logger->info("tcp success to %s:%d", ip.c_str(), port);
                 result["status"]["success"] = true;
@@ -331,21 +329,11 @@ static void tcp_many(std::vector<std::string> ips,
             }
             (*entry)["tcp_connect"].push_back(result);
             *ips_tested += 1;
-            if (ips_count == *ips_tested) {
-                if (close_txp == true) {
-                    txp->close([=] { cb(NoError()); });
-                } else {
-                    cb(NoError());
-                }
-            } else {
-                if (close_txp == true) {
-                    // XXX optimistic closure
-                    txp->close([=] {});
-                }
-            }
+            txp->close(nullptr);
         };
     };
 
+    std::vector<Continuation<Error>> continuations;
     for (auto const& ip : ips) {
         // XXX hardcoded
         std::vector<int> ports {443, 5222};
@@ -353,11 +341,13 @@ static void tcp_many(std::vector<std::string> ips,
             options["host"] = ip;
             options["port"] = port;
             options["net/timeout"] = 10.0; //XXX check if set upstream?
-            templates::tcp_connect(options, tcp_cb(ip, port),
-                                   reactor, logger);
+            continuations.push_back([=](Callback<Error> done_cb) {
+                templates::tcp_connect(options, tcp_cb(ip, port),
+                                       reactor, logger);
+            });
         }
     }
-    return;
+    mk::parallel(continuations, all_done_cb, 3 /* parallelism */);
 }
 
 static void dns_many(std::vector<std::string> hostnames,
