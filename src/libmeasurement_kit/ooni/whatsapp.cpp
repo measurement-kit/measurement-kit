@@ -2,8 +2,9 @@
 // Measurement-kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 
-#include "private/common/fcompose.hpp"
-#include "private/common/utils.hpp"
+#include <measurement_kit/common/detail/fcompose.hpp>
+#include <measurement_kit/common/detail/parallel.hpp>
+#include <measurement_kit/common/detail/utils.hpp>
 #include "private/ooni/constants.hpp"
 #include <measurement_kit/ooni.hpp>
 #include <sys/socket.h>
@@ -296,21 +297,21 @@ bool ip_in_nets(std::string ip, std::vector<std::string> nets) {
 }
 
 static void tcp_many(std::vector<std::string> ips,
-                     Var<Entry> entry,
+                     SharedPtr<Entry> entry,
                      Settings options,
-                     Var<Reactor> reactor,
-                     Var<Logger> logger,
+                     SharedPtr<Reactor> reactor,
+                     SharedPtr<Logger> logger,
                      Callback<Error> cb) {
     // two ports per IP
     int ips_count = ips.size() * 2;
-    Var<int> ips_tested(new int(0));
+    SharedPtr<int> ips_tested(new int(0));
     if (ips_count == *ips_tested) {
         cb(NoError());
         return;
     }
 
     auto tcp_cb = [=](std::string ip, int port) {
-        return [=](Error connect_err, Var<net::Transport> txp) {
+        return [=](Error connect_err, SharedPtr<net::Transport> txp) {
             Entry result = {
                 {"ip", ip},
                 {"port", port},
@@ -333,7 +334,6 @@ static void tcp_many(std::vector<std::string> ips,
         };
     };
 
-    std::vector<Continuation<Error>> continuations;
     for (auto const& ip : ips) {
         // XXX hardcoded
         std::vector<int> ports {443, 5222};
@@ -341,35 +341,32 @@ static void tcp_many(std::vector<std::string> ips,
             options["host"] = ip;
             options["port"] = port;
             options["net/timeout"] = 10.0; //XXX check if set upstream?
-            continuations.push_back([=](Callback<Error> done_cb) {
-                templates::tcp_connect(options, tcp_cb(ip, port),
-                                       reactor, logger);
-            });
+            templates::tcp_connect(options, tcp_cb(ip, port),
+                                    reactor, logger);
         }
     }
-    mk::parallel(continuations, all_done_cb, 3 /* parallelism */);
 }
 
 static void dns_many(std::vector<std::string> hostnames,
-                     Var<Entry> entry,
+                     SharedPtr<Entry> entry,
                      Settings options,
-                     Var<Reactor> reactor,
-                     Var<Logger> logger,
+                     SharedPtr<Reactor> reactor,
+                     SharedPtr<Logger> logger,
                      Callback<Error, std::vector<std::string>> cb) {
     // if ANYthing is consistent, we consider dns not blocked
     (*entry)["whatsapp_endpoints_status"] = "blocked";
     (*entry)["whatsapp_dns_inconsistent"] = {};
     int names_count = hostnames.size();
     logger->info("whatsapp: %d hostnames", names_count);
-    Var<std::vector<std::string>> good_ips(new std::vector<std::string>);
-    Var<int> names_tested(new int(0));
+    SharedPtr<std::vector<std::string>> good_ips(new std::vector<std::string>);
+    SharedPtr<int> names_tested(new int(0));
     if (names_count == *names_tested) {
         cb(NoError(), *good_ips);
     }
 
 
     auto dns_cb = [=](std::string hostname) {
-        return [=](Error err, Var<dns::Message> message) {
+        return [=](Error err, SharedPtr<dns::Message> message) {
             if (!!err) {
                 logger->info("whatsapp: dns error for %s", hostname.c_str());
             } else {
@@ -422,24 +419,24 @@ static void dns_many(std::vector<std::string> hostnames,
 
 static void http_many(const std::vector<std::string> urls,
                       std::string resource_name,
-                      Var<Entry> entry,
+                      SharedPtr<Entry> entry,
                       Settings options,
-                      Var<Reactor> reactor,
-                      Var<Logger> logger,
+                      SharedPtr<Reactor> reactor,
+                      SharedPtr<Logger> logger,
                       Callback<Error> cb) {
     // resource_name is "registration_server" or "whatsapp_web"
     // if ANYthing is blocked, we consider the resource blocked
     (*entry)[resource_name+"_status"] = "ok";
     (*entry)[resource_name+"_failure"] = nullptr;
     int urls_count = urls.size();
-    Var<int> urls_tested(new int(0));
+    SharedPtr<int> urls_tested(new int(0));
     if (urls_count == *urls_tested) {
         cb(NoError());
         return;
     }
 
     auto http_cb = [=](std::string url) {
-        return [=](Error err, Var<http::Response> response) {
+        return [=](Error err, SharedPtr<http::Response> response) {
              if (!!err) {
                  logger->info("whatsapp: failure HTTP connecting to %s",
                      url.c_str());
@@ -467,8 +464,8 @@ static void http_many(const std::vector<std::string> urls,
     return;
 }
 
-void whatsapp(Settings options, Callback<Var<report::Entry>> callback,
-              Var<Reactor> reactor, Var<Logger> logger) {
+void whatsapp(Settings options, Callback<SharedPtr<report::Entry>> callback,
+              SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
     std::vector<std::string>
         WHATSAPP_REG_URLS = { "https://v.whatsapp.net/v2/register" };
     std::vector<std::string>
@@ -494,7 +491,7 @@ void whatsapp(Settings options, Callback<Var<report::Entry>> callback,
                                         "e16.whatsapp.net" };
 
     logger->info("starting whatsapp");
-    Var<Entry> entry(new Entry);
+    SharedPtr<Entry> entry(new Entry);
 
     mk::fcompose(
         mk::fcompose_policy_async(),

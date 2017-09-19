@@ -18,7 +18,7 @@ WhatsappTest::WhatsappTest() : BaseTest() {
 }
 
 void WhatsappRunnable::main(std::string /*input*/, Settings options,
-                            Callback<Var<report::Entry>> cb) {
+                            Callback<SharedPtr<report::Entry>> cb) {
     ooni::whatsapp(options, cb, reactor, logger);
 }
 
