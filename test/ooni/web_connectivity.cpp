@@ -12,6 +12,19 @@ using namespace mk;
 TEST_CASE("Web connectivity works as expected") {
     auto logger = Logger::make();
 
+    SECTION("For website that does not emit standard compliant headers") {
+        auto reactor = Reactor::make();
+        bool okay = false;
+        ooni::web_connectivity("http://mail.voila.fr", Settings{},
+                [&](SharedPtr<report::Entry> entry) {
+                    okay = ((*entry)["failure"] == nullptr);
+                    reactor->stop();
+                },
+                reactor, logger);
+        reactor->run();
+        REQUIRE(okay);
+    }
+
     SECTION("For website that advertises upgrade to http2") {
         auto reactor = Reactor::make();
         bool okay = false;
