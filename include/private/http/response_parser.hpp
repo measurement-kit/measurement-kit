@@ -195,11 +195,11 @@ class ResponseParserNg : public NonCopyable, public NonMovable {
         //
         // I am going to keep the code below commented out and this comment
         // so the choices I made are clear and documented.
-        /*
-        if (parser_.upgrade) {
-            throw UpgradeError();
-        }
-        */
+        //
+        // if (parser_.upgrade) {
+        //    throw UpgradeError();
+        // }
+        //
         if (x != n) {
             throw ParserError(map_parser_error_());
         }
