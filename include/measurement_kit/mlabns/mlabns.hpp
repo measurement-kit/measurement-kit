@@ -1,6 +1,6 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software. See AUTHORS and LICENSE for more
-// information on the copying conditions.
+// Measurement-kit is free software under the BSD license. See AUTHORS
+// and LICENSE for more information on the copying conditions.
 #ifndef MEASUREMENT_KIT_MLABNS_MLABNS_HPP
 #define MEASUREMENT_KIT_MLABNS_MLABNS_HPP
 
@@ -27,8 +27,8 @@ class Reply {
 
 /// Query mlab-ns and receive response.
 void query(std::string tool, Callback<Error, Reply> callback,
-           Settings settings = {}, Var<Reactor> reactor = Reactor::global(),
-           Var<Logger> logger = Logger::global());
+           Settings settings = {}, SharedPtr<Reactor> reactor = Reactor::global(),
+           SharedPtr<Logger> logger = Logger::global());
 
 } // namespace mlabns
 } // namespace mk

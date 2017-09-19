@@ -1,34 +1,35 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software. See AUTHORS and LICENSE for more
-// information on the copying conditions.
+// Measurement-kit is free software under the BSD license. See AUTHORS
+// and LICENSE for more information on the copying conditions.
 
+#include <measurement_kit/common/detail/worker.hpp>
 #include "private/nettests/runnable.hpp"
-#include "private/nettests/runner.hpp"
 
 #include <measurement_kit/nettests.hpp>
 
 #include <cassert>
+#include <future>
 
 namespace mk {
 namespace nettests {
 
-BaseTest &BaseTest::on_logger_eof(Delegate<> func) {
-    runnable->logger->on_eof(func);
+BaseTest &BaseTest::on_logger_eof(Callback<> func) {
+    runnable->logger->on_eof(std::move(func));
     return *this;
 }
 
-BaseTest &BaseTest::on_log(Delegate<uint32_t, const char *> func) {
-    runnable->logger->on_log(func);
+BaseTest &BaseTest::on_log(Callback<uint32_t, const char *> func) {
+    runnable->logger->on_log(std::move(func));
     return *this;
 }
 
-BaseTest &BaseTest::on_event(Delegate<const char *> func) {
-    runnable->logger->on_event(func);
+BaseTest &BaseTest::on_event(Callback<const char *> func) {
+    runnable->logger->on_event(std::move(func));
     return *this;
 }
 
-BaseTest &BaseTest::on_progress(Delegate<double, const char *> func) {
-    runnable->logger->on_progress(func);
+BaseTest &BaseTest::on_progress(Callback<double, const char *> func) {
+    runnable->logger->on_progress(std::move(func));
     return *this;
 }
 
@@ -78,45 +79,79 @@ BaseTest &BaseTest::set_options(std::string key, std::string value) {
     return *this;
 }
 
-BaseTest &BaseTest::on_entry(Delegate<std::string> cb) {
+BaseTest &BaseTest::on_entry(Callback<std::string> cb) {
     runnable->entry_cb = cb;
     return *this;
 }
 
-BaseTest &BaseTest::on_begin(Delegate<> cb) {
+BaseTest &BaseTest::on_begin(Callback<> cb) {
     runnable->begin_cb = cb;
     return *this;
 }
 
-BaseTest &BaseTest::on_end(Delegate<> cb) {
+BaseTest &BaseTest::on_end(Callback<> cb) {
     runnable->end_cbs.push_back(cb);
     return *this;
 }
 
-BaseTest &BaseTest::on_destroy(Delegate<> cb) {
+BaseTest &BaseTest::on_destroy(Callback<> cb) {
     runnable->destroy_cbs.push_back(cb);
     return *this;
 }
 
+static void start_internal_(SharedPtr<Runnable> &&r, std::promise<void> *promise,
+                            Callback<> &&callback) {
+    // Note:
+    //
+    // 1. we wait in the default tasks queue for our turn: this guarantees
+    //    that "big" operations like tests and tasks are sequenced.
+    //
+    // 2. we move all context inside the first lambda callback so that the
+    //    thread that will run I/O has exclusive ownership.
+    //
+    // 3. run_with_initial_event() is blocking: this means that the lifecycle
+    //    of `r` is guaranteed to be as long as the one of the reactor.
+    //
+    // 4. we _explicitly_ leave the reactor loop on success, but, even in
+    //    case the final event is not reached because of a bug, the reactor
+    //    is anyway going to exit the loop when it is out of events.
+    //
+    // 5. the `promise`, if present, allows to make the test synchronous,
+    //    while the callback allows to make it asynchronous.
+    assert(!r->reactor);
+    Worker::default_tasks_queue()->call_in_thread(
+          [ r = std::move(r), promise, callback = std::move(callback) ] {
+              r->reactor = Reactor::make();
+              r->reactor->run_with_initial_event([&]() {
+                  r->begin([&](Error) {
+                      r->end([&](Error) {
+                          r->reactor->stop();
+                          if (callback) {
+                              callback();
+                          }
+                      });
+                  });
+              });
+              if (promise != nullptr) {
+                  promise->set_value();
+              }
+          });
+}
+
 void BaseTest::run() {
-    // Note: here we MUST point to a fresh reactor which we know for sure is
-    // not already being used otherwise we cannot run the test
-    assert(not runnable->reactor);
-    Var<Reactor> reactor = Reactor::make();
-    runnable->reactor = reactor;
-    reactor->loop_with_initial_event([&]() {
-        runnable->begin([&](Error) {
-            runnable->end([&](Error) {
-                reactor->call_soon([&]() {
-                    reactor->stop();
-                });
-            });
-        });
-    });
+    std::promise<void> promise;
+    std::future<void> future = promise.get_future();
+    // Note: using `std::move` to invalidate the `runnable` such that it is
+    // not possible to start another test from the same object.
+    start_internal_(std::move(runnable), &promise, nullptr);
+    future.get();
+
 }
 
 void BaseTest::start(Callback<> callback) {
-    Runner::global()->start_test(runnable, [=](Var<Runnable>) { callback(); });
+    // Note: using `std::move` to invalidate the `runnable` such that it is
+    // not possible to start another test from the same object.
+    start_internal_(std::move(runnable), nullptr, std::move(callback));
 }
 
 } // namespace nettests

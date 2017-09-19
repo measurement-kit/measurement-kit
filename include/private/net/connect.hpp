@@ -1,10 +1,10 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software. See AUTHORS and LICENSE for more
-// information on the copying conditions.
+// Measurement-kit is free software under the BSD license. See AUTHORS
+// and LICENSE for more information on the copying conditions.
 #ifndef PRIVATE_NET_CONNECT_HPP
 #define PRIVATE_NET_CONNECT_HPP
 
-#include "../common/utils.hpp"
+#include <measurement_kit/common/detail/utils.hpp>
 #include "../ext/tls_internal.h"
 
 #include <measurement_kit/net.hpp>
@@ -33,33 +33,33 @@ class ConnectResult {
 
 typedef std::function<void(std::vector<Error>, bufferevent *)> ConnectFirstOfCb;
 
-void connect_first_of(Var<ConnectResult> result, int port,
+void connect_first_of(SharedPtr<ConnectResult> result, int port,
                       ConnectFirstOfCb cb, Settings settings = {},
-                      Var<Reactor> reactor = Reactor::global(),
-                      Var<Logger> logger = Logger::global(), size_t index = 0,
-                      Var<std::vector<Error>> errors = nullptr);
+                      SharedPtr<Reactor> reactor = Reactor::global(),
+                      SharedPtr<Logger> logger = Logger::global(), size_t index = 0,
+                      SharedPtr<std::vector<Error>> errors = nullptr);
 
 void connect_logic(std::string hostname, int port,
-                   Callback<Error, Var<ConnectResult>> cb,
+                   Callback<Error, SharedPtr<ConnectResult>> cb,
                    Settings settings = {},
-                   Var<Reactor> reactor = Reactor::global(),
-                   Var<Logger> logger = Logger::global());
+                   SharedPtr<Reactor> reactor = Reactor::global(),
+                   SharedPtr<Logger> logger = Logger::global());
 
 void connect_ssl(bufferevent *orig_bev, ssl_st *ssl, std::string hostname,
                  Callback<Error, bufferevent *> cb,
-                 Var<Reactor> = Reactor::global(),
-                 Var<Logger> = Logger::global());
+                 SharedPtr<Reactor> = Reactor::global(),
+                 SharedPtr<Logger> = Logger::global());
 
 class ConnectManyCtx {
   public:
     int left = 0; // Signed to detect programmer errors
     ConnectManyCb callback;
-    std::vector<Var<Transport>> connections;
+    std::vector<SharedPtr<Transport>> connections;
     std::string address;
     int port = 0;
     Settings settings;
-    Var<Reactor> reactor = Reactor::global();
-    Var<Logger> logger = Logger::global();
+    SharedPtr<Reactor> reactor = Reactor::global();
+    SharedPtr<Logger> logger = Logger::global();
 };
 
 } // namespace mk

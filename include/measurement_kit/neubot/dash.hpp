@@ -1,6 +1,6 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software. See AUTHORS and LICENSE for more
-// information on the copying conditions.
+// Measurement-kit is free software under the BSD license. See AUTHORS
+// and LICENSE for more information on the copying conditions.
 #ifndef MEASUREMENT_KIT_NEUBOT_DASH_HPP
 #define MEASUREMENT_KIT_NEUBOT_DASH_HPP
 
@@ -14,18 +14,18 @@ void run(
         std::string measurement_server_hostname,
         std::string auth_token,
         std::string real_address,
-        Var<report::Entry> entry,
+        SharedPtr<report::Entry> entry,
         Settings settings,
-        Var<Reactor> reactor,
-        Var<Logger> logger,
+        SharedPtr<Reactor> reactor,
+        SharedPtr<Logger> logger,
         Callback<Error> callback
 );
 
 void negotiate(
-        Var<report::Entry> entry,
+        SharedPtr<report::Entry> entry,
         Settings settings,
-        Var<Reactor> reactor,
-        Var<Logger> logger,
+        SharedPtr<Reactor> reactor,
+        SharedPtr<Logger> logger,
         Callback<Error> callback
 );
 

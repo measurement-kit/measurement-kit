@@ -1,6 +1,6 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software. See AUTHORS and LICENSE for more
-// information on the copying conditions.
+// Measurement-kit is free software under the BSD license. See AUTHORS
+// and LICENSE for more information on the copying conditions.
 #ifndef MEASUREMENT_KIT_REPORT_BASE_REPORTER_HPP
 #define MEASUREMENT_KIT_REPORT_BASE_REPORTER_HPP
 
@@ -14,7 +14,7 @@ class Report;
 
 class BaseReporter : public NonCopyable, public NonMovable {
   public:
-    static Var<BaseReporter> make();
+    static SharedPtr<BaseReporter> make();
 
     virtual ~BaseReporter();
 

@@ -15,12 +15,12 @@
 /// \file private/net/libssl.hpp
 /// \brief Code related to libssl (openssl or libressl).
 
-#include "private/common/mock.hpp"
 #include "private/ext/tls_internal.h"
 #include "private/net/builtin_ca_bundle.hpp"
 #include <cassert>
 #include <map>
-#include <measurement_kit/common/locked.hpp>
+#include <measurement_kit/common/detail/locked.hpp>
+#include <measurement_kit/common/detail/mock.hpp>
 #include <measurement_kit/common/logger.hpp>
 #include <measurement_kit/common/non_copyable.hpp>
 #include <measurement_kit/common/non_movable.hpp>
@@ -34,11 +34,11 @@ namespace net {
 namespace libssl {
 
 /// Initialize the SSL library
-static inline void libssl_init_once(Var<Logger> logger) {
+static inline void libssl_init_once(SharedPtr<Logger> logger) {
     locked_global([logger]() {
         static bool initialized = false;
         if (!initialized) {
-            logger->debug("initializing SSL library");
+            logger->debug2("initializing libssl once");
             SSL_library_init();
             ERR_load_crypto_strings();
             SSL_load_error_strings();
@@ -92,7 +92,7 @@ class Context : public NonCopyable, public NonMovable {
         in a boolean context) and a `SSL *` on success.
     */
     template <MK_MOCK(SSL_new)>
-    ErrorOr<SSL *> get_client_ssl(std::string hostname, Var<Logger> logger) {
+    ErrorOr<SSL *> get_client_ssl(std::string hostname, SharedPtr<Logger> logger) {
         assert(ctx_ != nullptr);
         SSL *ssl = SSL_new(ctx_);
         if (ssl == nullptr) {
@@ -120,7 +120,7 @@ class Context : public NonCopyable, public NonMovable {
         \param logger Logger for printing log messages.
 
         \return An error on failure (the returned object will evaluate to
-        false in a boolean context) or a `Var` shared pointer wrapping a
+        false in a boolean context) or a `SharedPtr` shared pointer wrapping a
         Context instance on success.
     */
     template <MK_MOCK(SSL_CTX_new), MK_MOCK(SSL_CTX_load_verify_locations)
@@ -129,8 +129,8 @@ class Context : public NonCopyable, public NonMovable {
               MK_MOCK(SSL_CTX_load_verify_mem)
 #endif
               >
-    static ErrorOr<Var<Context>> make(std::string ca_bundle_path,
-                                      Var<Logger> logger) {
+    static ErrorOr<SharedPtr<Context>> make(std::string ca_bundle_path,
+                                      SharedPtr<Logger> logger) {
         // Implementation note: we need to initialize libssl early otherwise
         // most of the functions of the library will not work properly.
         libssl_init_once(logger);
@@ -174,7 +174,7 @@ class Context : public NonCopyable, public NonMovable {
 #endif
         }
         SSL_CTX_set_verify(ctx, SSL_VERIFY_PEER, nullptr);
-        Var<Context> context{new Context};
+        SharedPtr<Context> context{new Context};
         context->ctx_ = ctx;
         return context;
     }
@@ -225,8 +225,8 @@ template <size_t max_cache_size = 64> class Cache {
     }
 
     /// Inline wrapper for Context::make, for testability
-    static inline ErrorOr<Var<Context>> mkctx(std::string ca_bundle_path,
-                                              Var<Logger> logger) {
+    static inline ErrorOr<SharedPtr<Context>> mkctx(std::string ca_bundle_path,
+                                              SharedPtr<Logger> logger) {
         return Context::make(ca_bundle_path, logger);
     }
 
@@ -254,7 +254,7 @@ template <size_t max_cache_size = 64> class Cache {
     */
     template <MK_MOCK(mkctx)>
     ErrorOr<SSL *> get_client_ssl(std::string ca_bundle_path,
-                                  std::string hostname, Var<Logger> logger) {
+                                  std::string hostname, SharedPtr<Logger> logger) {
         /*
            Implementation note: `SSL_CTX *` are reference counted and they will
            be alive as long as there is an `SSL *` using them. As such, we do
@@ -269,14 +269,14 @@ template <size_t max_cache_size = 64> class Cache {
             all_.clear();
         }
         if (all_.count(ca_bundle_path) == 0) {
-            ErrorOr<Var<Context>> maybe_context = mkctx(ca_bundle_path, logger);
+            ErrorOr<SharedPtr<Context>> maybe_context = mkctx(ca_bundle_path, logger);
             if (!maybe_context) {
                 return maybe_context.as_error();
             }
-            logger->debug("ssl: track ctx for: '%s'", ca_bundle_path.c_str());
+            logger->debug2("ssl: track ctx for: '%s'", ca_bundle_path.c_str());
             all_[ca_bundle_path] = *maybe_context;
         }
-        Var<Context> context = all_[ca_bundle_path];
+        SharedPtr<Context> context = all_[ca_bundle_path];
         return context->get_client_ssl(hostname, logger);
     }
 
@@ -287,7 +287,7 @@ template <size_t max_cache_size = 64> class Cache {
     Cache() {}
 
   private:
-    std::map<std::string, Var<Context>> all_;
+    std::map<std::string, SharedPtr<Context>> all_;
 };
 
 /*!
@@ -303,7 +303,7 @@ template <size_t max_cache_size = 64> class Cache {
 */
 template <MK_MOCK(SSL_get_verify_result), MK_MOCK(SSL_get_peer_certificate),
           MK_MOCK(tls_check_name)>
-Error verify_peer(std::string hostname, SSL *ssl, Var<Logger> logger) {
+Error verify_peer(std::string hostname, SSL *ssl, SharedPtr<Logger> logger) {
     assert(ssl != nullptr);
     logger->debug("SSL version: %s", SSL_get_version(ssl));
     long verify_err = SSL_get_verify_result(ssl);

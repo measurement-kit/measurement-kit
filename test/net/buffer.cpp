@@ -1,6 +1,6 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software. See AUTHORS and LICENSE for more
-// information on the copying conditions.
+// Measurement-kit is free software under the BSD license. See AUTHORS
+// and LICENSE for more information on the copying conditions.
 
 #define CATCH_CONFIG_MAIN
 #include "private/ext/catch.hpp"
@@ -45,8 +45,8 @@ TEST_CASE("The constructor with C string works correctly") {
 TEST_CASE("Insertion/extraction work correctly for evbuffer") {
 
     Buffer buff;
-    Var<evbuffer> source = make_shared_evbuffer();
-    Var<evbuffer> dest = make_shared_evbuffer();
+    SharedPtr<evbuffer> source = make_shared_evbuffer();
+    SharedPtr<evbuffer> dest = make_shared_evbuffer();
     auto sa = std::string(65536, 'A');
     auto r = std::string();
 
@@ -126,7 +126,7 @@ TEST_CASE("Foreach works correctly") {
      * Initialize the source evbuffer.
      */
 
-    Var<evbuffer> evbuf = make_shared_evbuffer();
+    SharedPtr<evbuffer> evbuf = make_shared_evbuffer();
 
     auto sa = std::string(512, 'A');
     auto sb = std::string(512, 'B');

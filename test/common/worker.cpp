@@ -1,15 +1,12 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software. See AUTHORS and LICENSE for more
-// information on the copying conditions.
+// Measurement-kit is free software under the BSD license. See AUTHORS
+// and LICENSE for more information on the copying conditions.
 
 #define CATCH_CONFIG_MAIN
 #include "private/ext/catch.hpp"
 
-#include "private/common/worker.hpp"
-#include "private/common/range.hpp"
-
-#include "private/common/worker.hpp"
-#include "private/common/range.hpp"
+#include <measurement_kit/common/detail/worker.hpp>
+#include <measurement_kit/common/detail/range.hpp>
 
 #include <measurement_kit/common.hpp>
 
@@ -18,9 +15,9 @@
 #include <thread>
 
 TEST_CASE("The worker is robust to submitting many tasks in a row") {
-    auto worker = mk::Var<mk::Worker>::make();
+    auto worker = mk::SharedPtr<mk::Worker>::make();
     for (auto _: mk::range<int>(128)) {
-        worker->run_in_background_thread([]() {
+        worker->call_in_thread([]() {
             using namespace std::chrono_literals;
             std::this_thread::sleep_for(2s);
         });
@@ -30,9 +27,7 @@ TEST_CASE("The worker is robust to submitting many tasks in a row") {
         std::this_thread::sleep_for(1s);
         auto concurrency = worker->concurrency();
         std::cout << "Concurrency: " << concurrency << "\n";
-        REQUIRE(concurrency >= 0);
-        // Cast to unsigned safe because of the above REQUIRE()
-        REQUIRE((unsigned short)concurrency <= worker->parallelism());
+        REQUIRE(concurrency <= worker->parallelism());
         if (concurrency == 0) {
             break;
         }

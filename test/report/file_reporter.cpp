@@ -1,17 +1,16 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software. See AUTHORS and LICENSE for more
-// information on the copying conditions.
+// Measurement-kit is free software under the BSD license. See AUTHORS
+// and LICENSE for more information on the copying conditions.
 
 #define CATCH_CONFIG_MAIN
 #include "private/ext/catch.hpp"
 
-#include "private/common/utils.hpp"
+#include <measurement_kit/common/detail/utils.hpp>
 
 #include <measurement_kit/report.hpp>
 
 using namespace mk::report;
 using namespace mk;
-using json = nlohmann::json;
 
 TEST_CASE("The constructor works correctly") {
     REQUIRE_NOTHROW(FileReporter::make("/nonexistent/foobar.njson"));
@@ -19,7 +18,7 @@ TEST_CASE("The constructor works correctly") {
 
 TEST_CASE("open() tells us if it encounters an error") {
     Report report;
-    Var<BaseReporter> reporter = FileReporter::make("/nonexistent/foobar.njson");
+    SharedPtr<BaseReporter> reporter = FileReporter::make("/nonexistent/foobar.njson");
     // This should cause failure on open() because directory doesn't exist
     reporter->open(report)([](Error err) {
         REQUIRE(err);
@@ -57,7 +56,7 @@ TEST_CASE(
 
                     std::ifstream infile(filename);
                     for (std::string line; getline(infile, line);) {
-                        json entry = json::parse(line.c_str());
+                        Json entry = Json::parse(line.c_str());
                         REQUIRE(entry["test_name"].get<std::string>() ==
                                 report.test_name);
                         REQUIRE(entry["test_version"].get<std::string>() ==

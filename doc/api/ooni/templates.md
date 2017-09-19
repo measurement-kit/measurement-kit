@@ -8,20 +8,20 @@ MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 ```C++
 #include <measurement_kit/ooni.hpp>
 
-void mk::ooni::dns_query(Var<Entry> entry, dns::QueryType, dns::QueryClass,
+void mk::ooni::dns_query(SharedPtr<Entry> entry, dns::QueryType, dns::QueryClass,
                std::string query_name, std::string nameserver,
                Callback<Error, mk::dns::Message>, Settings = {},
-               Var<Reactor> = Reactor::global(),
-               Var<Logger> = Logger::global());
+               SharedPtr<Reactor> = Reactor::global(),
+               SharedPtr<Logger> = Logger::global());
 
-void mk::ooni::http_request(Var<Entry> entry, Settings settings, http::Headers headers,
-                  std::string body, Callback<Error, Var<http::Response>> cb,
-                  Var<Reactor> reactor = Reactor::global(),
-                  Var<Logger> logger = Logger::global());
+void mk::ooni::http_request(SharedPtr<Entry> entry, Settings settings, http::Headers headers,
+                  std::string body, Callback<Error, SharedPtr<http::Response>> cb,
+                  SharedPtr<Reactor> reactor = Reactor::global(),
+                  SharedPtr<Logger> logger = Logger::global());
 
-void mk::ooni::tcp_connect(Settings settings, Callback<Error, Var<net::Transport>> cb,
-                 Var<Reactor> reactor = Reactor::global(),
-                 Var<Logger> logger = Logger::global());
+void mk::ooni::tcp_connect(Settings settings, Callback<Error, SharedPtr<net::Transport>> cb,
+                 SharedPtr<Reactor> reactor = Reactor::global(),
+                 SharedPtr<Logger> logger = Logger::global());
 
 
 ```

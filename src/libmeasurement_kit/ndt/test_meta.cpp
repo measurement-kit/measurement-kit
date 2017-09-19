@@ -1,6 +1,6 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software. See AUTHORS and LICENSE for more
-// information on the copying conditions.
+// Measurement-kit is free software under the BSD license. See AUTHORS
+// and LICENSE for more information on the copying conditions.
 
 #include "private/ndt/test_meta_impl.hpp"
 
@@ -8,7 +8,7 @@ namespace mk {
 namespace ndt {
 namespace test_meta {
 
-void run(Var<Context> ctx, Callback<Error> callback) {
+void run(SharedPtr<Context> ctx, Callback<Error> callback) {
     run_impl(ctx, callback);
 }
 

@@ -1,6 +1,6 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software. See AUTHORS and LICENSE for more
-// information on the copying conditions.
+// Measurement-kit is free software under the BSD license. See AUTHORS
+// and LICENSE for more information on the copying conditions.
 
 #define CATCH_CONFIG_MAIN
 #include "private/ext/catch.hpp"
@@ -12,16 +12,9 @@ using namespace mk::nettests;
 #ifdef ENABLE_INTEGRATION_TESTS
 
 TEST_CASE("Synchronous dns-injection test") {
-    test::nettests::make_test<DnsInjectionTest>("hosts.txt")
-        .set_options("dns/timeout", "0.1")
-        .run();
-}
-
-TEST_CASE("Asynchronous dns-injection test") {
-    test::nettests::run_async(
-        test::nettests::make_test<DnsInjectionTest>("hosts.txt")
-            .set_options("dns/timeout", "0.1")
-    );
+    test::nettests::with_test<DnsInjectionTest>(
+          "hosts.txt",
+          [](BaseTest &test) { test.set_options("dns/timeout", "0.1").run(); });
 }
 
 #endif

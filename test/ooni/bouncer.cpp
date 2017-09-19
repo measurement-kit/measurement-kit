@@ -1,6 +1,6 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software. See AUTHORS and LICENSE for more
-// information on the copying conditions.
+// Measurement-kit is free software under the BSD license. See AUTHORS
+// and LICENSE for more information on the copying conditions.
 
 #define CATCH_CONFIG_MAIN
 #include "private/ext/catch.hpp"
@@ -9,11 +9,11 @@
 
 using namespace mk;
 
-static Error do_out_of_range(const std::string &, Callback<nlohmann::json &>) {
+static Error do_out_of_range(const std::string &, Callback<Json &> &&) {
     return JsonKeyError();
 }
 
-static Error do_domain_error(const std::string &, Callback<nlohmann::json &>) {
+static Error do_domain_error(const std::string &, Callback<Json &> &&) {
     return JsonDomainError();
 }
 
@@ -116,25 +116,25 @@ TEST_CASE("BouncerReply accessors are robust to missing fields") {
 }
 
 static void request_error(Settings, http::Headers, std::string,
-                          Callback<Error, Var<http::Response>> cb,
-                          Var<Reactor> = Reactor::global(),
-                          Var<Logger> = Logger::global(),
-                          Var<http::Response> = nullptr, int = 0) {
+                          Callback<Error, SharedPtr<http::Response>> cb,
+                          SharedPtr<Reactor> = Reactor::global(),
+                          SharedPtr<Logger> = Logger::global(),
+                          SharedPtr<http::Response> = nullptr, int = 0) {
     cb(MockedError(), nullptr);
 }
 
 TEST_CASE("post_net_tests() works") {
 
     SECTION("On network error") {
-        Var<Reactor> reactor = Reactor::make();
-        reactor->loop_with_initial_event([=]() {
+        SharedPtr<Reactor> reactor = Reactor::make();
+        reactor->run_with_initial_event([=]() {
             // Mocked http request that returns an invalid-request
             ooni::bouncer::post_net_tests_impl<request_error>(
                 ooni::bouncer::production_bouncer_url(), "web-connectivity",
                 "0.0.1", {"web-connectivity"},
-                [=](Error e, Var<ooni::BouncerReply>) {
+                [=](Error e, SharedPtr<ooni::BouncerReply>) {
                     REQUIRE(e == MockedError());
-                    reactor->break_loop();
+                    reactor->stop();
                 },
                 {}, reactor, Logger::global());
         });
@@ -143,26 +143,26 @@ TEST_CASE("post_net_tests() works") {
 #ifdef ENABLE_INTEGRATION_TESTS
 
     SECTION("When the collector is not found") {
-        Var<Reactor> reactor = Reactor::make();
-        reactor->loop_with_initial_event([=]() {
+        SharedPtr<Reactor> reactor = Reactor::make();
+        reactor->run_with_initial_event([=]() {
             ooni::bouncer::post_net_tests(
                 ooni::bouncer::production_bouncer_url(), "antani", "0.0.1",
                 {"antani"},
-                [=](Error e, Var<ooni::BouncerReply>) {
+                [=](Error e, SharedPtr<ooni::BouncerReply>) {
                     REQUIRE(e == ooni::BouncerCollectorNotFoundError());
-                    reactor->break_loop();
+                    reactor->stop();
                 },
                 {}, reactor, Logger::global());
         });
     }
 
     SECTION("When the input is correct") {
-        Var<Reactor> reactor = Reactor::make();
-        reactor->loop_with_initial_event([=]() {
+        SharedPtr<Reactor> reactor = Reactor::make();
+        reactor->run_with_initial_event([=]() {
             ooni::bouncer::post_net_tests(
                 ooni::bouncer::production_bouncer_url(), "web-connectivity",
                 "0.0.1", {"web-connectivity"},
-                [=](Error e, Var<ooni::BouncerReply> reply) {
+                [=](Error e, SharedPtr<ooni::BouncerReply> reply) {
                     REQUIRE(!e);
                     auto check_onion = [](std::string s) {
                         REQUIRE(s.substr(0, 8) == "httpo://");
@@ -187,7 +187,7 @@ TEST_CASE("post_net_tests() works") {
                                 "web-connectivity", "https"));
                     check_cf(*reply->get_test_helper_alternate(
                                 "web-connectivity", "cloudfront"));
-                    reactor->break_loop();
+                    reactor->stop();
                 },
                 {}, reactor, Logger::global());
         });

@@ -1,8 +1,8 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software. See AUTHORS and LICENSE for more
-// information on the copying conditions.
+// Measurement-kit is free software under the BSD license. See AUTHORS
+// and LICENSE for more information on the copying conditions.
 
-#include "private/common/utils.hpp"
+#include <measurement_kit/common/detail/utils.hpp>
 #include "private/ooni/constants.hpp"
 #include <measurement_kit/ooni.hpp>
 
@@ -12,9 +12,9 @@ namespace ooni {
 using namespace mk::report;
 
 void meek_fronted_requests(std::string input, Settings options,
-                   Callback<Var<report::Entry>> callback,
-                   Var<Reactor> reactor, Var<Logger> logger) {
-    Var<Entry> entry(new Entry);
+                   Callback<SharedPtr<report::Entry>> callback,
+                   SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
+    SharedPtr<Entry> entry(new Entry);
 
     std::string expected_body, outer_host, inner_host;
 
@@ -27,7 +27,7 @@ void meek_fronted_requests(std::string input, Settings options,
     std::list<std::string> outer_inner = split(input, ":");
     if (outer_inner.size() != 2) {
         logger->warn("Couldn't split input: %s", input.c_str());
-        (*entry)["failure"] = ValueError().as_ooni_error();
+        (*entry)["failure"] = ValueError().reason;
         callback(entry);
         return;
     }
@@ -45,7 +45,7 @@ void meek_fronted_requests(std::string input, Settings options,
     if (!outer_url || !inner_url) {
         logger->warn("Invalid url: %s or %s", outer_host.c_str(),
                      inner_host.c_str());
-        (*entry)["failure"] = ValueError().as_ooni_error();
+        (*entry)["failure"] = ValueError().reason;
         callback(entry);
         return;
     }
@@ -59,14 +59,14 @@ void meek_fronted_requests(std::string input, Settings options,
                   inner_url->address.c_str());
 
     templates::http_request(entry, options, headers, body,
-                            [=](Error err, Var<http::Response> response) {
+                            [=](Error err, SharedPtr<http::Response> response) {
                                 if (err) {
                                     logger->debug(
                                         "meek_fronted_requests: http-request error: %s",
-                                        err.explain().c_str());
+                                        err.what());
 
                                     (*entry)["failure"] =
-                                        err.as_ooni_error();
+                                        err.reason;
                                 }
 
                                 if (!!response) {

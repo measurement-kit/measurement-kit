@@ -1,6 +1,6 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software. See AUTHORS and LICENSE for more
-// information on the copying conditions.
+// Measurement-kit is free software under the BSD license. See AUTHORS
+// and LICENSE for more information on the copying conditions.
 
 #include "private/nettests/runnable.hpp"
 
@@ -18,7 +18,7 @@ HttpInvalidRequestLineTest::HttpInvalidRequestLineTest() : BaseTest() {
 }
 
 void HttpInvalidRequestLineRunnable::main(std::string, Settings options,
-                                          Callback<Var<report::Entry>> cb) {
+                                          Callback<SharedPtr<report::Entry>> cb) {
     ooni::http_invalid_request_line(options, cb, reactor, logger);
 }
 

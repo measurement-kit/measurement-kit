@@ -1,6 +1,6 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software. See AUTHORS and LICENSE for more
-// information on the copying conditions.
+// Measurement-kit is free software under the BSD license. See AUTHORS
+// and LICENSE for more information on the copying conditions.
 
 #include "private/http/response_parser.hpp"
 #include "private/ext/http_parser.h"
@@ -44,7 +44,7 @@ static int cb_message_complete(http_parser *p) {
 namespace mk {
 namespace http {
 
-ResponseParserNg::ResponseParserNg(Var<Logger> logger) {
+ResponseParserNg::ResponseParserNg(SharedPtr<Logger> logger) {
     logger_ = logger;
     http_parser_settings_init(&settings_);
     settings_.on_message_begin = cb_message_begin;

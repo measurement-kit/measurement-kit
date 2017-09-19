@@ -1,9 +1,10 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software. See AUTHORS and LICENSE for more
-// information on the copying conditions.
+// Measurement-kit is free software under the BSD license. See AUTHORS
+// and LICENSE for more information on the copying conditions.
 #ifndef PRIVATE_NETTESTS_RUNNABLE_HPP
 #define PRIVATE_NETTESTS_RUNNABLE_HPP
 
+#include <measurement_kit/common/detail/delegate.hpp>
 #include <measurement_kit/report.hpp>
 
 #include <ctime>
@@ -21,8 +22,8 @@ class Runnable : public NonCopyable, public NonMovable {
 
     virtual ~Runnable();
 
-    Var<Logger> logger = Logger::make();
-    Var<Reactor> reactor; /* Left unspecified on purpose */
+    SharedPtr<Logger> logger = Logger::make();
+    SharedPtr<Reactor> reactor; /* Left unspecified on purpose */
     Settings options;
     std::list<std::string> input_filepaths;
     std::deque<std::string> inputs;
@@ -46,7 +47,7 @@ class Runnable : public NonCopyable, public NonMovable {
     // Functions that derived classes SHOULD override
     virtual void setup(std::string);
     virtual void teardown(std::string);
-    virtual void main(std::string, Settings, Callback<Var<report::Entry>>);
+    virtual void main(std::string, Settings, Callback<SharedPtr<report::Entry>>);
     virtual void fixup_entry(report::Entry &);
 
     // Functions that derived classes should access
@@ -58,7 +59,7 @@ class Runnable : public NonCopyable, public NonMovable {
     tm test_start_time;
     double beginning = 0.0;
 
-    void run_next_measurement(size_t, Callback<Error>, size_t, Var<size_t>);
+    void run_next_measurement(size_t, Callback<Error>, size_t, SharedPtr<size_t>);
     void query_bouncer(Callback<Error>);
     void geoip_lookup(Callback<>);
     void open_report(Callback<Error>);
@@ -69,22 +70,25 @@ class Runnable : public NonCopyable, public NonMovable {
     class _name_ : public Runnable {                                           \
       public:                                                                  \
         void main(std::string, Settings,                                       \
-                  Callback<Var<report::Entry>>) override;                      \
+                  Callback<SharedPtr<report::Entry>>) override;                      \
     }
 
 MK_DECLARE_RUNNABLE(DashRunnable);
+MK_DECLARE_RUNNABLE(CaptivePortalRunnable);
 MK_DECLARE_RUNNABLE(DnsInjectionRunnable);
+MK_DECLARE_RUNNABLE(FacebookMessengerRunnable);
 MK_DECLARE_RUNNABLE(HttpHeaderFieldManipulationRunnable);
 MK_DECLARE_RUNNABLE(HttpInvalidRequestLineRunnable);
 MK_DECLARE_RUNNABLE(MeekFrontedRequestsRunnable);
 MK_DECLARE_RUNNABLE(MultiNdtRunnable);
 MK_DECLARE_RUNNABLE(NdtRunnable);
 MK_DECLARE_RUNNABLE(TcpConnectRunnable);
+MK_DECLARE_RUNNABLE(TelegramRunnable);
 
 // Separate definition because it contains extra methods
 class WebConnectivityRunnable : public Runnable {
   public:
-    void main(std::string, Settings, Callback<Var<report::Entry>>) override;
+    void main(std::string, Settings, Callback<SharedPtr<report::Entry>>) override;
     void fixup_entry(report::Entry &) override;
 };
 

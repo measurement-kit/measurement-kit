@@ -1,6 +1,6 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software. See AUTHORS and LICENSE for more
-// information on the copying conditions.
+// Measurement-kit is free software under the BSD license. See AUTHORS
+// and LICENSE for more information on the copying conditions.
 
 #include <measurement_kit/ooni.hpp>
 #include <string>
@@ -30,23 +30,23 @@ int main(int argc, char **argv) {
     }
     argc -= optind, argv += optind;
 
-    loop_with_initial_event([=]() {
+    SharedPtr<Reactor> reactor = Reactor::make();
+    reactor->run_with_initial_event([=]() {
         mk::ooni::resources::get_latest_release(
             [=](Error error, std::string latest) {
                 if (error) {
-                    fprintf(stderr, "error: %s\n", error.explain().c_str());
-                    break_loop();
+                    fprintf(stderr, "error: %s\n", error.what());
+                    reactor->stop();
                     return;
                 }
                 mk::ooni::resources::get_resources(
                     latest, "ALL",
                     [=](Error error) {
                         if (error) {
-                            fprintf(stderr, "error: %s\n",
-                                    error.explain().c_str());
+                            fprintf(stderr, "error: %s\n", error.what());
                             /* FALLTHROUGH */
                         }
-                        break_loop();
+                        reactor->stop();
                     }, settings);
             }, settings);
     });

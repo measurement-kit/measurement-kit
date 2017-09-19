@@ -1,7 +1,7 @@
 /*-
  * Part of measurement-kit <https://measurement-kit.github.io/>.
- * Measurement-kit is free software. See AUTHORS and LICENSE for more
- * information on the copying conditions.
+ * Measurement-kit is free software under the BSD license. See AUTHORS
+ * and LICENSE for more information on the copying conditions.
  * =========================================================================
  * Based on Portolan code contributed by its authors.
  * See <http://portolanproject.iit.cnr.it/>.
@@ -40,6 +40,7 @@
 #ifdef __linux__
 
 #include <measurement_kit/traceroute/interface.hpp>
+#include <measurement_kit/common/detail/delegate.hpp>
 
 struct sock_extended_err;
 struct sockaddr_in6;
@@ -64,8 +65,8 @@ class AndroidProber : public NonCopyable,
     /// \param evbase Event base to use (optional)
     AndroidProber(
         bool use_ipv4, int port,
-        Var<Reactor> reactor = Reactor::global(),
-        Var<Logger> logger = Logger::global());
+        SharedPtr<Reactor> reactor = Reactor::global(),
+        SharedPtr<Logger> logger = Logger::global());
 
     /// Destructor
     ~AndroidProber() { cleanup(); }
@@ -88,9 +89,9 @@ class AndroidProber : public NonCopyable,
     bool probe_pending_ = false;   ///< probe is pending
     timespec start_time_{0, 0};    ///< start time
     bool use_ipv4_ = true;         ///< using IPv4?
-    Var<Reactor> reactor;          ///< The reactor
+    SharedPtr<Reactor> reactor;          ///< The reactor
     int port_ = 0;                 ///< socket port
-    Var<Logger> logger = Logger::global();///< logger
+    SharedPtr<Logger> logger = Logger::global();///< logger
 
     Delegate<ProbeResult> result_cb_;  ///< on result callback
     Delegate<> timeout_cb_;            ///< on timeout callback
@@ -143,8 +144,7 @@ class AndroidProber : public NonCopyable,
 
     /// Callback invoked when the socket is readable
     /// \param so Socket descriptor
-    /// \param event Event that occurred
-    void event_callback(Error err, short event);
+    void event_callback(Error err);
 
     /// Idempotent cleanup function
     void cleanup();

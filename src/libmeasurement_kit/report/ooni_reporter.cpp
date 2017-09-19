@@ -1,6 +1,6 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software. See AUTHORS and LICENSE for more
-// information on the copying conditions.
+// Measurement-kit is free software under the BSD license. See AUTHORS
+// and LICENSE for more information on the copying conditions.
 
 #include <measurement_kit/ooni.hpp>
 #include <measurement_kit/report.hpp>
@@ -8,7 +8,7 @@
 namespace mk {
 namespace report {
 
-OoniReporter::OoniReporter(Settings s, Var<Reactor> r, Var<Logger> l) {
+OoniReporter::OoniReporter(Settings s, SharedPtr<Reactor> r, SharedPtr<Logger> l) {
     settings = s;
     reactor = r;
     logger = l;
@@ -22,9 +22,9 @@ OoniReporter::OoniReporter(Settings s, Var<Reactor> r, Var<Logger> l) {
         settings["collector_base_url"].c_str());
 }
 
-/* static */ Var<BaseReporter> OoniReporter::make(Settings settings,
-        Var<Reactor> reactor, Var<Logger> logger) {
-    Var<OoniReporter> reporter(new OoniReporter(settings, reactor, logger));
+/* static */ SharedPtr<BaseReporter> OoniReporter::make(Settings settings,
+        SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
+    SharedPtr<OoniReporter> reporter(new OoniReporter(settings, reactor, logger));
     return reporter.as<BaseReporter>();
 }
 

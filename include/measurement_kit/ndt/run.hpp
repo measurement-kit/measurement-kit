@@ -1,6 +1,6 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software. See AUTHORS and LICENSE for more
-// information on the copying conditions.
+// Measurement-kit is free software under the BSD license. See AUTHORS
+// and LICENSE for more information on the copying conditions.
 #ifndef MEASUREMENT_KIT_NDT_RUN_HPP
 #define MEASUREMENT_KIT_NDT_RUN_HPP
 
@@ -20,14 +20,14 @@ namespace ndt {
 #define MK_NDT_UPLOAD_EXT 64 // not implemented
 #define MK_NDT_DOWNLOAD_EXT 128
 
-void run_with_specific_server(Var<report::Entry> entry, std::string address, int port,
+void run_with_specific_server(SharedPtr<report::Entry> entry, std::string address, int port,
                               Callback<Error> callback, Settings settings = {},
-                              Var<Reactor> reactor = Reactor::global(),
-                              Var<Logger> logger = Logger::global());
+                              SharedPtr<Reactor> reactor = Reactor::global(),
+                              SharedPtr<Logger> logger = Logger::global());
 
-void run(Var<report::Entry> entry, Callback<Error> callback, Settings settings = {},
-         Var<Reactor> reactor = Reactor::global(),
-         Var<Logger> logger = Logger::global());
+void run(SharedPtr<report::Entry> entry, Callback<Error> callback, Settings settings = {},
+         SharedPtr<Reactor> reactor = Reactor::global(),
+         SharedPtr<Logger> logger = Logger::global());
 
 } // namespace ndt
 } // namespace mk

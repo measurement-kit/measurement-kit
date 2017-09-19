@@ -1,6 +1,6 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software. See AUTHORS and LICENSE for more
-// information on the copying conditions.
+// Measurement-kit is free software under the BSD license. See AUTHORS
+// and LICENSE for more information on the copying conditions.
 
 #ifdef ENABLE_INTEGRATION_TESTS
 
@@ -14,23 +14,24 @@ using namespace mk::ooni;
 using namespace mk::report;
 
 TEST_CASE("dns query template works as expected") {
-    loop_with_initial_event([]() {
-        Var<Entry> entry(new Entry);
+    SharedPtr<Reactor> reactor = Reactor::make();
+    reactor->run_with_initial_event([=]() {
+        SharedPtr<Entry> entry(new Entry);
         templates::dns_query(
             entry, "A", "IN", "nexa.polito.it", "8.8.8.8:53",
-            [=](Error err, Var<dns::Message>) {
+            [=](Error err, SharedPtr<dns::Message>) {
                 REQUIRE(!err);
                 templates::dns_query(
                     entry, "A", "IN", "nexa.polito.it", "8.8.8.1:53",
-                    [=](Error err, Var<dns::Message>) {
+                    [=](Error err, SharedPtr<dns::Message>) {
                         REQUIRE(!!err);
-                        nlohmann::json answers;
-                        nlohmann::json root;
-                        nlohmann::json query;
+                        Json answers;
+                        Json root;
+                        Json query;
                         int resolver_port;
-                        root = nlohmann::json::parse(entry->dump());
+                        root = Json::parse(entry->dump());
                         REQUIRE(root.is_object());
-                        nlohmann::json queries = root["queries"];
+                        Json queries = root["queries"];
                         REQUIRE(queries.is_array());
                         REQUIRE(queries.size() == 2);
                         /* First query and response (should be ok) */
@@ -56,53 +57,56 @@ TEST_CASE("dns query template works as expected") {
                         REQUIRE((query["hostname"] == "nexa.polito.it"));
                         answers = query["answers"];
                         REQUIRE(answers.is_array());
-                        break_loop();
+                        reactor->stop();
                     },
                     {{"dns/timeout", 0.3}, {"dns/attempts", 1},
-                     {"dns/engine", "libevent"}});
-            }, {{"dns/engine", "libevent"}});
+                     {"dns/engine", "libevent"}}, reactor);
+            }, {{"dns/engine", "libevent"}}, reactor);
     });
 }
 
 TEST_CASE("tcp connect returns error if port is missing") {
-    loop_with_initial_event([]() {
-        templates::tcp_connect({}, [](Error err, Var<net::Transport> txp) {
+    SharedPtr<Reactor> reactor = Reactor::make();
+    reactor->run_with_initial_event([=]() {
+        templates::tcp_connect({}, [=](Error err, SharedPtr<net::Transport> txp) {
             REQUIRE(err);
             REQUIRE(txp == nullptr);
-            break_loop();
-        });
+            reactor->stop();
+        }, reactor);
     });
 }
 
 TEST_CASE("tcp connect returns error if port is invalid") {
+    SharedPtr<Reactor> reactor = Reactor::make();
     Settings settings;
     settings["port"] = "foobar";
-    loop_with_initial_event([=]() {
+    reactor->run_with_initial_event([=]() {
         templates::tcp_connect(settings,
-                               [](Error err, Var<net::Transport> txp) {
+                               [=](Error err, SharedPtr<net::Transport> txp) {
                                    REQUIRE(err);
                                    REQUIRE(txp == nullptr);
-                                   break_loop();
-                               });
+                                   reactor->stop();
+                               }, reactor);
     });
 }
 
 TEST_CASE("http requests template works as expected") {
-    Var<Entry> entry(new Entry);
-    loop_with_initial_event([=]() {
+    SharedPtr<Entry> entry(new Entry);
+    SharedPtr<Reactor> reactor = Reactor::make();
+    reactor->run_with_initial_event([=]() {
         templates::http_request(
             entry, {{"http/url", "http://nexa.polito.it/robots.txt"}}, {}, "",
-            [=](Error err, Var<http::Response>) {
+            [=](Error err, SharedPtr<http::Response>) {
                 REQUIRE(!err);
                 templates::http_request(
                     entry, {{"http/url", "http://nexa.polito.it:84/robots.txt"},
                             {"net/timeout", 1.0}},
-                    {}, "", [=](Error err, Var<http::Response>) {
+                    {}, "", [=](Error err, SharedPtr<http::Response>) {
                         REQUIRE(err);
-                        nlohmann::json root;
-                        nlohmann::json requests;
-                        nlohmann::json req;
-                        root = nlohmann::json::parse(entry->dump());
+                        Json root;
+                        Json requests;
+                        Json req;
+                        root = Json::parse(entry->dump());
                         REQUIRE((root["agent"] == "agent"));
                         REQUIRE((root["socksproxy"] == nullptr));
                         REQUIRE(root.is_object());
@@ -125,9 +129,9 @@ TEST_CASE("http requests template works as expected") {
                         req = requests[1];
                         REQUIRE(req.is_object());
                         REQUIRE((req["failure"] != nullptr));
-                        break_loop();
-                    });
-            });
+                        reactor->stop();
+                    }, reactor);
+            }, reactor);
     });
 }
 

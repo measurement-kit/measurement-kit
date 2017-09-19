@@ -1,6 +1,6 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software. See AUTHORS and LICENSE for more
-// information on the copying conditions.
+// Measurement-kit is free software under the BSD license. See AUTHORS
+// and LICENSE for more information on the copying conditions.
 
 #include <cassert>
 #include <measurement_kit/net.hpp>
@@ -20,7 +20,7 @@ TransportConnectable::~TransportConnectable() {}
 TransportSockNamePeerName::~TransportSockNamePeerName() {}
 Transport::~Transport() {}
 
-void write(Var<Transport> txp, Buffer buf, Callback<Error> cb) {
+void write(SharedPtr<Transport> txp, Buffer buf, Callback<Error> cb) {
     txp->on_flush([=]() {
         txp->on_flush(nullptr);
         txp->on_error(nullptr);
@@ -34,8 +34,8 @@ void write(Var<Transport> txp, Buffer buf, Callback<Error> cb) {
     txp->write(buf);
 }
 
-void readn(Var<Transport> txp, Var<Buffer> buff, size_t n, Callback<Error> cb,
-           Var<Reactor> reactor) {
+void readn(SharedPtr<Transport> txp, SharedPtr<Buffer> buff, size_t n, Callback<Error> cb,
+           SharedPtr<Reactor> reactor) {
     if (buff->length() >= n) {
         // Shortcut that simplifies coding a great deal - yet, do not callback
         // immediately to avoid O(N) stack consumption
@@ -60,8 +60,8 @@ void readn(Var<Transport> txp, Var<Buffer> buff, size_t n, Callback<Error> cb,
     });
 }
 
-void read(Var<Transport> t, Var<Buffer> buff, Callback<Error> callback,
-          Var<Reactor> reactor) {
+void read(SharedPtr<Transport> t, SharedPtr<Buffer> buff, Callback<Error> callback,
+          SharedPtr<Reactor> reactor) {
     readn(t, buff, 1, callback, reactor);
 }
 

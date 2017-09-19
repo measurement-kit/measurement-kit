@@ -1,6 +1,6 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software. See AUTHORS and LICENSE for more
-// information on the copying conditions.
+// Measurement-kit is free software under the BSD license. See AUTHORS
+// and LICENSE for more information on the copying conditions.
 
 #define CATCH_CONFIG_MAIN
 #include "private/ext/catch.hpp"
@@ -59,7 +59,7 @@ TEST_CASE("Verbosity can be further increased") {
 
 TEST_CASE("We can log on a logfile") {
     {
-        Var<Logger> logger = Logger::make();
+        SharedPtr<Logger> logger = Logger::make();
         logger->set_logfile("logfile.log");
         logger->set_verbosity(MK_LOG_DEBUG);
         logger->on_log(nullptr);
@@ -78,7 +78,7 @@ TEST_CASE("We can log on a logfile") {
 }
 
 TEST_CASE("A logger without file and without callback works") {
-    Var<Logger> logger = Logger::make();
+    SharedPtr<Logger> logger = Logger::make();
     logger->set_verbosity(MK_LOG_DEBUG);
     logger->on_log(nullptr);
     logger->warn("foo");
@@ -88,7 +88,7 @@ TEST_CASE("A logger without file and without callback works") {
 TEST_CASE("The logger's EOF handler works") {
     auto called = 0;
     {
-        Var<Logger> logger = Logger::make();
+        SharedPtr<Logger> logger = Logger::make();
         logger->on_eof([&]() { called += 1; });
         logger->on_eof([&]() { called += 2; });
     }
@@ -96,7 +96,7 @@ TEST_CASE("The logger's EOF handler works") {
 }
 
 TEST_CASE("We pass MK_LOG_EVENT to logger if event-handler not set") {
-    Var<Logger> logger = Logger::make();
+    SharedPtr<Logger> logger = Logger::make();
     auto called = false;
     logger->on_log([&](uint32_t v, const char *s) {
         REQUIRE(v == (MK_LOG_WARNING|MK_LOG_EVENT));
@@ -108,7 +108,7 @@ TEST_CASE("We pass MK_LOG_EVENT to logger if event-handler not set") {
 }
 
 TEST_CASE("We pass MK_LOG_EVENT only to event-handler if it is set") {
-    Var<Logger> logger = Logger::make();
+    SharedPtr<Logger> logger = Logger::make();
     auto log_called = false;
     auto eh_called = false;
     logger->on_log([&](uint32_t, const char *) {

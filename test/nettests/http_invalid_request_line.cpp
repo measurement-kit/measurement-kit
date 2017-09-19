@@ -1,6 +1,6 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software. See AUTHORS and LICENSE for more
-// information on the copying conditions.
+// Measurement-kit is free software under the BSD license. See AUTHORS
+// and LICENSE for more information on the copying conditions.
 
 #ifdef ENABLE_INTEGRATION_TESTS
 
@@ -12,20 +12,14 @@
 using namespace mk::nettests;
 
 TEST_CASE("Synchronous http-invalid-request-line test") {
-    test::nettests::make_test<HttpInvalidRequestLineTest>()
-        .run();
+    test::nettests::with_test<HttpInvalidRequestLineTest>(
+          test::nettests::run_test);
 }
 
 TEST_CASE("Synchronous http-invalid-request-line test with HTTP backend") {
-    test::nettests::make_test<HttpInvalidRequestLineTest>()
-        .set_options("backend", "http://data.neubot.org/")
-        .run();
-}
-
-TEST_CASE("Asynchronous http-invalid-request-line test") {
-    test::nettests::run_async(
-        test::nettests::make_test<HttpInvalidRequestLineTest>()
-    );
+    test::nettests::with_test<HttpInvalidRequestLineTest>([](BaseTest &test) {
+        test.set_options("backend", "http://data.neubot.org/").run();
+    });
 }
 
 #else

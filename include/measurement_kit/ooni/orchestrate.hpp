@@ -1,6 +1,6 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software. See AUTHORS and LICENSE for more
-// information on the copying conditions.
+// Measurement-kit is free software under the BSD license. See AUTHORS
+// and LICENSE for more information on the copying conditions.
 #ifndef MEASUREMENT_KIT_OONI_ORCHESTRATE_HPP
 #define MEASUREMENT_KIT_OONI_ORCHESTRATE_HPP
 
@@ -46,12 +46,12 @@ class Auth {
     Error loads(const std::string &data) noexcept;
     Error dump(const std::string &filepath) noexcept;
     std::string dumps() noexcept;
-    bool is_valid(Var<Logger>) const noexcept;
+    bool is_valid(SharedPtr<Logger>) const noexcept;
 };
 
 class ClientMetadata {
   public:
-    Var<Logger> logger = Logger::global();
+    SharedPtr<Logger> logger = Logger::global();
     Settings settings = {};
     std::string available_bandwidth;
     std::string device_token;
@@ -69,7 +69,7 @@ class ClientMetadata {
     std::string software_version = MK_VERSION;
     std::vector<std::string> supported_tests;
 
-    nlohmann::json as_json() const;
+    Json as_json() const;
 };
 
 class Task; /* Forward declaration */
