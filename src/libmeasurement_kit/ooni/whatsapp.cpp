@@ -295,7 +295,6 @@ bool ip_in_nets(std::string ip, std::vector<std::string> nets) {
     return false;
 }
 
-// XXX not even beginning to fill in entry
 static void tcp_many(std::vector<std::string> ips,
                      Var<Entry> entry,
                      Settings options,
