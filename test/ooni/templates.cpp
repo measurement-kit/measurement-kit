@@ -70,7 +70,7 @@ TEST_CASE("tcp connect returns error if port is missing") {
     reactor->run_with_initial_event([=]() {
         templates::tcp_connect({}, [=](Error err, SharedPtr<net::Transport> txp) {
             REQUIRE(err);
-            REQUIRE(txp == nullptr);
+            REQUIRE(!!txp);
             reactor->stop();
         }, reactor);
     });
@@ -84,7 +84,7 @@ TEST_CASE("tcp connect returns error if port is invalid") {
         templates::tcp_connect(settings,
                                [=](Error err, SharedPtr<net::Transport> txp) {
                                    REQUIRE(err);
-                                   REQUIRE(txp == nullptr);
+                                   REQUIRE(!!txp);
                                    reactor->stop();
                                }, reactor);
     });
