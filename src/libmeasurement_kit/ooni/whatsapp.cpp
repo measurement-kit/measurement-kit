@@ -312,6 +312,7 @@ static void tcp_many(std::vector<std::string> ips,
 
     auto tcp_cb = [=](std::string ip, int port) {
         return [=](Error connect_err, SharedPtr<net::Transport> txp) {
+			bool close_txp = true; // if connected, we must disconnect
             Entry result = {
                 {"ip", ip},
                 {"port", port},
@@ -322,7 +323,8 @@ static void tcp_many(std::vector<std::string> ips,
             if (!!connect_err) {
                 logger->info("tcp failure to %s:%d", ip.c_str(), port);
                 result["status"]["success"] = false;
-                result["status"]["failure"] = connect_err.as_ooni_error();
+                result["status"]["failure"] = connect_err.reason;
+                close_txp = false;
             } else {
                 logger->info("tcp success to %s:%d", ip.c_str(), port);
                 result["status"]["success"] = true;
@@ -330,7 +332,18 @@ static void tcp_many(std::vector<std::string> ips,
             }
             (*entry)["tcp_connect"].push_back(result);
             *ips_tested += 1;
-            txp->close(nullptr);
+            if (ips_count == *ips_tested) {
+                if (close_txp == true) {
+                    txp->close([=] { cb(NoError()); });
+                } else {
+                    cb(NoError());
+                }
+            } else {
+                if (close_txp == true) {
+                    // XXX optimistic closure
+                    txp->close([=] {});
+                }
+            }
         };
     };
 
@@ -338,9 +351,9 @@ static void tcp_many(std::vector<std::string> ips,
         // XXX hardcoded
         std::vector<int> ports {443, 5222};
         for (auto const& port : ports) {
-            options["host"] = ip;
-            options["port"] = port;
-            options["net/timeout"] = 10.0; //XXX check if set upstream?
+            Settings local_options = options;
+            local_options["host"] = ip;
+            local_options["port"] = port;
             templates::tcp_connect(options, tcp_cb(ip, port),
                                     reactor, logger);
         }
@@ -372,8 +385,6 @@ static void dns_many(std::vector<std::string> hostnames,
             } else {
                 std::vector<std::string> this_ips;
                 for (auto answer : message->answers) {
-                    // XXX i don't get this answer format
-                    // copying from web_connectivity
                     if (answer.ipv4 != "") {
                         logger->info("(1) %s ipv4: %s",
                             hostname.c_str(), answer.ipv4.c_str());
@@ -441,7 +452,7 @@ static void http_many(const std::vector<std::string> urls,
                  logger->info("whatsapp: failure HTTP connecting to %s",
                      url.c_str());
                  (*entry)[resource_name+"_status"] = "blocked";
-                 (*entry)[resource_name+"_failure"] = err.as_ooni_error();
+                 (*entry)[resource_name+"_failure"] = err.reason;
              } else {
                  logger->info("whatsapp: success HTTP connecting to %s",
                      url.c_str());
