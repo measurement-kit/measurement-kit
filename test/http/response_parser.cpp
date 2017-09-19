@@ -41,7 +41,7 @@ TEST_CASE("ResponseParserNg deals with an UPGRADE request") {
     data += "x";
 
     // Note: after #1365, this should not throw because now we're
-    // tolerating UPGRADE, which is responses is only an advertisement
+    // tolerating UPGRADE, which in responses is only an advertisement
     // of the server capabilities, and nothing else.
     parser.feed(data);
 }
