@@ -44,7 +44,7 @@ void dns_query(SharedPtr<Entry> entry, dns::QueryType query_type,
         if (nameserver != "") {
             logger->warn("Explicit nameserver ignored with 'system' DNS engine");
         }
-        // For now this option is only supported by the DNS engine. Unless the
+        // For now this option is only supported by the system engine. Unless
         // user has already taken the decision whether to also resolve CNAME or
         // not, resolve the CNAME because generally we need that in OONI.
         if (options.count("dns/resolve_also_cname") == 0) {

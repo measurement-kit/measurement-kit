@@ -8,23 +8,25 @@
 namespace mk {
 namespace dns {
 
-void query(
-        QueryClass dns_class,
-        QueryType dns_type,
-        std::string name,
-        Callback<Error, SharedPtr<Message>> cb,
-        Settings settings,
-        SharedPtr<Reactor> reactor,
-        SharedPtr<Logger> logger) {
-    std::string engine = settings.get("dns/engine", std::string("system"));
-    logger->debug2("dns: engine: %s", engine.c_str());
-    if (engine == "libevent") {
-        libevent::query(dns_class, dns_type, name, cb, settings, reactor, logger);
-    } else if (engine == "system") {
-        system_resolver(dns_class, dns_type, name, settings, reactor, logger, cb);
-    } else {
-        reactor->call_soon([cb]() { cb(InvalidDnsEngine(), nullptr); });
-    }
+void query(QueryClass dns_class, QueryType dns_type, std::string name,
+        Callback<Error, SharedPtr<Message>> cb, Settings settings,
+        SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
+    // Public APIs should make sure that callbacks are not called immediately
+    // but rather are deferred to the next I/O cycle. To this end, we basically
+    // schedule the DNS query so that it happens in the next I/O cycle.
+    reactor->call_soon([=]() {
+        std::string engine = settings.get("dns/engine", std::string("system"));
+        logger->debug2("dns: engine: %s", engine.c_str());
+        if (engine == "libevent") {
+            libevent::query(
+                    dns_class, dns_type, name, cb, settings, reactor, logger);
+        } else if (engine == "system") {
+            system_resolver(
+                    dns_class, dns_type, name, settings, reactor, logger, cb);
+        } else {
+            cb(InvalidDnsEngine(), nullptr);
+        }
+    });
 }
 
 void resolve_hostname(std::string hostname, Callback<ResolveHostnameResult> cb,
