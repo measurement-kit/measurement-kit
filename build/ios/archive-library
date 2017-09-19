@@ -3,7 +3,7 @@ set -e
 ROOTDIR=$(cd $(dirname $0)/../.. && pwd -P)
 cd $ROOTDIR
 D=build/ios
-V=0.8.0-dev
+V=0.8.0-alpha
 
 # Do not ship *.la files that would break the build and, while there, also
 # remove directories that we don't need for cross compiling MK

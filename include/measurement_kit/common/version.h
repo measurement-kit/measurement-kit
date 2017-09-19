@@ -8,7 +8,7 @@
 #include <measurement_kit/common/git_version.hpp>
 
 /// `MK_VERSION` is MK version expressed using semantic versioning.
-#define MK_VERSION "0.8.0-dev"
+#define MK_VERSION "0.8.0-alpha"
 
 #define MEASUREMENT_KIT_VERSION MK_VERSION /* Backward compatibility */
 
