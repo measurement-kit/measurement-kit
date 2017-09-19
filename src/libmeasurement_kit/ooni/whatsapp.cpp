@@ -324,7 +324,6 @@ static void tcp_many(std::vector<std::string> ips,
                 logger->info("tcp failure to %s:%d", ip.c_str(), port);
                 result["status"]["success"] = false;
                 result["status"]["failure"] = connect_err.reason;
-                close_txp = false;
             } else {
                 logger->info("tcp success to %s:%d", ip.c_str(), port);
                 result["status"]["success"] = true;
