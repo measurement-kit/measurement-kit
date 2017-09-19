@@ -12,85 +12,63 @@
 using namespace mk::nettests;
 using namespace mk;
 
-//TEST_CASE("Synchronous whatsapp test") {
-//    test::nettests::make_test<WhatsappTest>("meek_fronted_requests.txt")
-//        .run();
-//}
-//
-//TEST_CASE("Asynchronous meek-fronted-requests test") {
-//    auto t = test::nettests::make_test<WhatsappTest>("meek_fronted_requests.txt");
-//    test::nettests::run_async(t);
-//}
+TEST_CASE("Whatsapp and related utility functions") {
 
- TEST_CASE("test net_match") {
-     bool no_err, inclusion;
-     //no_err = mk::ooni::net_match4("10.10.1.44", "10.10.1.32/27", inclusion);
-     //no_err = mk::ooni::net_match4("0.0.0.0", "0.0.0.0/32", inclusion);
-     //no_err = mk::ooni::net_match4("0.0.0.1", "0.0.0.1/24", inclusion);
-     //no_err = mk::ooni::net_match4("0.0.1.0", "0.0.1.0/24", inclusion);
-     //no_err = mk::ooni::net_match4("0.1.0.0", "0.1.0.0/24", inclusion);
-     //no_err = mk::ooni::net_match4("1.0.0.0", "1.0.0.0/24", inclusion);
-     //no_err = mk::ooni::net_match4("1.0.0.0", "1.0.0.0/24", inclusion);
-     //no_err = mk::ooni::net_match4("2000::/3", "2000::/3", inclusion);
- //    REQUIRE( no_err == true );
- //    REQUIRE( inclusion == true );
-     //bool b2 = mk::ooni::net_match4("10.10.1.90", "10.10.1.32/27", inclusion);
- //    REQUIRE( no_err == true );
- //    REQUIRE( inclusion == false );
- }
+//    SECTION("Synchronous whatsapp test") {
+//        test::nettests::with_test<WhatsappTest>(test::nettests::run_test);
+//    }
 
-TEST_CASE("ip_to_bytes") {
-    std::vector<uint8_t> ex = { 1, 0, 0, 0 };
-    std::vector<uint8_t> bs = mk::ooni::ip_to_bytes("1.0.0.0");
-    REQUIRE( bs == ex );
+    SECTION("can convert ipv4 and ipv6 strings to arrays of bytes") {
+        std::vector<uint8_t> ex = { 1, 0, 0, 0 };
+        std::vector<uint8_t> bs = mk::ooni::ip_to_bytes("1.0.0.0");
+        REQUIRE( bs == ex );
 
-    ex = { 255, 255, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-    bs = mk::ooni::ip_to_bytes("ffff::");
-    REQUIRE( bs == ex );
-}
+        ex = { 255, 255, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+        bs = mk::ooni::ip_to_bytes("ffff::");
+        REQUIRE( bs == ex );
+    }
 
-TEST_CASE("same_pre"){
-    std::vector<uint8_t> ip1 = { 1, 0, 0, 0 };
-    std::vector<uint8_t> ip2 = { 1, 0, 0, 0 };
-    ErrorOr<bool> result = mk::ooni::same_pre(ip1, ip2, 32);
-    REQUIRE( !!result );
-    REQUIRE( result.as_value() == true );
-}
+    SECTION("can tell if two ips have the same prefix"){
+        // same prefix 1
+        std::vector<uint8_t> ip1 = { 1, 0, 0, 0 };
+        std::vector<uint8_t> ip2 = { 1, 0, 0, 0 };
+        ErrorOr<bool> result = mk::ooni::same_pre(ip1, ip2, 32);
+        REQUIRE( !!result );
+        REQUIRE( result.as_value() == true );
 
-TEST_CASE("same_pre false"){
-    std::vector<uint8_t> ip1 = { 1, 0, 0, 0 };
-    std::vector<uint8_t> ip2 = { 2, 0, 0, 0 };
-    ErrorOr<bool> result = mk::ooni::same_pre(ip1, ip2, 32);
-    REQUIRE( !!result );
-    REQUIRE( result.as_value() == false );
-}
+        // same prefix 2
+        ip1 = { 1, 0, 0, 0 };
+        ip2 = { 1, 0, 0, 255 };
+        result = mk::ooni::same_pre(ip1, ip2, 24);
+        REQUIRE( !!result );
+        REQUIRE( result.as_value() == true );
 
-TEST_CASE("same_pre true2"){
-    std::vector<uint8_t> ip1 = { 1, 0, 0, 0 };
-    std::vector<uint8_t> ip2 = { 1, 0, 0, 255 };
-    ErrorOr<bool> result = mk::ooni::same_pre(ip1, ip2, 24);
-    REQUIRE( !!result );
-    REQUIRE( result.as_value() == true );
-}
+        // different prefix 1
+        ip1 = { 1, 0, 0, 0 };
+        ip2 = { 2, 0, 0, 0 };
+        result = mk::ooni::same_pre(ip1, ip2, 32);
+        REQUIRE( !!result );
+        REQUIRE( result.as_value() == false );
 
-TEST_CASE("same_pre false2"){
-    std::vector<uint8_t> ip1 = { 1, 0, 0, 192 };
-    std::vector<uint8_t> ip2 = { 1, 0, 0, 129 };
-    ErrorOr<bool> result = mk::ooni::same_pre(ip1, ip2, 26);
-    REQUIRE( !!result );
-    REQUIRE( result.as_value() == false );
-}
+        // different prefix 2
+        ip1 = { 1, 0, 0, 192 };
+        ip2 = { 1, 0, 0, 129 };
+        result = mk::ooni::same_pre(ip1, ip2, 26);
+        REQUIRE( !!result );
+        REQUIRE( result.as_value() == false );
+    }
 
-TEST_CASE("ip_in_net"){
-    ErrorOr<bool> result = mk::ooni::ip_in_net("10.0.0.1", "10.0.0.0/8");
-    REQUIRE( !!result );
-    REQUIRE( result.as_value() == true );
-}
+    SECTION("can tell if an ip is within a network"){
+        // should be true
+        ErrorOr<bool> result = mk::ooni::ip_in_net("10.0.0.1", "10.0.0.0/8");
+        REQUIRE( !!result );
+        REQUIRE( result.as_value() == true );
 
-TEST_CASE("ip_in_net false"){
-    ErrorOr<bool> result = mk::ooni::ip_in_net("11.0.0.1", "10.0.0.0/8");
-    REQUIRE( !!result );
-    REQUIRE( result.as_value() == false );
+        // should be false
+        result = mk::ooni::ip_in_net("11.0.0.1", "10.0.0.0/8");
+        REQUIRE( !!result );
+        REQUIRE( result.as_value() == false );
+    }
 }
 
 #else
