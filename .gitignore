@@ -128,6 +128,7 @@
 /test/ooni/resources
 /test/ooni/templates
 /test/ooni/utils
+/test/ooni/web_connectivity
 /test/report/entry
 /test/report/file_reporter
 /test/report/report
