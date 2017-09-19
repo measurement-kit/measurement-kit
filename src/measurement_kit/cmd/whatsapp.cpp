@@ -12,7 +12,7 @@ namespace whatsapp {
 int main(std::list<Callback<BaseTest &>> &initializers, int argc, char **argv) {
     mk::nettests::WhatsappTest test;
     int ch;
-    while ((ch = getopt(argc, argv, "B:f:")) != -1) {
+    while ((ch = getopt(argc, argv, "")) != -1) {
         switch (ch) {
         default:
             fprintf(stderr, "%s\n", USAGE);
