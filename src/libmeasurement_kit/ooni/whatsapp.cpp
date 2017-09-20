@@ -312,7 +312,6 @@ static void tcp_many(std::vector<std::string> ips,
 
     auto tcp_cb = [=](std::string ip, int port) {
         return [=](Error connect_err, SharedPtr<net::Transport> txp) {
-			bool close_txp = true; // if connected, we must disconnect
             Entry result = {
                 {"ip", ip},
                 {"port", port},
@@ -330,18 +329,10 @@ static void tcp_many(std::vector<std::string> ips,
                 result["status"]["failure"] = false;
             }
             (*entry)["tcp_connect"].push_back(result);
+			txp->close(nullptr);
             *ips_tested += 1;
-            if (ips_count == *ips_tested) {
-                if (close_txp == true) {
-                    txp->close([=] { cb(NoError()); });
-                } else {
-                    cb(NoError());
-                }
-            } else {
-                if (close_txp == true) {
-                    // XXX optimistic closure
-                    txp->close([=] {});
-                }
+			if (ips_count == *ips_tested) {
+				cb(NoError());
             }
         };
     };
