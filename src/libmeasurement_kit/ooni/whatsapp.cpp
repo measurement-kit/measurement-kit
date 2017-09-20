@@ -475,21 +475,30 @@ void whatsapp(Settings options, Callback<SharedPtr<report::Entry>> callback,
     // XXX generate these with a range or something
     std::vector<std::string>
         WHATSAPP_ENDPOINT_HOSTNAMES = { "e1.whatsapp.net",
-//                                        "e2.whatsapp.net",
-//                                        "e3.whatsapp.net",
-//                                        "e4.whatsapp.net",
-//                                        "e5.whatsapp.net",
-//                                        "e6.whatsapp.net",
-//                                        "e7.whatsapp.net",
-//                                        "e8.whatsapp.net",
-//                                        "e9.whatsapp.net",
-//                                        "e10.whatsapp.net",
-//                                        "e11.whatsapp.net",
-//                                        "e12.whatsapp.net",
-//                                        "e13.whatsapp.net",
-//                                        "e14.whatsapp.net",
-//                                        "e15.whatsapp.net",
+                                        "e2.whatsapp.net",
+                                        "e3.whatsapp.net",
+                                        "e4.whatsapp.net",
+                                        "e5.whatsapp.net",
+                                        "e6.whatsapp.net",
+                                        "e7.whatsapp.net",
+                                        "e8.whatsapp.net",
+                                        "e9.whatsapp.net",
+                                        "e10.whatsapp.net",
+                                        "e11.whatsapp.net",
+                                        "e12.whatsapp.net",
+                                        "e13.whatsapp.net",
+                                        "e14.whatsapp.net",
+                                        "e15.whatsapp.net",
                                         "e16.whatsapp.net" };
+    std::vector<std::string> whatsapp_endpoint_hostnames = { };
+    if (!!options.get("all_endpoints", false)) {
+        logger->info("doing all endpoints");
+        whatsapp_endpoint_hostnames = WHATSAPP_ENDPOINT_HOSTNAMES;
+    } else {
+        logger->info("doing a random endpoint");
+        whatsapp_endpoint_hostnames.push_back(
+            random_choice(WHATSAPP_ENDPOINT_HOSTNAMES));
+    }
 
     logger->info("starting whatsapp");
     SharedPtr<Entry> entry(new Entry);
@@ -515,7 +524,7 @@ void whatsapp(Settings options, Callback<SharedPtr<report::Entry>> callback,
             );
         },
         [=](Callback<std::vector<std::string>> cb) {
-            dns_many(WHATSAPP_ENDPOINT_HOSTNAMES, entry, options, reactor, logger,
+            dns_many(whatsapp_endpoint_hostnames, entry, options, reactor, logger,
                 [=](Error err, std::vector<std::string> ips) {
                     logger->info("saw %s in Whatsapp's endpoints (DNS)",
                         (!!err) ? "at least one error" : "no errors");

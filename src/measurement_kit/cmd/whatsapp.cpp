@@ -7,13 +7,16 @@
 namespace whatsapp {
 
 #define USAGE                                       \
-    "usage: measurement_kit [options] whatsapp\n"   \
+    "usage: measurement_kit [options] whatsapp [-e]\n"   \
 
 int main(std::list<Callback<BaseTest &>> &initializers, int argc, char **argv) {
     mk::nettests::WhatsappTest test;
     int ch;
-    while ((ch = getopt(argc, argv, "")) != -1) {
+    while ((ch = getopt(argc, argv, "e")) != -1) {
         switch (ch) {
+        case 'e':
+            test.set_options("all_endpoints", 1);
+            break;
         default:
             fprintf(stderr, "%s\n", USAGE);
             exit(1);
