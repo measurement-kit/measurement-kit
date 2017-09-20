@@ -344,7 +344,7 @@ static void tcp_many(std::vector<std::string> ips,
             Settings local_options = options;
             local_options["host"] = ip;
             local_options["port"] = port;
-            templates::tcp_connect(options, tcp_cb(ip, port),
+            templates::tcp_connect(local_options, tcp_cb(ip, port),
                                     reactor, logger);
         }
     }
