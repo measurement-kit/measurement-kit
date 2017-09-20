@@ -276,12 +276,8 @@ ErrorOr<bool> same_pre(std::vector<uint8_t> ip1, std::vector<uint8_t> ip2, int p
 
 ErrorOr<bool> ip_in_net(std::string ip1, std::string ip_w_mask) {
     auto ip1bs = ip_to_bytes(ip1);
-    for (auto b : ip1bs) {
-    }
     auto ip2 = mk::split<std::vector<std::string>>(ip_w_mask, "/");
     auto ip2bs = ip_to_bytes(ip2[0]);
-    for (auto b : ip2bs) {
-    }
     auto pre_bits = std::stoi(ip2[1]);
     return same_pre(ip1bs, ip2bs, pre_bits);
 }
@@ -410,7 +406,6 @@ static void dns_many(std::vector<std::string> hostnames,
     };
 
     for (auto const& hostname : hostnames) {
-        Settings options; // XXX ought this to forward from above?
         // XXX don't hardcode resolver
         templates::dns_query(entry, "A", "IN", hostname, "",
                              dns_cb(hostname), options, reactor, logger);
@@ -437,7 +432,7 @@ static void http_many(const std::vector<std::string> urls,
     }
 
     auto http_cb = [=](std::string url) {
-        return [=](Error err, SharedPtr<http::Response> response) {
+        return [=](Error err, SharedPtr<http::Response> /*response*/) {
              if (!!err) {
                  logger->info("whatsapp: failure HTTP connecting to %s",
                      url.c_str());
