@@ -301,10 +301,6 @@ static void tcp_many(std::vector<std::string> ips,
     // two ports per IP
     int ips_count = ips.size() * 2;
     SharedPtr<int> ips_tested(new int(0));
-    if (ips_count == *ips_tested) {
-        cb(NoError());
-        return;
-    }
 
     auto tcp_cb = [=](std::string ip, int port) {
         return [=](Error connect_err, SharedPtr<net::Transport> txp) {
@@ -359,10 +355,6 @@ static void dns_many(std::vector<std::string> hostnames,
     logger->info("whatsapp: %d hostnames", names_count);
     SharedPtr<std::vector<std::string>> good_ips(new std::vector<std::string>);
     SharedPtr<int> names_tested(new int(0));
-    if (names_count == *names_tested) {
-        cb(NoError(), *good_ips);
-    }
-
 
     auto dns_cb = [=](std::string hostname) {
         return [=](Error err, SharedPtr<dns::Message> message) {
@@ -406,11 +398,12 @@ static void dns_many(std::vector<std::string> hostnames,
     };
 
     for (auto const& hostname : hostnames) {
-        // XXX don't hardcode resolver
-        templates::dns_query(entry, "A", "IN", hostname, "",
+        // This will work as long as we are using the system resolver for which
+        // it does not make any sense to specify a DNS nameserver.
+        constexpr const char *nameserver = "";
+        templates::dns_query(entry, "A", "IN", hostname, nameserver,
                              dns_cb(hostname), options, reactor, logger);
     }
-    return;
 }
 
 static void http_many(const std::vector<std::string> urls,
@@ -426,10 +419,6 @@ static void http_many(const std::vector<std::string> urls,
     (*entry)[resource_name+"_failure"] = nullptr;
     int urls_count = urls.size();
     SharedPtr<int> urls_tested(new int(0));
-    if (urls_count == *urls_tested) {
-        cb(NoError());
-        return;
-    }
 
     auto http_cb = [=](std::string url) {
         return [=](Error err, SharedPtr<http::Response> /*response*/) {
@@ -456,8 +445,6 @@ static void http_many(const std::vector<std::string> urls,
         templates::http_request(entry, options, headers, body,
                                 http_cb(url), reactor, logger);
     }
-
-    return;
 }
 
 void whatsapp(Settings options, Callback<SharedPtr<report::Entry>> callback,
@@ -485,7 +472,7 @@ void whatsapp(Settings options, Callback<SharedPtr<report::Entry>> callback,
                                         "e14.whatsapp.net",
                                         "e15.whatsapp.net",
                                         "e16.whatsapp.net" };
-    std::vector<std::string> whatsapp_endpoint_hostnames = { };
+    std::vector<std::string> whatsapp_endpoint_hostnames;
     if (!!options.get("all_endpoints", false)) {
         logger->info("doing all endpoints");
         whatsapp_endpoint_hostnames = WHATSAPP_ENDPOINT_HOSTNAMES;
@@ -495,7 +482,7 @@ void whatsapp(Settings options, Callback<SharedPtr<report::Entry>> callback,
             random_choice(WHATSAPP_ENDPOINT_HOSTNAMES));
     }
 
-    logger->info("starting whatsapp");
+    logger->info("starting whatsapp test");
     SharedPtr<Entry> entry(new Entry);
 
     mk::fcompose(
@@ -538,12 +525,10 @@ void whatsapp(Settings options, Callback<SharedPtr<report::Entry>> callback,
         }
     )(
         [=]() {
-            logger->info("calling final callback");
+            logger->debug("calling final callback");
             callback(entry);
         }
     );
-
-    return;
 }
 
 } // namespace ooni
