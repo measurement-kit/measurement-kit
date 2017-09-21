@@ -68,7 +68,7 @@ TEST_CASE("tcp connect returns error if port is missing") {
     loop_with_initial_event([]() {
         templates::tcp_connect({}, [](Error err, Var<net::Transport> txp) {
             REQUIRE(err);
-            REQUIRE(txp == nullptr);
+            REQUIRE(!!txp);
             break_loop();
         });
     });
@@ -81,7 +81,7 @@ TEST_CASE("tcp connect returns error if port is invalid") {
         templates::tcp_connect(settings,
                                [](Error err, Var<net::Transport> txp) {
                                    REQUIRE(err);
-                                   REQUIRE(txp == nullptr);
+                                   REQUIRE(!!txp);
                                    break_loop();
                                });
     });
