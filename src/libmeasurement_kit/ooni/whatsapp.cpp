@@ -4,6 +4,7 @@
 
 #include "private/ooni/whatsapp.hpp"
 #include "private/ooni/constants.hpp"
+#include <cassert>
 #include <measurement_kit/common/detail/fcompose.hpp>
 #include <measurement_kit/common/detail/parallel.hpp>
 #include <measurement_kit/common/detail/utils.hpp>
@@ -17,6 +18,10 @@ namespace ooni {
 
 using namespace mk::report;
 
+// Note: we used to gather information on WhatsApp networks using
+// <https://www.whatsapp.com/cidr.txt> but now that URL does not
+// provide WhatsApp IP information anymore. Thus, the check whether
+// an IP lies in WhatsApp range is partly outdated.
 std::vector<std::string> WHATSAPP_NETS = {{"31.13.64.51/32"},
         {"31.13.65.49/32"}, {"31.13.66.49/32"}, {"31.13.67.51/32"},
         {"31.13.68.52/32"}, {"31.13.69.240/32"}, {"31.13.70.49/32"},
@@ -121,7 +126,8 @@ std::vector<uint8_t> ip_to_bytes(std::string ip) {
     socklen_t ip_sz;
     memset(&ip_storage, 0, sizeof ip_storage);
 
-    Error err = mk::net::make_sockaddr(ip, 0 /*port*/, &ip_storage, &ip_sz);
+    constexpr uint16_t port = 0;
+    Error err = mk::net::make_sockaddr(ip, port, &ip_storage, &ip_sz);
     if (!!err) {
         return {};
     }
@@ -140,6 +146,8 @@ std::vector<uint8_t> ip_to_bytes(std::string ip) {
         for (int i = 0; i < 16; i++) {
             bs.insert(bs.end(), bsv6[i]);
         }
+    } else {
+        throw std::runtime_error("unexpected ip_sz");
     }
 
     return bs;
@@ -154,12 +162,14 @@ ErrorOr<bool> same_pre(
     // full prefix bytes
     int i = 0;
     for (; i < (pre_bits / 8); i++) {
+        assert(i >= 0 && (size_t)i < ip1.size() && (size_t)i < ip2.size());
         if (ip1[i] != ip2[i]) {
             return false;
         }
     }
 
     int rem_bits = pre_bits % 8;
+    assert(i >= 0 && (size_t)i < ip1.size() && (size_t)i < ip2.size());
     if ((ip1[i] >> (8 - rem_bits)) != (ip2[i] >> (8 - rem_bits))) {
         return false;
     }
@@ -169,6 +179,7 @@ ErrorOr<bool> same_pre(
 ErrorOr<bool> ip_in_net(std::string ip1, std::string ip_w_mask) {
     auto ip1bs = ip_to_bytes(ip1);
     auto ip2 = mk::split<std::vector<std::string>>(ip_w_mask, "/");
+    assert(ip2.size() == 2);
     auto ip2bs = ip_to_bytes(ip2[0]);
     auto pre_bits = std::stoi(ip2[1]);
     return same_pre(ip1bs, ip2bs, pre_bits);
@@ -253,7 +264,8 @@ static void dns_many(std::vector<std::string> hostnames, SharedPtr<Entry> entry,
                     } else if (answer.hostname != "") {
                         logger->info("(2) %s hostname: %s", hostname.c_str(),
                                 answer.hostname.c_str());
-                        this_ips.push_back(answer.hostname);
+                    } else {
+                        /* NOTHING */;
                     }
                 }
                 bool this_host_consistent = false;
@@ -321,9 +333,11 @@ static void http_many(const std::vector<std::string> urls,
     };
 
     for (auto url : urls) {
+        // Note: options are copied, so each run of the template will
+        // in the end get its own URL
         options["http/url"] = url;
         http::Headers headers = constants::COMMON_CLIENT_HEADERS;
-        std::string body;
+        std::string body; // Empty body in this case
         templates::http_request(
                 entry, options, headers, body, http_cb(url), reactor, logger);
     }
