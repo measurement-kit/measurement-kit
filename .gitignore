@@ -122,6 +122,7 @@
 /test/nettests/telegram
 /test/nettests/utils
 /test/nettests/web_connectivity
+/test/nettests/whatsapp
 /test/ooni/bouncer
 /test/ooni/collector_client
 /test/ooni/orchestrate

@@ -48,6 +48,10 @@ void facebook_messenger(Settings, Callback<SharedPtr<report::Entry>>,
                         SharedPtr<Reactor> = Reactor::global(),
                         SharedPtr<Logger> = Logger::global());
 
+void whatsapp(Settings, Callback<SharedPtr<report::Entry>>,
+              SharedPtr<Reactor> = Reactor::global(),
+              SharedPtr<Logger> = Logger::global());
+
 } // namespace ooni
 } // namespace mk
 #endif
