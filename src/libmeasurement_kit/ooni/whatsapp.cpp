@@ -2,8 +2,8 @@
 // Measurement-kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
-#include "private/ooni/whatsapp.hpp"
 #include "private/ooni/constants.hpp"
+#include "private/ooni/whatsapp.hpp"
 #include <cassert>
 #include <measurement_kit/common/detail/fcompose.hpp>
 #include <measurement_kit/common/detail/parallel.hpp>
@@ -244,7 +244,7 @@ static void dns_many(std::vector<std::string> hostnames, SharedPtr<Entry> entry,
         Callback<Error, std::vector<std::string>> cb) {
     // if ANYthing is consistent, we consider dns not blocked
     (*entry)["whatsapp_endpoints_status"] = "blocked";
-    (*entry)["whatsapp_dns_inconsistent"] = {};
+    (*entry)["whatsapp_endpoints_dns_inconsistent"] = {};
     int names_count = hostnames.size();
     logger->info("whatsapp: %d hostnames", names_count);
     SharedPtr<std::vector<std::string>> good_ips(new std::vector<std::string>);
@@ -282,7 +282,8 @@ static void dns_many(std::vector<std::string> hostnames, SharedPtr<Entry> entry,
                     }
                 }
                 if (!this_host_consistent) {
-                    (*entry)["whatsapp_dns_inconsistent"].push_back(hostname);
+                    (*entry)["whatsapp_endpoints_dns_inconsistent"].push_back(
+                            hostname);
                 }
             }
             *names_tested += 1;
