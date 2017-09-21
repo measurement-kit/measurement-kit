@@ -6,8 +6,7 @@
 
 namespace whatsapp {
 
-#define USAGE                                       \
-    "usage: measurement_kit [options] whatsapp [-e]\n"   \
+#define USAGE "usage: measurement_kit [options] whatsapp [-e]\n"
 
 int main(std::list<Callback<BaseTest &>> &initializers, int argc, char **argv) {
     mk::nettests::WhatsappTest test;
