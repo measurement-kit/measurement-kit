@@ -1,11 +1,12 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software. See AUTHORS and LICENSE for more
-// information on the copying conditions.
+// Measurement-kit is free software under the BSD license. See AUTHORS
+// and LICENSE for more information on the copying conditions.
 
 #include <measurement_kit/common/detail/fcompose.hpp>
 #include <measurement_kit/common/detail/parallel.hpp>
 #include <measurement_kit/common/detail/utils.hpp>
 #include "private/ooni/constants.hpp"
+#include "private/ooni/whatsapp.hpp"
 #include <measurement_kit/ooni.hpp>
 #include <sys/socket.h>
 #include <stdio.h>
@@ -222,7 +223,6 @@ std::vector<std::string> WHATSAPP_NETS = {
 { "2a03:2880:f225:c4:face:b00c::167/128" },
 { "2a03:2880:f226:c6:face:b00c::167/128" },
 { "2a03:2880:f227:c5:face:b00c::167/128" } };
-
 
 std::vector<uint8_t> ip_to_bytes(std::string ip) {
     sockaddr_storage ip_storage;

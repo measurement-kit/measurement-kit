@@ -1,6 +1,6 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software. See AUTHORS and LICENSE for more
-// information on the copying conditions.
+// Measurement-kit is free software under the BSD license. See AUTHORS
+// and LICENSE for more information on the copying conditions.
 
 #ifdef ENABLE_INTEGRATION_TESTS
 #define CATCH_CONFIG_MAIN
@@ -14,9 +14,9 @@ using namespace mk;
 
 TEST_CASE("Whatsapp and related utility functions") {
 
-//    SECTION("Synchronous whatsapp test") {
-//        test::nettests::with_test<WhatsappTest>(test::nettests::run_test);
-//    }
+    SECTION("Synchronous whatsapp test") {
+        test::nettests::with_test<WhatsappTest>(test::nettests::run_test);
+    }
 
     SECTION("can convert ipv4 and ipv6 strings to arrays of bytes") {
         std::vector<uint8_t> ex = { 1, 0, 0, 0 };
