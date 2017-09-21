@@ -376,9 +376,9 @@ static void dns_many(std::vector<std::string> hostnames,
                             hostname.c_str(), answer.ipv4.c_str());
                         this_ips.push_back(answer.ipv4);
                     } else if (answer.hostname != "") {
-                        logger->info("(2) %s ipv4: %s",
-                            hostname.c_str(), answer.ipv4.c_str());
-                        this_ips.push_back(answer.ipv4);
+                        logger->info("(2) %s hostname: %s",
+                            hostname.c_str(), answer.hostname.c_str());
+                        this_ips.push_back(answer.hostname);
                     }
                 }
                 bool this_host_consistent = false;
