@@ -1,3 +1,7 @@
+# MeasurementKit 0.7.3 [2017-09-21]
+
+- fix(`tcp_connect1 template): never pass null transport to callback  (#1372)
+
 # MeasurementKit 0.7.2 [2017-09-13]
 
 - fix(`async_runner`): prevent MT race
