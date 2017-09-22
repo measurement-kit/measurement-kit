@@ -5,7 +5,7 @@
 #define CATCH_CONFIG_MAIN
 #include "private/ext/catch.hpp"
 
-#include <measurement_kit/common/detail/delegate.hpp>
+#include "private/common/delegate.hpp"
 #include <measurement_kit/common.hpp>
 
 using namespace mk;

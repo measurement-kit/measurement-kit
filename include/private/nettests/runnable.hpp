@@ -4,7 +4,7 @@
 #ifndef PRIVATE_NETTESTS_RUNNABLE_HPP
 #define PRIVATE_NETTESTS_RUNNABLE_HPP
 
-#include <measurement_kit/common/detail/delegate.hpp>
+#include "private/common/delegate.hpp"
 #include <measurement_kit/report.hpp>
 
 #include <ctime>

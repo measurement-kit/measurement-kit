@@ -4,7 +4,7 @@
 #ifndef PRIVATE_DNS_SYSTEM_RESOLVER_HPP
 #define PRIVATE_DNS_SYSTEM_RESOLVER_HPP
 
-#include <measurement_kit/common/detail/mock.hpp>
+#include "private/common/mock.hpp"
 #include <measurement_kit/dns.hpp>
 
 #include "../dns/getaddrinfo_async.hpp"

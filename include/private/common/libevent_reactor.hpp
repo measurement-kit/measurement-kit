@@ -1,42 +1,37 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
 // Measurement-kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
-#ifndef MEASUREMENT_KIT_COMMON_LIBEVENT_REACTOR_HPP
-#define MEASUREMENT_KIT_COMMON_LIBEVENT_REACTOR_HPP
+#ifndef PRIVATE_COMMON_LIBEVENT_REACTOR_HPP
+#define PRIVATE_COMMON_LIBEVENT_REACTOR_HPP
 
-// # Libevent/reactor
 /*-
      _     _ _                          _                         _
     | |   (_) |__   _____   _____ _ __ | |_   _ __ ___  __ _  ___| |_ ___  _ __
     | |   | | '_ \ / _ \ \ / / _ \ '_ \| __| | '__/ _ \/ _` |/ __| __/ _ \| '__|
     | |___| | |_) |  __/\ V /  __/ | | | |_  | | |  __/ (_| | (__| || (_) | |
     |_____|_|_.__/ \___| \_/ \___|_| |_|\__| |_|  \___|\__,_|\___|\__\___/|_|
-*/
-/// \section Libevent/reactor
-/// \brief Header-only implementation of mk::Reactor based on libevent.
 
-#include <cassert>                                  // for assert
-#include <event2/event.h>                           // for event_base_*
-#include <event2/thread.h>                          // for evthread_use_*
-#include <event2/util.h>                            // for evutil_socket_t
-#include <functional>                               // for std::function
-#include <measurement_kit/common/callback.hpp>      // for mk::Callback
-#include <measurement_kit/common/detail/locked.hpp> // for mk::locked_global
-#include <measurement_kit/common/detail/mock.hpp>   // for MK_MOCK
-#include <measurement_kit/common/detail/utils.hpp>  // for mk::timeval_init
-#include <measurement_kit/common/detail/worker.hpp> // for mk::Worker
-#include <measurement_kit/common/error.hpp>         // for mk::Error
-#include <measurement_kit/common/logger.hpp>        // for mk::warn
-#include <measurement_kit/common/non_copyable.hpp>  // for mk::NonCopyable
-#include <measurement_kit/common/non_movable.hpp>   // for mk::NonMovable
-#include <measurement_kit/common/reactor.hpp>       // for mk::Reactor
-#include <measurement_kit/common/socket.hpp>        // for mk::socket_t
-#include <memory>                                   // for std::unique_ptr
-#include <signal.h>                                 // for sigaction
-#include <stdexcept>                                // for std::runtime_error
-#include <system_error>                             // for std::error_condition
-#include <tuple>                                    // for std::tuple
-#include <utility>                                  // for std::move
+    Header-only implementation of mk::Reactor based on libevent.
+*/
+
+#include "private/common/locked.hpp"               // for mk::locked_global
+#include "private/common/mock.hpp"                 // for MK_MOCK
+#include "private/common/utils.hpp"                // for mk::timeval_init
+#include "private/common/worker.hpp"               // for mk::Worker
+#include <cassert>                                 // for assert
+#include <event2/event.h>                          // for event_base_*
+#include <event2/thread.h>                         // for evthread_use_*
+#include <event2/util.h>                           // for evutil_socket_t
+#include <measurement_kit/common/callback.hpp>     // for mk::Callback
+#include <measurement_kit/common/error.hpp>        // for mk::Error
+#include <measurement_kit/common/logger.hpp>       // for mk::warn
+#include <measurement_kit/common/non_copyable.hpp> // for mk::NonCopyable
+#include <measurement_kit/common/non_movable.hpp>  // for mk::NonMovable
+#include <measurement_kit/common/reactor.hpp>      // for mk::Reactor
+#include <measurement_kit/common/socket.hpp>       // for mk::socket_t
+#include <signal.h>                                // for sigaction
+#include <stdexcept>                               // for std::runtime_error
+#include <utility>                                 // for std::move
 
 extern "C" {
 static inline void mk_call_later_cb(evutil_socket_t, short, void *);
@@ -44,35 +39,22 @@ static inline void mk_pollfd_cb(evutil_socket_t, short, void *);
 }
 
 namespace mk {
-namespace libevent {
 
-// ## Reactor
-/*-
-     ____       _ _
-    |  _ \ ___ | | | ___ _ __
-    | |_) / _ \| | |/ _ \ '__|
-    |  __/ (_) | | |  __/ |
-    |_|   \___/|_|_|\___|_|
-*/
-/// \subsection Reactor
-/// \brief Here we have our main class.
-
-/// \brief mk::Reactor implementation using libevent.
+/// mk::Reactor implementation using libevent.
 template <MK_MOCK(event_base_new), MK_MOCK(event_base_once),
           MK_MOCK(event_base_dispatch), MK_MOCK(event_base_loopbreak),
           MK_MOCK(event_new), MK_MOCK(event_add)>
-class Reactor : public mk::Reactor, public NonCopyable, public NonMovable {
+class LibeventReactor : public Reactor, public NonCopyable, public NonMovable {
   public:
-    // ### Library
     /*-
          _    _ _
         | |  (_) |__ _ _ __ _ _ _ _  _
         | |__| | '_ \ '_/ _` | '_| || |
         |____|_|_.__/_| \__,_|_|  \_, |
                                   |__/
+
+        Code to make sure libevent is correctly configured.
     */
-    /// \subsubsection Library
-    /// \brief Code to make sure libevent is correctly configured.
 
     template <MK_MOCK(evthread_use_pthreads), MK_MOCK(sigaction)>
     static inline void libevent_init_once() {
@@ -94,27 +76,26 @@ class Reactor : public mk::Reactor, public NonCopyable, public NonMovable {
         });
     }
 
-    // ### Event loop
     /*-
          ___             _     _
         | __|_ _____ _ _| |_  | |___  ___ _ __
         | _|\ V / -_) ' \  _| | / _ \/ _ \ '_ \
         |___|\_/\___|_||_\__| |_\___/\___/ .__/
                                          |_|
+
+        Here we setup and tear down libevent's event loop.
     */
-    /// \subsubsection Event loop
-    /// \brief Here we setup and tear down libevent's event loop.
 
     event_base *evbase = nullptr;
 
-    Reactor() {
+    LibeventReactor() {
         libevent_init_once();
         if ((evbase = event_base_new()) == nullptr) {
             throw std::runtime_error("event_base_new");
         }
     }
 
-    ~Reactor() override { event_base_free(evbase); }
+    ~LibeventReactor() override { event_base_free(evbase); }
 
     event_base *get_event_base() override { return evbase; }
 
@@ -153,15 +134,14 @@ class Reactor : public mk::Reactor, public NonCopyable, public NonMovable {
         }
     }
 
-    // ### Call later
     /*-
           ___      _ _   _      _
          / __|__ _| | | | |__ _| |_ ___ _ _
         | (__/ _` | | | | / _` |  _/ -_) '_|
          \___\__,_|_|_| |_\__,_|\__\___|_|
+
+        Here we have code schedule callbacks at a later time.
     */
-    /// \subsubsection Call later
-    /// \brief Here we have code schedule callbacks at a later time.
 
     Worker worker;
 
@@ -171,14 +151,11 @@ class Reactor : public mk::Reactor, public NonCopyable, public NonMovable {
 
     void call_soon(Callback<> &&cb) override { call_later(0.0, std::move(cb)); }
 
-    /*
-        Note: according to libevent documentation, it is not necessary to
-        pass `EV_TIMEOUT` to get a timeout. But I find passing it more clear.
-    */
-
     void call_later(double delay, Callback<> &&cb) override {
         auto tv = timeval{};
         auto cbp = new Callback<>{std::move(cb)};
+        // Note: according to libevent documentation, it is not necessary to
+        // pass `EV_TIMEOUT` to get a timeout. But I find passing it more clear.
         if (event_base_once(evbase, -1, EV_TIMEOUT, mk_call_later_cb, cbp,
                             timeval_init(&tv, delay)) != 0) {
             delete cbp;
@@ -186,16 +163,15 @@ class Reactor : public mk::Reactor, public NonCopyable, public NonMovable {
         }
     }
 
-    // ### Pollfd
     /*-
          ____       _ _  __     _
         |  _ \ ___ | | |/ _| __| |
         | |_) / _ \| | | |_ / _` |
         |  __/ (_) | | |  _| (_| |
         |_|   \___/|_|_|_|  \__,_|
+
+        Code to poll system file descriptors.
     */
-    /// \subsection Pollfd
-    /// \brief Code to poll system file descriptors.
 
 #define MK_POLLIN (1 << 0)
 
@@ -232,11 +208,8 @@ class Reactor : public mk::Reactor, public NonCopyable, public NonMovable {
     }
 };
 
-} // namespace libevent
 } // namespace mk
-#endif
 
-// ## C linkage callbacks
 /*-
       ___   _ _      _                           _ _ _             _
      / __| | (_)_ _ | |____ _ __ _ ___   __ __ _| | | |__  __ _ __| |__ ___
@@ -244,9 +217,9 @@ class Reactor : public mk::Reactor, public NonCopyable, public NonMovable {
      \___| |_|_|_||_|_\_\__,_\__, \___| \__\__,_|_|_|_.__/\__,_\__|_\_\/__/
                              |___/
 
+
+    Here we have all the callbacks called directly by C code.
 */
-/// \subsection C linkage callbacks
-/// \brief Here we have all the callbacks called directly by C code.
 
 static inline void mk_call_later_cb(evutil_socket_t, short evflags,
                                     void *opaque) {
@@ -279,3 +252,4 @@ static inline void mk_pollfd_cb(evutil_socket_t, short evflags, void *opaque) {
     (*cbp)(std::move(err), flags);
     delete cbp;
 }
+#endif

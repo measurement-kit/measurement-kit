@@ -3,8 +3,8 @@
 // and LICENSE for more information on the copying conditions.
 // =============================================================
 // Based on <http://programmers.stackexchange.com/a/170474>
-#ifndef MEASUREMENT_KIT_COMMON_DETAIL_FMAP_HPP
-#define MEASUREMENT_KIT_COMMON_DETAIL_FMAP_HPP
+#ifndef PRIVATE_COMMON_FMAP_HPP
+#define PRIVATE_COMMON_FMAP_HPP
 
 #include <algorithm>
 #include <functional>

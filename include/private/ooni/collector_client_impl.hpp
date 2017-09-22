@@ -8,7 +8,7 @@
 // See <https://github.com/TheTorProject/ooni-spec/blob/master/oonib.md>
 
 #include <measurement_kit/common/json.hpp>
-#include <measurement_kit/common/detail/mock.hpp>
+#include "private/common/mock.hpp"
 
 #include <measurement_kit/ext.hpp>
 #include <measurement_kit/ooni.hpp>

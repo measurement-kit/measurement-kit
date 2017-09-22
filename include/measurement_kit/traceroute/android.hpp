@@ -40,7 +40,7 @@
 #ifdef __linux__
 
 #include <measurement_kit/traceroute/interface.hpp>
-#include <measurement_kit/common/detail/delegate.hpp>
+#include "private/common/delegate.hpp"
 
 struct sock_extended_err;
 struct sockaddr_in6;

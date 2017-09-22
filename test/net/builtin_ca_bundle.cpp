@@ -5,7 +5,7 @@
 #define CATCH_CONFIG_MAIN
 #include "private/ext/catch.hpp"
 
-#include <measurement_kit/common/detail/utils.hpp>
+#include "private/common/utils.hpp"
 #include "private/net/builtin_ca_bundle.hpp"
 
 using namespace mk;

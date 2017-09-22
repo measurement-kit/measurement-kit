@@ -3,8 +3,8 @@
 // and LICENSE for more information on the copying conditions.
 // =============================================================
 // Based on <http://stackoverflow.com/a/17694752>
-#ifndef MEASUREMENT_KIT_COMMON_DETAIL_RANGE_HPP
-#define MEASUREMENT_KIT_COMMON_DETAIL_RANGE_HPP
+#ifndef PRIVATE_COMMON_RANGE_HPP
+#define PRIVATE_COMMON_RANGE_HPP
 
 #include <numeric>
 #include <vector>

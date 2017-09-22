@@ -4,8 +4,8 @@
 #ifndef PRIVATE_NET_CONNECT_IMPL_HPP
 #define PRIVATE_NET_CONNECT_IMPL_HPP
 
-#include <measurement_kit/common/detail/mock.hpp>
-#include <measurement_kit/common/detail/utils.hpp>
+#include "private/common/mock.hpp"
+#include "private/common/utils.hpp"
 
 #include <measurement_kit/net.hpp>
 

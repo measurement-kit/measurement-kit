@@ -77,6 +77,20 @@ class Reactor {
     /// \bug if \p time is negative, the callback will never be called.
     virtual void call_later(double time, Callback<> &&cb) = 0;
 
+    // Design note: I prefer separate pollin() and pollout() operations to
+    // a single function call (previously it was called pollfd()) with
+    // flag, because the former approach allows you to have the equivalent
+    // of two "threads" that can act independently, while with the latter
+    // this seems to me to be more complicated to express. I guess this
+    // may also be more a matter of taste than anything else.
+    //
+    // A secondary reason why it _may_ be better to have `pollin()` and
+    // `pollout` may be that boost/asio can probably be included into the
+    // standard C++ library. If that happens, having more basic methods
+    // that seem more similar to boost/asio may help if we decide to use
+    // the standard library implementation instead of libevent (but the
+    // more I use it the more I find libevent good).
+
     /// \brief `pollin()` will monitor \p sockfd for readability.
     /// \param sockfd is the socket to monitor for readability. On Unix
     /// system, this can actually be any file descriptor.

@@ -19,8 +19,8 @@
 #include "private/net/builtin_ca_bundle.hpp"
 #include <cassert>
 #include <map>
-#include <measurement_kit/common/detail/locked.hpp>
-#include <measurement_kit/common/detail/mock.hpp>
+#include "private/common/locked.hpp"
+#include "private/common/mock.hpp"
 #include <measurement_kit/common/logger.hpp>
 #include <measurement_kit/common/non_copyable.hpp>
 #include <measurement_kit/common/non_movable.hpp>
