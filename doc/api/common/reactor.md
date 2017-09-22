@@ -30,10 +30,10 @@ class Reactor {
 
     virtual void call_later(double time, Callback<> &&cb) = 0;
 
-    virtual void pollin(
+    virtual void pollin_once(
             socket_t sockfd, double timeout, Callback<Error> &&cb) = 0;
 
-    virtual void pollout(
+    virtual void pollout_once(
             socket_t sockfd, double timeout, Callback<Error> &&cb) = 0;
 
     virtual event_base *get_event_base() = 0;
@@ -85,9 +85,9 @@ _BUG_: Any exception thrown by the callback will not be swallowed and will thus 
 
 _BUG_: if time is negative, the callback will never be called.
 
-`pollin()` will monitor sockfd for readability. Parameter sockfd is the socket to monitor for readability. On Unix system, this can actually be any file descriptor. Parameter timeout is the timeout in seconds. Passing a negative value will imply no timeout. Parameter cb is the callback to be called. The Error argument will be TimeoutError if the timeout expired, NoError otherwise.
+`pollin_once()` will monitor sockfd for readability. Parameter sockfd is the socket to monitor for readability. On Unix system, this can actually be any file descriptor. Parameter timeout is the timeout in seconds. Passing a negative value will imply no timeout. Parameter cb is the callback to be called. The Error argument will be TimeoutError if the timeout expired, NoError otherwise.
 
-`pollout()` is like pollin() but for writability.
+`pollout_once()` is like pollin_once() but for writability.
 
 `get_event_base()` returns libevent's event base. Throws std::exception (or a derived class) if the backend is not libevent and you are trying to access the event base. _Note_: we configure the event base to be thread safe using libevent API.
 
