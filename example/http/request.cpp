@@ -3,15 +3,15 @@
 // and LICENSE for more information on the copying conditions.
 
 #include "private/common/utils.hpp"
-#include <measurement_kit/http.hpp>
-#include <iostream>
 #include <getopt.h>
+#include <iostream>
+#include <measurement_kit/http.hpp>
 
 using namespace mk;
 
 static const char *kv_usage =
-    "usage: measurement_kit http_request [-Cv] [-B /ca/bundle/path] [-b body]\n"
-    "       [-H 'key: value'] [-m method] [-R max-redirect] url\n";
+        "usage: measurement_kit http_request [-CTv] [-B /ca/bundle/path]\n"
+        "       [-b body] [-H 'key: value'] [-m method] [-R max-redirs] url\n";
 
 static bool set_header(http::Headers &headers, const std::string option) {
     auto kv = mk::split<std::vector<std::string>>(option, ":");
@@ -31,11 +31,11 @@ static bool set_header(http::Headers &headers, const std::string option) {
 
 int main(int argc, char **argv) {
 
+    SharedPtr<Logger> logger = Logger::global();
     Settings settings;
     std::string body;
     http::Headers headers;
-    int ch;
-    while ((ch = getopt(argc, argv, "B:b:CH:m:R:v")) != -1) {
+    for (int ch; (ch = getopt(argc, argv, "B:b:CH:m:R:Tv")) != -1;) {
         switch (ch) {
         case 'B':
             settings["net/ca_bundle_path"] = optarg;
@@ -58,39 +58,37 @@ int main(int argc, char **argv) {
         case 'R':
             settings["http/max_redirects"] = lexical_cast<int>(optarg);
             break;
+        case 'T':
+            settings["net/socks5_proxy"] = "127.0.0.1:9050";
+            break;
         case 'v':
-            increase_verbosity();
+            logger->increase_verbosity();
             break;
         default:
             std::cout << kv_usage;
             exit(1);
+            // NOTREACHED
         }
     }
     argc -= optind, argv += optind;
     if (argc != 1) {
         std::cout << kv_usage;
         exit(1);
+        // NOTREACHED
     }
     settings["http/url"] = argv[0];
 
     SharedPtr<Reactor> reactor = Reactor::make();
     reactor->run_with_initial_event([=]() {
-        http::request(
-            settings,
-            headers,
-            body,
-            [=](Error error, SharedPtr<http::Response> response) {
-                if (error) {
-                    std::cout << "Error: " << error << "\n";
+        http::request(settings, headers, body,
+                [=](Error error, SharedPtr<http::Response> response) {
+                    if (error) {
+                        std::clog << "Error: " << error << "\n";
+                    } else {
+                        std::cout << response->body << "\n";
+                    }
                     reactor->stop();
-                    return;
-                }
-                std::cout << response->response_line << "\n";
-                for (auto &pair : response->headers) {
-                    std::cout << pair.first << ": " << pair.second << "\n";
-                }
-                std::cout << "\n" << response->body << "\n";
-                reactor->stop();
-            }, reactor);
+                },
+                reactor, logger);
     });
 }

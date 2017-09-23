@@ -3,19 +3,13 @@
 // and LICENSE for more information on the copying conditions.
 
 #include "private/net/socks5.hpp"
-#include "private/net/connect_impl.hpp"
-
-#include "private/libevent/connection.hpp"
+#include <measurement_kit/net.hpp>
 
 namespace mk {
 namespace net {
 
-Socks5::Socks5(SharedPtr<Transport> tx, Settings s, SharedPtr<Reactor> r, SharedPtr<Logger> lp)
-    : Emitter(r, lp), settings(s), conn(tx),
-      proxy_address(settings["net/socks5_address"]),
-      proxy_port(settings["net/socks5_port"]) {
-    socks5_connect_();
-}
+static void socks5_connect_(SharedPtr<Transport> conn, Settings settings,
+        SharedPtr<Logger> logger, Callback<Error, SharedPtr<Transport>> &&cb);
 
 Buffer socks5_format_auth_request(SharedPtr<Logger> logger) {
     Buffer out;
@@ -28,7 +22,8 @@ Buffer socks5_format_auth_request(SharedPtr<Logger> logger) {
     return out;
 }
 
-ErrorOr<bool> socks5_parse_auth_response(Buffer &buffer, SharedPtr<Logger> logger) {
+ErrorOr<bool> socks5_parse_auth_response(
+        Buffer &buffer, SharedPtr<Logger> logger) {
     auto readbuf = buffer.readn(2);
     if (readbuf == "") {
         return false; // Try again after next recv()
@@ -44,7 +39,8 @@ ErrorOr<bool> socks5_parse_auth_response(Buffer &buffer, SharedPtr<Logger> logge
     return true;
 }
 
-ErrorOr<Buffer> socks5_format_connect_request(Settings settings, SharedPtr<Logger> logger) {
+ErrorOr<Buffer> socks5_format_connect_request(
+        Settings settings, SharedPtr<Logger> logger) {
     Buffer out;
 
     out.write_uint8(5); // Version
@@ -57,7 +53,7 @@ ErrorOr<Buffer> socks5_format_connect_request(Settings settings, SharedPtr<Logge
     logger->debug("socks5: >> Reserved (0)");
     logger->debug("socks5: >> ATYPE_DOMAINNAME (3)");
 
-    auto address = settings["net/address"];
+    auto address = settings["_socks5/address"];
 
     if (address.length() > 255) {
         return SocksAddressTooLongError();
@@ -68,7 +64,7 @@ ErrorOr<Buffer> socks5_format_connect_request(Settings settings, SharedPtr<Logge
     logger->debug("socks5: >> domain len=%d", (uint8_t)address.length());
     logger->debug("socks5: >> domain str=%s", address.c_str());
 
-    int portnum = settings["net/port"].as<int>();
+    int portnum = settings["_socks5/port"].as<int>();
     if (portnum < 0 || portnum > 65535) {
         return SocksInvalidPortError();
     }
@@ -79,7 +75,8 @@ ErrorOr<Buffer> socks5_format_connect_request(Settings settings, SharedPtr<Logge
     return out;
 }
 
-ErrorOr<bool> socks5_parse_connect_response(Buffer &buffer, SharedPtr<Logger> logger) {
+ErrorOr<bool> socks5_parse_connect_response(
+        Buffer &buffer, SharedPtr<Logger> logger) {
     if (buffer.length() < 5) {
         return false; // Try again after next recv()
     }
@@ -134,73 +131,66 @@ void socks5_connect(std::string address, int port, Settings settings,
     auto proxy_address = proxy.substr(0, pos);
     auto proxy_port = proxy.substr(pos + 1);
 
-    settings["net/address"] = address;
-    settings["net/port"] = port;
+    // We must erase this setting because we're about to call net::connect
+    // again and that would loop unless we remove this setting.
+    settings.erase("net/socks5_proxy");
 
-    connect_logic(proxy_address, lexical_cast<int>(proxy_port),
-            [=](Error err, SharedPtr<ConnectResult> r) {
+    // Store the address and the port we must connect through SOCKS5
+    settings["_socks5/address"] = address;
+    settings["_socks5/port"] = port;
+
+    net::connect(proxy_address, lexical_cast<int>(proxy_port),
+            [=](Error err, SharedPtr<Transport> txp) mutable {
                 if (err) {
-                    callback(err, make_txp<Emitter>(
-                        0.0, r, reactor, logger));
+                    callback(err, txp);
                     return;
                 }
-                SharedPtr<Transport> txp = libevent::Connection::make(
-                        r->connected_bev, reactor, logger);
-                SharedPtr<Transport> socks5 = make_txp<Socks5>(
-                        0.0, r, txp, settings, reactor, logger);
-                socks5->on_connect([=]() {
-                    socks5->on_connect(nullptr);
-                    socks5->on_error(nullptr);
-                    callback(NoError(), socks5);
-                });
-                socks5->on_error([=](Error error) {
-                    socks5->on_connect(nullptr);
-                    socks5->on_error(nullptr);
-                    callback(error, socks5);
-                });
+                socks5_connect_(txp, settings, logger, std::move(callback));
             },
             settings, reactor, logger);
 }
 
-void Socks5::socks5_connect_() {
+static void socks5_connect_(SharedPtr<Transport> conn, Settings settings,
+        SharedPtr<Logger> logger, Callback<Error, SharedPtr<Transport>> &&cb) {
     // Step #1: send out preferred authentication methods
 
     logger->debug("socks5: connected to Tor!");
     conn->write(socks5_format_auth_request(logger));
+    SharedPtr<Buffer> buffer = Buffer::make();
 
     // Step #2: receive the allowed authentication methods
 
-    conn->on_data([this](Buffer d) {
-        buffer << d;
-        ErrorOr<bool> result = socks5_parse_auth_response(buffer, logger);
+    conn->on_data([=](Buffer d) {
+        *buffer << d;
+        ErrorOr<bool> result = socks5_parse_auth_response(*buffer, logger);
         if (!result) {
-            emit_error(result.as_error());
+            cb(result.as_error(), conn);
             return;
         }
         if (!*result) {
-            return;
+            return; // continue reading
         }
 
         // Step #3: ask Tor to connect to remote host
 
         ErrorOr<Buffer> out = socks5_format_connect_request(settings, logger);
         if (!out) {
-            emit_error(out.as_error());
+            cb(out.as_error(), conn);
             return;
         }
         conn->write(*out);
 
         // Step #4: receive Tor's response
 
-        conn->on_data([this](Buffer d) {
-            buffer << d;
-            ErrorOr<bool> rc = socks5_parse_connect_response(buffer, logger);
+        conn->on_data([=](Buffer d) {
+            *buffer << d;
+            ErrorOr<bool> rc = socks5_parse_connect_response(*buffer, logger);
             if (!rc) {
-                emit_error(rc.as_error());
+                cb(rc.as_error(), conn);
                 return;
             }
             if (!*rc) {
-                return;
+                return; // continue reading
             }
 
             //
@@ -210,14 +200,16 @@ void Socks5::socks5_connect_() {
             // If more data, pass it up
             //
 
-            conn->on_data([this](Buffer d) { emit_data(d); });
-            conn->on_flush([this]() { emit_flush(); });
+            conn->on_flush(nullptr);
+            conn->on_data(nullptr);
+            conn->on_error(nullptr);
 
-            emit_connect();
+            cb(NoError(), conn);
 
-            // Note that emit_connect() may have called close()
-            if (!isclosed && buffer.length() > 0) {
-                emit_data(buffer);
+            // Note that emit_connect() may have called close() but even
+            // in such case, emit_data() is a NO-OP if connection is closed
+            if (buffer->length() > 0) {
+                conn->emit_data(*buffer);
             }
         });
     });
