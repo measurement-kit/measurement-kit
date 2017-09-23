@@ -4,7 +4,7 @@
 #ifndef PRIVATE_NET_EVBUFFER_HPP
 #define PRIVATE_NET_EVBUFFER_HPP
 
-#include <measurement_kit/common/detail/mock.hpp>
+#include "private/common/mock.hpp"
 
 #include <measurement_kit/common.hpp>
 

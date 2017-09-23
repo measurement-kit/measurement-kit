@@ -7,8 +7,8 @@
 #include <list>
 #include <measurement_kit/common/aaa_base.hpp>
 #include <measurement_kit/common/callback.hpp>
-#include <measurement_kit/common/detail/delegate.hpp>
-#include <measurement_kit/common/detail/locked.hpp>
+#include "private/common/delegate.hpp"
+#include "private/common/locked.hpp"
 #include <measurement_kit/common/json.hpp>
 #include <measurement_kit/common/logger.hpp>
 #include <measurement_kit/common/non_copyable.hpp>

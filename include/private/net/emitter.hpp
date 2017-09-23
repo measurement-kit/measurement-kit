@@ -4,7 +4,7 @@
 #ifndef PRIVATE_NET_EMITTER_HPP
 #define PRIVATE_NET_EMITTER_HPP
 
-#include <measurement_kit/common/detail/delegate.hpp>
+#include "private/common/delegate.hpp"
 #include <measurement_kit/net.hpp>
 #include <measurement_kit/dns.hpp>
 

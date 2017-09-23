@@ -7,7 +7,7 @@
 // This implementation targets v3.7.0 of the NDT protocol
 // See <https://github.com/ndt-project/ndt/wiki/NDTProtocol>
 
-#include <measurement_kit/common/detail/utils.hpp>
+#include "private/common/utils.hpp"
 #include "measure_speed.hpp"
 
 #include <measurement_kit/ext.hpp>

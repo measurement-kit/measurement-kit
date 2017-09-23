@@ -4,8 +4,8 @@
 
 #include "private/ooni/constants.hpp"
 #include "private/ooni/utils.hpp"
-#include <measurement_kit/common/detail/fcompose.hpp>
-#include <measurement_kit/common/detail/utils.hpp>
+#include "private/common/fcompose.hpp"
+#include "private/common/utils.hpp"
 #include <measurement_kit/ooni.hpp>
 
 namespace mk {

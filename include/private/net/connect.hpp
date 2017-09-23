@@ -4,7 +4,7 @@
 #ifndef PRIVATE_NET_CONNECT_HPP
 #define PRIVATE_NET_CONNECT_HPP
 
-#include <measurement_kit/common/detail/utils.hpp>
+#include "private/common/utils.hpp"
 #include "../ext/tls_internal.h"
 
 #include <measurement_kit/net.hpp>

@@ -3,7 +3,7 @@
 // and LICENSE for more information on the copying conditions.
 
 #include <measurement_kit/common/callback.hpp>
-#include <measurement_kit/common/detail/worker.hpp>
+#include "private/common/worker.hpp"
 #include <measurement_kit/common/logger.hpp>
 #include <measurement_kit/common/non_copyable.hpp>
 #include <measurement_kit/common/non_movable.hpp>

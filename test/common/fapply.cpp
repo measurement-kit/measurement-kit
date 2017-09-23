@@ -5,7 +5,7 @@
 #define CATCH_CONFIG_MAIN
 #include "private/ext/catch.hpp"
 
-#include <measurement_kit/common/detail/fapply.hpp>
+#include "private/common/fapply.hpp"
 
 #include <measurement_kit/common.hpp>
 

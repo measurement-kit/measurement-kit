@@ -5,7 +5,7 @@
 #define CATCH_CONFIG_MAIN
 #include "private/ext/catch.hpp"
 
-#include <measurement_kit/common/detail/fcdr.hpp>
+#include "private/common/fcdr.hpp"
 #include <measurement_kit/common.hpp>
 
 TEST_CASE("mk::fcdr() works as expected") {

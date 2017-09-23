@@ -29,7 +29,7 @@
  */
 
 #include <cstdint>
-#include <measurement_kit/common/detail/encoding.hpp>
+#include "private/common/encoding.hpp"
 #include <string>
 
 namespace mk {

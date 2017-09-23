@@ -5,7 +5,7 @@
 #define TEST_NETTESTS_UTILS_HPP
 
 #include "private/nettests/runnable.hpp"
-#include <measurement_kit/common/detail/worker.hpp>
+#include "private/common/worker.hpp"
 
 #include <measurement_kit/nettests.hpp>
 #include <measurement_kit/ooni.hpp>

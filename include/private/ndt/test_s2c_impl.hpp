@@ -4,7 +4,7 @@
 #ifndef PRIVATE_NDT_TEST_S2C_IMPL_HPP
 #define PRIVATE_NDT_TEST_S2C_IMPL_HPP
 
-#include <measurement_kit/common/detail/mock.hpp>
+#include "private/common/mock.hpp"
 
 #include "../ndt/internal.hpp"
 

@@ -1,13 +1,13 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
 // Measurement-kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
-#ifndef MEASUREMENT_KIT_COMMON_DETAIL_FCOMPOSE_HPP
-#define MEASUREMENT_KIT_COMMON_DETAIL_FCOMPOSE_HPP
+#ifndef PRIVATE_COMMON_FCOMPOSE_HPP
+#define PRIVATE_COMMON_FCOMPOSE_HPP
 
-#include <measurement_kit/common/detail/fapply.hpp>
-#include <measurement_kit/common/detail/fcar.hpp>
-#include <measurement_kit/common/detail/fcdr.hpp>
-#include <measurement_kit/common/detail/freverse.hpp>
+#include "private/common/fapply.hpp"
+#include "private/common/fcar.hpp"
+#include "private/common/fcdr.hpp"
+#include "private/common/freverse.hpp"
 
 namespace mk {
 

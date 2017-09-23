@@ -5,8 +5,8 @@
 #define CATCH_CONFIG_MAIN
 #include "private/ext/catch.hpp"
 
-#include <measurement_kit/common/detail/worker.hpp>
-#include <measurement_kit/common/detail/range.hpp>
+#include "private/common/worker.hpp"
+#include "private/common/range.hpp"
 
 #include <measurement_kit/common.hpp>
 

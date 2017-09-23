@@ -3,8 +3,8 @@
 // and LICENSE for more information on the copying conditions.
 // =============================================================
 // Based on <http://stackoverflow.com/questions/10626856>
-#ifndef MEASUREMENT_KIT_COMMON_DETAIL_FCDR_HPP
-#define MEASUREMENT_KIT_COMMON_DETAIL_FCDR_HPP
+#ifndef PRIVATE_COMMON_FCDR_HPP
+#define PRIVATE_COMMON_FCDR_HPP
 
 #include <tuple>
 #include <utility>
