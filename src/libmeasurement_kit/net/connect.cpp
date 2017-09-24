@@ -107,11 +107,11 @@ void connect_logic(std::string hostname, int port,
                      settings, reactor, logger);
 }
 
-void connect_ssl(SharedPtr<ConnectResult> r, ssl_st *ssl, std::string hostname,
+void connect_ssl(SharedPtr<Transport> txp, ssl_st *ssl, std::string hostname,
                  Callback<Error> cb, SharedPtr<Reactor> reactor,
                  SharedPtr<Logger> logger) {
     logger->debug("ssl: handshake...");
-    libevent_ssl_connect_filter(r->connected_txp, ssl, reactor, logger,
+    libevent_ssl_connect_filter(txp, ssl, reactor, logger,
             [=](Error err) {
                 if (err) {
                     logger->debug("ssl: handshake error: %s", err.what());
@@ -128,6 +128,69 @@ void connect_ssl(SharedPtr<ConnectResult> r, ssl_st *ssl, std::string hostname,
                 logger->debug("ssl: handshake... complete");
                 cb(err);
             });
+}
+
+void connect_ssl(SharedPtr<Transport> txp, std::string hostname,
+        Settings settings, SharedPtr<Reactor> reactor, SharedPtr<Logger> logger,
+        Callback<Error> &&callback) {
+    std::string cbp = MK_CA_BUNDLE;
+    if (settings.find("net/ca_bundle_path") != settings.end()) {
+        cbp = settings.at("net/ca_bundle_path");
+    }
+    ErrorOr<SSL *> cssl =
+            libssl::Cache<>::thread_local_instance().get_client_ssl(
+                    cbp, hostname, logger);
+    if (!cssl) {
+        Error err = cssl.as_error();
+        callback(err);
+        return;
+    }
+    ErrorOr<bool> allow_ssl23 = settings.get_noexcept("net/allow_ssl23", false);
+    if (!allow_ssl23) {
+        Error err = ValueError();
+        callback(err);
+        return;
+    }
+    if (*allow_ssl23 == true) {
+        logger->info("Re-enabling SSLv2 and SSLv3");
+        libssl::enable_v23(*cssl);
+    }
+    connect_ssl(txp, *cssl, hostname,
+            [=](Error err) {
+                if (err) {
+                    callback(err);
+                    return;
+                }
+                ErrorOr<bool> allow_dirty_shutdown = settings.get_noexcept(
+                        "net/ssl_allow_dirty_shutdown", false);
+                if (!allow_dirty_shutdown) {
+                    Error err = allow_dirty_shutdown.as_error();
+                    callback(err);
+                    return;
+                }
+                if (*allow_dirty_shutdown == true) {
+#ifdef HAVE_BUFFEREVENT_OPENSSL_SET_ALLOW_DIRTY_SHUTDOWN
+                    // FIXME: this is now broken...
+                    // This useful libevent function is only
+                    // available since libevent 2.1.0:
+                    bufferevent_openssl_set_allow_dirty_shutdown(bev, 1);
+                    logger->info("Allowing dirty SSL shutdown");
+#else
+                    logger->warn("Cannot tell libevent to "
+                                 "allow SSL dirty shutdowns "
+                                 "as requested by the "
+                                 "programmer: as a result"
+                                 "some SSL connections may "
+                                 "interrupt abruptly with an "
+                                 "error. This happens because "
+                                 "you are not using version "
+                                 "2.1.x of libevent.");
+#endif
+                }
+                assert(err == NoError());
+                callback(err);
+            },
+            reactor, logger);
 }
 
 void connect_many(std::string address, int port, int num,
@@ -160,67 +223,11 @@ void connect(std::string address, int port,
                 return;
             }
             if (settings.find("net/ssl") != settings.end()) {
-                std::string cbp = MK_CA_BUNDLE;
-                if (settings.find("net/ca_bundle_path") != settings.end()) {
-                    cbp = settings.at("net/ca_bundle_path");
-                }
-                ErrorOr<SSL *> cssl = libssl::Cache<>::thread_local_instance()
-                    .get_client_ssl(cbp, address, logger);
-                if (!cssl) {
-                    Error err = cssl.as_error();
-                    callback(err, r->connected_txp);
-                    return;
-                }
-                ErrorOr<bool> allow_ssl23 =
-                    settings.get_noexcept("net/allow_ssl23", false);
-                if (!allow_ssl23) {
-                    Error err = ValueError();
-                    callback(err, r->connected_txp);
-                    return;
-                }
-                if (*allow_ssl23 == true) {
-                    logger->info("Re-enabling SSLv2 and SSLv3");
-                    libssl::enable_v23(*cssl);
-                }
-                connect_ssl(r, *cssl, address,
-                            [=](Error err) {
-                                if (err) {
-                                    callback(err, r->connected_txp);
-                                    return;
-                                }
-                                ErrorOr<bool> allow_dirty_shutdown =
-                                    settings.get_noexcept(
-                                        "net/ssl_allow_dirty_shutdown", false);
-                                if (!allow_dirty_shutdown) {
-                                    Error err = allow_dirty_shutdown.as_error();
-                                    callback(err, r->connected_txp);
-                                    return;
-                                }
-                                if (*allow_dirty_shutdown == true) {
-                                    /*
-                                     * This useful libevent function is only
-                                     * available since libevent 2.1.0:
-                                     */
-#ifdef HAVE_BUFFEREVENT_OPENSSL_SET_ALLOW_DIRTY_SHUTDOWN
-                                    bufferevent_openssl_set_allow_dirty_shutdown(
-                                        bev, 1);
-                                    logger->info("Allowing dirty SSL shutdown");
-#else
-                                    logger->warn("Cannot tell libevent to "
-                                                 "allow SSL dirty shutdowns "
-                                                 "as requested by the "
-                                                 "programmer: as a result"
-                                                 "some SSL connections may "
-                                                 "interrupt abruptly with an "
-                                                 "error. This happens because "
-                                                 "you are not using version "
-                                                 "2.1.x of libevent.");
-#endif
-                                }
-                                assert(err == NoError());
-                                callback(err, r->connected_txp);
-                            },
-                            reactor, logger);
+                connect_ssl(r->connected_txp, address, settings, reactor,
+                        logger,
+                        [=](Error err) {
+                            callback(err, r->connected_txp);
+                        });
                 return;
             }
             assert(err == NoError());

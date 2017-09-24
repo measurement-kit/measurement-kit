@@ -2,6 +2,7 @@
 // Measurement-kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
+#include "private/net/connect.hpp"
 #include "private/net/socks5.hpp"
 #include <measurement_kit/net.hpp>
 
@@ -9,7 +10,8 @@ namespace mk {
 namespace net {
 
 static void socks5_connect_(SharedPtr<Transport> conn, Settings settings,
-        SharedPtr<Logger> logger, Callback<Error, SharedPtr<Transport>> &&cb);
+        SharedPtr<Reactor> reactor, SharedPtr<Logger> logger,
+        Callback<Error, SharedPtr<Transport>> &&cb);
 
 Buffer socks5_format_auth_request(SharedPtr<Logger> logger) {
     Buffer out;
@@ -139,19 +141,29 @@ void socks5_connect(std::string address, int port, Settings settings,
     settings["_socks5/address"] = address;
     settings["_socks5/port"] = port;
 
+    // When SSL is requested, we must establish it with the remote server
+    // and not with the SOCKS5 server, so move the key to a private name
+    // used only by us: we will take care of it later.
+    if (settings.count("net/ssl") != 0) {
+        settings["_socks5/ssl"] = settings["net/ssl"];
+        settings.erase("net/ssl");
+    }
+
     net::connect(proxy_address, lexical_cast<int>(proxy_port),
             [=](Error err, SharedPtr<Transport> txp) mutable {
                 if (err) {
                     callback(err, txp);
                     return;
                 }
-                socks5_connect_(txp, settings, logger, std::move(callback));
+                socks5_connect_(
+                        txp, settings, reactor, logger, std::move(callback));
             },
             settings, reactor, logger);
 }
 
 static void socks5_connect_(SharedPtr<Transport> conn, Settings settings,
-        SharedPtr<Logger> logger, Callback<Error, SharedPtr<Transport>> &&cb) {
+        SharedPtr<Reactor> reactor, SharedPtr<Logger> logger,
+        Callback<Error, SharedPtr<Transport>> &&cb) {
     // Step #1: send out preferred authentication methods
 
     logger->debug("socks5: connected to Tor!");
@@ -204,13 +216,32 @@ static void socks5_connect_(SharedPtr<Transport> conn, Settings settings,
             conn->on_data(nullptr);
             conn->on_error(nullptr);
 
-            cb(NoError(), conn);
+            ErrorOr<bool> ssl = settings.get_noexcept("_socks5/ssl", false);
+            if (!ssl) {
+                cb(ssl.as_error(), conn);
+                return;
+            }
+            if (!*ssl) {
+                cb(NoError(), conn);
+                return;
+            }
 
+            connect_ssl(conn, settings.at("_socks5/address"), settings,
+                    reactor, logger, [=](Error err) {
+                cb(err, conn);
+            });
+
+#if 0
             // Note that emit_connect() may have called close() but even
             // in such case, emit_data() is a NO-OP if connection is closed
             if (buffer->length() > 0) {
-                conn->emit_data(*buffer);
+                // FIXME This should probably be reimplemented without using the
+                // bufferevent for reading because the bufferevent has the problem
+                // that we may read more than expected and then, if this happens,
+                // and we need to establish SSL, it's not clear to me how to do this.
+                /*conn->emit_data(*buffer);*/
             }
+#endif
         });
     });
 }

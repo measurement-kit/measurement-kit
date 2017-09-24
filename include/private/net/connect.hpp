@@ -40,10 +40,14 @@ void connect_logic(std::string hostname, int port,
                    SharedPtr<Reactor> reactor = Reactor::global(),
                    SharedPtr<Logger> logger = Logger::global());
 
-void connect_ssl(SharedPtr<ConnectResult> r, ssl_st *ssl, std::string hostname,
+void connect_ssl(SharedPtr<Transport> txp, ssl_st *ssl, std::string hostname,
                  Callback<Error> cb,
                  SharedPtr<Reactor> = Reactor::global(),
                  SharedPtr<Logger> = Logger::global());
+
+void connect_ssl(SharedPtr<Transport> txp, std::string hostname,
+                 Settings settings, SharedPtr<Reactor> reactor,
+                 SharedPtr<Logger> logger, Callback<Error> &&cb);
 
 class ConnectManyCtx {
   public:
