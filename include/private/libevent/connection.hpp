@@ -69,6 +69,10 @@ class Connection : public EmitterBase, public NonMovable, public NonCopyable {
         }
     }
 
+    bufferevent *bufferevent_() { return bev; }
+
+    void set_bufferevent_(bufferevent *bev) { this->bev = bev; }
+
   protected:
     void adjust_timeout(double timeout) override {
         timeval tv, *tvp = mk::timeval_init(&tv, timeout);

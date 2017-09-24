@@ -9,12 +9,11 @@
 #error "MK_CA_BUNDLE is not set."
 #endif
 
+#include "private/net/libevent_connect.hpp"
 #include "private/net/connect_impl.hpp"
 #include "private/net/emitter.hpp"
 #include "private/net/socks5.hpp"
 #include "private/net/utils.hpp"
-
-#include "private/libevent/connection.hpp"
 #include "private/net/libssl.hpp"
 
 #include <measurement_kit/dns.hpp>
@@ -30,35 +29,8 @@
 #include <cstddef>
 #include <cstring>
 
-void mk_bufferevent_on_event(bufferevent *bev, short what, void *ptr) {
-    auto cb = static_cast<mk::Callback<mk::Error, bufferevent *> *>(ptr);
-    if ((what & BEV_EVENT_CONNECTED) != 0) {
-        (*cb)(mk::NoError(), bev);
-    } else if ((what & BEV_EVENT_TIMEOUT) != 0) {
-        (*cb)(mk::net::TimeoutError(), bev);
-    } else {
-        mk::Error err;
-        /*
-         * If there's not network error, assume it's going to be a SSL error,
-         * which is reasonable because currently we only use this function
-         * as callback for either socket or SSL connect.
-         */
-        if (errno != 0) {
-            err = mk::net::map_errno(errno);
-        } else {
-            long ssl_err = bufferevent_get_openssl_error(bev);
-            std::string s = ERR_error_string(ssl_err, nullptr);
-            err = mk::net::SslError(s);
-        }
-        (*cb)(err, bev);
-    }
-    delete cb;
-}
-
 namespace mk {
 namespace net {
-
-using namespace mk::libevent;
 
 void connect_first_of(SharedPtr<ConnectResult> result, int port,
                       ConnectFirstOfCb cb, Settings settings,
@@ -70,12 +42,15 @@ void connect_first_of(SharedPtr<ConnectResult> result, int port,
     }
     if (index >= result->resolve_result.addresses.size()) {
         logger->debug2("connect_first_of all addresses failed");
-        cb(*errors, nullptr);
+        cb(GenericError(), *errors);
         return;
     }
+    // Note: this timeout is going to be used both for connect and for
+    // subsequent I/O operations (i.e. reads and writes).
     double timeout = settings.get("net/timeout", 30.0);
-    connect_base(result->resolve_result.addresses[index], port,
-                 [=](Error err, bufferevent *bev, double connect_time) {
+    libevent_connect(result->resolve_result.addresses[index], port,
+                 timeout, reactor, logger,
+                 [=](Error err, SharedPtr<Transport> txp) {
                      errors->push_back(err);
                      if (err) {
                          logger->debug2("connect_first_of failure");
@@ -84,10 +59,9 @@ void connect_first_of(SharedPtr<ConnectResult> result, int port,
                          return;
                      }
                      logger->debug2("connect_first_of success");
-                     result->connect_time = connect_time;
-                     cb(*errors, bev);
-                 },
-                 timeout, reactor, logger);
+                     result->connected_txp = txp;
+                     cb(NoError(), *errors);
+                 });
 }
 
 void connect_logic(std::string hostname, int port,
@@ -95,6 +69,7 @@ void connect_logic(std::string hostname, int port,
                    SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
 
     SharedPtr<ConnectResult> result(new ConnectResult);
+    result->connected_txp = Emitter::make(reactor, logger);
     dns::resolve_hostname(hostname,
                      [=](dns::ResolveHostnameResult r) {
 
@@ -106,10 +81,9 @@ void connect_logic(std::string hostname, int port,
 
                          connect_first_of(
                              result, port,
-                             [=](std::vector<Error> e, bufferevent *b) {
-                                 result->connect_result = e;
-                                 result->connected_bev = b;
-                                 if (!b) {
+                             [=](Error overall, std::vector<Error> e) {
+                                 result->connected_txp->set_connect_errors_(e);
+                                 if (!!overall) {
                                      if (e.size() == 1) {
                                          // Improvement: do not hide the reason
                                          // why we failed if we have just one
@@ -125,13 +99,7 @@ void connect_logic(std::string hostname, int port,
                                      cb(connect_error, result);
                                      return;
                                  }
-                                 Error nagle_error = disable_nagle(
-                                    bufferevent_getfd(result->connected_bev)
-                                 );
-                                 for (auto se: e) {
-                                    nagle_error.add_child_error(se);
-                                 }
-                                 cb(nagle_error, result);
+                                 cb(NoError(), result);
                              },
                              settings, reactor, logger);
 
@@ -139,46 +107,27 @@ void connect_logic(std::string hostname, int port,
                      settings, reactor, logger);
 }
 
-void connect_ssl(bufferevent *orig_bev, ssl_st *ssl, std::string hostname,
-                 Callback<Error, bufferevent *> cb, SharedPtr<Reactor> reactor,
+void connect_ssl(SharedPtr<ConnectResult> r, ssl_st *ssl, std::string hostname,
+                 Callback<Error> cb, SharedPtr<Reactor> reactor,
                  SharedPtr<Logger> logger) {
     logger->debug("ssl: handshake...");
-
-    // See similar comment in connect_impl.hpp for rationale.
-    static const int flags = BEV_OPT_CLOSE_ON_FREE | BEV_OPT_DEFER_CALLBACKS;
-
-    auto bev = bufferevent_openssl_filter_new(
-        reactor->get_event_base(), orig_bev, ssl, BUFFEREVENT_SSL_CONNECTING,
-        flags);
-    if (bev == nullptr) {
-        bufferevent_free(orig_bev);
-        cb(GenericError(), nullptr);
-        return;
-    }
-
-    bufferevent_setcb(
-        bev, nullptr, nullptr, mk_bufferevent_on_event,
-        new Callback<Error, bufferevent *>(
-            [cb, logger, hostname](Error err, bufferevent *bev) {
-                ssl_st *ssl = bufferevent_openssl_get_ssl(bev);
-
+    libevent_ssl_connect_filter(r->connected_txp, ssl, reactor, logger,
+            [=](Error err) {
                 if (err) {
                     logger->debug("ssl: handshake error: %s", err.what());
-                    bufferevent_free(bev);
-                    cb(err, nullptr);
+                    cb(err);
                     return;
                 }
 
                 err = libssl::verify_peer(hostname, ssl, logger);
                 if (err) {
-                    bufferevent_free(bev);
-                    cb(err, nullptr);
+                    cb(err);
                     return;
                 }
 
                 logger->debug("ssl: handshake... complete");
-                cb(err, bev);
-            }));
+                cb(err);
+            });
 }
 
 void connect_many(std::string address, int port, int num,
@@ -192,24 +141,22 @@ void connect(std::string address, int port,
              Callback<Error, SharedPtr<Transport>> callback, Settings settings,
              SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
     if (settings.find("net/dumb_transport") != settings.end()) {
-        callback(NoError(), make_txp<Emitter>(
-            0.0, nullptr, reactor, logger));
+        callback(NoError(), Emitter::make(reactor, logger));
         return;
     }
     if (settings.find("net/socks5_proxy") != settings.end()) {
         socks5_connect(address, port, settings, callback, reactor, logger);
         return;
     }
-    if (settings.find("net/timeout") == settings.end()) {
-        settings["net/timeout"] = 30.0;
-    }
-    double timeout = settings["net/timeout"].as<double>();
     connect_logic(
         address, port,
         [=](Error err, SharedPtr<ConnectResult> r) {
+            // Whatever transport it is, it know about the resolve result now
+            r->connected_txp->set_dns_result_(r->resolve_result);
             if (err) {
-                callback(err, make_txp<Emitter>(
-                    timeout, r, reactor, logger));
+                // XXX: perhaps also remove `make_txp`
+                // but FIXME we're probably also losing info!!!
+                callback(err, r->connected_txp);
                 return;
             }
             if (settings.find("net/ssl") != settings.end()) {
@@ -221,30 +168,24 @@ void connect(std::string address, int port,
                     .get_client_ssl(cbp, address, logger);
                 if (!cssl) {
                     Error err = cssl.as_error();
-                    bufferevent_free(r->connected_bev);
-                    callback(err, make_txp<Emitter>(
-                        timeout, r, reactor, logger));
+                    callback(err, r->connected_txp);
                     return;
                 }
                 ErrorOr<bool> allow_ssl23 =
                     settings.get_noexcept("net/allow_ssl23", false);
                 if (!allow_ssl23) {
                     Error err = ValueError();
-                    bufferevent_free(r->connected_bev);
-                    callback(err, make_txp<Emitter>(
-                        timeout, r, reactor, logger));
+                    callback(err, r->connected_txp);
                     return;
                 }
                 if (*allow_ssl23 == true) {
                     logger->info("Re-enabling SSLv2 and SSLv3");
                     libssl::enable_v23(*cssl);
                 }
-                connect_ssl(r->connected_bev, *cssl, address,
-                            [r, callback, timeout, reactor,
-                             logger, settings](Error err, bufferevent *bev) {
+                connect_ssl(r, *cssl, address,
+                            [=](Error err) {
                                 if (err) {
-                                    callback(err, make_txp<Emitter>(
-                                            timeout, r, reactor, logger));
+                                    callback(err, r->connected_txp);
                                     return;
                                 }
                                 ErrorOr<bool> allow_dirty_shutdown =
@@ -252,9 +193,7 @@ void connect(std::string address, int port,
                                         "net/ssl_allow_dirty_shutdown", false);
                                 if (!allow_dirty_shutdown) {
                                     Error err = allow_dirty_shutdown.as_error();
-                                    bufferevent_free(bev);
-                                    callback(err, make_txp<Emitter>(
-                                            timeout, r, reactor, logger));
+                                    callback(err, r->connected_txp);
                                     return;
                                 }
                                 if (*allow_dirty_shutdown == true) {
@@ -279,18 +218,13 @@ void connect(std::string address, int port,
 #endif
                                 }
                                 assert(err == NoError());
-                                callback(err, make_txp(
-                                    libevent::Connection::make(
-                                        bev, reactor, logger),
-                                            timeout, r));
+                                callback(err, r->connected_txp);
                             },
                             reactor, logger);
                 return;
             }
             assert(err == NoError());
-            callback(err, make_txp(libevent::Connection::make(
-                r->connected_bev, reactor, logger),
-                    timeout, r));
+            callback(err, r->connected_txp);
         },
         settings, reactor, logger);
 }

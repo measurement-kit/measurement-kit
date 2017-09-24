@@ -248,6 +248,11 @@ class Emitter : public EmitterBase {
 
     ~Emitter() override;
 
+    static SharedPtr<Transport> make(
+            SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
+        return SharedPtr<Transport>{std::make_shared<Emitter>(reactor, logger)};
+    }
+
   protected:
     void adjust_timeout(double timeo) override {
         logger->debug2("emitter: adjust_timeout %f", timeo);
