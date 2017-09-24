@@ -37,6 +37,10 @@ Currently it implements the following high-level tests:
 
 - Neubot's [MPEG DASH test](https://github.com/neubot/neubot/tree/master/mod_dash)
 
+- [OONI](https://ooni.torproject.org/)'s [Telegram](https://github.com/TheTorProject/ooni-spec/blob/master/test-specs/ts-020-telegram.md) test
+
+- [OONI](https://ooni.torproject.org/)'s [Captiveportal](https://github.com/TheTorProject/ooni-spec/blob/master/test-specs/ts-010-captive-portal.md) test
+
 It contains building-block functionalities useful to implement your own
 tests. More in detail it currently implements:
 

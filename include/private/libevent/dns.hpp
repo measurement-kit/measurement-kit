@@ -4,8 +4,8 @@
 #ifndef PRIVATE_LIBEVENT_DNS_QUERY_HPP
 #define PRIVATE_LIBEVENT_DNS_QUERY_HPP
 
-#include <measurement_kit/common/detail/mock.hpp>
-#include <measurement_kit/common/detail/utils.hpp>
+#include "private/common/mock.hpp"
+#include "private/common/utils.hpp"
 #include "../net/utils.hpp"
 
 #include <event2/dns.h>
@@ -119,8 +119,8 @@ class QueryContext : public NonMovable, public NonCopyable {
 
     SharedPtr<Logger> logger = Logger::global();
 
-    QueryContext(evdns_base *b, Callback<Error, SharedPtr<Message>> c, SharedPtr<Message> m,
-                 SharedPtr<Logger> l = Logger::global()) {
+    QueryContext(evdns_base *b, Callback<Error, SharedPtr<Message>> c,
+            SharedPtr<Message> m, SharedPtr<Logger> l = Logger::global()) {
         base = b;
         callback = c;
         message = m;
@@ -167,10 +167,7 @@ create_evdns_base(Settings settings, SharedPtr<Reactor> reactor = Reactor::globa
         hints.ai_flags = EVUTIL_AI_NUMERICSERV | EVUTIL_AI_NUMERICHOST;
         hints.ai_socktype = SOCK_DGRAM;
         evutil_addrinfo *res = nullptr;
-        std::string port{"53"};
-        if (settings.count("dns/port")) {
-            port = settings["dns/port"];
-        }
+        std::string port = settings.get("dns/port", std::string{"53"});
         const int eaierr = evutil_getaddrinfo(
               settings["dns/nameserver"].c_str(), port.c_str(), &hints, &res);
         evaddrinfo_uptr ai(res);

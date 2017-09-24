@@ -2,8 +2,8 @@
 // Measurement-kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
-#include <measurement_kit/common/detail/mock.hpp>
-#include <measurement_kit/common/detail/utils.hpp>
+#include "private/common/mock.hpp"
+#include "private/common/utils.hpp"
 #include <cctype>
 #include <cmath>
 #include <cstdio>
@@ -88,6 +88,19 @@ std::string random_str_uppercase(size_t length) {
             "ABCDEFGHIJKLMNOPQRSTUVWXYZ"  // uppercase
         ;
     return random_within_charset(num_upper, length);
+}
+
+std::string random_str_lower_alpha(size_t length) {
+    static const std::string lower =
+            "abcdefghijklmnopqrstuvwxyz"  // lowercase
+        ;
+    return random_within_charset(lower, length);
+}
+
+std::string random_tld() {
+    static const std::vector<std::string> tlds
+        { ".com", ".net", ".org", ".info", ".test", ".invalid" };
+    return random_choice(tlds);
 }
 
 void dump_settings(Settings &s, std::string prefix, SharedPtr<Logger> logger) {

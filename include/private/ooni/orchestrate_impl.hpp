@@ -4,10 +4,10 @@
 #ifndef PRIVATE_OONI_ORCHESTRATE_IMPL_HPP
 #define PRIVATE_OONI_ORCHESTRATE_IMPL_HPP
 
-#include <measurement_kit/common/detail/mock.hpp>
-#include <measurement_kit/common/detail/utils.hpp>
-#include <measurement_kit/common/detail/waterfall.hpp>
+#include "private/common/waterfall.hpp"
 #include <measurement_kit/common/json.hpp>
+#include "private/common/mock.hpp"
+#include "private/common/utils.hpp"
 
 #include <measurement_kit/ooni.hpp>
 

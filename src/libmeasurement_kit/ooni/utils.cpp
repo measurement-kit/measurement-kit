@@ -3,7 +3,7 @@
 // and LICENSE for more information on the copying conditions.
 
 #include "private/ooni/utils_impl.hpp"
-#include <measurement_kit/common/detail/utils.hpp>
+#include "private/common/utils.hpp"
 
 namespace mk {
 namespace ooni {

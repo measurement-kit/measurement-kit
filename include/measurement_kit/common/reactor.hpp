@@ -6,8 +6,8 @@
 
 #include <measurement_kit/common/callback.hpp>
 #include <measurement_kit/common/error.hpp>
-#include <measurement_kit/common/socket.hpp>
 #include <measurement_kit/common/shared_ptr.hpp>
+#include <measurement_kit/common/socket.hpp>
 
 struct event_base;
 
@@ -77,19 +77,36 @@ class Reactor {
     /// \bug if \p time is negative, the callback will never be called.
     virtual void call_later(double time, Callback<> &&cb) = 0;
 
-    /// \brief `pollin()` will monitor \p sockfd for readability.
+    // Design note: I prefer separate pollin_once() and pollout_once()
+    // operations to a single function call (previously it was called pollfd())
+    // with flag, because the former approach allows you to have the equivalent
+    // of two "threads" that can act independently, while with the latter
+    // this seems to me to be more complicated to express. I guess this
+    // may also be more a matter of taste than anything else.
+    //
+    // A secondary reason why it _may_ be better to have `pollin_once()` and
+    // `pollout_once` may be that boost/asio can probably be included into the
+    // standard C++ library. If that happens, having more basic methods
+    // that seem more similar to boost/asio may help if we decide to use
+    // the standard library implementation instead of libevent (but the
+    // more I use it the more I find libevent good).
+
+    /// \brief `pollin_once()` will monitor \p sockfd for readability.
+    /// \note `pollin_once()` will poll the socket for readability
+    /// just once. To poll multiple times, you must call this function
+    /// multiple times (as the function name implies).
     /// \param sockfd is the socket to monitor for readability. On Unix
     /// system, this can actually be any file descriptor.
     /// \param timeout is the timeout in seconds. Passing a negative
     /// value will imply no timeout.
     /// \param cb is the callback to be called. The Error argument will
     /// be TimeoutError if the timeout expired, NoError otherwise.
-    virtual void pollin(socket_t sockfd, double timeout,
-                        Callback<Error> &&cb) = 0;
+    virtual void pollin_once(
+            socket_t sockfd, double timeout, Callback<Error> &&cb) = 0;
 
-    /// `pollout()` is like pollin() but for writability.
-    virtual void pollout(socket_t sockfd, double timeout,
-                         Callback<Error> &&cb) = 0;
+    /// `pollout_once()` is like pollin_once() but for writability.
+    virtual void pollout_once(
+            socket_t sockfd, double timeout, Callback<Error> &&cb) = 0;
 
     /// \brief `get_event_base()` returns libevent's event base.
     /// \throw std::exception (or a derived class) if the backend is not

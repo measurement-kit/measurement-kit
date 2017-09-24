@@ -4,8 +4,8 @@
 #ifndef PRIVATE_NETTESTS_RUNNABLE_HPP
 #define PRIVATE_NETTESTS_RUNNABLE_HPP
 
-#include <measurement_kit/common/detail/delegate.hpp>
-#include <measurement_kit/common/detail/parallel.hpp>
+#include "private/common/delegate.hpp"
+#include "private/common/parallel.hpp"
 #include <measurement_kit/report.hpp>
 
 #include <ctime>
@@ -76,6 +76,7 @@ class Runnable : public NonCopyable, public NonMovable {
     }
 
 MK_DECLARE_RUNNABLE(DashRunnable);
+MK_DECLARE_RUNNABLE(CaptivePortalRunnable);
 MK_DECLARE_RUNNABLE(DnsInjectionRunnable);
 MK_DECLARE_RUNNABLE(FacebookMessengerRunnable);
 MK_DECLARE_RUNNABLE(HttpHeaderFieldManipulationRunnable);

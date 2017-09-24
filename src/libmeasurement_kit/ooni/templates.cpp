@@ -6,6 +6,7 @@
 
 #include <event2/dns.h>
 
+#include "private/net/emitter.hpp"
 #include "private/ooni/utils.hpp"
 
 namespace mk {
@@ -44,7 +45,7 @@ void dns_query(SharedPtr<Entry> entry, dns::QueryType query_type,
         if (nameserver != "") {
             logger->warn("Explicit nameserver ignored with 'system' DNS engine");
         }
-        // For now this option is only supported by the DNS engine. Unless the
+        // For now this option is only supported by the system engine. Unless
         // user has already taken the decision whether to also resolve CNAME or
         // not, resolve the CNAME because generally we need that in OONI.
         if (options.count("dns/resolve_also_cname") == 0) {
@@ -194,15 +195,20 @@ void http_request(SharedPtr<Entry> entry, Settings settings, http::Headers heade
         reactor, logger);
 }
 
-void tcp_connect(Settings options, Callback<Error, SharedPtr<net::Transport>> cb,
-                 SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
+void tcp_connect(Settings options,
+        Callback<Error, SharedPtr<net::Transport>> cb,
+        SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
     ErrorOr<int> port = options["port"].as_noexcept<int>();
     if (!port) {
-        cb(port.as_error(), nullptr);
+        cb(port.as_error(),
+                SharedPtr<net::Transport>{
+                        std::make_shared<net::Emitter>(reactor, logger)});
         return;
     }
     if (options["host"] == "") {
-        cb(MissingRequiredHostError(), nullptr);
+        cb(MissingRequiredHostError(),
+                SharedPtr<net::Transport>{
+                        std::make_shared<net::Emitter>(reactor, logger)});
         return;
     }
     net::connect(options["host"], *port, cb, options, reactor, logger);

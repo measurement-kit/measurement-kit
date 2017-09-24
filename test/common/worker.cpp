@@ -5,10 +5,10 @@
 #define CATCH_CONFIG_MAIN
 
 #include "private/ext/catch.hpp"
+#include "private/common/worker.hpp"
 #include <chrono>
 #include <iostream>
 #include <measurement_kit/common.hpp>
-#include <measurement_kit/common/detail/worker.hpp>
 #include <thread>
 
 TEST_CASE("The worker is robust to submitting many tasks in a row") {

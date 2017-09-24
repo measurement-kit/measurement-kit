@@ -99,6 +99,7 @@
 /test/net/socks5
 /test/net/transport
 /test/net/utils
+/test/nettests/captive_portal
 /test/nettests/dash
 /test/nettests/dns_injection
 /test/nettests/facebook_messenger
@@ -118,6 +119,7 @@
 /test/ooni/resources
 /test/ooni/templates
 /test/ooni/utils
+/test/ooni/web_connectivity
 /test/report/entry
 /test/report/file_reporter
 /test/report/report

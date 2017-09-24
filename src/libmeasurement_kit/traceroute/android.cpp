@@ -41,7 +41,7 @@ void mk_traceroute_android_unused() {}
 #else
 
 #include "private/net/utils.hpp"
-#include <measurement_kit/common/detail/utils.hpp>
+#include "private/common/utils.hpp"
 
 #include <measurement_kit/net.hpp>
 #include <measurement_kit/traceroute.hpp>
@@ -176,7 +176,7 @@ void AndroidProber::send_probe(std::string addr, int port, int ttl,
     }
 
     // Note: we bind this, which makes this object non copyable or movable
-    reactor->pollin(sockfd_, timeout, [this](Error err) {
+    reactor->pollin_once(sockfd_, timeout, [this](Error err) {
         event_callback(err);
     });
 

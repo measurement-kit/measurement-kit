@@ -4,9 +4,9 @@
 
 #include "private/ooni/constants.hpp"
 #include "private/ooni/utils.hpp"
-#include <measurement_kit/common/detail/parallel.hpp>
-#include <measurement_kit/common/detail/utils.hpp>
-#include <measurement_kit/common/detail/waterfall.hpp>
+#include "private/common/parallel.hpp"
+#include "private/common/utils.hpp"
+#include "private/common/waterfall.hpp"
 #include <measurement_kit/ooni.hpp>
 
 namespace mk {

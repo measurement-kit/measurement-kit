@@ -6,7 +6,7 @@
 
 #include "private/net/emitter.hpp"
 #include "private/net/utils.hpp"
-#include <measurement_kit/common/detail/utils.hpp>
+#include "private/common/utils.hpp"
 #include <cassert>
 #include <cerrno>
 #include <event2/buffer.h>

@@ -17,6 +17,7 @@ using namespace mk::nettests;
 
 #define MK_CMDLINE_SUBCOMMANDS                                                 \
     XX(dash)                                                                   \
+    XX(captiveportal)                                                         \
     XX(dns_injection)                                                          \
     XX(facebook_messenger)                                                     \
     XX(http_header_field_manipulation)                                         \
