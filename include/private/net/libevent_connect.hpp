@@ -225,12 +225,11 @@ void libevent_connect(std::string address, uint16_t port, double timeout,
 /// the socket bufferevent and manage its lifecycle.
 template <MK_MOCK(bufferevent_openssl_filter_new)>
 void libevent_ssl_connect_filter(SharedPtr<Transport> txp, SSL *ssl,
-        SharedPtr<Reactor> reactor, SharedPtr<Logger> logger,
+        SharedPtr<Reactor> reactor, SharedPtr<Logger> /*logger*/,
         Callback<Error> &&callback) {
     // Note: if the cast is not possible a runtime exception will follow
     auto conn = txp.as<libevent::Connection>();
     auto orig_bev = conn->bufferevent_();
-    logger->debug("ssl: handshake...");
     auto bev = bufferevent_openssl_filter_new(reactor->get_event_base(),
             orig_bev, ssl, BUFFEREVENT_SSL_CONNECTING, bev_flags_());
     if (bev == nullptr) {
