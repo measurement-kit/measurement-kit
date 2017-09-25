@@ -8,7 +8,7 @@
 #include <measurement_kit/common/git_version.hpp>
 
 // Note: we use semantic versioning (see: http://semver.org/)
-#define MK_VERSION "0.7.3"
+#define MK_VERSION "0.7.4"
 #define MEASUREMENT_KIT_VERSION MK_VERSION /* Backward compatibility */
 
 #ifdef __cplusplus
