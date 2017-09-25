@@ -15,7 +15,7 @@ using namespace mk::report;
 
 static const std::regex re_name{"^[A-Za-z0-9._-]+$"};
 static const std::regex re_version{
-    "^[0-9]+.[0-9]+(.[0-9]+(-[A-Za-z0-9._-]+)?)?$"};
+    R"(^[0-9]+\.[0-9]+(\.[0-9]+(-[A-Za-z0-9._-]+)?(\+[0-9]+)?)?$)"};
 
 static std::map<std::string, std::regex> mandatory_re{
     {"software_name", re_name},
