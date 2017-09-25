@@ -30,7 +30,7 @@ using namespace mk::report;
 
 static const std::regex re_name{R"(^[A-Za-z0-9._-]+$)"};
 static const std::regex re_version{
-    R"(\bv?(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)(?:-[\da-z\-]+(?:\.[\da-z\-]+)*)?(?:\+[\da-z\-]+(?:\.[\da-z\-]+)*)?\b)",
+    R"(^v?(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)(?:-[\da-z\-]+(?:\.[\da-z\-]+)*)?(?:\+[\da-z\-]+(?:\.[\da-z\-]+)*)?$)",
     std::regex::icase};
 
 static std::map<std::string, std::regex> mandatory_re{
