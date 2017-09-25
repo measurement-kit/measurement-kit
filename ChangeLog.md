@@ -1,6 +1,11 @@
+# MeasurementKit 0.7.4 [2017-09-25]
+
+- fix(`collector_client`): recognize build number (#1388)
+- Repair failing regress tests (#1382)
+
 # MeasurementKit 0.7.3 [2017-09-21]
 
-- fix(`tcp_connect1 template): never pass null transport to callback  (#1372)
+- fix(`tcp_connect1` template): never pass null transport to callback (#1372)
 
 # MeasurementKit 0.7.2 [2017-09-13]
 
