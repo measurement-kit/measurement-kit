@@ -1,3 +1,7 @@
+# MeasurementKit 0.7.5 [2017-09-27]
+
+- fix(logger): force ofile flush for each entry (#1394)
+
 # MeasurementKit 0.7.4 [2017-09-25]
 
 - fix(`collector_client`): recognize build number (#1388)
