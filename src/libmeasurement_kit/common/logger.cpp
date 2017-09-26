@@ -91,7 +91,9 @@ void Logger::logv(uint32_t level, const char *fmt, va_list ap) {
     }
 
     if (ofile_) {
-        *ofile_ << buffer_ << "\n";
+        // FIX: use `std::endl` rather than `\n` to make sure we flush
+        // after each line. Fixes TheTorProject/ooniprobe-ios#80.
+        *ofile_ << buffer_ << std::endl;
         // TODO: suppose here write fails... what do we want to do?
     }
 }
