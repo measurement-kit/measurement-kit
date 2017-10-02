@@ -169,6 +169,10 @@ ErrorOr<bool> same_pre(
     }
 
     int rem_bits = pre_bits % 8;
+    if (rem_bits == 0) {
+        return true;
+    }
+
     assert(i >= 0 && (size_t)i < ip1.size() && (size_t)i < ip2.size());
     if ((ip1[i] >> (8 - rem_bits)) != (ip2[i] >> (8 - rem_bits))) {
         return false;
