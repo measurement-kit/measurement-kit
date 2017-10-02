@@ -230,6 +230,11 @@ static void tcp_many(std::vector<std::string> ips, SharedPtr<Entry> entry,
         };
     };
 
+    // this is needed in case dns_many() returns no ips
+    if (ips.size() == 0) {
+        cb(NoError());
+        return;
+    }
     for (auto const &ip : ips) {
         // XXX hardcoded
         std::vector<int> ports{443, 5222};
