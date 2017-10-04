@@ -94,12 +94,12 @@ TEST_CASE("Cache works as expected") {
     SECTION("cache is evicted when too many SSL_CTX are created") {
         auto cache = Cache<1>{};
         REQUIRE(cache.size() == 0);
-        auto ssl = cache->get_client_ssl(default_cert, "www.google.com",
+        auto ssl = cache.get_client_ssl(default_cert, "www.google.com",
                                         Logger::global());
         REQUIRE(*ssl != nullptr);
         REQUIRE(cache.size() == 1);
         SSL_free(*ssl);
-        ssl = cache->get_client_ssl("./test/fixtures/saved_ca_bundle.pem",
+        ssl = cache.get_client_ssl("./test/fixtures/saved_ca_bundle.pem",
                                    "www.google.com", Logger::global());
         REQUIRE(*ssl != nullptr);
         // Note: we expect this to be equal to one, meaning that the first
@@ -111,12 +111,12 @@ TEST_CASE("Cache works as expected") {
     SECTION("cache works in the common case") {
         auto cache = Cache<>{};
         REQUIRE(cache.size() == 0);
-        auto ssl = cache->get_client_ssl(default_cert, "www.google.com",
+        auto ssl = cache.get_client_ssl(default_cert, "www.google.com",
                                         Logger::global());
         REQUIRE(*ssl != nullptr);
         REQUIRE(cache.size() == 1);
         SSL_free(*ssl);
-        ssl = cache->get_client_ssl("./test/fixtures/basic_ca.pem",
+        ssl = cache.get_client_ssl("./test/fixtures/basic_ca.pem",
                                    "www.google.com", Logger::global());
         REQUIRE(*ssl != nullptr);
         REQUIRE(cache.size() == 2);
@@ -126,10 +126,10 @@ TEST_CASE("Cache works as expected") {
     SECTION("cache uses same SSL_CTX for equal certificate path") {
         auto cache = Cache<>{};
         REQUIRE(cache.size() == 0);
-        auto first = cache->get_client_ssl(default_cert, "www.google.com",
+        auto first = cache.get_client_ssl(default_cert, "www.google.com",
                                           Logger::global());
         REQUIRE(!!first);
-        auto second = cache->get_client_ssl(default_cert, "www.kernel.org",
+        auto second = cache.get_client_ssl(default_cert, "www.kernel.org",
                                            Logger::global());
         REQUIRE(!!second);
         REQUIRE(SSL_get_SSL_CTX(*first) == SSL_get_SSL_CTX(*second));
@@ -139,7 +139,7 @@ TEST_CASE("Cache works as expected") {
 
     SECTION("cache behaves when Context::make fails") {
         auto cache = Cache<>{};
-        auto r = cache->get_client_ssl<context_make_fail>(
+        auto r = cache.get_client_ssl<context_make_fail>(
               default_cert, "www.google.com", Logger::global());
         REQUIRE(!r);
         REQUIRE(r.as_error() == MockedError());
@@ -175,14 +175,14 @@ TEST_CASE("verify_peer works as expected") {
     Cache<> c;
 
     SECTION("when SSL_get_verify_result fails") {
-        auto ssl = *c->get_client_ssl(default_cert, "x.org", Logger::global());
+        auto ssl = *c.get_client_ssl(default_cert, "x.org", Logger::global());
         REQUIRE(verify_peer<ssl_get_verify_result_fail>(
                       "", ssl, Logger::global()) != NoError());
         SSL_free(ssl);
     }
 
     SECTION("when SSL_get_peer_certificate fails") {
-        auto ssl = *c->get_client_ssl(default_cert, "x.org", Logger::global());
+        auto ssl = *c.get_client_ssl(default_cert, "x.org", Logger::global());
         REQUIRE((verify_peer<ssl_get_verify_result_success,
                              ssl_get_peer_certificate_fail>(
                       "", ssl, Logger::global())) != NoError());
@@ -190,7 +190,7 @@ TEST_CASE("verify_peer works as expected") {
     }
 
     SECTION("when tls_check_name fails") {
-        auto ssl = *c->get_client_ssl(default_cert, "x.org", Logger::global());
+        auto ssl = *c.get_client_ssl(default_cert, "x.org", Logger::global());
         REQUIRE((verify_peer<ssl_get_verify_result_success,
                              ssl_get_peer_certificate_success,
                              tls_check_name_fail>("", ssl, Logger::global())) !=
@@ -199,7 +199,7 @@ TEST_CASE("verify_peer works as expected") {
     }
 
     SECTION("when tls_check_name does not match") {
-        auto ssl = *c->get_client_ssl(default_cert, "x.org", Logger::global());
+        auto ssl = *c.get_client_ssl(default_cert, "x.org", Logger::global());
         REQUIRE((verify_peer<ssl_get_verify_result_success,
                              ssl_get_peer_certificate_success,
                              tls_check_name_nomatch>(
