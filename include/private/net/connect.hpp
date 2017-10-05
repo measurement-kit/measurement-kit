@@ -4,6 +4,7 @@
 #ifndef PRIVATE_NET_CONNECT_HPP
 #define PRIVATE_NET_CONNECT_HPP
 
+#include "private/net/emitter.hpp"
 #include "private/common/utils.hpp"
 #include "../ext/tls_internal.h"
 
@@ -16,22 +17,16 @@
 struct bufferevent;
 struct ssl_st;
 
-extern "C" {
-void mk_bufferevent_on_event(bufferevent *, short, void *);
-}
-
 namespace mk {
 namespace net {
 
 class ConnectResult {
   public:
     dns::ResolveHostnameResult resolve_result;
-    std::vector<Error> connect_result;
-    double connect_time = 0.0;
-    bufferevent *connected_bev = nullptr;
+    SharedPtr<Transport> connected_txp;
 };
 
-typedef std::function<void(std::vector<Error>, bufferevent *)> ConnectFirstOfCb;
+typedef std::function<void(Error, std::vector<Error>)> ConnectFirstOfCb;
 
 void connect_first_of(SharedPtr<ConnectResult> result, int port,
                       ConnectFirstOfCb cb, Settings settings = {},
@@ -45,10 +40,14 @@ void connect_logic(std::string hostname, int port,
                    SharedPtr<Reactor> reactor = Reactor::global(),
                    SharedPtr<Logger> logger = Logger::global());
 
-void connect_ssl(bufferevent *orig_bev, ssl_st *ssl, std::string hostname,
-                 Callback<Error, bufferevent *> cb,
+void connect_ssl(SharedPtr<Transport> txp, ssl_st *ssl, std::string hostname,
+                 Callback<Error> cb,
                  SharedPtr<Reactor> = Reactor::global(),
                  SharedPtr<Logger> = Logger::global());
+
+void connect_ssl(SharedPtr<Transport> txp, std::string hostname,
+                 Settings settings, SharedPtr<Reactor> reactor,
+                 SharedPtr<Logger> logger, Callback<Error> &&cb);
 
 class ConnectManyCtx {
   public:
