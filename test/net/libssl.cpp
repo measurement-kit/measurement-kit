@@ -81,7 +81,7 @@ static ErrorOr<Var<Context>> context_make_fail(std::string, Var<Logger>) {
 TEST_CASE("Cache works as expected") {
     SECTION("different threads get different SSL_CTX") {
         auto make = []() {
-            return Cache<>::thread_local_instance().get_client_ssl(
+            return Cache<>::thread_local_instance()->get_client_ssl(
                   default_cert, "www.google.com", Logger::global());
         };
         auto first = std::async(std::launch::async, make).get();

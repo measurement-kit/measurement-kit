@@ -16,6 +16,9 @@ MINIOSVERSION="9.0"
 if [ "$PLATFORM" = "iphoneos" ]; then
     EXTRA_CONFIG="--host=arm-apple-darwin --target=arm-apple-darwin --disable-shared"
     MINVERSION="-miphoneos-version-min=$MINIOSVERSION"
+    if [ "$ARCH" = "armv7" -o "$ARCH" = "armv7s" ]; then
+        CPPFLAGS="-DMK_NO_THREAD_LOCAL"
+    fi
 elif [ "$ARCH" = "i386" ]; then
     EXTRA_CONFIG="--host=i386-apple-darwin --target=i386-apple-darwin --disable-shared"
     MINVERSION="-mios-simulator-version-min=$MINIOSVERSION"
@@ -36,7 +39,7 @@ DESTDIR="$ROOTDIR/tmp"
 
 export CC="$(xcrun -find -sdk ${PLATFORM} cc)"
 export CXX="$(xcrun -find -sdk ${PLATFORM} g++)"
-export CPPFLAGS="-arch ${ARCH} -isysroot $(xcrun -sdk ${PLATFORM} --show-sdk-path)"
+export CPPFLAGS="-arch ${ARCH} -isysroot $(xcrun -sdk ${PLATFORM} --show-sdk-path) $CPPFLAGS"
 export CFLAGS="-arch ${ARCH} $MINVERSION -isysroot $(xcrun -sdk ${PLATFORM} --show-sdk-path)"
 export CXXFLAGS="-arch ${ARCH} $MINVERSION -isysroot $(xcrun -sdk ${PLATFORM} --show-sdk-path)"
 export LDFLAGS="-arch ${ARCH} $MINVERSION -isysroot $(xcrun -sdk ${PLATFORM} --show-sdk-path)"
