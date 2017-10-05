@@ -1,3 +1,7 @@
+# MeasurementKit 0.7.6 [2017-10-05]
+
+- Fix for systems that don't support `thread_local` (#1402)
+
 # MeasurementKit 0.7.5 [2017-09-27]
 
 - fix(logger): force ofile flush for each entry (#1394)
