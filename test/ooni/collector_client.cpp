@@ -196,7 +196,7 @@ static Entry ENTRY{
     {"probe_cc", "ZZ"},
     {"probe_ip", "127.0.0.1"},
     {"software_name", "measurement_kit"},
-    {"software_version", "0.2.0-alpha.1"},
+    {"software_version", "0.2.0-alpha.1+11.1"},
     {"test_keys", {
         {"failure", nullptr},
         {"received", Json::array()},
@@ -220,7 +220,7 @@ static Entry BAD_ENTRY{
     {"probe_cc", "ZZ"},
     {"probe_ip", "127.0.0.1"},
     {"software_name", "measurement kit"}, // This should fail
-    {"software_version", "0.2.0-alpha.1"},
+    {"software_version", "0.2.0-alpha.1+11.1"},
     {"test_keys", {
         {"failure", nullptr},
         {"received", Json::array()},
