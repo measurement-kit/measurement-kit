@@ -2,9 +2,10 @@
 set -e
 
 export CPP="clang -E"
+export CPPFLAGS="$CPPFLAGS -Wdate-time -D_FORTIFY_SOURCE=2"
 export CC="clang"
 export CXX="clang++"
-export CXXFLAGS="-stdlib=libc++ $CXXFLAGS"
+export CXXFLAGS="-stdlib=libc++ $CXXFLAGS -fstack-protector-strong -Wformat -Werror=format-security"
 export pkg_make_check_rule="run-valgrind-docker"
 
 debian_deps="$debian_deps autoconf"
