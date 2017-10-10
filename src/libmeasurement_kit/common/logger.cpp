@@ -27,7 +27,7 @@ class DefaultLogger : public Logger, public NonCopyable, public NonMovable {
             std::string message;
             if ((level & MK_LOG_EVENT) != 0) {
                 Error err = json_process(
-                    s, [&](auto j) { message = j.dump(4); });
+                    s, [&](Json j) { message = j.dump(4); });
                 if (err) {
                     fprintf(
                         stderr, "warning: logger cannot parse json message\n");

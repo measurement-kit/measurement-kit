@@ -22,7 +22,7 @@ my_json_parse_process_and_filter_errors(const std::string &data,
 template <MK_MOCK(my_json_parse_process_and_filter_errors)>
 ErrorOr<SharedPtr<BouncerReply>> create_impl(std::string data, SharedPtr<Logger> logger) {
     SharedPtr<BouncerReply> reply{new BouncerReply};
-    Error err = my_json_parse_process_and_filter_errors(data, [&](auto j) {
+    Error err = my_json_parse_process_and_filter_errors(data, [&](Json j) {
         reply->response = j;
         if (reply->response.find("error") != reply->response.end()) {
             if (reply->response["error"] == "collector-not-found") {

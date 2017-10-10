@@ -196,14 +196,14 @@ class LibeventReactor : public Reactor, public NonCopyable, public NonMovable {
     }
 
     void pollin_once(socket_t fd, double timeo, Callback<Error> &&cb) override {
-        pollfd(fd, MK_POLLIN, timeo, [cb = std::move(cb)](Error err, short) {
+        pollfd(fd, MK_POLLIN, timeo, [=](Error err, short) {
             cb(std::move(err));
         });
     }
 
     void pollout_once(
             socket_t fd, double timeo, Callback<Error> &&cb) override {
-        pollfd(fd, MK_POLLOUT, timeo, [cb = std::move(cb)](Error err, short) {
+        pollfd(fd, MK_POLLOUT, timeo, [=](Error err, short) {
             cb(std::move(err));
         });
     }

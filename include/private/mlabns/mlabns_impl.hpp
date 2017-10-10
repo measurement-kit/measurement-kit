@@ -86,7 +86,7 @@ void query_impl(std::string tool, Callback<Error, Reply> callback,
                 return;
             }
             Reply reply;
-            Error err = json_process(json_response, [&](auto node) {
+            Error err = json_process(json_response, [&](Json node) {
                 reply.city = node.at("city");
                 reply.url = node.at("url");
                 for (auto ip2 : node.at("ip")) {
