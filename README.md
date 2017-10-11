@@ -113,6 +113,8 @@ Very briefly, to build from the git repository do:
 ./autogen.sh
 ./configure
 make
+sudo make install    # optional, if you want to install to `/usr/local`
+sudo /sbin/ldconfig  # required only on Linux if you install
 ```
 
 See [the Unix tutorial](doc/tutorial/unix.md) for more details.
