@@ -458,7 +458,7 @@ which you registered a callback. To this end, add a function for telling
 MK to stop receiving the event(s) and adjust the code to deal with the
 case whether the user wants to continue receiving event(s):
 
-```C++
+```diff
  void start_operation(SharedPtr<Context> ctx /*, Params..., */,
          std::function<void(Error /*, Callback params... */)> &&cb) {
      if (!!ctx->cb) {
