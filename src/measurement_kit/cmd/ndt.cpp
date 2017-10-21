@@ -96,6 +96,7 @@ int main(std::list<Callback<BaseTest &>> &initializers, int argc, char **argv) {
               printf("MSS: %ld\n", mss);
               printf("Timeouts: %ld\n", timeouts);
               printf("\n");
+              fflush(stdout);
           })
           .run();
     return 0;
