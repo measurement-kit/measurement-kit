@@ -124,12 +124,12 @@ void get_resources_for_country_impl(std::string latest, Json manifest,
     }
     set_max_redirects(settings);
     // TODO: do we need to cross validate latest?
-    std::vector<Continuation<Error>> input;
     /*
      * Important: MUST be entry and not &entry because we need a copy!
      */
+    ParallelExecutor parallel_executor(std::move(cb));
     for (auto entry : manifest["resources"]) {
-        input.push_back([=](Callback<Error> cb) {
+        parallel_executor.add([=](Callback<Error> cb) {
             if (!entry.is_object()) {
                 cb(JsonDomainError());
                 return;
@@ -206,7 +206,7 @@ void get_resources_for_country_impl(std::string latest, Json manifest,
         });
     }
     logger->info("Downloading resources; please, be patient...");
-    mk::parallel(input, cb, 4);
+    parallel_executor.start(2);
 }
 
 template <MK_MOCK(get_manifest_as_json), MK_MOCK(get_resources_for_country)>

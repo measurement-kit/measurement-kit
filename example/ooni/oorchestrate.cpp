@@ -2,12 +2,9 @@
 // Measurement-kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
-#include "private/common/fcompose.hpp"
-#include <measurement_kit/ooni.hpp>
-
-#include <unistd.h>
-
 #include <future>
+#include <measurement_kit/ooni.hpp>
+#include <unistd.h>
 
 using namespace mk::ooni::orchestrate;
 using namespace mk::ooni;
@@ -38,57 +35,43 @@ int main(int argc, char **argv) {
     client.network_type = "wifi";
     // client.device_token = "{TOKEN}";  /* Not needed on PC devices */
     client.registry_url = testing_registry_url();
-    std::promise<Error> promise;
-    std::future<Error> future = promise.get_future();
     Auth auth;
-    Error err = auth.load(path);
-    auto func = mk::fcompose(
-          mk::fcompose_policy_async(),
-          [&err, &client, &path](Auth &&auth,
-                                 Callback<Error &&, Auth &&> &&cb) {
-              if (!err) {
-                  // If we have loaded the authentication, proceed
-                  cb(NoError(), std::move(auth));
-                  return;
-              }
-              client.register_probe("", [&path, cb = std::move(cb) ](
-                                              Error && error, Auth && auth) {
-                  if (error) {
-                      cb(std::move(error), {});
-                      return;
-                  }
-                  if ((error = auth.dump(path)) != NoError()) {
-                      cb(std::move(error), {});
-                      return;
-                  }
-                  cb(NoError(), std::move(auth));
-              });
-          },
-          [&client](Error &&error, Auth &&auth,
-                    Callback<Error &&, Auth &&> &&cb) {
-              if (error) {
-                  cb(std::move(error), {});
-                  return;
-              }
-              client.network_type = "3g"; // Simulate network change
-              client.update(std::move(auth), std::move(cb));
-          },
-          [&client, &path](Error &&error, Auth &&auth,
-                           Callback<Error &&, Auth &&> &&cb) {
-              // Second update to check whether the auth token is working
-              if (error) {
-                  cb(std::move(error), std::move(auth));
-                  return;
-              }
-              // Dump after update() so we have also the token stored on disk
-              if ((error = auth.dump(path)) != NoError()) {
-                  cb(std::move(error), {});
-                  return;
-              }
-              client.network_type = "wifi"; // Simulate network change
-              client.update(std::move(auth), std::move(cb));
-          });
-    func(std::move(auth),
-         [&promise](Error &&error, Auth &&) { promise.set_value(error); });
-    return (future.get()) ? 1 : 0;
+    auto run_with_promise =
+        [&](std::function<void(std::promise<Error> &)> &&f) {
+            std::promise<Error> promise;
+            std::future<Error> future = promise.get_future();
+            f(promise);
+            if (future.get() != NoError()) {
+                client.logger->warn("Operation failed; terminating");
+                exit(1);
+            }
+        };
+    auto process_result = [&](std::promise<Error> &promise, Error &&error,
+                              Auth &&new_auth) {
+        if (!!error) {
+            error = auth.dump(path);
+        }
+        std::swap(auth, new_auth);
+        promise.set_value(error);
+    };
+    run_with_promise([&](std::promise<Error> &promise) {
+        Error error = auth.load(path);
+        if (!!error) {
+            client.register_probe("", [&](Error &&error, Auth &&new_auth) {
+                process_result(promise, std::move(error), std::move(new_auth));
+            });
+        } else {
+            promise.set_value(NoError());
+        }
+    });
+    auto simulate_network_change = [&](std::string network_type) {
+        run_with_promise([&](std::promise<Error> &promise) {
+            client.network_type = network_type;
+            client.update(std::move(auth), [&](Error &&error, Auth &&new_auth) {
+                process_result(promise, std::move(error), std::move(new_auth));
+            });
+        });
+    };
+    simulate_network_change("3g");
+    simulate_network_change("wifi");
 }

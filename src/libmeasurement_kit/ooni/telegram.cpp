@@ -2,11 +2,10 @@
 // Measurement-kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
-#include "private/common/fcompose.hpp"
-#include "private/common/parallel.hpp"
-#include "private/common/utils.hpp"
 #include "private/ooni/constants.hpp"
 #include "private/ooni/utils.hpp"
+#include "private/common/parallel.hpp"
+#include "private/common/utils.hpp"
 #include <measurement_kit/ooni.hpp>
 
 namespace mk {
@@ -17,8 +16,10 @@ using namespace mk::report;
 static void tcp_many(const std::vector<std::string> ip_ports, SharedPtr<Entry> entry,
         Settings options, SharedPtr<Reactor> reactor, SharedPtr<Logger> logger,
         Callback<Error> all_done_cb) {
+
     // if any endpoints are unblocked, switch this to false
     (*entry)["telegram_tcp_blocking"] = true;
+
     auto connected_cb = [=](std::string ip, int port, Callback<Error> done_cb) {
         return [=](Error connect_error, SharedPtr<net::Transport> txp) {
             Entry result = {
@@ -42,31 +43,31 @@ static void tcp_many(const std::vector<std::string> ip_ports, SharedPtr<Entry> e
         };
     };
 
-    std::vector<Continuation<Error>> continuations;
+    static constexpr size_t parallelism = 3;
+    ParallelExecutor parallel_executor{std::move(all_done_cb)};
     for (auto ip_port : ip_ports) {
         std::list<std::string> ip_port_l = split(ip_port, ":");
         if (ip_port_l.size() != 2) {
             logger->warn("Couldn't split ip_port: %s", ip_port.c_str());
-            (*entry)["failure"] = ValueError().reason;
-            all_done_cb(ValueError());
-            return;
+            throw ValueError(); // Input provided by us; should not happen
         }
         std::string ip = ip_port_l.front();
         int port = std::stoi(ip_port_l.back());
 
         options["host"] = ip;
         options["port"] = port;
-        continuations.push_back([=](Callback<Error> done_cb) {
+        parallel_executor.add([=](Callback<Error> done_cb) {
             templates::tcp_connect(
                 options, connected_cb(ip, port, done_cb), reactor, logger);
         });
     }
-    mk::parallel(continuations, all_done_cb, 3 /* parallelism */);
+    parallel_executor.start(parallelism);
 }
 
 static void http_many(const std::vector<std::string> urls, std::string type,
-    SharedPtr<Entry> entry, Settings options, SharedPtr<Reactor> reactor,
-    SharedPtr<Logger> logger, Callback<Error> all_done_cb) {
+        SharedPtr<Entry> entry, Settings options, SharedPtr<Reactor> reactor,
+        SharedPtr<Logger> logger, Callback<Error> all_done_cb) {
+
     if (type == "endpoints") {
         // if any endpoints are unblocked, switch this to false
         (*entry)["telegram_tcp_blocking"] = true;
@@ -75,6 +76,7 @@ static void http_many(const std::vector<std::string> urls, std::string type,
         (*entry)["telegram_web_status"] = "ok";
         (*entry)["telegram_web_failure"] = nullptr;
     }
+
     auto http_cb = [=](std::string url, Callback<Error> done_cb) {
         return [=](Error err, SharedPtr<http::Response> response) {
             if (!!err) {
@@ -99,17 +101,18 @@ static void http_many(const std::vector<std::string> urls, std::string type,
         };
     };
 
-    std::vector<Continuation<Error>> continuations;
+    static constexpr size_t parallelism = 3;
+    ParallelExecutor parallel_executor{std::move(all_done_cb)};
     for (auto url : urls) {
         options["http/url"] = url;
         http::Headers headers = constants::COMMON_CLIENT_HEADERS;
         std::string body;
-        continuations.push_back([=](Callback<Error> done_cb) {
+        parallel_executor.add([=](Callback<Error> done_cb) {
             templates::http_request(entry, options, headers, body,
                 http_cb(url, done_cb), reactor, logger);
         });
     }
-    mk::parallel(continuations, all_done_cb, 3 /* parallelism */);
+    parallel_executor.start(parallelism);
 }
 
 void telegram(Settings options, Callback<SharedPtr<report::Entry>> callback,
@@ -135,34 +138,39 @@ void telegram(Settings options, Callback<SharedPtr<report::Entry>> callback,
     logger->info("starting telegram test");
     SharedPtr<Entry> entry(new Entry);
 
-    mk::fcompose(mk::fcompose_policy_async(),
-        [=](Callback<> cb) {
+    // A parallel executor with parallelism equal to one runs each task,
+    // regardless of whether it succeeds or not, in sequence.
+    static constexpr size_t sequential = 1;
+
+    ParallelExecutor{[=](Error) {
+        logger->info("calling final callback");
+        callback(entry);
+    }}
+        .add([=](Callback<Error> cb) {
             http_many(TELEGRAM_WEB_URLS, "web", entry, options, reactor, logger,
                 [=](Error err) {
                     logger->info("saw %s in Telegram Web",
                         (!!err) ? "at least one error" : "no errors");
-                    cb();
+                    cb(err);
                 });
-        },
-        [=](Callback<> cb) {
+        })
+        .add([=](Callback<Error> cb) {
             tcp_many(TELEGRAM_TCP_ENDPOINTS, entry, options, reactor, logger,
                 [=](Error err) {
                     logger->info("saw %s in Telegram's TCP endpoints",
                         (!!err) ? "at least one error" : "no errors");
-                    cb();
+                    cb(err);
                 });
-        },
-        [=](Callback<> cb) {
+        })
+        .add([=](Callback<Error> cb) {
             http_many(TELEGRAM_HTTP_ENDPOINTS, "endpoints", entry, options,
                 reactor, logger, [=](Error err) {
                     logger->info("saw %s in Telegram's HTTP endpoints",
                         (!!err) ? "at least one error" : "no errors");
-                    cb();
+                    cb(err);
                 });
-        })([=]() {
-        logger->info("calling final callback");
-        callback(entry);
-    });
+        })
+        .start(sequential);
 }
 
 } // namespace ooni

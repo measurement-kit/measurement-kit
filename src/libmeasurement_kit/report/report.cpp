@@ -2,9 +2,7 @@
 // Measurement-kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
-#include "private/common/fmap.hpp"
 #include "private/common/parallel.hpp"
-
 #include "private/common/utils.hpp"
 
 #include <measurement_kit/report.hpp>
@@ -45,12 +43,12 @@ Entry Report::get_dummy_entry() const {
     return entry;
 }
 
-#define FMAP mk::fmap<SharedPtr<BaseReporter>, Continuation<Error>>
-
 void Report::open(Callback<Error> callback) {
-    mk::parallel(FMAP(reporters_, [=](SharedPtr<BaseReporter> r) {
-        return r->open(*this);
-    }), callback);
+    ParallelExecutor parallel_executor{std::move(callback)};
+    for (auto &reporter : reporters_) {
+        parallel_executor.add(reporter->open(*this));
+    }
+    parallel_executor.start(2);
 }
 
 void Report::write_entry(Entry entry, Callback<Error> callback,
@@ -91,18 +89,20 @@ void Report::write_entry(Entry entry, Callback<Error> callback,
             entry["report_id"].dump().c_str());
     }
 
-    mk::parallel(FMAP(reporters_, [=](SharedPtr<BaseReporter> r) {
-        return r->write_entry(entry);
-    }), callback);
+    ParallelExecutor parallel_executor{std::move(callback)};
+    for (auto &reporter : reporters_) {
+        parallel_executor.add(reporter->write_entry(entry));
+    }
+    parallel_executor.start(2);
 }
 
 void Report::close(Callback<Error> callback) {
-    mk::parallel(FMAP(reporters_, [](SharedPtr<BaseReporter> r) {
-        return r->close();
-    }), callback);
+    ParallelExecutor parallel_executor{std::move(callback)};
+    for (auto &reporter : reporters_) {
+        parallel_executor.add(reporter->close());
+    }
+    parallel_executor.start(2);
 }
-
-#undef FMAP // So long, and thanks for the fish
 
 } // namespace report
 } // namespace mk

@@ -2,9 +2,7 @@
 // Measurement-kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
-#include "private/common/fmap.hpp"
 #include "private/common/parallel.hpp"
-#include "private/common/range.hpp"
 #include "private/nettests/runnable.hpp"
 
 #include "private/common/utils.hpp"
@@ -37,7 +35,7 @@ void Runnable::main(std::string, Settings, Callback<SharedPtr<report::Entry>> cb
 }
 void Runnable::fixup_entry(report::Entry &) {}
 
-void Runnable::run_next_measurement(size_t thread_id, Callback<Error> cb,
+void Runnable::run_next_measurement(size_t thread_id, ParallelCallback cb,
                                     size_t num_entries,
                                     SharedPtr<size_t> current_entry) {
     logger->debug("net_test: running next measurement");
@@ -385,21 +383,20 @@ void Runnable::begin(Callback<Error> cb) {
                             return;
                         }
                         size_t num_entries = inputs.size();
-
                         // Run `parallelism` measurements in parallel
                         SharedPtr<size_t> current_entry(new size_t(0));
-                        mk::parallel(mk::fmap<size_t, Continuation<Error>>(
-                                         mk::range<size_t>(
-                                             options.get("parallelism", 3)),
-                                         [=](size_t thread_id) {
-                                             return [=](Callback<Error> cb) {
-                                                 run_next_measurement(
-                                                     thread_id, cb, num_entries,
-                                                     current_entry);
-                                             };
-                                         }),
-                                     cb);
-
+                        ErrorOr<int> parallelism =
+                            options.get_noexcept("parallelism", 3);
+                        if (!parallelism || *parallelism <= 0) {
+                            cb(ValueError());
+                            return;
+                        }
+                        ParallelCallback pcb{
+                              static_cast<size_t>(*parallelism), std::move(cb)};
+                        for (size_t i = 0; i < (size_t)*parallelism; ++i) {
+                            run_next_measurement(
+                                i, pcb, num_entries, current_entry);
+                        }
                     });
                 },
                 options, reactor, logger);

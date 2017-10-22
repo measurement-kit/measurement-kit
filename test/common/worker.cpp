@@ -3,20 +3,17 @@
 // and LICENSE for more information on the copying conditions.
 
 #define CATCH_CONFIG_MAIN
+
 #include "private/ext/catch.hpp"
-
 #include "private/common/worker.hpp"
-#include "private/common/range.hpp"
-
-#include <measurement_kit/common.hpp>
-
 #include <chrono>
 #include <iostream>
+#include <measurement_kit/common.hpp>
 #include <thread>
 
 TEST_CASE("The worker is robust to submitting many tasks in a row") {
     auto worker = mk::SharedPtr<mk::Worker>::make();
-    for (auto _: mk::range<int>(128)) {
+    for (int i = 0; i < 128; ++i) {
         worker->call_in_thread([]() {
             using namespace std::chrono_literals;
             std::this_thread::sleep_for(2s);

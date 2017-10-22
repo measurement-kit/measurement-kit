@@ -4,7 +4,7 @@
 #ifndef PRIVATE_OONI_ORCHESTRATE_IMPL_HPP
 #define PRIVATE_OONI_ORCHESTRATE_IMPL_HPP
 
-#include "private/common/fcompose.hpp"
+#include "private/common/waterfall.hpp"
 #include <measurement_kit/common/json.hpp>
 #include "private/common/mock.hpp"
 #include "private/common/utils.hpp"
@@ -252,83 +252,73 @@ class RegistryCtx {
     SharedPtr<Reactor> reactor;
 };
 
-static inline void ctx_enter_(Auth &&auth, ClientMetadata &&meta,
-                              SharedPtr<Reactor> reactor,
-                              Callback<SharedPtr<RegistryCtx>> &&cb) {
+static inline SharedPtr<RegistryCtx>
+ctx_make_(Auth &&auth, const ClientMetadata &meta, SharedPtr<Reactor> reactor) {
     auto ctx = SharedPtr<RegistryCtx>::make();
     ctx->auth = std::move(auth);
-    ctx->metadata = std::move(meta);
+    ctx->metadata = meta; // Make a copy
     ctx->reactor = reactor;
     ctx->logger = ctx->metadata.logger;
-    cb(ctx);
+    return ctx;
 }
 
 template <MK_MOCK_AS(http::request_json_object, http_request_json_object)>
-void ctx_register_(Error &&error, SharedPtr<RegistryCtx> ctx,
-                   Callback<Error &&, SharedPtr<RegistryCtx>> &&cb) {
-    if (error) {
-        cb(std::move(error), ctx);
-        return;
-    }
-    auto p = ctx->auth.password.empty() ? Auth::make_password()
-                                        : ctx->auth.password;
-    ctx->logger->info("Registering this probe with the orchestrator registry");
-    register_probe_<http_request_json_object>(
-          ctx->metadata, p, ctx->reactor,
-          [ cb = std::move(cb), ctx ](Error && err, Auth && auth) {
-              ctx->auth = std::move(auth);
-              cb(std::move(err), ctx);
-          });
+Continuation<Error> ctx_register_(SharedPtr<RegistryCtx> ctx) {
+    return [=](Callback<Error> &&cb) {
+        auto p = ctx->auth.password.empty() ? Auth::make_password()
+                                            : ctx->auth.password;
+        ctx->logger->info(
+            "Registering this probe with the orchestrator registry");
+        register_probe_<http_request_json_object>(
+            ctx->metadata, p, ctx->reactor,
+            [ cb = std::move(cb), ctx ](Error && err, Auth && auth) {
+                ctx->auth = std::move(auth);
+                cb(std::move(err));
+            });
+    };
 }
 
 template <MK_MOCK_AS(ooni::ip_lookup, ooni_ip_lookup)>
-void ctx_retrieve_missing_meta_(SharedPtr<RegistryCtx> ctx,
-                                Callback<Error &&, SharedPtr<RegistryCtx>> &&cb) {
-    if (ctx->metadata.platform == "") {
-        ctx->metadata.platform = mk_platform();
-    }
-    if (ctx->metadata.supported_tests.empty()) {
-        ctx->metadata.supported_tests = {{"dns_injection"},
-                                         {"http_header_field_manipulation"},
-                                         {"http_invalid_request_line"},
-                                         {"meek_fronted_requests"},
-                                         {"ndt"},
-                                         {"tcp_connect"},
-                                         {"web_connectivity"}};
-    }
-    if (ctx->metadata.probe_asn != "" && ctx->metadata.probe_cc != "") {
-        ctx->logger->debug("No need to guess ASN and/or CC");
-        cb(NoError(), ctx);
-        return;
-    }
-    ctx->logger->info("Looking up probe IP to guess ASN and/or CC");
-    do_find_location<ooni_ip_lookup>(ctx->metadata, ctx->reactor, [
-        cb = std::move(cb), ctx
-    ](Error && error, std::string && asn, std::string && cc) mutable {
-        ctx->metadata.probe_asn = std::move(asn);
-        ctx->metadata.probe_cc = std::move(cc);
-        cb(std::move(error), ctx);
-    });
+Continuation<Error> ctx_retrieve_missing_meta_(SharedPtr<RegistryCtx> ctx) {
+    return [=](Callback<Error> &&cb) {
+        if (ctx->metadata.platform == "") {
+            ctx->metadata.platform = mk_platform();
+        }
+        if (ctx->metadata.supported_tests.empty()) {
+            ctx->metadata.supported_tests = {{"dns_injection"},
+                                             {"http_header_field_manipulation"},
+                                             {"http_invalid_request_line"},
+                                             {"meek_fronted_requests"},
+                                             {"ndt"},
+                                             {"tcp_connect"},
+                                             {"web_connectivity"}};
+        }
+        if (ctx->metadata.probe_asn != "" && ctx->metadata.probe_cc != "") {
+            ctx->logger->debug("No need to guess ASN and/or CC");
+            cb(NoError());
+            return;
+        }
+        ctx->logger->info("Looking up probe IP to guess ASN and/or CC");
+        do_find_location<ooni_ip_lookup>(ctx->metadata, ctx->reactor, [
+            cb = std::move(cb), ctx
+        ](Error && error, std::string && asn, std::string && cc) mutable {
+            ctx->metadata.probe_asn = std::move(asn);
+            ctx->metadata.probe_cc = std::move(cc);
+            cb(std::move(error));
+        });
+    };
 }
 
 template <MK_MOCK_AS(http::request_json_object, http_request_json_object)>
-void ctx_update_(Error &&error, SharedPtr<RegistryCtx> ctx,
-                 Callback<Error &&, SharedPtr<RegistryCtx>> &&cb) {
-    if (error) {
-        cb(std::move(error), ctx);
-        return;
-    }
-    update_<http_request_json_object>(
-          ctx->metadata, std::move(ctx->auth), ctx->reactor,
-          [ cb = std::move(cb), ctx ](Error && error, Auth && auth) mutable {
-              ctx->auth = std::move(auth);
-              cb(std::move(error), ctx);
-          });
-}
-
-static inline void ctx_leave_(Error &&error, SharedPtr<RegistryCtx> ctx,
-                              Callback<Error &&, Auth &&> &&cb) {
-    cb(std::move(error), std::move(ctx->auth));
+Continuation<Error> ctx_update_(SharedPtr<RegistryCtx> ctx) {
+    return [=](Callback<Error> &&cb) {
+        update_<http_request_json_object>(
+            ctx->metadata, std::move(ctx->auth), ctx->reactor,
+            [ cb = std::move(cb), ctx ](Error && error, Auth && auth) mutable {
+                ctx->auth = std::move(auth);
+                cb(std::move(error));
+            });
+    };
 }
 
 template <MK_MOCK_AS(http::request_json_object, http_request_json_object),
@@ -339,20 +329,22 @@ void do_register_probe(std::string &&password, const ClientMetadata &m,
     // retrieve the password from it in `ctx_register_`
     Auth auth;
     auth.password = std::move(password);
-    mk::fcompose(mk::fcompose_policy_async(), ctx_enter_,
-                 ctx_retrieve_missing_meta_<ooni_ip_lookup>,
-                 ctx_register_<http_request_json_object>,
-                 ctx_leave_)(std::move(auth), m, reactor, std::move(cb));
+    SharedPtr<RegistryCtx> ctx = ctx_make_(std::move(auth), m, reactor);
+    WaterfallExecutor{[=](Error e) { cb(std::move(e), std::move(ctx->auth)); }}
+        .add(ctx_retrieve_missing_meta_<ooni_ip_lookup>(ctx))
+        .add(ctx_register_<http_request_json_object>(ctx))
+        .start();
 }
 
 template <MK_MOCK_AS(http::request_json_object, http_request_json_object),
           MK_MOCK_AS(ooni::ip_lookup, ooni_ip_lookup)>
 void do_update(Auth &&auth, const ClientMetadata &m, SharedPtr<Reactor> reactor,
                Callback<Error &&, Auth &&> &&cb) {
-    mk::fcompose(mk::fcompose_policy_async(), ctx_enter_,
-                 ctx_retrieve_missing_meta_<ooni_ip_lookup>,
-                 ctx_update_<http_request_json_object>,
-                 ctx_leave_)(std::move(auth), m, reactor, std::move(cb));
+    SharedPtr<RegistryCtx> ctx = ctx_make_(std::move(auth), m, reactor);
+    WaterfallExecutor{[=](Error e) { cb(std::move(e), std::move(ctx->auth)); }}
+        .add(ctx_retrieve_missing_meta_<ooni_ip_lookup>(ctx))
+        .add(ctx_update_<http_request_json_object>(ctx))
+        .start();
 }
 
 } // namespace orchestrate

@@ -3,87 +3,84 @@
 // and LICENSE for more information on the copying conditions.
 
 #define CATCH_CONFIG_MAIN
-#include "private/ext/catch.hpp"
 
+#include "private/ext/catch.hpp"
 #include "private/common/parallel.hpp"
+#include <measurement_kit/common/reactor.hpp>
 #include <measurement_kit/common.hpp>
 
 using namespace mk;
 
-TEST_CASE("mk::parallel() works as expected for empty vector") {
-    mk::parallel({}, [](Error error) {
-        REQUIRE((error == NoError()));
-    });
-}
+TEST_CASE("mk::parallel() works as expected") {
 
-TEST_CASE("mk::parallel() works as expected with all successes") {
-    SharedPtr<Reactor> reactor = Reactor::make();
-    reactor->run_with_initial_event([=]() {
-        std::vector<Continuation<Error>> input;
-        for (size_t i = 0; i < 16; ++i) {
-            input.push_back([=](Callback<Error> callback) {
-                reactor->call_later(i * 0.1, [=]() {
-                    callback(NoError());
-                });
-            });
-        }
-        mk::parallel(input, [=](Error error) {
-            REQUIRE((error == NoError()));
-            for (auto &sub_error: error.child_errors) {
-                REQUIRE((sub_error == NoError()));
-            }
-            reactor->stop();
-        });
-    });
-}
+    SECTION("With no continuations") {
+        auto okay = false;
+        auto count = 0;
+        ParallelExecutor parallel_executor{[&](Error error) {
+            okay = (error == NoError());
+            count += 1;
+        }};
+        parallel_executor.start(2);
+        REQUIRE(okay);
+        REQUIRE(count == 1);
+    }
 
-TEST_CASE("mk::parallel() works as expected with some failures") {
-    SharedPtr<Reactor> reactor = Reactor::make();
-    reactor->run_with_initial_event([=]() {
-        std::vector<Continuation<Error>> input;
-        for (size_t i = 0; i < 16; ++i) {
-            input.push_back([=](Callback<Error> callback) {
-                reactor->call_later(i * 0.1, [=]() {
-                    if ((i % 2) == 0) {
-                        callback(MockedError());
-                    } else {
-                        callback(NoError());
-                    }
-                });
-            });
-        }
-        mk::parallel(input, [=](Error error) {
-            REQUIRE((error == ParallelOperationError()));
-            REQUIRE((error.child_errors.size() == 16));
-            for (size_t i = 0; i < error.child_errors.size(); ++i) {
-                if ((i % 2) == 0) {
-                    REQUIRE((error.child_errors[i] == MockedError()));
-                } else {
-                    REQUIRE((error.child_errors[i] == NoError()));
-                }
-            }
-            reactor->stop();
-        });
-    });
-}
+    SECTION("With no parallelism") {
+        auto okay = false;
+        auto count = 0;
+        ParallelExecutor parallel_executor{[&](Error error) {
+            okay = (error == ValueError());
+            count += 1;
+        }};
+        parallel_executor.start(0);
+        REQUIRE(okay);
+        REQUIRE(count == 1);
+    }
 
-TEST_CASE("mk::parallel() works as expected with all failures") {
-    SharedPtr<Reactor> reactor = Reactor::make();
-    reactor->run_with_initial_event([=]() {
-        std::vector<Continuation<Error>> input;
-        for (size_t i = 0; i < 16; ++i) {
-            input.push_back([=](Callback<Error> callback) {
-                reactor->call_later(i * 0.1, [=]() {
-                    callback(MockedError());
+    auto fn = [](Error expected_err, std::function<Error(size_t)> &&set_err) {
+        static constexpr auto delay = 0.1;
+        static constexpr auto size = 16;
+        Error global_error = MockedError();
+        SharedPtr<Reactor> reactor = Reactor::make();
+        reactor->run_with_initial_event([=, &global_error]() {
+            ParallelExecutor parallel_executor{[=, &global_error](Error err) {
+                global_error = err;
+                reactor->stop();
+            }};
+            // Implementation note: the following callback does not reference
+            // the executor, so we verify that it is possible to create it
+            // somewhere on the stack and continue using it also later.
+            for (size_t i = 0; i < size; ++i) {
+                parallel_executor.add([=](Callback<Error> &&callback) {
+                    reactor->call_later(i * delay,
+                                        [=]() { callback(set_err(i)); });
                 });
-            });
-        }
-        mk::parallel(input, [=](Error error) {
-            REQUIRE((error == ParallelOperationError()));
-            for (auto &sub_error: error.child_errors) {
-                REQUIRE((sub_error == MockedError()));
             }
-            reactor->stop();
+            parallel_executor.start(2);
         });
-    });
+        REQUIRE(global_error == expected_err);
+        REQUIRE(global_error.child_errors.size() == size);
+        for (size_t i = 0; i < size; ++i) {
+            auto sub_error = global_error.child_errors[i];
+            REQUIRE(sub_error == set_err(i));
+        }
+    };
+
+    SECTION("With all successes") {
+        fn(NoError(), [](size_t) { return NoError(); });
+    };
+
+    SECTION("With some failures") {
+        fn(ParallelOperationError(), [](size_t i) -> Error {
+            if ((i % 2) == 0) {
+                return MockedError();
+            } else {
+                return NoError();
+            }
+        });
+    }
+
+    SECTION("With all failures") {
+        fn(ParallelOperationError(), [](size_t) { return MockedError(); });
+    };
 }
