@@ -74,6 +74,7 @@ int main(std::list<Callback<BaseTest &>> &initializers, int argc, char **argv) {
         double PacketLoss = adv["packet_loss"];
         printf("Loss: %lf (%.3lf%%)\n", PacketLoss, PacketLoss * 100.0);
         printf("\n");
+        fflush(stdout);
     })).run();
 
     return 0;
