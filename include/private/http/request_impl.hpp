@@ -65,7 +65,7 @@ void request_json_string_impl(
                     cb(error, response, jresponse);
                     return;
                 }
-                error = json_process(response->body, [&](auto json) {
+                error = json_process(response->body, [&](Json json) {
                     jresponse = std::move(json);
                 });
                 cb(error, response, jresponse);

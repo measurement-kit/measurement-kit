@@ -125,7 +125,7 @@ ErrorOr<Entry> get_next_entry(SharedPtr<std::istream> file, SharedPtr<Logger> lo
     logger->debug("Read line from report: %s", line.c_str());
     Entry entry;
     // Works because we are using Json::json() as Entry::Entry()
-    auto e = json_process(line, [&](auto j) { entry = j; });
+    auto e = json_process(line, [&](Json j) { entry = j; });
     if (e != NoError()) {
         return e;
     }

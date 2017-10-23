@@ -8,12 +8,14 @@
 
 namespace mk {
 
-template <typename Func> auto locked(std::mutex &mutex, Func &&func) {
+template <typename Func>
+auto locked(std::mutex &mutex, Func &&func) -> decltype(func()) {
     std::lock_guard<std::mutex> guard{mutex};
     return func();
 }
 
-template <typename Func> auto locked_global(Func &&func) {
+template <typename Func>
+auto locked_global(Func &&func) -> decltype(func()) {
     static std::mutex mutex;
     return locked(mutex, std::move(func));
 }
