@@ -1,3 +1,7 @@
+# MeasurementKit 0.7.7 [2017-10-24]
+
+- fix(cli): flush stdout more consistently (#1438)
+
 # MeasurementKit 0.7.6 [2017-10-05]
 
 - Fix for systems that don't support `thread_local` (#1402)
