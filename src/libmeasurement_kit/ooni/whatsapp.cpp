@@ -269,8 +269,9 @@ static void dns_many(std::vector<std::string> hostnames, SharedPtr<Entry> entry,
         Settings options, SharedPtr<Reactor> reactor, SharedPtr<Logger> logger,
         Callback<Error, host_to_ips_t> cb) {
     // if ANYthing is consistent, we consider dns not blocked
-    // XXX currently have no way of checking whether dns is "consistent,"
-    // so should we say "blocked" or "unblocked"...?
+    // XXX our view of the whatsapp network is known to be stale,
+    // so this "in network" logic should be considered only a heuristic
+    // with IPs wrongly considered inconsistent ~50% of the time.
     (*entry)["whatsapp_endpoints_status"] = "blocked";
     (*entry)["whatsapp_endpoints_dns_inconsistent"] = Entry::array();
     int names_count = hostnames.size();
@@ -283,18 +284,37 @@ static void dns_many(std::vector<std::string> hostnames, SharedPtr<Entry> entry,
             if (!!err) {
                 logger->info("whatsapp: dns error for %s", hostname.c_str());
             } else {
-                std::vector<std::string> this_ips;
+                std::vector<std::string> this_ips; // will check if they are consistent
                 for (auto answer : message->answers) {
                     if (answer.ipv4 != "") {
                         logger->info("(1) %s ipv4: %s", hostname.c_str(),
                                 answer.ipv4.c_str());
-                        (*host_to_ips)[hostname].push_back(answer.ipv4);
+						this_ips.push_back(answer.ipv4);
                     } else if (answer.hostname != "") {
                         logger->info("(2) %s hostname: %s", hostname.c_str(),
                                 answer.hostname.c_str());
                     } else {
                         /* NOTHING */;
                     }
+                }
+                // if *any* ips are in our old view of the whatsapp network,
+                // switch this to true.
+                bool this_host_consistent = false;
+                for (auto ip : this_ips) {
+                    if (ip_in_nets(ip, WHATSAPP_NETS)) {
+                        logger->info(
+                                "%s seems to belong to Whatsapp", ip.c_str());
+                        (*host_to_ips)[hostname].push_back(ip);
+                        (*entry)["whatsapp_endpoints_status"] = "ok";
+                        this_host_consistent = true;
+                    } else {
+                        logger->info("%s seems to NOT belong to Whatsapp",
+                                ip.c_str());
+                    }
+                }
+                if (!this_host_consistent) {
+                    (*entry)["whatsapp_endpoints_dns_inconsistent"].push_back(
+                            hostname);
                 }
             }
             *names_tested += 1;
@@ -303,7 +323,7 @@ static void dns_many(std::vector<std::string> hostnames, SharedPtr<Entry> entry,
                 for (auto const& hostname_ipv : *host_to_ips) {
                     ips_count += hostname_ipv.second.size();
                 }
-                logger->info("dns_many() found %d ips", (int)ips_count);
+                logger->info("dns_many() found %d consistent ips", (int)ips_count);
                 cb(NoError(), *host_to_ips);
             }
         };
