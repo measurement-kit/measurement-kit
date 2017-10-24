@@ -50,7 +50,7 @@
 /example/ooni/oorchestrate
 /include.am
 /include/measurement_kit/*.hpp
-/include/measurement_kit/common/git_version.hpp
+/include/measurement_kit/common/version.h
 /maxmind-geoip.*.dat*
 /measurement_kit
 /test-driver
