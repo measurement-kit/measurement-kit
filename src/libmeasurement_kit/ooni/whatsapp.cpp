@@ -201,7 +201,7 @@ bool ip_in_nets(std::string ip, std::vector<std::string> nets) {
     return false;
 }
 
-static void tcp_many(host_to_ips_t hostname_ipvs, SharedPtr<Entry> entry,
+static void tcp_many(host_to_ips_t host_to_ips, SharedPtr<Entry> entry,
         Settings options, SharedPtr<Reactor> reactor,
         SharedPtr<Logger> logger, Callback<Error> cb) {
     // all hostnames start here; are removed upon a TCP success
@@ -211,7 +211,7 @@ static void tcp_many(host_to_ips_t hostname_ipvs, SharedPtr<Entry> entry,
     (*entry)["whatsapp_endpoints_blocked"] = Entry::array();
     size_t ips_count = 0;
     SharedPtr<size_t> ips_tested(new size_t(0));
-    for (auto const& hostname_ipv : hostname_ipvs) {
+    for (auto const& hostname_ipv : host_to_ips) {
         blocked_hostnames->insert(hostname_ipv.first);
         ips_count += hostname_ipv.second.size() * 2; // two ports per IP
     }
@@ -249,7 +249,7 @@ static void tcp_many(host_to_ips_t hostname_ipvs, SharedPtr<Entry> entry,
         cb(NoError());
         return;
     }
-    for (auto const& hostname_ipv : hostname_ipvs) {
+    for (auto const& hostname_ipv : host_to_ips) {
         std::string hostname = hostname_ipv.first;
         for (auto const& ip : hostname_ipv.second) {
             // XXX hardcoded
@@ -404,18 +404,18 @@ void whatsapp(Settings options, Callback<SharedPtr<report::Entry>> callback,
                             cb();
                         });
             },
-            [=](Callback<std::map<std::string,std::vector<std::string>>> cb) {
+            [=](Callback<host_to_ips_t> cb) {
                 dns_many(whatsapp_endpoint_hostnames, entry, options, reactor,
-                        logger, [=](Error err, std::map<std::string,std::vector<std::string>> hostname_ipvs) {
+                        logger, [=](Error err, host_to_ips_t host_to_ips) {
                             logger->info("saw %s in Whatsapp's endpoints (DNS)",
                                     (!!err) ? "at least one error"
                                             : "no errors");
-                            cb(hostname_ipvs);
+                            cb(host_to_ips);
                         });
             },
-            [=](std::map<std::string,std::vector<std::string>> hostname_ipvs,
+            [=](host_to_ips_t host_to_ips,
                 Callback<> cb) {
-                tcp_many(hostname_ipvs, entry, options, reactor, logger, [=](Error err) {
+                tcp_many(host_to_ips, entry, options, reactor, logger, [=](Error err) {
                     logger->info("saw %s in Whatsapp's endpoints (TCP)",
                             (!!err) ? "at least one error" : "no errors");
                     cb();
