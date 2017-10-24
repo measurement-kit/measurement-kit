@@ -13,6 +13,7 @@ BaseTest &common_init(std::list<Callback<BaseTest &>> il, BaseTest &test) {
         .set_options("geoip_asn_path", "GeoIPASNum.dat")
         .on_progress([](double progress, std::string msg) {
             printf("%.0f%%: %s\n", 100.0 * progress, msg.c_str());
+            fflush(stdout);
         })
         .on_log([](uint32_t level, const char *message) {
             if (level <= MK_LOG_WARNING) {
