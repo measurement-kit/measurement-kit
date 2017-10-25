@@ -1,3 +1,7 @@
+# MeasurementKit 0.7.8 [2017-10-25]
+
+- version: expose version numbers
+
 # MeasurementKit 0.7.7 [2017-10-24]
 
 - fix(cli): flush stdout more consistently (#1438)
