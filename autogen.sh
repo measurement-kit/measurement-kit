@@ -62,7 +62,7 @@ gen_automatic_includes() {
 gen_headers() {
     echo "$(slug $1)_includedir = \${prefix}/$1"
     echo "$(slug $1)_include_HEADERS = # Empty"
-    for name in `ls $1`; do
+    for name in `ls $1|grep -v '\.in$'`; do
         if [ ! -d $1/$name ]; then
             echo "$(slug $1)_include_HEADERS += $1/$name"
         fi
