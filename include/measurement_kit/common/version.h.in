@@ -13,14 +13,16 @@
 
 // MK_VERSION is measurement-kit version according to manual tagging. This is
 // updated when we bless a new release. It does not accurately describe a
-// development build, for which it is better MK_VERSION_FULL.
-#define MK_VERSION "0.7.8"
+// development build, for which MK_VERSION_FULL may be better.
+#define MK_VERSION "0.7.10"
 
 // MEASUREMENT_KIT_VERSION is a backward compatibility alias for MK_VERSION.
 #define MEASUREMENT_KIT_VERSION MK_VERSION
 
 // MK_VERSION_FULL is the version obtained by runnning `git describe --tags`
-// as part of the `./autogen.sh` script that prepares a source tarball.
+// as part of the `./autogen.sh` script that prepares a source tarball. If we
+// cannot run `git` because we're not in a git repository, then we set this
+// variable equal to MK_VERSION.
 #define MK_VERSION_FULL "@MK_VERSION_FULL@"
 
 // MK_VERSION_MAJOR is the major version number extracted from MK_VERSION_FULL.
