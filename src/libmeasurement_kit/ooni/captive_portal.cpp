@@ -4,9 +4,9 @@
 
 #include "private/ooni/constants.hpp"
 #include "private/ooni/utils.hpp"
-#include <measurement_kit/common/detail/locked.hpp>
-#include <measurement_kit/common/detail/parallel.hpp>
-#include <measurement_kit/common/detail/utils.hpp>
+#include "private/common/locked.hpp"
+#include "private/common/parallel.hpp"
+#include "private/common/utils.hpp"
 
 namespace mk {
 namespace ooni {

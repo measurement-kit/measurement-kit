@@ -2,13 +2,14 @@
 // Measurement-kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
-#include <measurement_kit/common/detail/locked.hpp>
-#include <measurement_kit/common/libevent/reactor.hpp>
+#include "private/common/libevent_reactor.hpp"
+#include "private/common/locked.hpp"
 
 namespace mk {
 
 /*static*/ SharedPtr<Reactor> Reactor::make() {
-    return locked_global([]() { return SharedPtr<Reactor>{new libevent::Reactor<>}; });
+    return locked_global(
+            []() { return SharedPtr<Reactor>{new LibeventReactor<>}; });
 }
 
 Reactor::~Reactor() {}

@@ -4,8 +4,8 @@
 #ifndef PRIVATE_LIBEVENT_DNS_QUERY_HPP
 #define PRIVATE_LIBEVENT_DNS_QUERY_HPP
 
-#include <measurement_kit/common/detail/mock.hpp>
-#include <measurement_kit/common/detail/utils.hpp>
+#include "private/common/mock.hpp"
+#include "private/common/utils.hpp"
 #include "../net/utils.hpp"
 
 #include <event2/dns.h>

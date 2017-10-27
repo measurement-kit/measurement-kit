@@ -13,20 +13,36 @@ using namespace mk::http;
 using namespace mk::net;
 using namespace mk::report;
 
-static const std::regex re_name{"^[A-Za-z0-9._-]+$"};
+// Regex notes
+// -----------
+//
+// 1. [the default grammar is ECMAScript](
+//      http://en.cppreference.com/w/cpp/regex/basic_regex
+//    )
+//
+// 2. the `re_version` regexp is copied from [sindresorhus/semver-regex](
+//       https://github.com/sindresorhus/semver-regex/blob/624a91ef62e593abebbf8f411449ab0d257eac4d/index.js
+//    )
+//
+// 3. R"(...)" delimits a [raw characters sequence](
+//      http://en.cppreference.com/w/cpp/language/string_literal
+//    )
+
+static const std::regex re_name{R"(^[A-Za-z0-9._-]+$)"};
 static const std::regex re_version{
-    "^[0-9]+.[0-9]+(.[0-9]+(-[A-Za-z0-9._-]+)?)?$"};
+    R"(^v?(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)(?:-[\da-z\-]+(?:\.[\da-z\-]+)*)?(?:\+[\da-z\-]+(?:\.[\da-z\-]+)*)?$)",
+    std::regex::icase};
 
 static std::map<std::string, std::regex> mandatory_re{
     {"software_name", re_name},
     {"software_version", re_version},
-    {"probe_asn", std::regex{"^AS[0-9]+$"}},
-    {"probe_cc", std::regex{"^[A-Z]{2}$"}},
+    {"probe_asn", std::regex{R"(^AS[0-9]+$)"}},
+    {"probe_cc", std::regex{R"(^[A-Z]{2}$)"}},
     {"test_name", re_name},
     {"test_version", re_version},
     {"data_format_version", re_version},
     {"test_start_time",
-     std::regex{"^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}$"}},
+     std::regex{R"(^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}$)"}},
 };
 
 Error valid_entry(Entry entry) {

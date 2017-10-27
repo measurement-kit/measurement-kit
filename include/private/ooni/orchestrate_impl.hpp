@@ -4,10 +4,10 @@
 #ifndef PRIVATE_OONI_ORCHESTRATE_IMPL_HPP
 #define PRIVATE_OONI_ORCHESTRATE_IMPL_HPP
 
-#include <measurement_kit/common/detail/fcompose.hpp>
+#include "private/common/fcompose.hpp"
 #include <measurement_kit/common/json.hpp>
-#include <measurement_kit/common/detail/mock.hpp>
-#include <measurement_kit/common/detail/utils.hpp>
+#include "private/common/mock.hpp"
+#include "private/common/utils.hpp"
 
 #include <measurement_kit/ooni.hpp>
 

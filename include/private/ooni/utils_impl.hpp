@@ -4,8 +4,8 @@
 #ifndef PRIVATE_OONI_UTILS_IMPL_HPP
 #define PRIVATE_OONI_UTILS_IMPL_HPP
 
-#include <measurement_kit/common/detail/encoding.hpp>
-#include <measurement_kit/common/detail/mock.hpp>
+#include "private/common/encoding.hpp"
+#include "private/common/mock.hpp"
 #include "../ooni/utils.hpp"
 #include <regex>
 

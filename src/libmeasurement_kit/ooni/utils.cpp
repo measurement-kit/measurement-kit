@@ -3,7 +3,7 @@
 // and LICENSE for more information on the copying conditions.
 
 #include "private/ooni/utils_impl.hpp"
-#include <measurement_kit/common/detail/utils.hpp>
+#include "private/common/utils.hpp"
 
 namespace mk {
 namespace ooni {
@@ -19,7 +19,16 @@ void resolver_lookup(Callback<Error, std::string> callback, Settings settings,
 }
 
 /* static */ SharedPtr<GeoipCache> GeoipCache::thread_local_instance() {
-    static thread_local SharedPtr<GeoipCache> singleton(new GeoipCache);
+    // We have experimentally found that iOS armv7 does not support well
+    // thread_local. In such case, we allocate a new cache every time rather
+    // than using a thread local cache. We will be able to drop this fix
+    // in the moment in which support for 32-bit iOS will be dropped.
+    //
+    // See <https://github.com/measurement-kit/measurement-kit/issues/1397>.
+#ifndef MK_NO_THREAD_LOCAL
+    static thread_local
+#endif
+    SharedPtr<GeoipCache> singleton{new GeoipCache};
     return singleton;
 }
 
