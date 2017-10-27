@@ -1,3 +1,28 @@
+# MeasurementKit 0.7.8 [2017-10-25]
+
+- version: expose version numbers
+
+# MeasurementKit 0.7.7 [2017-10-24]
+
+- fix(cli): flush stdout more consistently (#1438)
+
+# MeasurementKit 0.7.6 [2017-10-05]
+
+- Fix for systems that don't support `thread_local` (#1402)
+
+# MeasurementKit 0.7.5 [2017-09-27]
+
+- fix(logger): force ofile flush for each entry (#1394)
+
+# MeasurementKit 0.7.4 [2017-09-25]
+
+- fix(`collector_client`): recognize build number (#1388)
+- Repair failing regress tests (#1382)
+
+# MeasurementKit 0.7.3 [2017-09-21]
+
+- fix(`tcp_connect1` template): never pass null transport to callback (#1372)
+
 # MeasurementKit 0.8.0-alpha [2017-09-19]
 
 - various small cleanups (#1286)
