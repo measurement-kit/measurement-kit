@@ -1,3 +1,13 @@
+# MeasurementKit 0.7.10 [2017-10-25]
+
+- Exclude version.h.in from common.hpp includes
+
+# MeasurementKit 0.7.9 [2017-10-25]
+
+- Fix version in generated source tarball
+- autogen.sh: don't install version.in
+- more accurate comments in version.h.in
+
 # MeasurementKit 0.7.8 [2017-10-25]
 
 - version: expose version numbers
