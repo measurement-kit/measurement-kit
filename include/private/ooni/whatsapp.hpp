@@ -1,8 +1,8 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
 // Measurement-kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
-#ifndef SRC_LIBMEASUREMENT_WHATSAPP_HPP
-#define SRC_LIBMEASUREMENT_WHATSAPP_HPP
+#ifndef PRIVATE_OONI_WHATSAPP_HPP
+#define PRIVATE_OONI_WHATSAPP_HPP
 
 #include <measurement_kit/ooni.hpp>
 
