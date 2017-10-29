@@ -152,6 +152,20 @@ class LibeventReactor : public Reactor, public NonCopyable, public NonMovable {
         }
     }
 
+    static void pollfd_cb(short evflags, void *opaque) {
+        auto cbp = static_cast<mk::Callback<mk::Error, short> *>(opaque);
+        mk::Error err = mk::NoError();
+        assert((evflags & (~(EV_TIMEOUT | EV_READ | EV_WRITE))) == 0);
+        if ((evflags & EV_TIMEOUT) != 0) {
+            err = mk::TimeoutError();
+        }
+        // In case of exception here, the stack is going to unwind, tearing down
+        // the libevent loop and leaking forever `cbp` and the event once that
+        // was used to invoke this callback.
+        (*cbp)(std::move(err), evflags);
+        delete cbp;
+    }
+
     // ## Private attributes
 
     event_base *evbase = nullptr;
@@ -163,16 +177,6 @@ class LibeventReactor : public Reactor, public NonCopyable, public NonMovable {
 // ## C linkage callbacks
 
 static inline void mk_pollfd_cb(evutil_socket_t, short evflags, void *opaque) {
-    auto cbp = static_cast<mk::Callback<mk::Error, short> *>(opaque);
-    mk::Error err = mk::NoError();
-    assert((evflags & (~(EV_TIMEOUT | EV_READ | EV_WRITE))) == 0);
-    if ((evflags & EV_TIMEOUT) != 0) {
-        err = mk::TimeoutError();
-    }
-    // In case of exception here, the stack is going to unwind, tearing down
-    // the libevent loop and leaking forever `cbp` and the event once that was
-    // used to invoke this callback.
-    (*cbp)(std::move(err), evflags);
-    delete cbp;
+    mk::LibeventReactor<>::pollfd_cb(evflags, opaque);
 }
 #endif
