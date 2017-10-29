@@ -97,6 +97,13 @@ class LibeventReactor : public Reactor, public NonCopyable, public NonMovable {
         if ((evbase = event_base_new()) == nullptr) {
             throw std::runtime_error("event_base_new");
         }
+        // This function will be called by the worker (which have the same
+        // lifecycle of `this`) when there was an exception. It will be called
+        // by the last running thread in the worker pool, and we know that no
+        // more threads will ever be created by the worker pool.
+        worker.on_error([this](std::exception_ptr) {
+            stop();
+        });
     }
 
     ~LibeventReactor() override { event_base_free(evbase); }

@@ -2,8 +2,8 @@
 // Measurement-kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
-#include <measurement_kit/common/callback.hpp>
 #include "private/common/worker.hpp"
+#include <measurement_kit/common/callback.hpp>
 #include <measurement_kit/common/logger.hpp>
 #include <measurement_kit/common/non_copyable.hpp>
 #include <measurement_kit/common/non_movable.hpp>
@@ -20,6 +20,11 @@
 
 namespace mk {
 
+void Worker::on_error(Callback<std::exception_ptr> &&func) {
+    std::unique_lock<std::mutex> _{state->mutex};
+    std::swap(func, state->error_cb);
+}
+
 void Worker::call_in_thread(Callback<> &&func) {
     std::unique_lock<std::mutex> _{state->mutex};
 
@@ -27,7 +32,7 @@ void Worker::call_in_thread(Callback<> &&func) {
     // has unique ownership and controls its lifecycle.
     state->queue.push_back(std::move(func));
 
-    if (state->active >= state->parallelism) {
+    if (state->active >= state->parallelism || state->unhandled_exc) {
         return;
     }
 
@@ -35,25 +40,55 @@ void Worker::call_in_thread(Callback<> &&func) {
     // continue to work even when the external object is gone.
     auto task = [S = state]() {
         for (;;) {
-            Callback<> func = [&]() {
+            Callback<> func;
+            // To avoid any race we use the following critical section in
+            // which we initialize the function to be called.
+            {
                 std::unique_lock<std::mutex> _{S->mutex};
-                // Initialize inside the lock such that there is only
-                // one critical section in which we could be
-                if (S->queue.size() <= 0) {
+                if (S->active <= 0) {
+                    // This condition cannot happen when we are schedling a new
+                    // function task because we increment S->active inside the
+                    // protection of the mutex and the new thread will block on
+                    // the same mutex just after it has been started.
+                    throw std::runtime_error("worker thread: panic");
+                } else if (S->unhandled_exc) {
+                    // When we have seen one or more exceptions, enter into a
+                    // panic state where we do not run tasks anymore and we wait
+                    // for the final alive thread to notify the caller that we
+                    // experienced some bad issues down here.
                     --S->active;
-                    return Callback<>{};
+                    if (S->active <= 0 && S->error_cb) {
+                        try {
+                            S->error_cb(S->unhandled_exc);
+                        } catch (...) {
+                            /* SUPPRESS */;
+                        }
+                    }
+                } else if (S->queue.size() <= 0) {
+                    --S->active;
+                } else {
+                    std::swap(func, S->queue.front());
+                    S->queue.pop_front();
                 }
-                auto front = S->queue.front();
-                S->queue.pop_front();
-                return front;
-            }();
+            }
             if (!func) {
                 break;
             }
+            std::exception_ptr unhandled_exc;
             try {
                 func();
+            } catch (const std::exception &exc) {
+                mk::warn("worker thread: unhandled exception: %s", exc.what());
+                unhandled_exc = std::current_exception();
             } catch (...) {
-                mk::warn("worker thread: unhandled exception");
+                mk::warn("worker thread: unhandled exception: <unknown>");
+                unhandled_exc = std::current_exception();
+            }
+            if (unhandled_exc) {
+                std::unique_lock<std::mutex> _{S->mutex};
+                if (!S->unhandled_exc) {
+                    std::swap(S->unhandled_exc, unhandled_exc);
+                }
             }
         }
     };
