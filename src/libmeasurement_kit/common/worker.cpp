@@ -52,6 +52,8 @@ void Worker::call_in_thread(Callback<> &&func) {
             }
             try {
                 func();
+            } catch (const std::exception &exc) {
+                mk::warn("worker thread: unhandled exception: %s", exc.what());
             } catch (...) {
                 mk::warn("worker thread: unhandled exception");
             }
