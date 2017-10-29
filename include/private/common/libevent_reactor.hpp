@@ -138,7 +138,6 @@ class LibeventReactor : public Reactor, public NonCopyable, public NonMovable {
         });
     }
 
-  private:
     // ## Internals
 
     void pollfd(socket_t sockfd, short evflags, double timeout,
@@ -166,6 +165,7 @@ class LibeventReactor : public Reactor, public NonCopyable, public NonMovable {
         delete cbp;
     }
 
+  private:
     // ## Private attributes
 
     event_base *evbase = nullptr;
