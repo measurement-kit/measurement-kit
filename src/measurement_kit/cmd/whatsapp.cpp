@@ -10,8 +10,7 @@ namespace whatsapp {
 
 int main(std::list<Callback<BaseTest &>> &initializers, int argc, char **argv) {
     mk::nettests::WhatsappTest test;
-    int ch;
-    while ((ch = getopt(argc, argv, "e")) != -1) {
+    for (int ch; (ch = getopt(argc, argv, "e")) != -1;) {
         switch (ch) {
         case 'e':
             test.set_options("all_endpoints", 1);
