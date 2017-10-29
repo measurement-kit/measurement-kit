@@ -4,15 +4,7 @@
 #ifndef PRIVATE_COMMON_LIBEVENT_REACTOR_HPP
 #define PRIVATE_COMMON_LIBEVENT_REACTOR_HPP
 
-/*-
-     _     _ _                          _                         _
-    | |   (_) |__   _____   _____ _ __ | |_   _ __ ___  __ _  ___| |_ ___  _ __
-    | |   | | '_ \ / _ \ \ / / _ \ '_ \| __| | '__/ _ \/ _` |/ __| __/ _ \| '__|
-    | |___| | |_) |  __/\ V /  __/ | | | |_  | | |  __/ (_| | (__| || (_) | |
-    |_____|_|_.__/ \___| \_/ \___|_| |_|\__| |_|  \___|\__,_|\___|\__\___/|_|
-
-    Header-only implementation of mk::Reactor based on libevent.
-*/
+// # Libevent Reactor
 
 #include "private/common/locked.hpp"               // for mk::locked_global
 #include "private/common/mock.hpp"                 // for MK_MOCK
@@ -44,21 +36,13 @@ static inline void mk_pollfd_cb(evutil_socket_t, short, void *);
 
 namespace mk {
 
-/// mk::Reactor implementation using libevent.
+// mk::Reactor implementation using libevent.
 template <MK_MOCK(event_base_new), MK_MOCK(event_base_once),
         MK_MOCK(event_base_dispatch), MK_MOCK(event_base_loopbreak),
         MK_MOCK(event_new), MK_MOCK(event_add)>
 class LibeventReactor : public Reactor, public NonCopyable, public NonMovable {
   public:
-    /*-
-         _    _ _
-        | |  (_) |__ _ _ __ _ _ _ _  _
-        | |__| | '_ \ '_/ _` | '_| || |
-        |____|_|_.__/_| \__,_|_|  \_, |
-                                  |__/
-
-        Code to make sure libevent is correctly configured.
-    */
+    // ## Initialization
 
     template <MK_MOCK(evthread_use_pthreads), MK_MOCK(sigaction)>
     static inline void libevent_init_once() {
@@ -80,17 +64,7 @@ class LibeventReactor : public Reactor, public NonCopyable, public NonMovable {
         });
     }
 
-    /*-
-         ___             _     _
-        | __|_ _____ _ _| |_  | |___  ___ _ __
-        | _|\ V / -_) ' \  _| | / _ \/ _ \ '_ \
-        |___|\_/\___|_||_\__| |_\___/\___/ .__/
-                                         |_|
-
-        Here we setup and tear down libevent's event loop.
-    */
-
-    event_base *evbase = nullptr;
+    // ## Event loop management
 
     LibeventReactor() {
         libevent_init_once();
@@ -138,16 +112,7 @@ class LibeventReactor : public Reactor, public NonCopyable, public NonMovable {
         }
     }
 
-    /*-
-          ___      _ _   _      _
-         / __|__ _| | | | |__ _| |_ ___ _ _
-        | (__/ _` | | | | / _` |  _/ -_) '_|
-         \___\__,_|_|_| |_\__,_|\__\___|_|
-
-        Here we have code schedule callbacks at a later time.
-    */
-
-    Worker worker;
+    // ## Call later
 
     void call_in_thread(Callback<> &&cb) override {
         worker.call_in_thread(std::move(cb));
@@ -167,15 +132,7 @@ class LibeventReactor : public Reactor, public NonCopyable, public NonMovable {
         }
     }
 
-    /*-
-         ____       _ _  __     _
-        |  _ \ ___ | | |/ _| __| |
-        | |_) / _ \| | | |_ / _` |
-        |  __/ (_) | | |  _| (_| |
-        |_|   \___/|_|_|_|  \__,_|
-
-        Code to poll system file descriptors.
-    */
+    // ## Poll sockets
 
     void pollfd(socket_t sockfd, short events, double timeout,
             Callback<Error, short> &&callback) {
@@ -207,20 +164,15 @@ class LibeventReactor : public Reactor, public NonCopyable, public NonMovable {
             cb(std::move(err));
         });
     }
+
+  private:
+    event_base *evbase = nullptr;
+    Worker worker;
 };
 
 } // namespace mk
 
-/*-
-      ___   _ _      _                           _ _ _             _
-     / __| | (_)_ _ | |____ _ __ _ ___   __ __ _| | | |__  __ _ __| |__ ___
-    | (__  | | | ' \| / / _` / _` / -_) / _/ _` | | | '_ \/ _` / _| / /(_-<
-     \___| |_|_|_||_|_\_\__,_\__, \___| \__\__,_|_|_|_.__/\__,_\__|_\_\/__/
-                             |___/
-
-
-    Here we have all the callbacks called directly by C code.
-*/
+// ## C linkage callbacks
 
 static inline void mk_call_later_cb(
         evutil_socket_t, short evflags, void *opaque) {
