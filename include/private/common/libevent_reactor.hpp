@@ -26,13 +26,8 @@
 #include <utility>                                 // for std::move
 
 extern "C" {
-static inline void mk_call_later_cb(evutil_socket_t, short, void *);
 static inline void mk_pollfd_cb(evutil_socket_t, short, void *);
 }
-
-// internal flags
-#define MK_POLLIN (1 << 0)
-#define MK_POLLOUT (1 << 1)
 
 namespace mk {
 
@@ -121,28 +116,24 @@ class LibeventReactor : public Reactor, public NonCopyable, public NonMovable {
     void call_soon(Callback<> &&cb) override { call_later(0.0, std::move(cb)); }
 
     void call_later(double delay, Callback<> &&cb) override {
-        auto tv = timeval{};
-        auto cbp = new Callback<>{std::move(cb)};
         // Note: according to libevent documentation, it is not necessary to
         // pass `EV_TIMEOUT` to get a timeout. But I find passing it more clear.
-        if (event_base_once(evbase, -1, EV_TIMEOUT, mk_call_later_cb, cbp,
-                    timeval_init(&tv, delay)) != 0) {
-            delete cbp;
-            throw std::runtime_error("event_base_once");
-        }
+        pollfd(-1, EV_TIMEOUT, delay, [cb = std::move(cb)](Error, short) {
+            cb();
+        });
     }
 
     // ## Poll sockets
 
     void pollin_once(socket_t fd, double timeo, Callback<Error> &&cb) override {
-        pollfd(fd, MK_POLLIN, timeo, [cb = std::move(cb)](Error err, short) {
+        pollfd(fd, EV_READ, timeo, [cb = std::move(cb)](Error err, short) {
             cb(std::move(err));
         });
     }
 
     void pollout_once(
             socket_t fd, double timeo, Callback<Error> &&cb) override {
-        pollfd(fd, MK_POLLOUT, timeo, [cb = std::move(cb)](Error err, short) {
+        pollfd(fd, EV_WRITE, timeo, [cb = std::move(cb)](Error err, short) {
             cb(std::move(err));
         });
     }
@@ -150,16 +141,9 @@ class LibeventReactor : public Reactor, public NonCopyable, public NonMovable {
   private:
     // ## Internals
 
-    void pollfd(socket_t sockfd, short events, double timeout,
+    void pollfd(socket_t sockfd, short evflags, double timeout,
             Callback<Error, short> &&callback) {
         timeval tv{};
-        short evflags = EV_TIMEOUT;
-        if ((events & MK_POLLIN) != 0) {
-            evflags |= EV_READ;
-        }
-        if ((events & MK_POLLOUT) != 0) {
-            evflags |= EV_WRITE;
-        }
         auto cbp = new Callback<Error, short>(callback);
         if (event_base_once(evbase, sockfd, evflags, mk_pollfd_cb, cbp,
                     timeval_init(&tv, timeout)) != 0) {
@@ -178,35 +162,17 @@ class LibeventReactor : public Reactor, public NonCopyable, public NonMovable {
 
 // ## C linkage callbacks
 
-static inline void mk_call_later_cb(
-        evutil_socket_t, short evflags, void *opaque) {
-    assert((evflags & (~(EV_TIMEOUT))) == 0);
-    auto cbp = static_cast<mk::Callback<> *>(opaque);
-    // In case of exception here, the stack is going to unwind, tearing down
-    // the libevent loop and leaking forever `cbp` and the event once that was
-    // used to invoke this callback.
-    (*cbp)();
-    delete cbp;
-}
-
 static inline void mk_pollfd_cb(evutil_socket_t, short evflags, void *opaque) {
     auto cbp = static_cast<mk::Callback<mk::Error, short> *>(opaque);
     mk::Error err = mk::NoError();
-    short flags = 0;
     assert((evflags & (~(EV_TIMEOUT | EV_READ | EV_WRITE))) == 0);
     if ((evflags & EV_TIMEOUT) != 0) {
         err = mk::TimeoutError();
     }
-    if ((evflags & EV_READ) != 0) {
-        flags |= MK_POLLIN;
-    }
-    if ((evflags & EV_WRITE) != 0) {
-        flags |= MK_POLLOUT;
-    }
     // In case of exception here, the stack is going to unwind, tearing down
     // the libevent loop and leaking forever `cbp` and the event once that was
     // used to invoke this callback.
-    (*cbp)(std::move(err), flags);
+    (*cbp)(std::move(err), evflags);
     delete cbp;
 }
 #endif
