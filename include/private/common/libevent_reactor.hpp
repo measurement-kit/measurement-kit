@@ -64,8 +64,6 @@ class LibeventReactor : public Reactor, public NonCopyable, public NonMovable {
         });
     }
 
-    // ## Event loop management
-
     LibeventReactor() {
         libevent_init_once();
         if ((evbase = event_base_new()) == nullptr) {
@@ -74,6 +72,8 @@ class LibeventReactor : public Reactor, public NonCopyable, public NonMovable {
     }
 
     ~LibeventReactor() override { event_base_free(evbase); }
+
+    // ## Event loop management
 
     event_base *get_event_base() override { return evbase; }
 
@@ -134,6 +134,22 @@ class LibeventReactor : public Reactor, public NonCopyable, public NonMovable {
 
     // ## Poll sockets
 
+    void pollin_once(socket_t fd, double timeo, Callback<Error> &&cb) override {
+        pollfd(fd, MK_POLLIN, timeo, [cb = std::move(cb)](Error err, short) {
+            cb(std::move(err));
+        });
+    }
+
+    void pollout_once(
+            socket_t fd, double timeo, Callback<Error> &&cb) override {
+        pollfd(fd, MK_POLLOUT, timeo, [cb = std::move(cb)](Error err, short) {
+            cb(std::move(err));
+        });
+    }
+
+  private:
+    // ## Internals
+
     void pollfd(socket_t sockfd, short events, double timeout,
             Callback<Error, short> &&callback) {
         timeval tv{};
@@ -152,20 +168,8 @@ class LibeventReactor : public Reactor, public NonCopyable, public NonMovable {
         }
     }
 
-    void pollin_once(socket_t fd, double timeo, Callback<Error> &&cb) override {
-        pollfd(fd, MK_POLLIN, timeo, [cb = std::move(cb)](Error err, short) {
-            cb(std::move(err));
-        });
-    }
+    // ## Private attributes
 
-    void pollout_once(
-            socket_t fd, double timeo, Callback<Error> &&cb) override {
-        pollfd(fd, MK_POLLOUT, timeo, [cb = std::move(cb)](Error err, short) {
-            cb(std::move(err));
-        });
-    }
-
-  private:
     event_base *evbase = nullptr;
     Worker worker;
 };
