@@ -18,6 +18,7 @@ int main(std::list<Callback<BaseTest &>> &initializers, int argc, char **argv) {
         default:
             fprintf(stderr, "%s\n", USAGE);
             exit(1);
+            /* NOTREACHED */
         }
     }
     argc -= optind, argv += optind;
