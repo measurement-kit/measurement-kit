@@ -1,7 +1,6 @@
-
 pkg_name=builtin_ca_bundle
 pkg_repository=""
-pkg_branch_or_tag="2017-06-07"
+pkg_branch_or_tag="2017-09-20"
 pkg_steps="install"
 
 pkg_install() {

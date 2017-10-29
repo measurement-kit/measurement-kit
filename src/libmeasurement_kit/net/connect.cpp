@@ -218,7 +218,7 @@ void connect(std::string address, int port,
                     cbp = settings.at("net/ca_bundle_path");
                 }
                 ErrorOr<SSL *> cssl = libssl::Cache<>::thread_local_instance()
-                    .get_client_ssl(cbp, address, logger);
+                    ->get_client_ssl(cbp, address, logger);
                 if (!cssl) {
                     Error err = cssl.as_error();
                     bufferevent_free(r->connected_bev);
