@@ -10,8 +10,7 @@
 #include <cassert>
 #include <measurement_kit/net/utils.hpp>
 #include <measurement_kit/ooni.hpp>
-#include <stdio.h>
-#include <sys/socket.h>
+#include <measurement_kit/portable/sys/socket.h>
 
 namespace mk {
 namespace ooni {
