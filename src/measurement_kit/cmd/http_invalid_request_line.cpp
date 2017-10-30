@@ -42,7 +42,7 @@ int main(std::list<Callback<BaseTest &>> &initializers, int argc, char **argv) {
             backend += ":";
             backend += backend_port;
         }
-        test.set_options("backend", backend);
+        test.set_option("backend", backend);
     }
     common_init(initializers, test).run();
     return 0;

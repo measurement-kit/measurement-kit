@@ -18,7 +18,7 @@ TEST_CASE("Synchronous http-invalid-request-line test") {
 
 TEST_CASE("Synchronous http-invalid-request-line test with HTTP backend") {
     test::nettests::with_test<HttpInvalidRequestLineTest>([](BaseTest &test) {
-        test.set_options("backend", "http://data.neubot.org/").run();
+        test.set_option("backend", "http://data.neubot.org/").run();
     });
 }
 

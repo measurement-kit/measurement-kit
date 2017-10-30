@@ -171,8 +171,8 @@ just below the code you just added:
 ```Objective-C
     mk::ooni::TcpConnect()
         .increase_verbosity()
-        .set_options("port", 80)
-        .set_options("dns/nameserver", "8.8.8.8")
+        .set_option("port", 80)
+        .set_option("dns/nameserver", "8.8.8.8")
         .set_input_filepath(input_path)
         .run();
 ```
@@ -190,8 +190,8 @@ above as follows:
 ```Objective-C
     mk::ooni::TcpConnect()
         .increase_verbosity()
-        .set_options("port", 80)
-        .set_options("dns/nameserver", "8.8.8.8")
+        .set_option("port", 80)
+        .set_option("dns/nameserver", "8.8.8.8")
         .set_input_filepath(input_path)
         .run([]() {
             // TODO This code runs in a background thread and is
@@ -211,8 +211,8 @@ use `dispatch_async` to dispatch the message when we are done.
     NSString *message = @"message-0xdeadidea";
     mk::ooni::TcpConnect()
         .increase_verbosity()
-        .set_options("port", 80)
-        .set_options("dns/nameserver", "8.8.8.8")
+        .set_option("port", 80)
+        .set_option("dns/nameserver", "8.8.8.8")
         .set_input_filepath(input_path)
         .run([message]() {
             // Caution: code called from a background thread
@@ -238,8 +238,8 @@ the case where you store separate logs for different tests.
     NSLock *mtx = [[NSLock alloc] init];
     mk::ooni::TcpConnect()
         .increase_verbosity()
-        .set_options("port", 80)
-        .set_options("dns/nameserver", "8.8.8.8")
+        .set_option("port", 80)
+        .set_option("dns/nameserver", "8.8.8.8")
         .set_input_filepath(input_path)
         .on_log([logs, mtx](const char *s) {
             // Caution: code called from a background thread
@@ -297,8 +297,8 @@ didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     NSLock *mtx = [[NSLock alloc] init];
     mk::ooni::TcpConnect()
         .increase_verbosity()
-        .set_options("port", 80)
-        .set_options("dns/nameserver", "8.8.8.8")
+        .set_option("port", 80)
+        .set_option("dns/nameserver", "8.8.8.8")
         .set_input_filepath(input_path)
         .on_log([logs, mtx](const char *s) {
             // Caution: code called from a background thread

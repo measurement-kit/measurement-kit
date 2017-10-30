@@ -55,7 +55,7 @@ int main(int argc, char **argv) {
             [&]() {
                 std::string bouncer = optarg;
                 initializers.push_back([=](BaseTest &test) {
-                    test.set_options("bouncer_base_url", bouncer);
+                    test.set_option("bouncer_base_url", bouncer);
                 });
             }();
             break;
@@ -63,14 +63,14 @@ int main(int argc, char **argv) {
             [&]() {
                 std::string collector = optarg;
                 initializers.push_back([=](BaseTest &test) {
-                    test.set_options("collector_base_url", collector);
+                    test.set_option("collector_base_url", collector);
                 });
             }();
             break;
         case 'g':
             initializers.push_back([](BaseTest &test) {
-                test.set_options("save_real_probe_asn", "0");
-                test.set_options("save_real_probe_cc", "0");
+                test.set_option("save_real_probe_asn", "0");
+                test.set_option("save_real_probe_cc", "0");
             });
             break;
         case 'l':
@@ -82,12 +82,12 @@ int main(int argc, char **argv) {
             break;
         case 'N':
             initializers.push_back([](BaseTest &test) {
-                test.set_options("no_file_report", "1");
+                test.set_option("no_file_report", "1");
             });
             break;
         case 'n':
             initializers.push_back(
-                [](BaseTest &test) { test.set_options("no_collector", "1"); });
+                [](BaseTest &test) { test.set_option("no_collector", "1"); });
             break;
         case 'o':
             [&]() {

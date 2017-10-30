@@ -6,7 +6,6 @@
 
 #include <cstdint>
 #include <functional>
-#include <measurement_kit/common/settings.hpp>
 #include <measurement_kit/common/lexical_cast.hpp>
 #include <measurement_kit/common/shared_ptr.hpp>
 #include <string>
@@ -25,7 +24,7 @@ class BaseTest {
 
     BaseTest &add_input_filepath(std::string);
 
-    BaseTest &set_input_filepath(std::string);
+    [[deprecated]] BaseTest &set_input_filepath(std::string);
 
     BaseTest &set_output_filepath(std::string);
 
@@ -46,11 +45,20 @@ class BaseTest {
     template <typename T,
               typename = typename std::enable_if<
                     !std::is_same<std::string, T>::value>::type>
-    BaseTest &set_options(std::string key, T value) {
-        return set_options(key, mk::lexical_cast<std::string>(value));
+    [[deprecated]] BaseTest &set_options(std::string key, T value) {
+        return set_option(key, mk::lexical_cast<std::string>(value));
     }
 
-    BaseTest &set_options(std::string key, std::string value);
+    [[deprecated]] BaseTest &set_options(std::string key, std::string value);
+
+    template <typename T,
+              typename = typename std::enable_if<
+                    !std::is_same<std::string, T>::value>::type>
+    BaseTest &set_option(std::string key, T value) {
+        return set_option(key, mk::lexical_cast<std::string>(value));
+    }
+
+    BaseTest &set_option(std::string key, std::string value);
 
     BaseTest &on_entry(std::function<void(std::string)> &&);
 
@@ -65,8 +73,6 @@ class BaseTest {
     void start(std::function<void()> &&);
 
     SharedPtr<Runnable> runnable;
-
-    Settings settings;
 };
 
 #define MK_DECLARE_TEST(_name_)                                                \
