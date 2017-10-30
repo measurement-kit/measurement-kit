@@ -143,6 +143,13 @@ void http_invalid_request_line(Settings options,
     send_receive_invalid_request_line(
         *endpoint, test_random_invalid_version_number,
         handle_response, options, reactor, logger);
+
+    // test_squid_cache_manager
+    // 'GET cache_object://localhost/ HTTP/1.0\n\r'
+    std::string test_squid_cache_manager("GET cache_object://localhost/ HTTP/1.0\n\r");
+    send_receive_invalid_request_line(
+      *endpoint, test_squid_cache_manager, handle_response,
+      options, reactor, logger);
 }
 
 } // namespace ooni
