@@ -9,7 +9,6 @@
 namespace mk {
 namespace ooni {
 
-uint32_t parseIPV4string(std::string ipAddress);
 std::vector<uint8_t> ip_to_bytes(std::string ip);
 ErrorOr<bool> same_pre(std::vector<uint8_t> ip1, std::vector<uint8_t> ip2, int pre_bits);
 ErrorOr<bool> ip_in_net(std::string ip1, std::string ip_w_mask);
