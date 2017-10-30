@@ -6,6 +6,7 @@
 
 #include <measurement_kit/common/callback.hpp>
 #include <measurement_kit/common/error.hpp>
+#include <measurement_kit/common/logger.hpp>
 #include <measurement_kit/common/shared_ptr.hpp>
 #include <measurement_kit/common/socket.hpp>
 
@@ -54,12 +55,13 @@ class Reactor {
     /// serve them. When there are no further callbacks to execute,
     /// background threads will exit, to save resources.
     ///
+    /// The \p logger parameter is the logger to be used.
+    ///
     /// \throw std::exception (or a derived class) if it is not
     /// possible to create a background thread or schedule the callback.
     ///
-    /// If \p cb throws an exception of type std::exception (or
-    /// derived from it), such exception is swallowed.
-    virtual void call_in_thread(Callback<> &&cb) = 0;
+    /// If \p cb throws an exception, this exception propagates.
+    virtual void call_in_thread(SharedPtr<Logger> logger, Callback<> &&cb) = 0;
 
     /// \brief `call_soon() schedules the execution of \p cb in the
     /// I/O thread as soon as possible.
