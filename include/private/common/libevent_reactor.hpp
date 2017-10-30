@@ -164,12 +164,14 @@ class LibeventReactor : public Reactor, public NonCopyable, public NonMovable {
     //
     // The `reactor` field will be initialized by pollfd() with `this`. It is
     // a safe assignment, since the pending callback lifecycle cannot be longer
-    // than the lifecycle of the reactor.
+    // than the lifecycle of the reactor. Note that we do not need to enforce
+    // non-copyability and/or non-movability since the pending callback does
+    // not manage the lifecycle of `reactor` and all other fields use RAII.
     //
     // The reason why we want the reactor to know about pending callbacks is to
     // avoid memory leaks when we exit abruply from the I/O loop, either because
     // stop() was called or because of an exception.
-    class PendingCallback : NonCopyable, NonMovable {
+    class PendingCallback {
       public:
         Callback<Error, short> cb;
         SharedPtr<PendingCallback> libevent_ref;
@@ -239,7 +241,10 @@ class LibeventReactor : public Reactor, public NonCopyable, public NonMovable {
 
         // Finally, pollfd_cb() calls the function stored inside the pending
         // callback structure. Note that, if this function throws an exception,
-        // we correctly free the pending callback because of RAII.
+        // we correctly free the pending callback because of RAII. Yet, we're
+        // still leaking the event once used to execute this function.
+        //
+        // TODO: rewrite code to use a normal event to remove this limitation.
         cbp->cb(std::move(err), evflags);
     }
 
