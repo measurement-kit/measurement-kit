@@ -1,6 +1,7 @@
 ## examples
 
-file(GLOB MK_EXAMPLES_SOURCES RELATIVE "${CMAKE_SOURCE_DIR}" "example/*/*.cpp")
+file(GLOB MK_EXAMPLES_SOURCES "${CMAKE_SOURCE_DIR}"
+     "${MK_ROOT}/example/*/*.cpp")
 foreach(MK_EXAMPLE_SOURCE ${MK_EXAMPLES_SOURCES})
   string(REPLACE ".cpp" "" MK_EXAMPLE_NAME ${MK_EXAMPLE_SOURCE})
   string(REPLACE "/" "_" MK_EXAMPLE_NAME ${MK_EXAMPLE_NAME})

@@ -3,10 +3,10 @@
 file(
   GLOB
   MK_LIBRARY_SOURCES
-  "${MEASUREMENTKIT_ROOT}/include/measurement_kit/*.hpp"
-  "${MEASUREMENTKIT_ROOT}/include/measurement_kit/*/*.hpp"
-  "${MEASUREMENTKIT_ROOT}/src/libmeasurement_kit/*/*.c"
-  "${MEASUREMENTKIT_ROOT}/src/libmeasurement_kit/*/*.cpp"
+  "${MK_ROOT}/include/measurement_kit/*.hpp"
+  "${MK_ROOT}/include/measurement_kit/*/*.hpp"
+  "${MK_ROOT}/src/libmeasurement_kit/*/*.c"
+  "${MK_ROOT}/src/libmeasurement_kit/*/*.cpp"
 )
 
 add_library(
@@ -17,7 +17,7 @@ add_library(
 target_include_directories(
   measurement_kit_static
   PUBLIC
-  "${MEASUREMENTKIT_ROOT}/include"
+  "${MK_ROOT}/include"
   ${MK_INCLUDE_DIRS}
 )
 target_link_libraries(

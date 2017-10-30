@@ -2,7 +2,8 @@
 
 enable_testing()
 
-file(GLOB MK_TESTS_SOURCES RELATIVE "${CMAKE_SOURCE_DIR}" "test/*/*.cpp")
+file(GLOB MK_TESTS_SOURCES "${CMAKE_SOURCE_DIR}"
+     "${MK_ROOT}/test/*/*.cpp")
 foreach(MK_TEST_SOURCE ${MK_TESTS_SOURCES})
   string(REPLACE ".cpp" "" MK_TEST_NAME ${MK_TEST_SOURCE})
   string(REPLACE "/" "_" MK_TEST_NAME ${MK_TEST_NAME})

@@ -3,8 +3,8 @@
 file(
   GLOB
   MK_PROGRAM_SOURCES
-  "src/measurement_kit/*.cpp"
-  "src/measurement_kit/*/*.cpp"
+  "${MK_ROOT}/src/measurement_kit/*.cpp"
+  "${MK_ROOT}/src/measurement_kit/*/*.cpp"
 )
 
 add_executable(

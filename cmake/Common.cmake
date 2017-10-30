@@ -1,8 +1,8 @@
 # Definitions:
 
-if (NOT MEASUREMENTKIT_ROOT)
-    set (MEASUREMENTKIT_ROOT "${CMAKE_SOURCE_DIR}")
-endif (NOT MEASUREMENTKIT_ROOT)
+if (NOT MK_ROOT)
+    set (MK_ROOT "${CMAKE_SOURCE_DIR}")
+endif (NOT MK_ROOT)
 
 set(MK_CA_BUNDLE "${MK_CA_BUNDLE}" CACHE PATH "Path where openssl CA bundle is installed")
 set(MK_GEOIP "${MK_GEOIP}" CACHE PATH "Path where geoip is installed")
