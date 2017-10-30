@@ -12,6 +12,7 @@
 
 #include <cassert>
 #include <chrono>
+#include <exception>
 #include <functional>
 #include <list>
 #include <memory>
@@ -26,10 +27,14 @@ class Worker {
     class State : public NonCopyable, public NonMovable {
       public:
         unsigned short active = 0;
+        Callback<std::exception_ptr> error_cb;
         std::mutex mutex;
         unsigned short parallelism = 3;
         std::list<Callback<>> queue;
+        std::exception_ptr unhandled_exc;
     };
+
+    void on_error(Callback<std::exception_ptr> &&func);
 
     void call_in_thread(Callback<> &&func);
 
