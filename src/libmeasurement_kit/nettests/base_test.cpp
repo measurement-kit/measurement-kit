@@ -120,7 +120,7 @@ static void start_internal_(SharedPtr<Runnable> &&r, std::promise<void> *promise
     //    while the callback allows to make it asynchronous.
     assert(!r->reactor);
     Worker::default_tasks_queue()->call_in_thread(r->logger,
-          [ r = std::move(r), promise, callback = std::move(callback) ] {
+          [ r, promise, callback = std::move(callback) ] {
               r->reactor = Reactor::make();
               r->reactor->run_with_initial_event([&]() {
                   r->begin([&](Error) {
