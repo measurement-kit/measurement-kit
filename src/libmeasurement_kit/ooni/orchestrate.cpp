@@ -161,7 +161,7 @@ void Client::register_probe(std::string &&password,
     //
     // We must copy or move everything into the initial lambda and then from
     // there the task is synchronous because run_...() is blocking.
-    Worker::default_tasks_queue()->call_in_thread([
+    Worker::default_tasks_queue()->call_in_thread(Logger::global(), [
         password = std::move(password), meta = *this, cb = std::move(cb)
     ]() mutable {
         SharedPtr<Reactor> reactor = Reactor::make();
@@ -182,7 +182,7 @@ void Client::find_location(
     //
     // We must copy or move everything into the initial lambda and then from
     // there the task is synchronous because run_...() is blocking.
-    Worker::default_tasks_queue()->call_in_thread(
+    Worker::default_tasks_queue()->call_in_thread(Logger::global(),
           [ meta = *this, cb = std::move(cb) ]() {
               SharedPtr<Reactor> reactor = Reactor::make();
               reactor->run_with_initial_event([&]() {
@@ -203,7 +203,7 @@ void Client::update(Auth &&auth, Callback<Error &&, Auth &&> &&cb) const {
     //
     // We must copy or move everything into the initial lambda and then from
     // there the task is synchronous because run_...() is blocking.
-    Worker::default_tasks_queue()->call_in_thread([
+    Worker::default_tasks_queue()->call_in_thread(Logger::global(), [
         meta = *this, cb = std::move(cb), auth = std::move(auth)
     ]() mutable {
         SharedPtr<Reactor> reactor = Reactor::make();
