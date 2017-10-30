@@ -12,7 +12,7 @@ namespace nettests {
 WhatsappTest::WhatsappTest() : BaseTest() {
     runnable.reset(new WhatsappRunnable);
     runnable->test_name = "whatsapp";
-    runnable->test_version = "0.0.1";
+    runnable->test_version = "0.6.0";
     runnable->needs_input = false;
 }
 
