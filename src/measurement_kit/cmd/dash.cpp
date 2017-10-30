@@ -50,6 +50,7 @@ int main(std::list<Callback<BaseTest &>> &initializers, int argc, char **argv) {
               printf("Median bitrate: %.2f kbit/s\n", median_bitrate);
               printf("Min. playout delay: %.3f s\n", min_playout_delay);
               printf("\n");
+              fflush(stdout);
           })
           .run();
     return 0;

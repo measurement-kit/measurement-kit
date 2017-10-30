@@ -2,8 +2,11 @@
 set -e
 
 export CPP="gcc -E"
+export CPPFLAGS="$CPPFLAGS -Wdate-time -D_FORTIFY_SOURCE=2"
 export CC="gcc"
+export CFLAGS="$CFLAGS -fstack-protector-strong -Wformat -Werror=format-security -O2"
 export CXX="g++"
+export CXXFLAGS="$CXXFLAGS -fstack-protector-strong -Wformat -Werror=format-security -O2"
 export pkg_make_check_rule="run-valgrind-docker"
 
 debian_deps="$debian_deps autoconf"
