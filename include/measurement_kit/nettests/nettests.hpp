@@ -93,6 +93,7 @@ MK_DECLARE_TEST(NdtTest);
 MK_DECLARE_TEST(TcpConnectTest);
 MK_DECLARE_TEST(TelegramTest);
 MK_DECLARE_TEST(WebConnectivityTest);
+MK_DECLARE_TEST(WhatsappTest);
 
 } // namespace nettests
 } // namespace mk

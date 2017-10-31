@@ -109,8 +109,8 @@ class LibeventReactor : public Reactor, public NonCopyable, public NonMovable {
 
     // ## Call later
 
-    void call_in_thread(Callback<> &&cb) override {
-        worker.call_in_thread(std::move(cb));
+    void call_in_thread(SharedPtr<Logger> logger, Callback<> &&cb) override {
+        worker.call_in_thread(logger, std::move(cb));
     }
 
     void call_soon(Callback<> &&cb) override { call_later(0.0, std::move(cb)); }
