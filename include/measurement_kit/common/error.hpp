@@ -204,6 +204,9 @@ MK_DEFINE_ERR(17, JsonProcessingError, "json_processing_error")
 /// `MK_ERR_NDT` is like MK_ERR_NET but for ndt.
 #define MK_ERR_NDT(x) (8000 + x)
 
+/// `MK_ERR_NEUBOT` is like MK_ERR_NET but for neubot.
+#define MK_ERR_NEUBOT(x) (9000 + x)
+
 } // namespace mk
 
 namespace std {
