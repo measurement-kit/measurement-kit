@@ -116,7 +116,10 @@ void BaseTest::run() {
 }
 
 void BaseTest::start(Callback<> callback) {
-    Runner::global()->start_test(runnable, [=](Var<Runnable>) { callback(); });
+    // Important: here we must move the runnable inside start_test() to avoid
+    // a reference loop that prevents node bindings from leaving the loop.
+    Runner::global()->start_test(std::move(runnable),
+                                 [=](Var<Runnable>) { callback(); });
 }
 
 } // namespace nettests
