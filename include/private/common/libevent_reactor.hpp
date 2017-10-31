@@ -4,15 +4,7 @@
 #ifndef PRIVATE_COMMON_LIBEVENT_REACTOR_HPP
 #define PRIVATE_COMMON_LIBEVENT_REACTOR_HPP
 
-/*-
-     _     _ _                          _                         _
-    | |   (_) |__   _____   _____ _ __ | |_   _ __ ___  __ _  ___| |_ ___  _ __
-    | |   | | '_ \ / _ \ \ / / _ \ '_ \| __| | '__/ _ \/ _` |/ __| __/ _ \| '__|
-    | |___| | |_) |  __/\ V /  __/ | | | |_  | | |  __/ (_| | (__| || (_) | |
-    |_____|_|_.__/ \___| \_/ \___|_| |_|\__| |_|  \___|\__,_|\___|\__\___/|_|
-
-    Header-only implementation of mk::Reactor based on libevent.
-*/
+// # Libevent Reactor
 
 #include "private/common/locked.hpp"               // for mk::locked_global
 #include "private/common/mock.hpp"                 // for MK_MOCK
@@ -34,31 +26,18 @@
 #include <utility>                                 // for std::move
 
 extern "C" {
-static inline void mk_call_later_cb(evutil_socket_t, short, void *);
 static inline void mk_pollfd_cb(evutil_socket_t, short, void *);
 }
 
-// internal flags
-#define MK_POLLIN (1 << 0)
-#define MK_POLLOUT (1 << 1)
-
 namespace mk {
 
-/// mk::Reactor implementation using libevent.
+// mk::Reactor implementation using libevent.
 template <MK_MOCK(event_base_new), MK_MOCK(event_base_once),
         MK_MOCK(event_base_dispatch), MK_MOCK(event_base_loopbreak),
         MK_MOCK(event_new), MK_MOCK(event_add)>
 class LibeventReactor : public Reactor, public NonCopyable, public NonMovable {
   public:
-    /*-
-         _    _ _
-        | |  (_) |__ _ _ __ _ _ _ _  _
-        | |__| | '_ \ '_/ _` | '_| || |
-        |____|_|_.__/_| \__,_|_|  \_, |
-                                  |__/
-
-        Code to make sure libevent is correctly configured.
-    */
+    // ## Initialization
 
     template <MK_MOCK(evthread_use_pthreads), MK_MOCK(sigaction)>
     static inline void libevent_init_once() {
@@ -80,18 +59,6 @@ class LibeventReactor : public Reactor, public NonCopyable, public NonMovable {
         });
     }
 
-    /*-
-         ___             _     _
-        | __|_ _____ _ _| |_  | |___  ___ _ __
-        | _|\ V / -_) ' \  _| | / _ \/ _ \ '_ \
-        |___|\_/\___|_||_\__| |_\___/\___/ .__/
-                                         |_|
-
-        Here we setup and tear down libevent's event loop.
-    */
-
-    event_base *evbase = nullptr;
-
     LibeventReactor() {
         libevent_init_once();
         if ((evbase = event_base_new()) == nullptr) {
@@ -100,6 +67,8 @@ class LibeventReactor : public Reactor, public NonCopyable, public NonMovable {
     }
 
     ~LibeventReactor() override { event_base_free(evbase); }
+
+    // ## Event loop management
 
     event_base *get_event_base() override { return evbase; }
 
@@ -138,55 +107,42 @@ class LibeventReactor : public Reactor, public NonCopyable, public NonMovable {
         }
     }
 
-    /*-
-          ___      _ _   _      _
-         / __|__ _| | | | |__ _| |_ ___ _ _
-        | (__/ _` | | | | / _` |  _/ -_) '_|
-         \___\__,_|_|_| |_\__,_|\__\___|_|
+    // ## Call later
 
-        Here we have code schedule callbacks at a later time.
-    */
-
-    Worker worker;
-
-    void call_in_thread(Callback<> &&cb) override {
-        worker.call_in_thread(std::move(cb));
+    void call_in_thread(SharedPtr<Logger> logger, Callback<> &&cb) override {
+        worker.call_in_thread(logger, std::move(cb));
     }
 
     void call_soon(Callback<> &&cb) override { call_later(0.0, std::move(cb)); }
 
     void call_later(double delay, Callback<> &&cb) override {
-        auto tv = timeval{};
-        auto cbp = new Callback<>{std::move(cb)};
         // Note: according to libevent documentation, it is not necessary to
         // pass `EV_TIMEOUT` to get a timeout. But I find passing it more clear.
-        if (event_base_once(evbase, -1, EV_TIMEOUT, mk_call_later_cb, cbp,
-                    timeval_init(&tv, delay)) != 0) {
-            delete cbp;
-            throw std::runtime_error("event_base_once");
-        }
+        pollfd(-1, EV_TIMEOUT, delay, [cb = std::move(cb)](Error, short) {
+            cb();
+        });
     }
 
-    /*-
-         ____       _ _  __     _
-        |  _ \ ___ | | |/ _| __| |
-        | |_) / _ \| | | |_ / _` |
-        |  __/ (_) | | |  _| (_| |
-        |_|   \___/|_|_|_|  \__,_|
+    // ## Poll sockets
 
-        Code to poll system file descriptors.
-    */
+    void pollin_once(socket_t fd, double timeo, Callback<Error> &&cb) override {
+        pollfd(fd, EV_READ, timeo, [cb = std::move(cb)](Error err, short) {
+            cb(std::move(err));
+        });
+    }
 
-    void pollfd(socket_t sockfd, short events, double timeout,
+    void pollout_once(
+            socket_t fd, double timeo, Callback<Error> &&cb) override {
+        pollfd(fd, EV_WRITE, timeo, [cb = std::move(cb)](Error err, short) {
+            cb(std::move(err));
+        });
+    }
+
+    // ## Internals
+
+    void pollfd(socket_t sockfd, short evflags, double timeout,
             Callback<Error, short> &&callback) {
         timeval tv{};
-        short evflags = EV_TIMEOUT;
-        if ((events & MK_POLLIN) != 0) {
-            evflags |= EV_READ;
-        }
-        if ((events & MK_POLLOUT) != 0) {
-            evflags |= EV_WRITE;
-        }
         auto cbp = new Callback<Error, short>(callback);
         if (event_base_once(evbase, sockfd, evflags, mk_pollfd_cb, cbp,
                     timeval_init(&tv, timeout)) != 0) {
@@ -195,62 +151,32 @@ class LibeventReactor : public Reactor, public NonCopyable, public NonMovable {
         }
     }
 
-    void pollin_once(socket_t fd, double timeo, Callback<Error> &&cb) override {
-        pollfd(fd, MK_POLLIN, timeo, [cb = std::move(cb)](Error err, short) {
-            cb(std::move(err));
-        });
+    static void pollfd_cb(short evflags, void *opaque) {
+        auto cbp = static_cast<mk::Callback<mk::Error, short> *>(opaque);
+        mk::Error err = mk::NoError();
+        assert((evflags & (~(EV_TIMEOUT | EV_READ | EV_WRITE))) == 0);
+        if ((evflags & EV_TIMEOUT) != 0) {
+            err = mk::TimeoutError();
+        }
+        // In case of exception here, the stack is going to unwind, tearing down
+        // the libevent loop and leaking forever `cbp` and the event once that
+        // was used to invoke this callback.
+        (*cbp)(std::move(err), evflags);
+        delete cbp;
     }
 
-    void pollout_once(
-            socket_t fd, double timeo, Callback<Error> &&cb) override {
-        pollfd(fd, MK_POLLOUT, timeo, [cb = std::move(cb)](Error err, short) {
-            cb(std::move(err));
-        });
-    }
+  private:
+    // ## Private attributes
+
+    event_base *evbase = nullptr;
+    Worker worker;
 };
 
 } // namespace mk
 
-/*-
-      ___   _ _      _                           _ _ _             _
-     / __| | (_)_ _ | |____ _ __ _ ___   __ __ _| | | |__  __ _ __| |__ ___
-    | (__  | | | ' \| / / _` / _` / -_) / _/ _` | | | '_ \/ _` / _| / /(_-<
-     \___| |_|_|_||_|_\_\__,_\__, \___| \__\__,_|_|_|_.__/\__,_\__|_\_\/__/
-                             |___/
-
-
-    Here we have all the callbacks called directly by C code.
-*/
-
-static inline void mk_call_later_cb(
-        evutil_socket_t, short evflags, void *opaque) {
-    assert((evflags & (~(EV_TIMEOUT))) == 0);
-    auto cbp = static_cast<mk::Callback<> *>(opaque);
-    // In case of exception here, the stack is going to unwind, tearing down
-    // the libevent loop and leaking forever `cbp` and the event once that was
-    // used to invoke this callback.
-    (*cbp)();
-    delete cbp;
-}
+// ## C linkage callbacks
 
 static inline void mk_pollfd_cb(evutil_socket_t, short evflags, void *opaque) {
-    auto cbp = static_cast<mk::Callback<mk::Error, short> *>(opaque);
-    mk::Error err = mk::NoError();
-    short flags = 0;
-    assert((evflags & (~(EV_TIMEOUT | EV_READ | EV_WRITE))) == 0);
-    if ((evflags & EV_TIMEOUT) != 0) {
-        err = mk::TimeoutError();
-    }
-    if ((evflags & EV_READ) != 0) {
-        flags |= MK_POLLIN;
-    }
-    if ((evflags & EV_WRITE) != 0) {
-        flags |= MK_POLLOUT;
-    }
-    // In case of exception here, the stack is going to unwind, tearing down
-    // the libevent loop and leaking forever `cbp` and the event once that was
-    // used to invoke this callback.
-    (*cbp)(std::move(err), flags);
-    delete cbp;
+    mk::LibeventReactor<>::pollfd_cb(evflags, opaque);
 }
 #endif

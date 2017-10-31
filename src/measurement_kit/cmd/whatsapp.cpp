@@ -4,26 +4,21 @@
 
 #include "../cmdline.hpp"
 
-namespace meek_fronted_requests {
+namespace whatsapp {
 
-#define USAGE                                                    \
-    "usage: measurement_kit [options] meek_fronted_requests\n"   \
-    "                       [-B expected_body] -f input_file\n"
+#define USAGE "usage: measurement_kit [options] whatsapp [-e]\n"
 
 int main(std::list<Callback<BaseTest &>> &initializers, int argc, char **argv) {
-    mk::nettests::MeekFrontedRequestsTest test;
-    int ch;
-    while ((ch = getopt(argc, argv, "B:f:")) != -1) {
+    mk::nettests::WhatsappTest test;
+    for (int ch; (ch = getopt(argc, argv, "e")) != -1;) {
         switch (ch) {
-        case 'B':
-            test.set_option("expected_body", optarg);
-            break;
-        case 'f':
-            test.add_input_filepath(optarg);
+        case 'e':
+            test.set_options("all_endpoints", 1);
             break;
         default:
             fprintf(stderr, "%s\n", USAGE);
             exit(1);
+            /* NOTREACHED */
         }
     }
     argc -= optind, argv += optind;
@@ -37,4 +32,4 @@ int main(std::list<Callback<BaseTest &>> &initializers, int argc, char **argv) {
     return 0;
 }
 
-} // namespace meek_fronted_requests
+} // namespace whatsapp
