@@ -25,7 +25,7 @@ slug() {
 
 gen_automatic_includes() {
 
-    vfull=`git describe --tags 2>/dev/null |echo v0.7.10`
+    vfull=`git describe --tags 2>/dev/null |echo v0.7.11`
     vmajor=`echo $vfull|sed 's/^v//g'|awk -F. '{print $1}'`
     vminor=`echo $vfull|awk -F. '{print $2}'`
     vpatch=`echo $vfull|sed 's/-.*//g'|awk -F. '{print $3}'`
