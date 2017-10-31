@@ -79,6 +79,11 @@ BaseTest &BaseTest::set_options(std::string key, std::string value) {
     return *this;
 }
 
+BaseTest &BaseTest::set_option(std::string key, std::string value) {
+    runnable->options[key] = value;
+    return *this;
+}
+
 BaseTest &BaseTest::on_entry(Callback<std::string> &&cb) {
     runnable->entry_cb = cb;
     return *this;

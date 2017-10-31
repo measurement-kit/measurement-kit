@@ -73,7 +73,7 @@ int main(void) {
             .set_verbosity(MK_LOG_INFO)
 
             // Do not write on disk the results of the test
-            .set_options("no_file_report", "1")
+            .set_option("no_file_report", "1")
 
             /*
              * Lambda called to notify about test progress.
@@ -159,12 +159,12 @@ int main(void) {
             // Tell MK where to find files useful to identify the country code
             // and the ISP autonomous system number. You should probably have
             // them installed under /usr/local/ in a reall program.
-            .set_options("geoip_country_path", "GeoIP.dat")
-            .set_options("geoip_asn_path", "GeoIPASNum.dat")
+            .set_option("geoip_country_path", "GeoIP.dat")
+            .set_option("geoip_asn_path", "GeoIPASNum.dat")
 
             // Will become the default in MK v0.5.0. Better to use this flag
             // to avoid the need to discover the DNS server on mobile.
-            .set_options("dns/engine", "system")
+            .set_option("dns/engine", "system")
 
             /*
              * This instruction starts the test in a background thread
