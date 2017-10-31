@@ -4,6 +4,7 @@
 #ifndef SRC_MEASUREMENT_KIT_CMDLINE_HPP
 #define SRC_MEASUREMENT_KIT_CMDLINE_HPP
 
+#include <list>
 #include <measurement_kit/nettests.hpp>
 #include <measurement_kit/common.hpp>
 
@@ -16,14 +17,18 @@ using namespace mk::nettests;
 
 #define MK_CMDLINE_SUBCOMMANDS                                                 \
     XX(dash)                                                                   \
+    XX(captiveportal)                                                         \
     XX(dns_injection)                                                          \
+    XX(facebook_messenger)                                                     \
     XX(http_header_field_manipulation)                                         \
     XX(http_invalid_request_line)                                              \
     XX(meek_fronted_requests)                                                  \
     XX(multi_ndt)                                                              \
     XX(ndt)                                                                    \
     XX(tcp_connect)                                                            \
-    XX(web_connectivity)
+    XX(telegram)                                                               \
+    XX(web_connectivity)                                                       \
+    XX(whatsapp)
 
 #define XX(_namespace_)                                                        \
     namespace _namespace_ {                                                    \

@@ -5,10 +5,11 @@
 #define PRIVATE_COMMON_ENCODING_HPP
 
 #include <measurement_kit/common/error.hpp>
+#include <string>
 
 namespace mk {
 
-Error is_valid_utf8_string(const std::string &s);
+Error utf8_parse(const std::string &s);
 
 std::string base64_encode(std::string s);
 

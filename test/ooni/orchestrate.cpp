@@ -68,7 +68,7 @@ TEST_CASE("Auth::dump() works correctly") {
     SECTION("with existent file") {
         auth.username = auth.password = "xo";
         REQUIRE(auth.dump(fname) == NoError());
-        nlohmann::json data = nlohmann::json::parse(*slurp(fname));
+        Json data = Json::parse(*slurp(fname));
         REQUIRE(data["username"] == "xo");
         REQUIRE(data["password"] == "xo");
     }
@@ -124,7 +124,7 @@ TEST_CASE("orchestrate::login() works correctly") {
             login({}, testing_registry_url(), {}, reactor, Logger::global(),
                   [&](Error &&e, Auth &&) {
                       err = e;
-                      reactor->break_loop();
+                      reactor->stop();
                   });
         });
         REQUIRE(err == MissingRequiredValueError());
@@ -138,7 +138,7 @@ TEST_CASE("orchestrate::login() works correctly") {
             login(std::move(auth), testing_registry_url(), {}, reactor,
                   Logger::global(), [&](Error &&e, Auth &&) {
                       err = e;
-                      reactor->break_loop();
+                      reactor->stop();
                   });
         });
         REQUIRE(err == MissingRequiredValueError());
@@ -206,10 +206,10 @@ TEST_CASE("Orchestration works") {
      * Wait for the default tasks queue to empty, so we exit from the
      * process without still running detached threads and we don't leak
      * memory and, therefore, valgrind memcheck does not fail.
+     *
+     * See also `test/nettests/utils.hpp`.
      */
-    while (Worker::default_tasks_queue()->concurrency() > 0) {
-        /* NOTHING */;
-    }
+    Worker::default_tasks_queue()->wait_empty_();
 }
 
 #endif

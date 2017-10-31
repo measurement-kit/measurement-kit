@@ -144,14 +144,14 @@ TEST_CASE("throw error with ntop conversion error") {
 TEST_CASE("dns::query deals with failing evdns_base_resolve_ipv4") {
     query<::evdns_base_free, null_resolver>(
         "IN", "A", "www.google.com",
-        [](Error e, Var<Message>) { REQUIRE(e == ResolverError()); }, {},
+        [](Error e, SharedPtr<Message>) { REQUIRE(e == ResolverError()); }, {},
         Reactor::global(), Logger::global());
 }
 
 TEST_CASE("dns::query deals with failing evdns_base_resolve_ipv6") {
     query<::evdns_base_free, ::evdns_base_resolve_ipv4, null_resolver>(
         "IN", "AAAA", "github.com",
-        [](Error e, Var<Message>) { REQUIRE(e == ResolverError()); }, {},
+        [](Error e, SharedPtr<Message>) { REQUIRE(e == ResolverError()); }, {},
         Reactor::global(), Logger::global());
 }
 
@@ -159,7 +159,7 @@ TEST_CASE("dns::query deals with failing evdns_base_resolve_reverse") {
     query<::evdns_base_free, ::evdns_base_resolve_ipv4,
                 ::evdns_base_resolve_ipv6, null_resolver_reverse>(
         "IN", "REVERSE_A", "8.8.8.8",
-        [](Error e, Var<Message>) { REQUIRE(e == ResolverError()); }, {},
+        [](Error e, SharedPtr<Message>) { REQUIRE(e == ResolverError()); }, {},
         Reactor::global(), Logger::global());
 }
 
@@ -169,7 +169,7 @@ TEST_CASE("dns::query deals with failing evdns_base_resolve_reverse_ipv6") {
                 null_resolver_reverse>(
         "IN", "REVERSE_AAAA", "::1",
 
-        [](Error e, Var<Message>) { REQUIRE(e == ResolverError()); }, {},
+        [](Error e, SharedPtr<Message>) { REQUIRE(e == ResolverError()); }, {},
         Reactor::global(), Logger::global());
 }
 
@@ -179,26 +179,26 @@ TEST_CASE("dns::query deals with inet_pton returning 0") {
                 ::evdns_base_resolve_reverse_ipv6, null_inet_pton>(
         "IN", "REVERSE_A", "8.8.8.8",
 
-        [](Error e, Var<Message>) { REQUIRE(e == InvalidIPv4AddressError()); }, {},
+        [](Error e, SharedPtr<Message>) { REQUIRE(e == InvalidIPv4AddressError()); }, {},
         Reactor::global(), Logger::global());
 
     query<::evdns_base_free, ::evdns_base_resolve_ipv4,
                 ::evdns_base_resolve_ipv6, ::evdns_base_resolve_reverse,
                 ::evdns_base_resolve_reverse_ipv6, null_inet_pton>(
         "IN", "REVERSE_AAAA", "::1",
-        [](Error e, Var<Message>) { REQUIRE(e == InvalidIPv6AddressError()); }, {},
+        [](Error e, SharedPtr<Message>) { REQUIRE(e == InvalidIPv6AddressError()); }, {},
         Reactor::global(), Logger::global());
 }
 
 TEST_CASE("dns::query raises if the query is unsupported") {
     query("IN", "MX", "www.neubot.org",
-          [](Error e, Var<Message>) { REQUIRE(e == UnsupportedTypeError()); },
+          [](Error e, SharedPtr<Message>) { REQUIRE(e == UnsupportedTypeError()); },
           {{"dns/engine", "libevent"}});
 }
 
 TEST_CASE("dns::query raises if the class is unsupported") {
     query("CS", "A", "www.neubot.org",
-          [](Error e, Var<Message>) { REQUIRE(e == UnsupportedClassError()); },
+          [](Error e, SharedPtr<Message>) { REQUIRE(e == UnsupportedClassError()); },
           {{"dns/engine", "libevent"}});
 }
 
@@ -206,7 +206,7 @@ TEST_CASE("dns::query deals with invalid PTR name") {
     // This should be enough to see the failure, more tests for the
     // parser for PTR addresses are in test/common/utils.cpp
     query("IN", "PTR", "xx",
-          [](Error e, Var<Message>) { REQUIRE(e == InvalidNameForPTRError()); },
+          [](Error e, SharedPtr<Message>) { REQUIRE(e == InvalidNameForPTRError()); },
           {{"dns/engine", "libevent"}});
 }
 
@@ -215,8 +215,8 @@ TEST_CASE("dns::query deals with invalid PTR name") {
 // Test resolve_hostname
 
 TEST_CASE("resolve_hostname works with IPv4 address") {
-    Var<Reactor> reactor = Reactor::make();
-    reactor->loop_with_initial_event([=]() {
+    SharedPtr<Reactor> reactor = Reactor::make();
+    reactor->run_with_initial_event([=]() {
         std::string hostname = "130.192.16.172";
         resolve_hostname(hostname, [=](ResolveHostnameResult r) {
             REQUIRE(r.inet_pton_ipv4);
@@ -228,8 +228,8 @@ TEST_CASE("resolve_hostname works with IPv4 address") {
 }
 
 TEST_CASE("resolve_hostname works with IPv6 address") {
-    Var<Reactor> reactor = Reactor::make();
-    reactor->loop_with_initial_event([=]() {
+    SharedPtr<Reactor> reactor = Reactor::make();
+    reactor->run_with_initial_event([=]() {
         std::string hostname = "2a00:1450:400d:807::200e";
         resolve_hostname(hostname, [=](ResolveHostnameResult r) {
             REQUIRE(r.inet_pton_ipv6);
@@ -241,8 +241,8 @@ TEST_CASE("resolve_hostname works with IPv6 address") {
 }
 
 TEST_CASE("resolve_hostname works with domain") {
-    Var<Reactor> reactor = Reactor::make();
-    reactor->loop_with_initial_event([=]() {
+    SharedPtr<Reactor> reactor = Reactor::make();
+    reactor->run_with_initial_event([=]() {
         resolve_hostname("google.com", [=](ResolveHostnameResult r) {
             REQUIRE(not r.inet_pton_ipv4);
             REQUIRE(not r.inet_pton_ipv6);
@@ -256,8 +256,8 @@ TEST_CASE("resolve_hostname works with domain") {
 }
 
 TEST_CASE("stress resolve_hostname with invalid address and domain") {
-    Var<Reactor> reactor = Reactor::make();
-    reactor->loop_with_initial_event([=]() {
+    SharedPtr<Reactor> reactor = Reactor::make();
+    reactor->run_with_initial_event([=]() {
         // Pass input that is neither invalid IPvX nor valid domain
         resolve_hostname("192.1688.antani", [=](ResolveHostnameResult r) {
             REQUIRE(not r.inet_pton_ipv4);
@@ -283,47 +283,48 @@ TEST_CASE("The libevent resolver works as expected") {
     // response fields from the system resolver.
     //
 
-    loop_with_initial_event([]() {
-        query("IN", "A", "www.neubot.org", [](Error e, Var<Message> message) {
+    SharedPtr<Reactor> reactor = Reactor::make();
+    reactor->run_with_initial_event([=]() {
+        query("IN", "A", "www.neubot.org", [=](Error e, SharedPtr<Message> message) {
             REQUIRE(!e);
             REQUIRE(message->error_code == DNS_ERR_NONE);
             REQUIRE(message->answers.size() == 1);
             REQUIRE(message->answers[0].ipv4 == "130.192.16.172");
             REQUIRE(message->rtt > 0.0);
             REQUIRE(message->answers[0].ttl > 0);
-            break_loop();
-        }, {{"dns/engine", "libevent"}});
+            reactor->stop();
+        }, {{"dns/engine", "libevent"}}, reactor);
     });
 
-    loop_with_initial_event([]() {
+    reactor->run_with_initial_event([=]() {
         query(
-            "IN", "REVERSE_A", "130.192.16.172", [](Error e, Var<Message> message) {
+            "IN", "REVERSE_A", "130.192.16.172", [=](Error e, SharedPtr<Message> message) {
                 REQUIRE(!e);
                 REQUIRE(message->error_code == DNS_ERR_NONE);
                 REQUIRE(message->answers.size() == 1);
                 REQUIRE(message->answers[0].hostname == "server-nexa.polito.it");
                 REQUIRE(message->rtt > 0.0);
                 REQUIRE(message->answers[0].ttl > 0);
-                break_loop();
-            }, {{"dns/engine", "libevent"}});
+                reactor->stop();
+            }, {{"dns/engine", "libevent"}}, reactor);
     });
 
-    loop_with_initial_event([]() {
-        query("IN", "PTR", "172.16.192.130.in-addr.arpa.", [](Error e,
-                                                             Var<Message> message) {
+    reactor->run_with_initial_event([=]() {
+        query("IN", "PTR", "172.16.192.130.in-addr.arpa.", [=](Error e,
+                                                             SharedPtr<Message> message) {
             REQUIRE(!e);
             REQUIRE(message->error_code == DNS_ERR_NONE);
             REQUIRE(message->answers.size() == 1);
             REQUIRE(message->answers[0].hostname == "server-nexa.polito.it");
             REQUIRE(message->rtt > 0.0);
             REQUIRE(message->answers[0].ttl > 0);
-            break_loop();
-        }, {{"dns/engine", "libevent"}});
+            reactor->stop();
+        }, {{"dns/engine", "libevent"}}, reactor);
     });
 
-    loop_with_initial_event([]() {
+    reactor->run_with_initial_event([=]() {
         query("IN", "AAAA", "ooni.torproject.org",
-              [](Error e, Var<Message> message) {
+              [=](Error e, SharedPtr<Message> message) {
                   REQUIRE(!e);
                   REQUIRE(message->error_code == DNS_ERR_NONE);
                   REQUIRE(message->answers.size() > 0);
@@ -336,35 +337,35 @@ TEST_CASE("The libevent resolver works as expected") {
                       }
                   }
                   REQUIRE(found);
-                  break_loop();
-              }, {{"dns/engine", "libevent"}});
+                  reactor->stop();
+              }, {{"dns/engine", "libevent"}}, reactor);
     });
 
-    loop_with_initial_event([]() {
+    reactor->run_with_initial_event([=]() {
         query("IN", "REVERSE_AAAA", "2001:858:2:2:aabb::563b:1e28",
-              [](Error e, Var<Message> message) {
+              [=](Error e, SharedPtr<Message> message) {
                   REQUIRE(!e);
                   REQUIRE(message->error_code == DNS_ERR_NONE);
                   REQUIRE(message->answers.size() == 1);
                   REQUIRE(message->answers[0].hostname == "nova.torproject.org");
                   REQUIRE(message->rtt > 0.0);
                   REQUIRE(message->answers[0].ttl > 0);
-                  break_loop();
-              }, {{"dns/engine", "libevent"}});
+                  reactor->stop();
+              }, {{"dns/engine", "libevent"}}, reactor);
     });
 
-    loop_with_initial_event([]() {
+    reactor->run_with_initial_event([=]() {
         query("IN", "PTR", "8.2.e.1.b.3.6.5.0.0.0.0.b.b.a.a.2.0.0.0.2.0.0.0.8."
                            "5.8.0.1.0.0.2.ip6.arpa",
-              [](Error e, Var<Message> message) {
+              [=](Error e, SharedPtr<Message> message) {
                   REQUIRE(!e);
                   REQUIRE(message->error_code == DNS_ERR_NONE);
                   REQUIRE(message->answers.size() == 1);
                   REQUIRE(message->answers[0].hostname == "nova.torproject.org");
                   REQUIRE(message->rtt > 0.0);
                   REQUIRE(message->answers[0].ttl > 0);
-                  break_loop();
-              }, {{"dns/engine", "libevent"}});
+                  reactor->stop();
+              }, {{"dns/engine", "libevent"}}, reactor);
     });
 }
 

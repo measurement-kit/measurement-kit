@@ -7,8 +7,6 @@
 
 #include "private/common/fapply.hpp"
 
-#include "private/common/fapply.hpp"
-
 #include <measurement_kit/common.hpp>
 
 static void zero_arguments() {

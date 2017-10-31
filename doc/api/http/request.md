@@ -12,57 +12,57 @@ MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 void request(Settings settings,
              Headers headers,
              std::string body,
-             Callback<Error, Var<Response>> callback,
-             Var<Reactor> reactor = Reactor::global(),
-             Var<Logger> = Logger::global());
+             Callback<Error, SharedPtr<Response>> callback,
+             SharedPtr<Reactor> reactor = Reactor::global(),
+             SharedPtr<Logger> = Logger::global());
 
 void get(std::string url,
-         Callback<Error, Var<Response>> callback,
+         Callback<Error, SharedPtr<Response>> callback,
          Headers headers = {},
          Settings settings = {},
-         Var<Reactor> reactor = Reactor::global(),
-         Var<Logger> logger = Logger::global());
+         SharedPtr<Reactor> reactor = Reactor::global(),
+         SharedPtr<Logger> logger = Logger::global());
 
 void request_json_string(
     std::string method, std::string url, std::string data,
     http::Headers headers,
-    Callback<Error, Var<http::Response>, nlohmann::json> cb, Settings settings,
-    Var<Reactor> reactor, Var<Logger> logger);
+    Callback<Error, SharedPtr<http::Response>, nlohmann::json> cb, Settings settings,
+    SharedPtr<Reactor> reactor, SharedPtr<Logger> logger);
 
 void request_json_no_body(
     std::string method, std::string url, http::Headers headers,
-    Callback<Error, Var<http::Response>, nlohmann::json> cb, Settings settings,
-    Var<Reactor> reactor, Var<Logger> logger);
+    Callback<Error, SharedPtr<http::Response>, nlohmann::json> cb, Settings settings,
+    SharedPtr<Reactor> reactor, SharedPtr<Logger> logger);
 
 void request_json_object(
     std::string method, std::string url, nlohmann::json jdata,
     http::Headers headers,
-    Callback<Error, Var<http::Response>, nlohmann::json> cb, Settings settings,
-    Var<Reactor> reactor, Var<Logger> logger);
+    Callback<Error, SharedPtr<http::Response>, nlohmann::json> cb, Settings settings,
+    SharedPtr<Reactor> reactor, SharedPtr<Logger> logger);
 
 void request_connect(Settings settings,
-                     Callback<Error, Var<net::Transport>> callback,
-                     Var<Reactor> reactor = Reactor::global(),
-                     Var<Logger> logger = Logger::global());
+                     Callback<Error, SharedPtr<net::Transport>> callback,
+                     SharedPtr<Reactor> reactor = Reactor::global(),
+                     SharedPtr<Logger> logger = Logger::global());
 
-void request_send(Var<net::Transport> txp,
+void request_send(SharedPtr<net::Transport> txp,
                   Settings settings,
                   Headers headers,
                   std::string body,
                   Callback<Error> callback);
 
-void request_recv_response(Var<net::Transport> txp,
-                           Callback<Error, Var<Response>> callback,
-                           Var<Reactor> reactor = Reactor::global(),
-                           Var<Logger> logger = Logger::global());
+void request_recv_response(SharedPtr<net::Transport> txp,
+                           Callback<Error, SharedPtr<Response>> callback,
+                           SharedPtr<Reactor> reactor = Reactor::global(),
+                           SharedPtr<Logger> logger = Logger::global());
 
-void request_sendrecv(Var<net::Transport> txp,
+void request_sendrecv(SharedPtr<net::Transport> txp,
                       Settings settings,
                       Headers headers,
                       std::string body,
-                      Callback<Error, Var<Response>> callback,
-                      Var<Reactor> reactor = Reactor::global(),
-                      Var<Logger> logger = Logger::global());
+                      Callback<Error, SharedPtr<Response>> callback,
+                      SharedPtr<Reactor> reactor = Reactor::global(),
+                      SharedPtr<Logger> logger = Logger::global());
 
 ErrorOr<Url> redirect(const Url &orig_url, const std::string &location);
 ```
@@ -125,7 +125,7 @@ The `request_connect()` function establishes a TCP (and possibly
 SSL) connection towards an HTTP (or HTTPS) server. It uses as input
 the specified `settings` and, when done, it invokes `callback` with
 the error that occurred &mdash; or `NoError()` &mdash; as the first
-argument and the connected transport wrapped by a `Var` as the
+argument and the connected transport wrapped by a `SharedPtr` as the
 second argument. In case of error, the transport SHOULD be `nullptr`.
 You can also specify an optional `reactor` and `logger`. The
 `settings` that matter to this function are the following:
@@ -157,7 +157,7 @@ asynchronously using the `txp` transport and calling `callback`
 when done. You can optionally specify a `reactor` and a `logger`
 to use. On error, the callback receives it as its first argument;
 otherwise, the first argument is `NoError()` and the second argument
-is the received HTTP response wrapped by a `Var`.
+is the received HTTP response wrapped by a `SharedPtr`.
 
 The `request_sendrecv()` function combines the `request_send()` and
 the `request_recv_response()` functions into a single call.
@@ -211,8 +211,8 @@ See `example/http/request.cpp`.
 
 - The `http/ignore_body` setting is not implemented.
 
-- The `Var<Response>` returned by the various callbacks MAY be pointing
-  to `nullptr` and, moreover, there MAY be cases where `Var<Response> response`
+- The `SharedPtr<Response>` returned by the various callbacks MAY be pointing
+  to `nullptr` and, moreover, there MAY be cases where `SharedPtr<Response> response`
   is pointing to a valid response but `response->request` is `nullptr`.
 
 # HISTORY

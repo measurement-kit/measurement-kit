@@ -8,6 +8,19 @@
 extern "C" {
 #endif
 
+/// \brief `mk_platform` returns the operating system platform.
+///
+/// \return `"android"` on Android.
+///
+/// \return `"linux"` on Linux.
+///
+/// \return `"windows"` on Windows.
+///
+/// \return `"ios"` on iOS.
+///
+/// \return `"macos"` on macOS.
+///
+/// \return `"unknown"` otherwise.
 const char *mk_platform(void);
 
 #ifdef __cplusplus

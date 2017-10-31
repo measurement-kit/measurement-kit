@@ -5,8 +5,7 @@
 #define PRIVATE_LIBEVENT_DNS_QUERY_HPP
 
 #include "private/common/mock.hpp"
-
-#include "../common/utils.hpp"
+#include "private/common/utils.hpp"
 #include "../net/utils.hpp"
 
 #include <event2/dns.h>
@@ -115,13 +114,13 @@ class QueryContext : public NonMovable, public NonCopyable {
 
     evdns_base *base = nullptr;
 
-    Var<Message> message;
-    Callback<Error, Var<Message>> callback;
+    SharedPtr<Message> message;
+    Callback<Error, SharedPtr<Message>> callback;
 
-    Var<Logger> logger = Logger::global();
+    SharedPtr<Logger> logger = Logger::global();
 
-    QueryContext(evdns_base *b, Callback<Error, Var<Message>> c, Var<Message> m,
-                 Var<Logger> l = Logger::global()) {
+    QueryContext(evdns_base *b, Callback<Error, SharedPtr<Message>> c,
+            SharedPtr<Message> m, SharedPtr<Logger> l = Logger::global()) {
         base = b;
         callback = c;
         message = m;
@@ -148,7 +147,7 @@ template <MK_MOCK(evdns_base_new), MK_MOCK(evdns_base_nameserver_sockaddr_add),
           typename evdns_base_uptr = evdns_base_uptr,
           MK_MOCK(evdns_base_set_option)>
 static inline evdns_base *
-create_evdns_base(Settings settings, Var<Reactor> reactor = Reactor::global()) {
+create_evdns_base(Settings settings, SharedPtr<Reactor> reactor = Reactor::global()) {
 
     event_base *evb = reactor->get_event_base();
     const int initialize_nameservers = settings.count("dns/nameserver") ? 0 : 1;
@@ -168,10 +167,7 @@ create_evdns_base(Settings settings, Var<Reactor> reactor = Reactor::global()) {
         hints.ai_flags = EVUTIL_AI_NUMERICSERV | EVUTIL_AI_NUMERICHOST;
         hints.ai_socktype = SOCK_DGRAM;
         evutil_addrinfo *res = nullptr;
-        std::string port{"53"};
-        if (settings.count("dns/port")) {
-            port = settings["dns/port"];
-        }
+        std::string port = settings.get("dns/port", std::string{"53"});
         const int eaierr = evutil_getaddrinfo(
               settings["dns/nameserver"].c_str(), port.c_str(), &hints, &res);
         evaddrinfo_uptr ai(res);
@@ -218,7 +214,7 @@ create_evdns_base(Settings settings, Var<Reactor> reactor = Reactor::global()) {
 template <MK_MOCK(inet_ntop)>
 static inline std::vector<Answer>
 build_answers_evdns(int code, char type, int count, int ttl, void *addresses,
-                    Var<Logger> logger = Logger::global()) {
+                    SharedPtr<Logger> logger = Logger::global()) {
 
     std::vector<Answer> answers;
 
@@ -332,10 +328,26 @@ template <MK_MOCK(evdns_base_free), MK_MOCK(evdns_base_resolve_ipv4),
           MK_MOCK(evdns_base_resolve_ipv6), MK_MOCK(evdns_base_resolve_reverse),
           MK_MOCK(evdns_base_resolve_reverse_ipv6), MK_MOCK(inet_pton)>
 void query(QueryClass dns_class, QueryType dns_type, std::string name,
-           Callback<Error, Var<Message>> cb, Settings settings,
-           Var<Reactor> reactor, Var<Logger> logger) {
+           Callback<Error, SharedPtr<Message>> cb, Settings settings,
+           SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
 
-    Var<Message> message(new Message);
+    /*
+     * When running OONI tests, we're interested to know not only the IPs
+     * associated with a specific name, but also to the CNAME.
+     *
+     * This is not yet implemented in the libevent engine.
+     */
+    ErrorOr<bool> also_cname = settings.get("dns/resolve_also_cname", false);
+    if (!also_cname) {
+        cb(also_cname.as_error(), nullptr);
+        return;
+    }
+    if (*also_cname == true) {
+        cb(mk::NotImplementedError(), nullptr);
+        return;
+    }
+
+    SharedPtr<Message> message(new Message);
     Query query;
     evdns_base *base;
 

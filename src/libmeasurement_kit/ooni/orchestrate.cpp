@@ -46,7 +46,7 @@ Error Auth::load(const std::string &filepath) noexcept {
 }
 
 Error Auth::loads(const std::string &s) noexcept {
-    return json_parse_process_and_filter_errors(s, [&](auto json) {
+    return json_process(s, [&](auto json) {
         auth_token = json.at("auth_token");
         expiry_time = json.at("expiry_time");
         logged_in = json.at("logged_in");
@@ -60,7 +60,7 @@ Error Auth::dump(const std::string &filepath) noexcept {
 }
 
 std::string Auth::dumps() noexcept {
-    auto json = nlohmann::json{{"auth_token", auth_token},
+    auto json = Json{{"auth_token", auth_token},
                                {"expiry_time", expiry_time},
                                {"logged_in", logged_in},
                                {"username", username},
@@ -68,7 +68,7 @@ std::string Auth::dumps() noexcept {
     return json.dump(4);
 }
 
-bool Auth::is_valid(Var<Logger> logger) const noexcept {
+bool Auth::is_valid(SharedPtr<Logger> logger) const noexcept {
     if (!logged_in) {
         logger->debug("orchestrator: not logged in");
         return false;
@@ -125,8 +125,8 @@ bool Auth::is_valid(Var<Logger> logger) const noexcept {
  * Registry database
  */
 
-nlohmann::json ClientMetadata::as_json() const {
-    nlohmann::json j;
+Json ClientMetadata::as_json() const {
+    Json j;
     // Keep the following sorted to ease comparison with class definition
     if (!available_bandwidth.empty()) {
         j["available_bandwidth"] = available_bandwidth;
@@ -161,10 +161,10 @@ void Client::register_probe(std::string &&password,
     //
     // We must copy or move everything into the initial lambda and then from
     // there the task is synchronous because run_...() is blocking.
-    Worker::default_tasks_queue()->run_in_background_thread([
+    Worker::default_tasks_queue()->call_in_thread(Logger::global(), [
         password = std::move(password), meta = *this, cb = std::move(cb)
     ]() mutable {
-        Var<Reactor> reactor = Reactor::make();
+        SharedPtr<Reactor> reactor = Reactor::make();
         reactor->run_with_initial_event([&]() {
             do_register_probe(std::move(password), meta, reactor,
                               [&](Error &&error, Auth &&auth) {
@@ -182,9 +182,9 @@ void Client::find_location(
     //
     // We must copy or move everything into the initial lambda and then from
     // there the task is synchronous because run_...() is blocking.
-    Worker::default_tasks_queue()->run_in_background_thread(
+    Worker::default_tasks_queue()->call_in_thread(Logger::global(),
           [ meta = *this, cb = std::move(cb) ]() {
-              Var<Reactor> reactor = Reactor::make();
+              SharedPtr<Reactor> reactor = Reactor::make();
               reactor->run_with_initial_event([&]() {
                   do_find_location(meta, reactor,
                                    [&](Error &&error, std::string &&asn,
@@ -203,10 +203,10 @@ void Client::update(Auth &&auth, Callback<Error &&, Auth &&> &&cb) const {
     //
     // We must copy or move everything into the initial lambda and then from
     // there the task is synchronous because run_...() is blocking.
-    Worker::default_tasks_queue()->run_in_background_thread([
+    Worker::default_tasks_queue()->call_in_thread(Logger::global(), [
         meta = *this, cb = std::move(cb), auth = std::move(auth)
     ]() mutable {
-        Var<Reactor> reactor = Reactor::make();
+        SharedPtr<Reactor> reactor = Reactor::make();
         reactor->run_with_initial_event([&]() {
             do_update(std::move(auth), meta, reactor,
                       [&](Error &&error, Auth &&auth) {

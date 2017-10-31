@@ -8,6 +8,14 @@
 
 namespace mk {
 
+/// \brief `Continuation` is a function that will call another function
+/// when complete. In several places we need to return code to be executed
+/// later, perhaps in parallel with other code. In such cases, we usually
+/// return a function that captures relevant parameters and receives in
+/// input a callback to be called later when done. The `Continuation` alias
+/// allows to express the returned function more compactly.
+///
+/// \since v0.2.0.
 template <typename... T>
 using Continuation = std::function<void(Callback<T...>)>;
 

@@ -10,20 +10,20 @@ namespace test_s2c {
 
 using namespace mk::report;
 
-void coroutine(Var<Entry> report_entry, std::string address, Params params,
+void coroutine(SharedPtr<Entry> report_entry, std::string address, Params params,
                Callback<Error, Continuation<Error, double>> cb, double timeout,
-               Settings settings, Var<Reactor> reactor,
-               Var<Logger> logger) {
+               Settings settings, SharedPtr<Reactor> reactor,
+               SharedPtr<Logger> logger) {
     coroutine_impl(report_entry, address, params, cb, timeout, settings,
                    reactor, logger);
 }
 
-void finalizing_test(Var<Context> ctx, Var<Entry> cur_entry,
+void finalizing_test(SharedPtr<Context> ctx, SharedPtr<Entry> cur_entry,
                      Callback<Error> callback) {
     finalizing_test_impl(ctx, cur_entry, callback);
 }
 
-void run(Var<Context> ctx, Callback<Error> callback) {
+void run(SharedPtr<Context> ctx, Callback<Error> callback) {
     run_impl(ctx, callback);
 }
 

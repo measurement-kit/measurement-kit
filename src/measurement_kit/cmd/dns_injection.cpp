@@ -35,7 +35,7 @@ int main(std::list<Callback<BaseTest &>> &initializers, int argc, char **argv) {
         /* NOTREACHED */
     }
 
-    common_init(initializers, test.set_options("backend", backend)).run();
+    common_init(initializers, test.set_option("backend", backend)).run();
     return 0;
 }
 

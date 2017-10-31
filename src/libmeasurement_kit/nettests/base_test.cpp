@@ -13,23 +13,23 @@
 namespace mk {
 namespace nettests {
 
-BaseTest &BaseTest::on_logger_eof(Delegate<> func) {
-    runnable->logger->on_eof(func);
+BaseTest &BaseTest::on_logger_eof(Callback<> &&func) {
+    runnable->logger->on_eof(std::move(func));
     return *this;
 }
 
-BaseTest &BaseTest::on_log(Delegate<uint32_t, const char *> func) {
-    runnable->logger->on_log(func);
+BaseTest &BaseTest::on_log(Callback<uint32_t, const char *> &&func) {
+    runnable->logger->on_log(std::move(func));
     return *this;
 }
 
-BaseTest &BaseTest::on_event(Delegate<const char *> func) {
-    runnable->logger->on_event(func);
+BaseTest &BaseTest::on_event(Callback<const char *> &&func) {
+    runnable->logger->on_event(std::move(func));
     return *this;
 }
 
-BaseTest &BaseTest::on_progress(Delegate<double, const char *> func) {
-    runnable->logger->on_progress(func);
+BaseTest &BaseTest::on_progress(Callback<double, const char *> &&func) {
+    runnable->logger->on_progress(std::move(func));
     return *this;
 }
 
@@ -79,27 +79,32 @@ BaseTest &BaseTest::set_options(std::string key, std::string value) {
     return *this;
 }
 
-BaseTest &BaseTest::on_entry(Delegate<std::string> cb) {
+BaseTest &BaseTest::set_option(std::string key, std::string value) {
+    runnable->options[key] = value;
+    return *this;
+}
+
+BaseTest &BaseTest::on_entry(Callback<std::string> &&cb) {
     runnable->entry_cb = cb;
     return *this;
 }
 
-BaseTest &BaseTest::on_begin(Delegate<> cb) {
+BaseTest &BaseTest::on_begin(Callback<> &&cb) {
     runnable->begin_cb = cb;
     return *this;
 }
 
-BaseTest &BaseTest::on_end(Delegate<> cb) {
+BaseTest &BaseTest::on_end(Callback<> &&cb) {
     runnable->end_cbs.push_back(cb);
     return *this;
 }
 
-BaseTest &BaseTest::on_destroy(Delegate<> cb) {
+BaseTest &BaseTest::on_destroy(Callback<> &&cb) {
     runnable->destroy_cbs.push_back(cb);
     return *this;
 }
 
-static void start_internal_(Var<Runnable> &&r, std::promise<void> *promise,
+static void start_internal_(SharedPtr<Runnable> &&r, std::promise<void> *promise,
                             Callback<> &&callback) {
     // Note:
     //
@@ -119,8 +124,8 @@ static void start_internal_(Var<Runnable> &&r, std::promise<void> *promise,
     // 5. the `promise`, if present, allows to make the test synchronous,
     //    while the callback allows to make it asynchronous.
     assert(!r->reactor);
-    Worker::default_tasks_queue()->run_in_background_thread(
-          [ r = std::move(r), promise, callback = std::move(callback) ] {
+    Worker::default_tasks_queue()->call_in_thread(r->logger,
+          [ r, promise, callback = std::move(callback) ] {
               r->reactor = Reactor::make();
               r->reactor->run_with_initial_event([&]() {
                   r->begin([&](Error) {
@@ -148,7 +153,7 @@ void BaseTest::run() {
 
 }
 
-void BaseTest::start(Callback<> callback) {
+void BaseTest::start(Callback<> &&callback) {
     // Note: using `std::move` to invalidate the `runnable` such that it is
     // not possible to start another test from the same object.
     start_internal_(std::move(runnable), nullptr, std::move(callback));

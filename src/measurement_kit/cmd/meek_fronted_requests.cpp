@@ -16,7 +16,7 @@ int main(std::list<Callback<BaseTest &>> &initializers, int argc, char **argv) {
     while ((ch = getopt(argc, argv, "B:f:")) != -1) {
         switch (ch) {
         case 'B':
-            test.set_options("expected_body", optarg);
+            test.set_option("expected_body", optarg);
             break;
         case 'f':
             test.add_input_filepath(optarg);

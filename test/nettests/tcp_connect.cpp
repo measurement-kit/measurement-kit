@@ -11,9 +11,9 @@
 using namespace mk::nettests;
 
 TEST_CASE("Synchronous tcp-connect test") {
-    test::nettests::make_test<TcpConnectTest>("hosts.txt")
-        .set_options("port", "80")
-        .run();
+    test::nettests::with_test<TcpConnectTest>("hosts.txt", [](BaseTest &test) {
+        test.set_option("port", "80").run();
+    });
 }
 
 #else

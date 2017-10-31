@@ -17,7 +17,7 @@ int storage_init(
         const char *family,
         const char *address,
         const char *port,
-        Var<Logger> logger
+        SharedPtr<Logger> logger
 );
 
 int storage_init(
@@ -26,7 +26,7 @@ int storage_init(
         int family,
         const char *address,
         const char *port,
-        Var<Logger> logger
+        SharedPtr<Logger> logger
 );
 
 int storage_init(
@@ -35,14 +35,14 @@ int storage_init(
         int family,
         const char *address,
         int port,
-        Var<Logger> logger
+        SharedPtr<Logger> logger
 );
 
 socket_t socket_create(
         int domain,
         int type,
         int protocol,
-        Var<Logger> logger
+        SharedPtr<Logger> logger
 );
 
 std::string unreverse_ipv6(std::string s);

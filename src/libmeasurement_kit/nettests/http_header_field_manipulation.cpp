@@ -20,7 +20,7 @@ HttpHeaderFieldManipulationTest::HttpHeaderFieldManipulationTest() : BaseTest() 
 
 void HttpHeaderFieldManipulationRunnable::main(std::string input,
                                                Settings options,
-                                               Callback<Var<report::Entry>> cb) {
+                                               Callback<SharedPtr<report::Entry>> cb) {
     ooni::http_header_field_manipulation(input, options, cb, reactor, logger);
 }
 

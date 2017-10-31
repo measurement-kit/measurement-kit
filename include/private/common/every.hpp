@@ -4,29 +4,16 @@
 #ifndef PRIVATE_COMMON_EVERY_HPP
 #define PRIVATE_COMMON_EVERY_HPP
 
-#include <measurement_kit/common/maybe.hpp>
+#include <functional>
+#include <measurement_kit/common/callback.hpp>
 #include <measurement_kit/common/reactor.hpp>
+#include <measurement_kit/common/shared_ptr.hpp>
 
 namespace mk {
 
-template <typename Callable, typename StopPredicate, typename Callback>
-void every(double delay, Var<Reactor> reactor, Callback callback,
-           StopPredicate stop_predicate, Callable callable) {
-    reactor->call_soon([=]() {
-        if (delay <= 0.0) {
-            callback(ValueError());
-            return;
-        }
-        if (stop_predicate()) {
-            callback(NoError());
-            return;
-        }
-        callable();
-        reactor->call_later(delay, [=]() {
-            every(delay, reactor, callback, stop_predicate, callable);
-        });
-    });
-}
+void every(const double delay, SharedPtr<Reactor> reactor,
+        Callback<Error> &&callback, std::function<bool()> &&stop_predicate,
+        Callback<> &&callable);
 
 } // namespace mk
 #endif

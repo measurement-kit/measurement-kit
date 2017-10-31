@@ -9,17 +9,17 @@ MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 #include <measurement_kit/net.hpp>
 
 void mk::net::connect(std::string address, int port,
-        Callback<Error, Var<Transport>> callback,
+        Callback<Error, SharedPtr<Transport>> callback,
         Settings settings = {},
-        Var<Logger> logger = Logger::global(),
-        Var<Reactor> reactor = Reactor::global());
+        SharedPtr<Logger> logger = Logger::global(),
+        SharedPtr<Reactor> reactor = Reactor::global());
 
-using ConnectManyCb = Callback<Error, std::vector<Var<Transport>>>;
+using ConnectManyCb = Callback<Error, std::vector<SharedPtr<Transport>>>;
 
 void mk::net::connect_many(std::string address, int port, int num,
         ConnectManyCb callback, Settings settings = {},
-        Var<Logger> logger = Logger::global(),
-        Var<Reactor> reactor = Reactor::global());
+        SharedPtr<Logger> logger = Logger::global(),
+        SharedPtr<Reactor> reactor = Reactor::global());
 ```
 
 # STABILITY
@@ -31,10 +31,10 @@ void mk::net::connect_many(std::string address, int port, int num,
 The `connect()` function creates a connection to the remote `address` (which
 typically is a FQDN) and `port` and calls `callback` when done. On failure,
 an error is passed to the callback as its first argument, while a valid, but
-not connected, `Var<Transport>` is passed as its second argument.
+not connected, `SharedPtr<Transport>` is passed as its second argument.
 On success, the first
 callback argument is `NoError` and the second argument is a `Transport` instance
-wrapped by a `Var<>` smart pointer. Optionally you can also specify `settings`,
+wrapped by a `SharedPtr<>` smart pointer. Optionally you can also specify `settings`,
 a specific `logger` and a specific `reactor`.
 
 If `address` is a FQDN, this implementation of `connect()` will try all the

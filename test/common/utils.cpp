@@ -5,8 +5,7 @@
 #define CATCH_CONFIG_MAIN
 #include "private/ext/catch.hpp"
 
-#include <cctype>
-#include "private/common/utils_impl.hpp"
+#include "private/common/utils.hpp"
 
 TEST_CASE("We are NOT using the default random seed") {
     // Note: the default random generator shall be seeded using 1 unless
@@ -62,6 +61,22 @@ TEST_CASE("random_str_uppercase() really generates only uppercase") {
     }
     REQUIRE(found_num);
     REQUIRE(found_upper);
+}
+
+TEST_CASE("random_str_lower_alpha() does what it should") {
+    std::string lower_alpha = "abcdefghijklmnopqrstuvwxyz"; // works in my locale
+    for (auto x : mk::random_str_lower_alpha(1024)) {
+        REQUIRE(lower_alpha.find(x) != std::string::npos);
+    }
+}
+
+TEST_CASE("random_tld() does what it should") {
+    std::vector<std::string> tlds =
+        { ".com", ".net", ".org", ".info", ".test", ".invalid" };
+    for (size_t i = 0; i < 100; i++) {
+        auto x = mk::random_tld();
+        REQUIRE(std::find(tlds.begin(), tlds.end(), x) != tlds.end());
+    }
 }
 
 TEST_CASE("split(std::string s) works properly in the common case") {
@@ -167,55 +182,55 @@ static int fclose_fail(FILE *) { return -1; }
 
 TEST_CASE("slurpv() works as expected") {
     SECTION("If fopen() fails") {
-        auto maybe_res = mk::slurpv_impl<char, fopen_fail>(
+        auto maybe_res = mk::slurpv<char, fopen_fail>(
             "./test/fixtures/text-with-utf8.txt");
         REQUIRE(!maybe_res);
-        REQUIRE(maybe_res.as_error().code == mk::FileIoError().code);
+        REQUIRE(maybe_res.as_error() == mk::FileIoError());
     }
 
     SECTION("If first fseek() fails") {
-        auto maybe_res = mk::slurpv_impl<char, std::fopen, fseek_fail>(
+        auto maybe_res = mk::slurpv<char, std::fopen, fseek_fail>(
             "./test/fixtures/text-with-utf8.txt");
         REQUIRE(!maybe_res);
-        REQUIRE(maybe_res.as_error().code == mk::FileIoError().code);
+        REQUIRE(maybe_res.as_error() == mk::FileIoError());
     }
 
     SECTION("If ftell() fails") {
         auto maybe_res =
-            mk::slurpv_impl<char, std::fopen, std::fseek, ftell_fail>(
+            mk::slurpv<char, std::fopen, std::fseek, ftell_fail>(
                 "./test/fixtures/text-with-utf8.txt");
         REQUIRE(!maybe_res);
-        REQUIRE(maybe_res.as_error().code == mk::FileIoError().code);
+        REQUIRE(maybe_res.as_error() == mk::FileIoError());
     }
 
     SECTION("If second fseek() fails") {
         auto maybe_res =
-            mk::slurpv_impl<char, std::fopen, std::fseek, std::ftell,
+            mk::slurpv<char, std::fopen, std::fseek, std::ftell,
                             fseek_fail>("./test/fixtures/text-with-utf8.txt");
         REQUIRE(!maybe_res);
-        REQUIRE(maybe_res.as_error().code == mk::FileIoError().code);
+        REQUIRE(maybe_res.as_error() == mk::FileIoError());
     }
 
     SECTION("If fread() fails") {
-        auto maybe_res = mk::slurpv_impl<char, std::fopen, std::fseek,
+        auto maybe_res = mk::slurpv<char, std::fopen, std::fseek,
                                          std::ftell, std::fseek, fread_fail>(
             "./test/fixtures/text-with-utf8.txt");
         REQUIRE(!maybe_res);
-        REQUIRE(maybe_res.as_error().code == mk::FileIoError().code);
+        REQUIRE(maybe_res.as_error() == mk::FileIoError());
     }
 
     SECTION("If fclose() fails") {
         auto maybe_res =
-            mk::slurpv_impl<char, std::fopen, std::fseek, std::ftell,
+            mk::slurpv<char, std::fopen, std::fseek, std::ftell,
                             std::fseek, std::fread, fclose_fail>(
                 "./test/fixtures/text-with-utf8.txt");
         REQUIRE(!maybe_res);
-        REQUIRE(maybe_res.as_error().code == mk::FileIoError().code);
+        REQUIRE(maybe_res.as_error() == mk::FileIoError());
     }
 
     SECTION("For a file containing UTF-8") {
         auto maybe_res =
-            mk::slurpv_impl<uint8_t>("./test/fixtures/text-with-utf8.txt");
+            mk::slurpv<uint8_t>("./test/fixtures/text-with-utf8.txt");
         REQUIRE(!!maybe_res);
         std::vector<uint8_t> expect{
             'C', 'i', 'r', 'i',  0xc3, 0xa8, '\n',      // first line
@@ -228,7 +243,7 @@ TEST_CASE("slurpv() works as expected") {
     }
 
     SECTION("For a purely binary file") {
-        auto maybe_res = mk::slurpv_impl<uint8_t>("./test/fixtures/gzipped.gz");
+        auto maybe_res = mk::slurpv<uint8_t>("./test/fixtures/gzipped.gz");
         REQUIRE(!!maybe_res);
         std::vector<uint8_t> expect{
             0x1f, 0x8b, 0x08, 0x08, 0xad, 0x82, 0x4d, 0x58,
@@ -285,7 +300,7 @@ TEST_CASE("slurp() works as expected") {
     SECTION("In case of nonexistent file") {
         auto maybe_res = mk::slurp("/nonexistent");
         REQUIRE(!maybe_res);
-        REQUIRE(maybe_res.as_error().code == mk::FileIoError().code);
+        REQUIRE(maybe_res.as_error() == mk::FileIoError());
     }
 
     SECTION("In case of existent file") {
@@ -308,15 +323,15 @@ static size_t fwrite_fail(const void *, size_t, size_t, FILE *) { return 0; }
 
 TEST_CASE("mk::overwrite_file() works as expected") {
     SECTION("If fopen() fails") {
-        REQUIRE((mk::overwrite_file_impl<fopen_fail>("xx", "xyz")) !=
+        REQUIRE((mk::overwrite_file<fopen_fail>("xx", "xyz")) !=
                 mk::NoError());
     }
     SECTION("If fwrite() fails") {
-        REQUIRE((mk::overwrite_file_impl<std::fopen, fwrite_fail>(
+        REQUIRE((mk::overwrite_file<std::fopen, fwrite_fail>(
                       "xx", "xyz")) != mk::NoError());
     }
     SECTION("If fclose() fails") {
-        REQUIRE((mk::overwrite_file_impl<std::fopen, std::fwrite, fclose_fail>(
+        REQUIRE((mk::overwrite_file<std::fopen, std::fwrite, fclose_fail>(
                       "xx", "xyz")) != mk::NoError());
     }
     SECTION("If everything is okay") {

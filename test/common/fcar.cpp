@@ -7,8 +7,6 @@
 
 #include "private/common/fcar.hpp"
 
-#include "private/common/fcar.hpp"
-
 #include <measurement_kit/common.hpp>
 
 TEST_CASE("mk::fcar() works as expected") {

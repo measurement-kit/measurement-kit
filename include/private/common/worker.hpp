@@ -8,9 +8,10 @@
 #include <measurement_kit/common/logger.hpp>
 #include <measurement_kit/common/non_copyable.hpp>
 #include <measurement_kit/common/non_movable.hpp>
-#include <measurement_kit/common/var.hpp>
+#include <measurement_kit/common/shared_ptr.hpp>
 
 #include <cassert>
+#include <chrono>
 #include <functional>
 #include <list>
 #include <memory>
@@ -30,70 +31,35 @@ class Worker {
         std::list<Callback<>> queue;
     };
 
-    void run_in_background_thread(Callback<> &&func) {
-        std::unique_lock<std::mutex> _{state->mutex};
+    void call_in_thread(SharedPtr<Logger> logger, Callback<> &&func);
 
-        // Move function such that the running-in-background thread
-        // has unique ownership and controls its lifecycle.
-        state->queue.push_back(std::move(func));
+    unsigned short parallelism() const;
 
-        if (state->active >= state->parallelism) {
-            return;
-        }
+    void set_parallelism(unsigned short newval) const;
 
-        // Note: pass only the internal state, so that the thread can possibly
-        // continue to work even when the external object is gone.
-        auto task = [S = state]() {
-            for (;;) {
-                Callback<> func = [&]() {
-                    std::unique_lock<std::mutex> _{S->mutex};
-                    // Initialize inside the lock such that there is only
-                    // one critical section in which we could be
-                    if (S->queue.size() <= 0) {
-                        --S->active;
-                        return Callback<>{};
-                    }
-                    auto front = S->queue.front();
-                    S->queue.pop_front();
-                    return front;
-                }();
-                if (!func) {
-                    break;
-                }
-                try {
-                    func();
-                } catch (...) {
-                    mk::warn("worker thread: unhandled exception");
-                }
-            }
-        };
+    unsigned short concurrency() const;
 
-        std::thread{task}.detach();
-        ++state->active;
-    }
+    // Implementation note: this method is meant to be used in regress
+    // tests, where we don't want the test to exit until the background
+    // thread has exited, so to clear thread-local storage. Othrwise,
+    // Valgrind will complain about leaked thread-local storage.
+    //
+    // We expect the caller to issue a blocking command using a Worker
+    // and then to call this method such that we keep the main thread
+    // alive for longer, so that background threads can exit.
+    //
+    // Since this is meant for internal-only usage, as explained above,
+    // it has been given a name terminating with `_`.
+    //
+    // See:
+    // - test/ooni/orchestrate.cpp
+    // - test/nettests/utils.hpp
+    void wait_empty_() const;
 
-    unsigned short parallelism() const {
-        std::unique_lock<std::mutex> _{state->mutex};
-        return state->parallelism;
-    }
-
-    void set_parallelism(unsigned short newval) const {
-        std::unique_lock<std::mutex> _{state->mutex};
-        state->parallelism = newval;
-    }
-
-    unsigned short concurrency() const {
-        std::unique_lock<std::mutex> _{state->mutex};
-        return state->active;
-    }
-
-    static Var<Worker> default_tasks_queue() {
-        static Var<Worker> worker = Var<Worker>::make();
-        return worker;
-    }
+    static SharedPtr<Worker> default_tasks_queue();
 
   private:
-    std::shared_ptr<State> state{std::make_shared<State>()};
+    SharedPtr<State> state{std::make_shared<State>()};
 };
 
 } // namespace mk

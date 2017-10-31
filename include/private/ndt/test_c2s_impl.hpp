@@ -6,8 +6,6 @@
 
 #include "private/common/mock.hpp"
 
-#include "private/common/mock.hpp"
-
 #include "../ndt/internal.hpp"
 
 namespace mk {
@@ -15,10 +13,10 @@ namespace ndt {
 namespace test_c2s {
 
 template <MK_MOCK_AS(net::connect, net_connect)>
-void coroutine_impl(Var<Entry> report_entry, std::string address, int port, double runtime,
+void coroutine_impl(SharedPtr<Entry> report_entry, std::string address, int port, double runtime,
                     Callback<Error, Continuation<Error>> cb, double timeout,
-                    Settings settings, Var<Reactor> reactor,
-                    Var<Logger> logger) {
+                    Settings settings, SharedPtr<Reactor> reactor,
+                    SharedPtr<Logger> logger) {
 
     // Performance note: This implementation does some string copies
     // when sending but in localhost testing this does not seem to be
@@ -37,7 +35,7 @@ void coroutine_impl(Var<Entry> report_entry, std::string address, int port, doub
 
     logger->debug("ndt: connect ...");
     net_connect(address, port,
-                [=](Error err, Var<Transport> txp) {
+                [=](Error err, SharedPtr<Transport> txp) {
                     logger->debug("ndt: connect ... %d", (int)err);
                     if (err) {
                         cb(err, nullptr);
@@ -48,7 +46,7 @@ void coroutine_impl(Var<Entry> report_entry, std::string address, int port, doub
                     logger->debug("ndt: suspend coroutine");
                     cb(NoError(), [=](Callback<Error> cb) {
                         double begin = time_now();
-                        Var<MeasureSpeed> snap(new MeasureSpeed(0.5));
+                        SharedPtr<MeasureSpeed> snap(new MeasureSpeed(0.5));
                         logger->debug("ndt: resume coroutine");
                         logger->info("Starting upload");
                         txp->set_timeout(timeout);
@@ -87,7 +85,7 @@ template <MK_MOCK_AS(messages::read_msg, messages_read_msg_first),
           MK_MOCK_AS(messages::read_msg, messages_read_msg_second),
           MK_MOCK_AS(messages::read_msg, messages_read_msg_third),
           MK_MOCK_AS(messages::read_msg, messages_read_msg_fourth)>
-void run_impl(Var<Context> ctx, Callback<Error> callback) {
+void run_impl(SharedPtr<Context> ctx, Callback<Error> callback) {
 
     // The server sends us the PREPARE message containing the port number
     ctx->logger->debug("ndt: recv TEST_PREPARE ...");
@@ -107,7 +105,7 @@ void run_impl(Var<Context> ctx, Callback<Error> callback) {
             return;
         }
 
-        Var<Entry> cur_entry(new Entry);
+        SharedPtr<Entry> cur_entry(new Entry);
         (*cur_entry)["connect_times"] = Entry::array();
         (*cur_entry)["params"] = {{"num_streams", 1}};
         (*cur_entry)["receiver_data"] = {{"avg_speed", nullptr}};

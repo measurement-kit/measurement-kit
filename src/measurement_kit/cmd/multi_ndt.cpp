@@ -3,7 +3,7 @@
 // and LICENSE for more information on the copying conditions.
 
 #include "../cmdline.hpp"
-#include <measurement_kit/ext/json.hpp>
+#include <measurement_kit/common/json.hpp>
 #include <measurement_kit/ndt.hpp>
 
 namespace multi_ndt {
@@ -17,12 +17,12 @@ int main(std::list<Callback<BaseTest &>> &initializers, int argc, char **argv) {
     for (int ch; (ch = getopt(argc, argv, "m:u")) != -1;) {
         switch (ch) {
         case 'm':
-            test.set_options("mlabns/policy", "metro");
-            test.set_options("mlabns/metro", optarg);
+            test.set_option("mlabns/policy", "metro");
+            test.set_option("mlabns/metro", optarg);
             break;
         case 'u':
             // By default only the download phase is performed
-            test.set_options("single_test_suite",
+            test.set_option("single_test_suite",
                     MK_NDT_DOWNLOAD | MK_NDT_UPLOAD);
             break;
         default:
@@ -40,7 +40,7 @@ int main(std::list<Callback<BaseTest &>> &initializers, int argc, char **argv) {
 
     ndt_init(initializers, test.on_entry([](std::string s) {
         // Note: `on_entry()` filters all exceptions on our behalf
-        nlohmann::json doc = nlohmann::json::parse(s);
+        Json doc = Json::parse(s);
         auto simple = doc["test_keys"]["simple"];
         printf("\nTest summary\n");
         printf("------------\n");
@@ -74,6 +74,7 @@ int main(std::list<Callback<BaseTest &>> &initializers, int argc, char **argv) {
         double PacketLoss = adv["packet_loss"];
         printf("Loss: %lf (%.3lf%%)\n", PacketLoss, PacketLoss * 100.0);
         printf("\n");
+        fflush(stdout);
     })).run();
 
     return 0;

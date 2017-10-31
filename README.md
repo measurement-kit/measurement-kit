@@ -33,7 +33,13 @@ Currently it implements the following high-level tests:
 
 - [OONI](https://ooni.torproject.org/)'s [HTTP Header Field Manipulation](https://github.com/TheTorProject/ooni-spec/blob/master/test-specs/ts-006-header-field-manipulation.md) test
 
+- [OONI](https://ooni.torproject.org/)'s [Facebook Messenger](https://github.com/TheTorProject/ooni-spec/blob/master/test-specs/ts-019-facebook-messenger.md) test
+
 - Neubot's [MPEG DASH test](https://github.com/neubot/neubot/tree/master/mod_dash)
+
+- [OONI](https://ooni.torproject.org/)'s [Telegram](https://github.com/TheTorProject/ooni-spec/blob/master/test-specs/ts-020-telegram.md) test
+
+- [OONI](https://ooni.torproject.org/)'s [Captiveportal](https://github.com/TheTorProject/ooni-spec/blob/master/test-specs/ts-010-captive-portal.md) test
 
 It contains building-block functionalities useful to implement your own
 tests. More in detail it currently implements:
@@ -107,6 +113,8 @@ Very briefly, to build from the git repository do:
 ./autogen.sh
 ./configure
 make
+sudo make install    # optional, if you want to install to `/usr/local`
+sudo /sbin/ldconfig  # required only on Linux if you install
 ```
 
 See [the Unix tutorial](doc/tutorial/unix.md) for more details.
