@@ -2,17 +2,18 @@
 // Measurement-kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
-#include <measurement_kit/ext/json.hpp>
+#include <measurement_kit/common/json.hpp>
 
 #include "../measurement_kit/cmdline.hpp"
 
 BaseTest &common_init(std::list<Callback<BaseTest &>> il, BaseTest &test) {
     test
         .set_verbosity(MK_LOG_INFO)
-        .set_options("geoip_country_path", "GeoIP.dat")
-        .set_options("geoip_asn_path", "GeoIPASNum.dat")
+        .set_option("geoip_country_path", "GeoIP.dat")
+        .set_option("geoip_asn_path", "GeoIPASNum.dat")
         .on_progress([](double progress, std::string msg) {
             printf("%.0f%%: %s\n", 100.0 * progress, msg.c_str());
+            fflush(stdout);
         })
         .on_log([](uint32_t level, const char *message) {
             if (level <= MK_LOG_WARNING) {

@@ -60,16 +60,16 @@ namespace net {
 
 using namespace mk::libevent;
 
-void connect_first_of(Var<ConnectResult> result, int port,
+void connect_first_of(SharedPtr<ConnectResult> result, int port,
                       ConnectFirstOfCb cb, Settings settings,
-                      Var<Reactor> reactor, Var<Logger> logger, size_t index,
-                      Var<std::vector<Error>> errors) {
-    logger->log(MK_LOG_DEBUG2, "connect_first_of begin");
+                      SharedPtr<Reactor> reactor, SharedPtr<Logger> logger, size_t index,
+                      SharedPtr<std::vector<Error>> errors) {
+    logger->debug2("connect_first_of begin");
     if (!errors) {
         errors.reset(new std::vector<Error>());
     }
     if (index >= result->resolve_result.addresses.size()) {
-        logger->log(MK_LOG_DEBUG2, "connect_first_of all addresses failed");
+        logger->debug2("connect_first_of all addresses failed");
         cb(*errors, nullptr);
         return;
     }
@@ -78,12 +78,12 @@ void connect_first_of(Var<ConnectResult> result, int port,
                  [=](Error err, bufferevent *bev, double connect_time) {
                      errors->push_back(err);
                      if (err) {
-                         logger->log(MK_LOG_DEBUG2, "connect_first_of failure");
+                         logger->debug2("connect_first_of failure");
                          connect_first_of(result, port, cb, settings,
                                           reactor, logger, index + 1, errors);
                          return;
                      }
-                     logger->log(MK_LOG_DEBUG2, "connect_first_of success");
+                     logger->debug2("connect_first_of success");
                      result->connect_time = connect_time;
                      cb(*errors, bev);
                  },
@@ -91,10 +91,10 @@ void connect_first_of(Var<ConnectResult> result, int port,
 }
 
 void connect_logic(std::string hostname, int port,
-                   Callback<Error, Var<ConnectResult>> cb, Settings settings,
-                   Var<Reactor> reactor, Var<Logger> logger) {
+                   Callback<Error, SharedPtr<ConnectResult>> cb, Settings settings,
+                   SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
 
-    Var<ConnectResult> result(new ConnectResult);
+    SharedPtr<ConnectResult> result(new ConnectResult);
     dns::resolve_hostname(hostname,
                      [=](dns::ResolveHostnameResult r) {
 
@@ -140,8 +140,8 @@ void connect_logic(std::string hostname, int port,
 }
 
 void connect_ssl(bufferevent *orig_bev, ssl_st *ssl, std::string hostname,
-                 Callback<Error, bufferevent *> cb, Var<Reactor> reactor,
-                 Var<Logger> logger) {
+                 Callback<Error, bufferevent *> cb, SharedPtr<Reactor> reactor,
+                 SharedPtr<Logger> logger) {
     logger->debug("ssl: handshake...");
 
     // See similar comment in connect_impl.hpp for rationale.
@@ -163,8 +163,7 @@ void connect_ssl(bufferevent *orig_bev, ssl_st *ssl, std::string hostname,
                 ssl_st *ssl = bufferevent_openssl_get_ssl(bev);
 
                 if (err) {
-                    std::string s = err.explain();
-                    logger->debug("ssl: handshake error: %s", s.c_str());
+                    logger->debug("ssl: handshake error: %s", err.what());
                     bufferevent_free(bev);
                     cb(err, nullptr);
                     return;
@@ -184,14 +183,14 @@ void connect_ssl(bufferevent *orig_bev, ssl_st *ssl, std::string hostname,
 
 void connect_many(std::string address, int port, int num,
                   ConnectManyCb callback, Settings settings,
-                  Var<Reactor> reactor, Var<Logger> logger) {
+                  SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
     connect_many_impl<net::connect>(connect_many_make(
         address, port, num, callback, settings, reactor, logger));
 }
 
 void connect(std::string address, int port,
-             Callback<Error, Var<Transport>> callback, Settings settings,
-             Var<Reactor> reactor, Var<Logger> logger) {
+             Callback<Error, SharedPtr<Transport>> callback, Settings settings,
+             SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
     if (settings.find("net/dumb_transport") != settings.end()) {
         callback(NoError(), make_txp<Emitter>(
             0.0, nullptr, reactor, logger));
@@ -207,7 +206,7 @@ void connect(std::string address, int port,
     double timeout = settings["net/timeout"].as<double>();
     connect_logic(
         address, port,
-        [=](Error err, Var<ConnectResult> r) {
+        [=](Error err, SharedPtr<ConnectResult> r) {
             if (err) {
                 callback(err, make_txp<Emitter>(
                     timeout, r, reactor, logger));
@@ -219,7 +218,7 @@ void connect(std::string address, int port,
                     cbp = settings.at("net/ca_bundle_path");
                 }
                 ErrorOr<SSL *> cssl = libssl::Cache<>::thread_local_instance()
-                    .get_client_ssl(cbp, address, logger);
+                    ->get_client_ssl(cbp, address, logger);
                 if (!cssl) {
                     Error err = cssl.as_error();
                     bufferevent_free(r->connected_bev);

@@ -3,7 +3,6 @@
 // and LICENSE for more information on the copying conditions.
 
 #include "private/common/fcompose.hpp"
-
 #include <measurement_kit/ooni.hpp>
 
 #include <unistd.h>

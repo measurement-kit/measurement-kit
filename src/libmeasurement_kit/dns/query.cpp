@@ -8,33 +8,35 @@
 namespace mk {
 namespace dns {
 
-void query(
-        QueryClass dns_class,
-        QueryType dns_type,
-        std::string name,
-        Callback<Error, Var<Message>> cb,
-        Settings settings,
-        Var<Reactor> reactor,
-        Var<Logger> logger) {
-    std::string engine = settings.get("dns/engine", std::string("system"));
-    logger->log(MK_LOG_DEBUG2, "dns: engine: %s", engine.c_str());
-    if (engine == "libevent") {
-        libevent::query(dns_class, dns_type, name, cb, settings, reactor, logger);
-    } else if (engine == "system") {
-        system_resolver(dns_class, dns_type, name, settings, reactor, logger, cb);
-    } else {
-        reactor->call_soon([cb]() { cb(InvalidDnsEngine(), nullptr); });
-    }
+void query(QueryClass dns_class, QueryType dns_type, std::string name,
+        Callback<Error, SharedPtr<Message>> cb, Settings settings,
+        SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
+    // Public APIs should make sure that callbacks are not called immediately
+    // but rather are deferred to the next I/O cycle. To this end, we basically
+    // schedule the DNS query so that it happens in the next I/O cycle.
+    reactor->call_soon([=]() {
+        std::string engine = settings.get("dns/engine", std::string("system"));
+        logger->debug2("dns: engine: %s", engine.c_str());
+        if (engine == "libevent") {
+            libevent::query(
+                    dns_class, dns_type, name, cb, settings, reactor, logger);
+        } else if (engine == "system") {
+            system_resolver(
+                    dns_class, dns_type, name, settings, reactor, logger, cb);
+        } else {
+            cb(InvalidDnsEngine(), nullptr);
+        }
+    });
 }
 
 void resolve_hostname(std::string hostname, Callback<ResolveHostnameResult> cb,
-                      Settings settings, Var<Reactor> reactor,
-                      Var<Logger> logger) {
+                      Settings settings, SharedPtr<Reactor> reactor,
+                      SharedPtr<Logger> logger) {
 
     logger->debug("resolve_hostname: %s", hostname.c_str());
 
     sockaddr_storage storage;
-    Var<ResolveHostnameResult> result(new ResolveHostnameResult);
+    SharedPtr<ResolveHostnameResult> result(new ResolveHostnameResult);
 
     // If address is a valid IPv4 address, connect directly
     memset(&storage, 0, sizeof storage);
@@ -59,7 +61,7 @@ void resolve_hostname(std::string hostname, Callback<ResolveHostnameResult> cb,
     logger->debug("resolve_hostname: ipv4...");
 
     dns::query("IN", "A", hostname,
-               [=](Error err, Var<dns::Message> resp) {
+               [=](Error err, SharedPtr<dns::Message> resp) {
                    logger->debug("resolve_hostname: ipv4... done");
                    result->ipv4_err = err;
                    if (!err) {
@@ -71,7 +73,7 @@ void resolve_hostname(std::string hostname, Callback<ResolveHostnameResult> cb,
                    logger->debug("resolve_hostname: ipv6...");
                    dns::query(
                        "IN", "AAAA", hostname,
-                       [=](Error err, Var<dns::Message> resp) {
+                       [=](Error err, SharedPtr<dns::Message> resp) {
                            logger->debug("resolve_hostname: ipv6... done");
                            result->ipv6_err = err;
                            if (!err) {

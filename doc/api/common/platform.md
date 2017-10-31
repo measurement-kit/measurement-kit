@@ -1,32 +1,42 @@
 # NAME
-platform &mdash; Get current platform
+
+`measurement_kit/common/platform.h`
 
 # LIBRARY
-MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
+
+measurement-kit (`libmeasurement_kit`, `-lmeasurement_kit`)
 
 # SYNOPSIS
+
 ```C++
-#include <measurement_kit/common/platform.h>
+#ifndef MEASUREMENT_KIT_COMMON_PLATFORM_HPP
+#define MEASUREMENT_KIT_COMMON_PLATFORM_HPP
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 const char *mk_platform(void);
+
+#ifdef __cplusplus
+} // namespace mk
+#endif
+#endif
 ```
-
-# STABILITY
-
-2 - Stable
 
 # DESCRIPTION
 
-The `mk_platform` C-linkage function returns the name of the current
-platform. The name will be one of:
+`mk_platform` returns the operating system platform. 
 
-- android
-- ios
-- linux
-- macos
-- unknown
-- windows
+Returns `"android"` on Android. 
 
-# HISTORY
+Returns `"linux"` on Linux. 
 
-The `platform.h` header appeared in MeasurementKit 0.7.0.
+Returns `"windows"` on Windows. 
+
+Returns `"ios"` on iOS. 
+
+Returns `"macos"` on macOS. 
+
+Returns `"unknown"` otherwise.
+

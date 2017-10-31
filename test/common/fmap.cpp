@@ -7,8 +7,6 @@
 
 #include "private/common/fmap.hpp"
 
-#include "private/common/fmap.hpp"
-
 #include <measurement_kit/common.hpp>
 
 using namespace mk;

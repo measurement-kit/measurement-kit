@@ -7,7 +7,7 @@
 // This file implements the OONI collector client protocol
 // See <https://github.com/TheTorProject/ooni-spec/blob/master/oonib.md>
 
-#include "private/common/json.hpp"
+#include <measurement_kit/common/json.hpp>
 #include "private/common/mock.hpp"
 
 #include <measurement_kit/ext.hpp>
@@ -31,14 +31,14 @@ using namespace mk::report;
              |_|
 */
 
-void post(Var<Transport> transport, std::string url_extra, std::string body,
-          Callback<Error, nlohmann::json> callback, Settings conf = {},
-          Var<Reactor> = Reactor::global(), Var<Logger> = Logger::global());
+void post(SharedPtr<Transport> transport, std::string url_extra, std::string body,
+          Callback<Error, Json> callback, Settings conf = {},
+          SharedPtr<Reactor> = Reactor::global(), SharedPtr<Logger> = Logger::global());
 
 template <MK_MOCK_AS(http::request_sendrecv, http_request_sendrecv)>
-void post_impl(Var<Transport> transport, std::string append_to_url,
-               std::string body, Callback<Error, nlohmann::json> callback,
-               Settings settings, Var<Reactor> reactor, Var<Logger> logger) {
+void post_impl(SharedPtr<Transport> transport, std::string append_to_url,
+               std::string body, Callback<Error, Json> callback,
+               Settings settings, SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
     std::string url = "";
     Headers headers;
     if (settings.find("collector_base_url") == settings.end()) {
@@ -61,7 +61,7 @@ void post_impl(Var<Transport> transport, std::string append_to_url,
         headers["Content-Type"] = "application/json";
     }
     http_request_sendrecv(transport, settings, headers, body,
-                          [=](Error err, Var<Response> response) {
+                          [=](Error err, SharedPtr<Response> response) {
                               if (err) {
                                   callback(err, nullptr);
                                   return;
@@ -75,9 +75,9 @@ void post_impl(Var<Transport> transport, std::string append_to_url,
                                   callback(NoError(), nullptr);
                                   return;
                               }
-                              nlohmann::json reply;
+                              Json reply;
                               try {
-                                  reply = nlohmann::json::parse(response->body);
+                                  reply = Json::parse(response->body);
                               } catch (const std::invalid_argument &) {
                                   callback(JsonParseError(), nullptr);
                                   return;
@@ -99,8 +99,8 @@ Error valid_entry(Entry entry);
 */
 
 template <MK_MOCK_AS(http::request_connect, http_request_connect)>
-void connect_impl(Settings settings, Callback<Error, Var<Transport>> callback,
-                  Var<Reactor> reactor, Var<Logger> logger) {
+void connect_impl(Settings settings, Callback<Error, SharedPtr<Transport>> callback,
+                  SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
     std::string url;
     if (settings.find("collector_base_url") == settings.end()) {
         callback(MissingCollectorBaseUrlError(), nullptr);
@@ -119,10 +119,10 @@ void connect_impl(Settings settings, Callback<Error, Var<Transport>> callback,
 }
 
 template <MK_MOCK_AS(collector::post, collector_post)>
-void create_report_impl(Var<Transport> transport, Entry entry,
+void create_report_impl(SharedPtr<Transport> transport, Entry entry,
                         Callback<Error, std::string> callback,
-                        Settings settings, Var<Reactor> reactor,
-                        Var<Logger> logger) {
+                        Settings settings, SharedPtr<Reactor> reactor,
+                        SharedPtr<Logger> logger) {
 
     Entry request;
     Error err = valid_entry(entry);
@@ -147,7 +147,7 @@ void create_report_impl(Var<Transport> transport, Entry entry,
     std::string body = request.dump();
 
     collector_post(transport, "/report", body,
-                   [=](Error err, nlohmann::json reply) {
+                   [=](Error err, Json reply) {
                        if (err) {
                            callback(err, "");
                            return;
@@ -171,9 +171,9 @@ template <MK_MOCK_AS(collector::connect, collector_connect),
           MK_MOCK_AS(collector::create_report, collector_create_report)>
 void connect_and_create_report_impl(report::Entry entry,
                                     Callback<Error, std::string> callback,
-                                    Settings settings, Var<Reactor> reactor,
-                                    Var<Logger> logger) {
-    collector_connect(settings, [=](Error error, Var<Transport> txp) {
+                                    Settings settings, SharedPtr<Reactor> reactor,
+                                    SharedPtr<Logger> logger) {
+    collector_connect(settings, [=](Error error, SharedPtr<Transport> txp) {
         if (error) {
             callback(error, "");
             return;
@@ -187,10 +187,10 @@ void connect_and_create_report_impl(report::Entry entry,
 }
 
 template <MK_MOCK_AS(collector::post, collector_post)>
-void update_report_impl(Var<Transport> transport, std::string report_id,
+void update_report_impl(SharedPtr<Transport> transport, std::string report_id,
                         Entry entry, Callback<Error> callback,
-                        Settings settings, Var<Reactor> reactor,
-                        Var<Logger> logger) {
+                        Settings settings, SharedPtr<Reactor> reactor,
+                        SharedPtr<Logger> logger) {
 
     /*
      * If needed, overwrite the `report_id` field with what was
@@ -219,7 +219,7 @@ void update_report_impl(Var<Transport> transport, std::string report_id,
     request["content"] = entry;
     std::string body = request.dump();
     collector_post(transport, "/report/" + report_id, body,
-                   [=](Error err, nlohmann::json) {
+                   [=](Error err, Json) {
                        callback(err);
                    },
                    settings, reactor, logger);
@@ -229,9 +229,9 @@ template <MK_MOCK_AS(collector::connect, collector_connect),
           MK_MOCK_AS(collector::update_report, collector_update_report)>
 void connect_and_update_report_impl(std::string report_id, report::Entry entry,
                                     Callback<Error> callback,
-                                    Settings settings, Var<Reactor> reactor,
-                                    Var<Logger> logger) {
-    collector_connect(settings, [=](Error error, Var<Transport> txp) {
+                                    Settings settings, SharedPtr<Reactor> reactor,
+                                    SharedPtr<Logger> logger) {
+    collector_connect(settings, [=](Error error, SharedPtr<Transport> txp) {
         if (error) {
             callback(error);
             return;
@@ -245,11 +245,11 @@ void connect_and_update_report_impl(std::string report_id, report::Entry entry,
 }
 
 template <MK_MOCK_AS(collector::post, collector_post)>
-void close_report_impl(Var<Transport> transport, std::string report_id,
+void close_report_impl(SharedPtr<Transport> transport, std::string report_id,
                        Callback<Error> callback, Settings settings,
-                       Var<Reactor> reactor, Var<Logger> logger) {
+                       SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
     collector_post(transport, "/report/" + report_id + "/close", "",
-                   [=](Error err, nlohmann::json) {
+                   [=](Error err, Json) {
                        callback(err);
                    },
                    settings, reactor, logger);
@@ -259,9 +259,9 @@ template <MK_MOCK_AS(collector::connect, collector_connect),
           MK_MOCK_AS(collector::close_report, collector_close_report)>
 void connect_and_close_report_impl(std::string report_id,
                                    Callback<Error> callback,
-                                   Settings settings, Var<Reactor> reactor,
-                                   Var<Logger> logger) {
-    collector_connect(settings, [=](Error error, Var<Transport> txp) {
+                                   Settings settings, SharedPtr<Reactor> reactor,
+                                   SharedPtr<Logger> logger) {
+    collector_connect(settings, [=](Error error, SharedPtr<Transport> txp) {
         if (error) {
             callback(error);
             return;
@@ -274,14 +274,14 @@ void connect_and_close_report_impl(std::string report_id,
     }, reactor, logger);
 }
 
-ErrorOr<Entry> get_next_entry(Var<std::istream> file, Var<Logger> logger);
+ErrorOr<Entry> get_next_entry(SharedPtr<std::istream> file, SharedPtr<Logger> logger);
 
 template <MK_MOCK_AS(collector::update_report, collector_update_report),
           MK_MOCK_AS(collector::get_next_entry, collector_get_next_entry)>
-void update_and_fetch_next_impl(Var<std::istream> file, Var<Transport> txp,
+void update_and_fetch_next_impl(SharedPtr<std::istream> file, SharedPtr<Transport> txp,
                                 std::string report_id, int line, Entry entry,
                                 Callback<Error> callback, Settings settings,
-                                Var<Reactor> reactor, Var<Logger> logger) {
+                                SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
     logger->info("adding entry report #%d...", line);
     collector_update_report(
         txp, report_id, entry,
@@ -325,9 +325,9 @@ template <MK_MOCK_AS(collector::get_next_entry, collector_get_next_entry),
 void submit_report_impl(std::string filepath, std::string collector_base_url,
                         std::string collector_front_domain,
                         Callback<Error> callback, Settings settings,
-                        Var<Reactor> reactor, Var<Logger> logger) {
+                        SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
 
-    Var<std::istream> file(new std::ifstream(filepath));
+    SharedPtr<std::istream> file(new std::ifstream(filepath));
     if (!file->good()) {
         callback(CannotOpenReportError());
         return;
@@ -345,7 +345,7 @@ void submit_report_impl(std::string filepath, std::string collector_base_url,
     logger->info("connecting to collector %s...", collector_base_url.c_str());
     collector_connect(
         settings,
-        [=](Error err, Var<Transport> txp) {
+        [=](Error err, SharedPtr<Transport> txp) {
             logger->info("connecting to collector %s... %d",
                          collector_base_url.c_str(), err.code);
             if (err) {

@@ -6,8 +6,6 @@
 
 #include "private/common/mock.hpp"
 
-#include "private/common/mock.hpp"
-
 #include "../ndt/internal.hpp"
 
 namespace mk {
@@ -21,7 +19,7 @@ template <MK_MOCK_AS(messages::read_msg, messages_read_msg_first),
           MK_MOCK_AS(messages::format_test_msg, messages_format_test_msg_third),
           MK_MOCK_AS(messages::write, messages_write),
           MK_MOCK_AS(messages::read_msg, messages_read_msg_third)>
-void run_impl(Var<Context> ctx, Callback<Error> cb) {
+void run_impl(SharedPtr<Context> ctx, Callback<Error> cb) {
 
     auto callback = [=](Error err) {
         ctx->logger->progress_relative(0.01, "Sent metadata to server");

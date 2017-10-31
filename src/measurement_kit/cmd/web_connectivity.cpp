@@ -16,13 +16,13 @@ int main(std::list<Callback<BaseTest &>> &initializers, int argc, char **argv) {
     for (int ch; (ch = getopt(argc, argv, "b:f:t:u:")) != -1;) {
         switch (ch) {
         case 'b':
-            test.set_options("backend", optarg);
+            test.set_option("backend", optarg);
             break;
         case 'f':
             test.add_input_filepath(optarg);
             break;
         case 't':
-            test.set_options("max_runtime", optarg);
+            test.set_option("max_runtime", optarg);
             break;
         case 'u':
             test.add_input(optarg);

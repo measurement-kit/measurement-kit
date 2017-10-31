@@ -11,7 +11,7 @@ namespace report {
 
 class OoniReporter : public BaseReporter {
   public:
-    static Var<BaseReporter> make(Settings, Var<Reactor>, Var<Logger>);
+    static SharedPtr<BaseReporter> make(Settings, SharedPtr<Reactor>, SharedPtr<Logger>);
 
     Continuation<Error> open(Report &report) override;
     Continuation<Error> write_entry(Entry entry) override;
@@ -22,10 +22,10 @@ class OoniReporter : public BaseReporter {
     std::string get_report_id() override;
 
   private:
-    OoniReporter(Settings, Var<Reactor>, Var<Logger>);
+    OoniReporter(Settings, SharedPtr<Reactor>, SharedPtr<Logger>);
 
-    Var<Reactor> reactor = Reactor::global();
-    Var<Logger> logger = Logger::global();
+    SharedPtr<Reactor> reactor = Reactor::global();
+    SharedPtr<Logger> logger = Logger::global();
     Settings settings; // Our private copy of the ooni_test settings
     std::string report_id;
 };

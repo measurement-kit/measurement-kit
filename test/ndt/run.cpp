@@ -19,12 +19,12 @@ using namespace mk::ndt;
 
 */
 
-static void success(Var<Context>, Callback<Error> cb) { cb(NoError()); }
-static void failure(Var<Context>, Callback<Error> cb) { cb(MockedError()); }
-static void die(Var<Context>, Callback<Error>) { REQUIRE(false); }
+static void success(SharedPtr<Context>, Callback<Error> cb) { cb(NoError()); }
+static void failure(SharedPtr<Context>, Callback<Error> cb) { cb(MockedError()); }
+static void die(SharedPtr<Context>, Callback<Error>) { REQUIRE(false); }
 
 TEST_CASE("We deal with connect error") {
-    Var<Entry> entry{new Entry};
+    SharedPtr<Entry> entry{new Entry};
     run_with_specific_server_impl<failure, die, die, die, die, die, die, die,
                                   die, protocol::disconnect_and_callback>(
         entry, "127.0.0.1", 3001, [](Error err) { REQUIRE(err == MockedError()); }, {},
@@ -32,7 +32,7 @@ TEST_CASE("We deal with connect error") {
 }
 
 TEST_CASE("We deal with send-login error") {
-    Var<Entry> entry{new Entry};
+    SharedPtr<Entry> entry{new Entry};
     run_with_specific_server_impl<success, failure, die, die, die, die, die,
                                   die, die, protocol::disconnect_and_callback>(
         entry, "127.0.0.1", 3001, [](Error err) { REQUIRE(err == MockedError()); }, {},
@@ -40,7 +40,7 @@ TEST_CASE("We deal with send-login error") {
 }
 
 TEST_CASE("We deal with recv-and-ignore-kickoff error") {
-    Var<Entry> entry{new Entry};
+    SharedPtr<Entry> entry{new Entry};
     run_with_specific_server_impl<success, success, failure, die, die, die, die,
                                   die, die, protocol::disconnect_and_callback>(
         entry, "127.0.0.1", 3001, [](Error err) { REQUIRE(err == MockedError()); }, {},
@@ -48,7 +48,7 @@ TEST_CASE("We deal with recv-and-ignore-kickoff error") {
 }
 
 TEST_CASE("We deal with wait-in-queue error") {
-    Var<Entry> entry{new Entry};
+    SharedPtr<Entry> entry{new Entry};
     run_with_specific_server_impl<success, success, success, failure, die, die,
                                   die, die, die,
                                   protocol::disconnect_and_callback>(
@@ -57,7 +57,7 @@ TEST_CASE("We deal with wait-in-queue error") {
 }
 
 TEST_CASE("We deal with recv-version error") {
-    Var<Entry> entry{new Entry};
+    SharedPtr<Entry> entry{new Entry};
     run_with_specific_server_impl<success, success, success, success, failure,
                                   die, die, die, die,
                                   protocol::disconnect_and_callback>(
@@ -66,7 +66,7 @@ TEST_CASE("We deal with recv-version error") {
 }
 
 TEST_CASE("We deal with recv-tests-id error") {
-    Var<Entry> entry{new Entry};
+    SharedPtr<Entry> entry{new Entry};
     run_with_specific_server_impl<success, success, success, success, success,
                                   failure, die, die, die,
                                   protocol::disconnect_and_callback>(
@@ -75,7 +75,7 @@ TEST_CASE("We deal with recv-tests-id error") {
 }
 
 TEST_CASE("We deal with run-tests error") {
-    Var<Entry> entry{new Entry};
+    SharedPtr<Entry> entry{new Entry};
     run_with_specific_server_impl<success, success, success, success, success,
                                   success, failure, die, die,
                                   protocol::disconnect_and_callback>(
@@ -84,7 +84,7 @@ TEST_CASE("We deal with run-tests error") {
 }
 
 TEST_CASE("We deal with recv-results-and-logout error") {
-    Var<Entry> entry{new Entry};
+    SharedPtr<Entry> entry{new Entry};
     run_with_specific_server_impl<success, success, success, success, success,
                                   success, success, failure, die,
                                   protocol::disconnect_and_callback>(
@@ -93,7 +93,7 @@ TEST_CASE("We deal with recv-results-and-logout error") {
 }
 
 TEST_CASE("run() deals with invalid port error") {
-    Var<Entry> entry{new Entry};
+    SharedPtr<Entry> entry{new Entry};
     run(entry, [](Error err) { REQUIRE(err == InvalidPortError()); },
         {
             {"port", "xo"},
@@ -101,12 +101,12 @@ TEST_CASE("run() deals with invalid port error") {
 }
 
 static void fail(std::string, Callback<Error, mlabns::Reply> cb, Settings,
-                 Var<Reactor>, Var<Logger>) {
+                 SharedPtr<Reactor>, SharedPtr<Logger>) {
     cb(MockedError(), mlabns::Reply());
 }
 
 TEST_CASE("run() deals with mlab-ns query error") {
-    Var<Entry> entry{new Entry};
+    SharedPtr<Entry> entry{new Entry};
     run_impl<run_with_specific_server, fail>(
         entry, [](Error err) { REQUIRE(err == MlabnsQueryError()); }, {},
         Reactor::global(), Logger::global());
@@ -124,12 +124,13 @@ TEST_CASE("run() deals with mlab-ns query error") {
 #ifdef ENABLE_INTEGRATION_TESTS
 
 TEST_CASE("NDT test run() should work") {
-    Var<Entry> entry{new Entry};
-    loop_with_initial_event([=]() {
-        ndt::run(entry, [](Error err) {
+    SharedPtr<Entry> entry{new Entry};
+    SharedPtr<Reactor> reactor = Reactor::make();
+    reactor->run_with_initial_event([=]() {
+        ndt::run(entry, [=](Error err) {
             REQUIRE(!err);
-            break_loop();
-        });
+            reactor->stop();
+        }, {}, reactor);
     });
 }
 

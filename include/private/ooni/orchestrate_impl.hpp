@@ -5,12 +5,12 @@
 #define PRIVATE_OONI_ORCHESTRATE_IMPL_HPP
 
 #include "private/common/fcompose.hpp"
-#include "private/common/json.hpp"
+#include <measurement_kit/common/json.hpp>
 #include "private/common/mock.hpp"
+#include "private/common/utils.hpp"
 
 #include <measurement_kit/ooni.hpp>
 
-#include "../common/utils.hpp"
 #include "../ooni/utils.hpp"
 
 namespace mk {
@@ -19,14 +19,14 @@ namespace orchestrate {
 
 template <MK_MOCK_AS(http::request_json_object, http_request_json_object)>
 void login(Auth &&auth, std::string registry_url, Settings settings,
-           Var<Reactor> reactor, Var<Logger> logger,
+           SharedPtr<Reactor> reactor, SharedPtr<Logger> logger,
            Callback<Error &&, Auth &&> &&cb) {
     if (auth.username.empty() || auth.password.empty()) {
         logger->warn("orchestrator: missing username or password");
         cb(MissingRequiredValueError(), std::move(auth));
         return;
     };
-    nlohmann::json request{{"username", auth.username},
+    Json request{{"username", auth.username},
                            {"password", auth.password}};
     logger->info("Logging you in with orchestrator");
     logger->debug("orchestrator: sending login request: %s",
@@ -38,16 +38,16 @@ void login(Auth &&auth, std::string registry_url, Settings settings,
     http_request_json_object(
           "POST", registry_url + "/api/v1/login", request, {},
           [ auth = std::move(auth), cb = std::move(cb),
-            logger ](Error error, Var<http::Response> /*http_response*/,
-                     nlohmann::json json_response) mutable {
+            logger ](Error error, SharedPtr<http::Response> /*http_response*/,
+                     Json json_response) mutable {
               if (error) {
                   logger->warn("orchestrator: JSON API error: %s",
-                               error.explain().c_str());
+                               error.what());
                   cb(std::move(error), std::move(auth));
                   return;
               }
               logger->debug("orchestrator: processing login response");
-              error = json_process_and_filter_errors(
+              error = json_process(
                     json_response, [&](auto response) {
                         if (response.find("error") != response.end()) {
                             if (response["error"] ==
@@ -69,7 +69,7 @@ void login(Auth &&auth, std::string registry_url, Settings settings,
                     });
               if (error) {
                   logger->warn("orchestrator: json processing error: %s",
-                               error.explain().c_str());
+                               error.what());
               }
               cb(std::move(error), std::move(auth));
           },
@@ -78,7 +78,7 @@ void login(Auth &&auth, std::string registry_url, Settings settings,
 
 template <MK_MOCK_AS(http::request_json_object, http_request_json_object)>
 void maybe_login(Auth &&auth, std::string registry_url, Settings settings,
-                 Var<Reactor> reactor, Var<Logger> logger,
+                 SharedPtr<Reactor> reactor, SharedPtr<Logger> logger,
                  Callback<Error &&, Auth &&> &&cb) {
     if (auth.is_valid(logger)) {
         logger->info("Auth token is valid, no need to login");
@@ -91,7 +91,7 @@ void maybe_login(Auth &&auth, std::string registry_url, Settings settings,
 
 template <MK_MOCK_AS(http::request_json_object, http_request_json_object)>
 void register_probe_(const ClientMetadata &m, std::string password,
-                     Var<Reactor> reactor, Callback<Error &&, Auth &&> &&cb) {
+                     SharedPtr<Reactor> reactor, Callback<Error &&, Auth &&> &&cb) {
     Auth auth;
     auth.password = password;
     if (m.probe_cc.empty() || m.probe_asn.empty() || m.platform.empty() ||
@@ -107,20 +107,20 @@ void register_probe_(const ClientMetadata &m, std::string password,
         cb(MissingRequiredValueError(), std::move(auth));
         return;
     }
-    nlohmann::json request = m.as_json();
+    Json request = m.as_json();
     request["password"] = password;
     http_request_json_object(
           "POST", m.registry_url + "/api/v1/register", request, {},
           [ cb = std::move(cb), logger = m.logger,
-            auth = std::move(auth) ](Error error, Var<http::Response> /*resp*/,
-                                     nlohmann::json json_response) mutable {
+            auth = std::move(auth) ](Error error, SharedPtr<http::Response> /*resp*/,
+                                     Json json_response) mutable {
               if (error) {
                   logger->warn("orchestrator: JSON API error: %s",
-                               error.as_ooni_error().c_str());
+                               error.what());
                   cb(std::move(error), std::move(auth));
                   return;
               }
-              error = json_process_and_filter_errors(
+              error = json_process(
                     json_response, [&](auto jresp) {
                         if (jresp.find("error") != jresp.end()) {
                             if (jresp["error"] == "invalid request") {
@@ -136,7 +136,7 @@ void register_probe_(const ClientMetadata &m, std::string password,
                     });
               if (error) {
                   logger->warn("orchestrator: JSON processing error: %s",
-                               error.explain().c_str());
+                               error.what());
               } else {
                   logger->info("Registered probe with orchestrator as: '%s'",
                                auth.username.c_str());
@@ -147,10 +147,10 @@ void register_probe_(const ClientMetadata &m, std::string password,
 }
 
 template <MK_MOCK_AS(http::request_json_object, http_request_json_object)>
-void update_(const ClientMetadata &m, Auth &&auth, Var<Reactor> reactor,
+void update_(const ClientMetadata &m, Auth &&auth, SharedPtr<Reactor> reactor,
              Callback<Error &&, Auth &&> &&cb) {
     std::string update_url = m.registry_url + "/api/v1/update/" + auth.username;
-    nlohmann::json update_request = m.as_json();
+    Json update_request = m.as_json();
     maybe_login(
           std::move(auth), m.registry_url, m.settings, reactor, m.logger, [
               update_url = std::move(update_url),
@@ -169,14 +169,14 @@ void update_(const ClientMetadata &m, Auth &&auth, Var<Reactor> reactor,
                     "PUT", update_url, update_request,
                     {{"Authorization", "Bearer " + auth_token}},
                     [ cb = std::move(cb), logger, auth = std::move(auth) ](
-                          Error err, Var<http::Response> /*resp*/,
-                          nlohmann::json json_response) mutable {
+                          Error err, SharedPtr<http::Response> /*resp*/,
+                          Json json_response) mutable {
                         if (err) {
                             // Note: error printed by maybe_login()
                             cb(std::move(err), std::move(auth));
                             return;
                         }
-                        err = json_process_and_filter_errors(
+                        err = json_process(
                               json_response, [&](auto jresp) {
                                   // XXX add better error handling
                                   if (jresp.find("error") != jresp.end()) {
@@ -202,7 +202,7 @@ void update_(const ClientMetadata &m, Auth &&auth, Var<Reactor> reactor,
 }
 
 template <MK_MOCK_AS(ooni::ip_lookup, ooni_ip_lookup)>
-void do_find_location(const ClientMetadata &m, Var<Reactor> reactor,
+void do_find_location(const ClientMetadata &m, SharedPtr<Reactor> reactor,
                       Callback<Error &&, std::string &&, std::string &&> &&cb) {
     ooni_ip_lookup(
           [
@@ -222,7 +222,7 @@ void do_find_location(const ClientMetadata &m, Var<Reactor> reactor,
                   ErrorOr<std::string> x = callable(db, ip, logger);
                   if (!x) {
                       logger->warn("geoip failed for '%s': %s", ip.c_str(),
-                                   x.as_error().as_ooni_error().c_str());
+                                   x.as_error().what());
                       dest = fallback;
                       return;
                   }
@@ -247,15 +247,15 @@ void do_find_location(const ClientMetadata &m, Var<Reactor> reactor,
 class RegistryCtx {
   public:
     Auth auth;
-    Var<Logger> logger;
+    SharedPtr<Logger> logger;
     ClientMetadata metadata;
-    Var<Reactor> reactor;
+    SharedPtr<Reactor> reactor;
 };
 
 static inline void ctx_enter_(Auth &&auth, ClientMetadata &&meta,
-                              Var<Reactor> reactor,
-                              Callback<Var<RegistryCtx>> &&cb) {
-    auto ctx = Var<RegistryCtx>::make();
+                              SharedPtr<Reactor> reactor,
+                              Callback<SharedPtr<RegistryCtx>> &&cb) {
+    auto ctx = SharedPtr<RegistryCtx>::make();
     ctx->auth = std::move(auth);
     ctx->metadata = std::move(meta);
     ctx->reactor = reactor;
@@ -264,8 +264,8 @@ static inline void ctx_enter_(Auth &&auth, ClientMetadata &&meta,
 }
 
 template <MK_MOCK_AS(http::request_json_object, http_request_json_object)>
-void ctx_register_(Error &&error, Var<RegistryCtx> ctx,
-                   Callback<Error &&, Var<RegistryCtx>> &&cb) {
+void ctx_register_(Error &&error, SharedPtr<RegistryCtx> ctx,
+                   Callback<Error &&, SharedPtr<RegistryCtx>> &&cb) {
     if (error) {
         cb(std::move(error), ctx);
         return;
@@ -282,8 +282,8 @@ void ctx_register_(Error &&error, Var<RegistryCtx> ctx,
 }
 
 template <MK_MOCK_AS(ooni::ip_lookup, ooni_ip_lookup)>
-void ctx_retrieve_missing_meta_(Var<RegistryCtx> ctx,
-                                Callback<Error &&, Var<RegistryCtx>> &&cb) {
+void ctx_retrieve_missing_meta_(SharedPtr<RegistryCtx> ctx,
+                                Callback<Error &&, SharedPtr<RegistryCtx>> &&cb) {
     if (ctx->metadata.platform == "") {
         ctx->metadata.platform = mk_platform();
     }
@@ -312,8 +312,8 @@ void ctx_retrieve_missing_meta_(Var<RegistryCtx> ctx,
 }
 
 template <MK_MOCK_AS(http::request_json_object, http_request_json_object)>
-void ctx_update_(Error &&error, Var<RegistryCtx> ctx,
-                 Callback<Error &&, Var<RegistryCtx>> &&cb) {
+void ctx_update_(Error &&error, SharedPtr<RegistryCtx> ctx,
+                 Callback<Error &&, SharedPtr<RegistryCtx>> &&cb) {
     if (error) {
         cb(std::move(error), ctx);
         return;
@@ -326,7 +326,7 @@ void ctx_update_(Error &&error, Var<RegistryCtx> ctx,
           });
 }
 
-static inline void ctx_leave_(Error &&error, Var<RegistryCtx> ctx,
+static inline void ctx_leave_(Error &&error, SharedPtr<RegistryCtx> ctx,
                               Callback<Error &&, Auth &&> &&cb) {
     cb(std::move(error), std::move(ctx->auth));
 }
@@ -334,7 +334,7 @@ static inline void ctx_leave_(Error &&error, Var<RegistryCtx> ctx,
 template <MK_MOCK_AS(http::request_json_object, http_request_json_object),
           MK_MOCK_AS(ooni::ip_lookup, ooni_ip_lookup)>
 void do_register_probe(std::string &&password, const ClientMetadata &m,
-                       Var<Reactor> reactor, Callback<Error &&, Auth &&> &&cb) {
+                       SharedPtr<Reactor> reactor, Callback<Error &&, Auth &&> &&cb) {
     // For uniformity we pass an `Auth` structure to `ctx_enter_` and we
     // retrieve the password from it in `ctx_register_`
     Auth auth;
@@ -347,7 +347,7 @@ void do_register_probe(std::string &&password, const ClientMetadata &m,
 
 template <MK_MOCK_AS(http::request_json_object, http_request_json_object),
           MK_MOCK_AS(ooni::ip_lookup, ooni_ip_lookup)>
-void do_update(Auth &&auth, const ClientMetadata &m, Var<Reactor> reactor,
+void do_update(Auth &&auth, const ClientMetadata &m, SharedPtr<Reactor> reactor,
                Callback<Error &&, Auth &&> &&cb) {
     mk::fcompose(mk::fcompose_policy_async(), ctx_enter_,
                  ctx_retrieve_missing_meta_<ooni_ip_lookup>,

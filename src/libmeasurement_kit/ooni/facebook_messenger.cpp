@@ -1,11 +1,11 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software. See AUTHORS and LICENSE for more
-// information on the copying conditions.
+// Measurement-kit is free software under the BSD license. See AUTHORS
+// and LICENSE for more information on the copying conditions.
 
-#include "private/common/fcompose.hpp"
-#include "private/common/utils.hpp"
 #include "private/ooni/constants.hpp"
 #include "private/ooni/utils.hpp"
+#include "private/common/fcompose.hpp"
+#include "private/common/utils.hpp"
 #include <measurement_kit/ooni.hpp>
 
 namespace mk {
@@ -23,13 +23,13 @@ static const std::map<std::string, std::string> &FB_SERVICE_HOSTNAMES = {
       {"star", "star.c10r.facebook.com"}};
 
 static void
-dns_many(Error error, Var<Entry> entry, Settings options, Var<Reactor> reactor,
-         Var<Logger> logger,
-         Callback<Error, Var<Entry>,
-                  Var<std::map<std::string, std::vector<std::string>>>,
-                  Settings, Var<Reactor>, Var<Logger>>
+dns_many(Error error, SharedPtr<Entry> entry, Settings options, SharedPtr<Reactor> reactor,
+         SharedPtr<Logger> logger,
+         Callback<Error, SharedPtr<Entry>,
+                  SharedPtr<std::map<std::string, std::vector<std::string>>>,
+                  Settings, SharedPtr<Reactor>, SharedPtr<Logger>>
                cb) {
-    Var<std::map<std::string, std::vector<std::string>>> fb_service_ips(
+    SharedPtr<std::map<std::string, std::vector<std::string>>> fb_service_ips(
           new std::map<std::string, std::vector<std::string>>(
                 {{"stun", {}},
                  {"b_api", {}},
@@ -52,10 +52,10 @@ dns_many(Error error, Var<Entry> entry, Settings options, Var<Reactor> reactor,
         cb(NoError(), entry, fb_service_ips, options, reactor, logger);
         return;
     }
-    Var<size_t> names_tested(new size_t(0));
+    SharedPtr<size_t> names_tested(new size_t(0));
 
     auto dns_cb = [=](std::string service, std::string hostname) {
-        return [=](Error err, Var<dns::Message> message) {
+        return [=](Error err, SharedPtr<dns::Message> message) {
             if (!!err) {
                 logger->info("fb_messenger: dns error for %s, %s",
                              service.c_str(), hostname.c_str());
@@ -108,10 +108,10 @@ dns_many(Error error, Var<Entry> entry, Settings options, Var<Reactor> reactor,
 }
 
 static void
-tcp_many(Error error, Var<Entry> entry,
-         Var<std::map<std::string, std::vector<std::string>>> fb_service_ips,
-         Settings options, Var<Reactor> reactor, Var<Logger> logger,
-         Callback<Var<Entry>> cb) {
+tcp_many(Error error, SharedPtr<Entry> entry,
+         SharedPtr<std::map<std::string, std::vector<std::string>>> fb_service_ips,
+         Settings options, SharedPtr<Reactor> reactor, SharedPtr<Logger> logger,
+         Callback<SharedPtr<Entry>> cb) {
 
     if (error) {
         cb(entry);
@@ -136,10 +136,10 @@ tcp_many(Error error, Var<Entry> entry,
         cb(entry);
         return;
     }
-    Var<size_t> ips_tested(new size_t(0));
+    SharedPtr<size_t> ips_tested(new size_t(0));
 
     auto tcp_cb = [=](std::string service, std::string ip, uint16_t port) {
-        return [=](Error err, Var<net::Transport> txp) {
+        return [=](Error err, SharedPtr<net::Transport> txp) {
             assert(!!txp);
             Entry current_entry{
                   {"ip", ip}, {"port", port}, {"status", nullptr}};
@@ -186,10 +186,10 @@ tcp_many(Error error, Var<Entry> entry,
     }
 }
 
-void facebook_messenger(Settings options, Callback<Var<report::Entry>> callback,
-                        Var<Reactor> reactor, Var<Logger> logger) {
+void facebook_messenger(Settings options, Callback<SharedPtr<report::Entry>> callback,
+                        SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
     logger->info("starting facebook_messenger");
-    Var<Entry> entry(new Entry);
+    SharedPtr<Entry> entry(new Entry);
     mk::fcompose(mk::fcompose_policy_async(), dns_many, tcp_many)(
           NoError(), entry, options, reactor, logger, callback);
 }

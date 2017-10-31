@@ -6,31 +6,29 @@
 
 #include "private/common/mock.hpp"
 
-#include "private/common/mock.hpp"
-
 #include "../ndt/internal.hpp"
 #include <measurement_kit/mlabns.hpp>
 
 namespace mk {
 namespace ndt {
 
-using Phase = void (*)(Var<Context>, Callback<Error>);
-using Cleanup = void (*)(Var<Context>, Error);
+using Phase = void (*)(SharedPtr<Context>, Callback<Error>);
+using Cleanup = void (*)(SharedPtr<Context>, Error);
 
 template <Phase connect, Phase send_login, Phase recv_and_ignore_kickoff,
           Phase wait_in_queue, Phase recv_version, Phase recv_tests_id,
           Phase run_tests, Phase recv_results_and_logout, Phase wait_close,
           Cleanup disconnect_and_callback>
-void run_with_specific_server_impl(Var<Entry> entry, std::string address,
+void run_with_specific_server_impl(SharedPtr<Entry> entry, std::string address,
                                    int port, Callback<Error> callback,
-                                   Settings settings, Var<Reactor> reactor,
-                                   Var<Logger> logger) {
+                                   Settings settings, SharedPtr<Reactor> reactor,
+                                   SharedPtr<Logger> logger) {
 
     // Note: this implementation is a template because that allows us to
     // easily change the functions implementing each phase of the protocol
     // thus enabling quick experimentation and unit testing.
 
-    Var<Context> ctx(new Context);
+    SharedPtr<Context> ctx(new Context);
     ctx->address = address;
     ctx->callback = callback;
     ctx->entry = entry;
@@ -122,8 +120,8 @@ void run_with_specific_server_impl(Var<Entry> entry, std::string address,
 
 template <MK_MOCK(run_with_specific_server),
           MK_MOCK_AS(mlabns::query, mlabns_query)>
-void run_impl(Var<Entry> entry, Callback<Error> callback, Settings settings,
-              Var<Reactor> reactor, Var<Logger> logger) {
+void run_impl(SharedPtr<Entry> entry, Callback<Error> callback, Settings settings,
+              SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
     ErrorOr<int> port = settings.get_noexcept<int>("port", NDT_PORT);
     if (!port) {
         callback(InvalidPortError(port.as_error()));

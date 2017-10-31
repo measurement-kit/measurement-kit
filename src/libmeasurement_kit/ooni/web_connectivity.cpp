@@ -19,9 +19,9 @@ using namespace mk::report;
 
 typedef std::vector<std::pair<std::string, int>> SocketList;
 
-static void compare_http_requests(Var<Entry> entry,
-                                  Var<http::Response> response, Entry control,
-                                  Var<Logger> logger) {
+static void compare_http_requests(SharedPtr<Entry> entry,
+                                  SharedPtr<http::Response> response, Entry control,
+                                  SharedPtr<Logger> logger) {
 
     // The response may be null if HTTP fails due to network errors
     if (!response) {
@@ -137,11 +137,11 @@ static void compare_http_requests(Var<Entry> entry,
     }
 }
 
-static void compare_dns_queries(Var<Entry> entry,
+static void compare_dns_queries(SharedPtr<Entry> entry,
                                 std::vector<std::string> experiment_addresses,
                                 Entry control, Settings options) {
 
-    Var<Logger> logger = Logger::global();
+    SharedPtr<Logger> logger = Logger::global();
     // When the controls fails in the same way as the experiment we consider the
     // DNS queries to be consistent.
     // XXX ensure the failure messages are aligned between ooniprobe and MK
@@ -216,7 +216,7 @@ static void compare_dns_queries(Var<Entry> entry,
     (*entry)["dns_consistency"] = "inconsistent";
 }
 
-static bool compare_tcp_connect(Var<Entry> entry, Entry control) {
+static bool compare_tcp_connect(SharedPtr<Entry> entry, Entry control) {
     bool success = true;
     int idx = 0;
     for (auto result : (*entry)["tcp_connect"]) {
@@ -244,10 +244,10 @@ static bool compare_tcp_connect(Var<Entry> entry, Entry control) {
     return success;
 }
 
-static void compare_control_experiment(std::string input, Var<Entry> entry,
-                                       Var<http::Response> response,
+static void compare_control_experiment(std::string input, SharedPtr<Entry> entry,
+                                       SharedPtr<http::Response> response,
                                        std::vector<std::string> addresses,
-                                       Settings options, Var<Logger> logger) {
+                                       Settings options, SharedPtr<Logger> logger) {
     if ((*entry)["control_failure"] != nullptr) {
         logger->warn(
             "web_connectivity: skipping control comparison due to failure");
@@ -333,10 +333,10 @@ static void compare_control_experiment(std::string input, Var<Entry> entry,
 }
 
 static void control_request(http::Headers headers_to_pass_along,
-                            Var<Entry> entry, SocketList socket_list,
+                            SharedPtr<Entry> entry, SocketList socket_list,
                             std::string url, Callback<Error> callback,
-                            Settings settings, Var<Reactor> reactor,
-                            Var<Logger> logger) {
+                            Settings settings, SharedPtr<Reactor> reactor,
+                            SharedPtr<Logger> logger) {
 
     // Implementation note: this function uses (and modifies) the settings
     // passed by the caller because such object is passed by copy and we
@@ -377,12 +377,12 @@ static void control_request(http::Headers headers_to_pass_along,
     }
 
     logger->info("Using backend %s", settings["backend"].c_str());
-    logger->log(MK_LOG_DEBUG2, "Body %s", body.c_str());
+    logger->debug2("Body %s", body.c_str());
 
     mk::dump_settings(settings, "web_connectivity", logger);
 
     http::request(settings, headers, body,
-                  [=](Error error, Var<http::Response> response) {
+                  [=](Error error, SharedPtr<http::Response> response) {
                       if (!error) {
                           try {
                               (*entry)["control"] =
@@ -395,7 +395,7 @@ static void control_request(http::Headers headers_to_pass_along,
                               return;
                           }
                       }
-                      (*entry)["control_failure"] = error.as_ooni_error();
+                      (*entry)["control_failure"] = error.reason;
                       callback(error);
                       return;
                   },
@@ -403,10 +403,10 @@ static void control_request(http::Headers headers_to_pass_along,
 }
 
 static void experiment_http_request(
-        Var<Entry> entry, std::string url,
-        Callback<Error, http::Headers, Var<http::Response>> cb,
-        Settings options, Var<Reactor> reactor,
-        Var<Logger> logger) {
+        SharedPtr<Entry> entry, std::string url,
+        Callback<Error, http::Headers, SharedPtr<http::Response>> cb,
+        Settings options, SharedPtr<Reactor> reactor,
+        SharedPtr<Logger> logger) {
 
     http::Headers headers = constants::COMMON_CLIENT_HEADERS;
     std::string body;
@@ -425,10 +425,10 @@ static void experiment_http_request(
 
     logger->debug("Requesting url %s", url.c_str());
     templates::http_request(entry, options, headers, body,
-                            [=](Error err, Var<http::Response> response) {
+                            [=](Error err, SharedPtr<http::Response> response) {
                                 if (err) {
                                     (*entry)["http_experiment_failure"] =
-                                        err.as_ooni_error();
+                                        err.reason;
                                     cb(err, headers, response);
                                     return;
                                 }
@@ -437,12 +437,12 @@ static void experiment_http_request(
                             reactor, logger);
 }
 
-static void experiment_tcp_connect(Var<Entry> entry, SocketList sockets,
-                                   Callback<Error> cb, Var<Reactor> reactor,
-                                   Var<Logger> logger) {
+static void experiment_tcp_connect(SharedPtr<Entry> entry, SocketList sockets,
+                                   Callback<Error> cb, SharedPtr<Reactor> reactor,
+                                   SharedPtr<Logger> logger) {
 
     int socket_count = sockets.size();
-    Var<int> sockets_tested(new int(0));
+    SharedPtr<int> sockets_tested(new int(0));
     // XXX this is very ghetto
     if (socket_count == 0) {
         cb(NoError());
@@ -450,7 +450,7 @@ static void experiment_tcp_connect(Var<Entry> entry, SocketList sockets,
     }
 
     auto handle_connect = [=](std::string ip, int port) {
-        return [=](Error err, Var<net::Transport> txp) {
+        return [=](Error err, SharedPtr<net::Transport> txp) {
             *sockets_tested += 1;
             bool close_txp = true;
             Entry result = {
@@ -466,7 +466,7 @@ static void experiment_tcp_connect(Var<Entry> entry, SocketList sockets,
                 logger->info("web_connectivity: failed to connect to %s:%d",
                              ip.c_str(), port);
                 result["status"]["success"] = false;
-                result["status"]["failure"] = err.as_ooni_error();
+                result["status"]["failure"] = err.reason;
                 close_txp = false;
             } else {
                 logger->info("web_connectivity: success to connect to %s:%d",
@@ -503,9 +503,9 @@ static void experiment_tcp_connect(Var<Entry> entry, SocketList sockets,
 }
 
 static void experiment_dns_query(
-    Var<Entry> entry, std::string hostname, std::string nameserver,
+    SharedPtr<Entry> entry, std::string hostname, std::string nameserver,
     Callback<Error, std::vector<std::string>> callback, Settings options,
-    Var<Reactor> reactor, Var<Logger> logger) {
+    SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
 
     if (net::is_ip_addr(hostname)) {
         // Don't perform DNS resolutions if it's an IP address
@@ -518,7 +518,7 @@ static void experiment_dns_query(
 
     templates::dns_query(
         entry, "A", "IN", hostname, nameserver,
-        [=](Error err, Var<dns::Message> message) {
+        [=](Error err, SharedPtr<dns::Message> message) {
             std::vector<std::string> addresses;
             if (err) {
                 callback(err, addresses);
@@ -537,10 +537,10 @@ static void experiment_dns_query(
 }
 
 void web_connectivity(std::string input, Settings options,
-                      Callback<Var<Entry>> callback, Var<Reactor> reactor,
-                      Var<Logger> logger) {
+                      Callback<SharedPtr<Entry>> callback, SharedPtr<Reactor> reactor,
+                      SharedPtr<Logger> logger) {
     options["http/max_redirects"] = 20;
-    Var<Entry> entry(new Entry);
+    SharedPtr<Entry> entry(new Entry);
     // This is set from ooni test
     // (*entry)["client_resolver"] = nullptr;
     (*entry)["retries"] = nullptr;
@@ -572,7 +572,7 @@ void web_connectivity(std::string input, Settings options,
 
     if (!url) {
         logger->warn("Invalid test url.");
-        (*entry)["failure"] = url.as_error().as_ooni_error();
+        (*entry)["failure"] = url.as_error().reason;
         callback(entry);
         return;
     }
@@ -595,7 +595,7 @@ void web_connectivity(std::string input, Settings options,
 
             if (err) {
                 logger->warn("web_connectivity: dns-query error: %s",
-                             err.explain().c_str());
+                             err.what());
             }
             logger->info("web_connectivity: starting tcp_connect");
 
@@ -610,7 +610,7 @@ void web_connectivity(std::string input, Settings options,
 
                     if (err) {
                         logger->warn("web_connectivity: tcp-connect error: %s",
-                                     err.explain().c_str());
+                                     err.what());
                     }
 
                     logger->info(
@@ -619,12 +619,12 @@ void web_connectivity(std::string input, Settings options,
                     experiment_http_request(
                         entry, input,
                         [=](Error err, http::Headers request_headers,
-                            Var<http::Response> response) {
+                            SharedPtr<http::Response> response) {
 
                             if (err) {
                                 logger->warn(
                                     "web_connectivity: http-request error: %s",
-                                    err.explain().c_str());
+                                    err.what());
                             }
 
                             logger->info(
@@ -638,7 +638,7 @@ void web_connectivity(std::string input, Settings options,
                                         logger->warn("web_connectivity: "
                                                      "control-request error: "
                                                      "%s",
-                                                     err.explain().c_str());
+                                                     err.what());
                                     }
 
                                     logger->info("web_connectivity: comparing "

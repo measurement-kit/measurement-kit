@@ -6,9 +6,6 @@
 #include "private/ext/catch.hpp"
 
 #include "private/common/fcdr.hpp"
-
-#include "private/common/fcdr.hpp"
-
 #include <measurement_kit/common.hpp>
 
 TEST_CASE("mk::fcdr() works as expected") {

@@ -6,6 +6,7 @@
 
 #include <event2/dns.h>
 
+#include "private/net/emitter.hpp"
 #include "private/ooni/utils.hpp"
 
 namespace mk {
@@ -14,17 +15,17 @@ namespace templates {
 
 using namespace mk::report;
 
-void dns_query(Var<Entry> entry, dns::QueryType query_type,
+void dns_query(SharedPtr<Entry> entry, dns::QueryType query_type,
                dns::QueryClass query_class, std::string query_name,
-               std::string nameserver, Callback<Error, Var<dns::Message>> cb,
-               Settings options, Var<Reactor> reactor, Var<Logger> logger) {
+               std::string nameserver, Callback<Error, SharedPtr<dns::Message>> cb,
+               Settings options, SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
 
     std::string engine = options.get("dns/engine", std::string{"system"});
     bool not_system_engine = engine != "system";
     uint16_t resolver_port = 0;
     std::string resolver_hostname;
 
-    Var<report::Entry> query_entry{new report::Entry};
+    SharedPtr<report::Entry> query_entry{new report::Entry};
 
     if (not_system_engine) {
         ErrorOr<net::Endpoint> maybe_epnt = net::parse_endpoint(nameserver, 53);
@@ -44,7 +45,7 @@ void dns_query(Var<Entry> entry, dns::QueryType query_type,
         if (nameserver != "") {
             logger->warn("Explicit nameserver ignored with 'system' DNS engine");
         }
-        // For now this option is only supported by the DNS engine. Unless the
+        // For now this option is only supported by the system engine. Unless
         // user has already taken the decision whether to also resolve CNAME or
         // not, resolve the CNAME because generally we need that in OONI.
         if (options.count("dns/resolve_also_cname") == 0) {
@@ -56,7 +57,7 @@ void dns_query(Var<Entry> entry, dns::QueryType query_type,
     }
 
     dns::query(query_class, query_type, query_name,
-               [=](Error error, Var<dns::Message> message) {
+               [=](Error error, SharedPtr<dns::Message> message) {
                    logger->debug("dns_test: got response!");
                    (*query_entry)["engine"] = engine;
                    (*query_entry)["failure"] = nullptr;
@@ -80,7 +81,7 @@ void dns_query(Var<Entry> entry, dns::QueryType query_type,
                            }
                        }
                    } else {
-                       (*query_entry)["failure"] = error.as_ooni_error();
+                       (*query_entry)["failure"] = error.reason;
                    }
                    // TODO add support for bytes received
                    // (*query_entry)["bytes"] = response.get_bytes();
@@ -92,9 +93,9 @@ void dns_query(Var<Entry> entry, dns::QueryType query_type,
                options, reactor);
 }
 
-void http_request(Var<Entry> entry, Settings settings, http::Headers headers,
-                  std::string body, Callback<Error, Var<http::Response>> cb,
-                  Var<Reactor> reactor, Var<Logger> logger) {
+void http_request(SharedPtr<Entry> entry, Settings settings, http::Headers headers,
+                  std::string body, Callback<Error, SharedPtr<http::Response>> cb,
+                  SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
 
     (*entry)["agent"] = "agent";
     (*entry)["socksproxy"] = nullptr;
@@ -123,13 +124,13 @@ void http_request(Var<Entry> entry, Settings settings, http::Headers headers,
 
     http::request(
         settings, headers, body,
-        [=](Error error, Var<http::Response> response) {
+        [=](Error error, SharedPtr<http::Response> response) {
 
-            auto dump = [&](Var<http::Response> response) {
+            auto dump = [&](SharedPtr<http::Response> response) {
                 Entry rr;
 
                 if (!!error) {
-                    rr["failure"] = error.as_ooni_error();
+                    rr["failure"] = error.reason;
                 } else {
                     rr["failure"] = nullptr;
                 }
@@ -183,7 +184,7 @@ void http_request(Var<Entry> entry, Settings settings, http::Headers headers,
             };
 
             if (!!response) {
-                for (Var<http::Response> x = response; !!x; x = x->previous) {
+                for (SharedPtr<http::Response> x = response; !!x; x = x->previous) {
                     (*entry)["requests"].push_back(dump(x));
                 }
             } else {
@@ -194,15 +195,20 @@ void http_request(Var<Entry> entry, Settings settings, http::Headers headers,
         reactor, logger);
 }
 
-void tcp_connect(Settings options, Callback<Error, Var<net::Transport>> cb,
-                 Var<Reactor> reactor, Var<Logger> logger) {
+void tcp_connect(Settings options,
+        Callback<Error, SharedPtr<net::Transport>> cb,
+        SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
     ErrorOr<int> port = options["port"].as_noexcept<int>();
     if (!port) {
-        cb(port.as_error(), nullptr);
+        cb(port.as_error(),
+                SharedPtr<net::Transport>{
+                        std::make_shared<net::Emitter>(reactor, logger)});
         return;
     }
     if (options["host"] == "") {
-        cb(MissingRequiredHostError(), nullptr);
+        cb(MissingRequiredHostError(),
+                SharedPtr<net::Transport>{
+                        std::make_shared<net::Emitter>(reactor, logger)});
         return;
     }
     net::connect(options["host"], *port, cb, options, reactor, logger);

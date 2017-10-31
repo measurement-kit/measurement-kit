@@ -11,8 +11,8 @@ MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
 void mk::mlabns::query(std::string mlab_tool,
                        mk::Callback<mk::Error, mk::mlabns::Reply> callback,
                        mk::Settings settings = {},
-                       mk::Var<mk::Reactor> reactor = mk::Reactor::global(),
-                       mk::Var<mk::Logger> logger = mk::Logger::global());
+                       mk::SharedPtr<mk::Reactor> reactor = mk::Reactor::global(),
+                       mk::SharedPtr<mk::Logger> logger = mk::Logger::global());
 ```
 
 # STABILITY

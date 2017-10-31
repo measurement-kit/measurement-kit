@@ -34,7 +34,7 @@ class BaseTest {
     void run();
     void start(Callback<>);
 
-    Var<Runnable> runnable;
+    SharedPtr<Runnable> runnable;
 };
 
 ```

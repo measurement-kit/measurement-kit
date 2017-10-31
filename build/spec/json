@@ -5,5 +5,5 @@ pkg_steps=install
 
 pkg_install() {
     echo "Installing $pkg_name header $pkg_tag in MK sources"
-    cp src/json.hpp ../../../include/measurement_kit/ext
+    cp src/json.hpp ../../../include/measurement_kit/common/nlohmann
 }

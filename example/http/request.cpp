@@ -2,16 +2,15 @@
 // Measurement-kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
+#include "private/common/utils.hpp"
 #include <measurement_kit/http.hpp>
-
 #include <iostream>
-
 #include <getopt.h>
 
 using namespace mk;
 
 static const char *kv_usage =
-    "usage: measurement_kit http_request [-v] [-B /ca/bundle/path] [-b body]\n"
+    "usage: measurement_kit http_request [-Cv] [-B /ca/bundle/path] [-b body]\n"
     "       [-H 'key: value'] [-m method] [-R max-redirect] url\n";
 
 static bool set_header(http::Headers &headers, const std::string option) {
@@ -36,13 +35,16 @@ int main(int argc, char **argv) {
     std::string body;
     http::Headers headers;
     int ch;
-    while ((ch = getopt(argc, argv, "B:b:H:m:R:v")) != -1) {
+    while ((ch = getopt(argc, argv, "B:b:CH:m:R:v")) != -1) {
         switch (ch) {
         case 'B':
             settings["net/ca_bundle_path"] = optarg;
             break;
         case 'b':
             body = optarg;
+            break;
+        case 'C':
+            settings["net/allow_ssl23"] = true;
             break;
         case 'H':
             if (!set_header(headers, optarg)) {
@@ -71,15 +73,16 @@ int main(int argc, char **argv) {
     }
     settings["http/url"] = argv[0];
 
-    loop_with_initial_event([&]() {
+    SharedPtr<Reactor> reactor = Reactor::make();
+    reactor->run_with_initial_event([=]() {
         http::request(
             settings,
             headers,
             body,
-            [](Error error, Var<http::Response> response) {
+            [=](Error error, SharedPtr<http::Response> response) {
                 if (error) {
-                    std::cout << "Error: " << error.explain() << "\n";
-                    break_loop();
+                    std::cout << "Error: " << error << "\n";
+                    reactor->stop();
                     return;
                 }
                 std::cout << response->response_line << "\n";
@@ -87,9 +90,7 @@ int main(int argc, char **argv) {
                     std::cout << pair.first << ": " << pair.second << "\n";
                 }
                 std::cout << "\n" << response->body << "\n";
-                break_loop();
-            });
+                reactor->stop();
+            }, reactor);
     });
-
-    return 0;
 }

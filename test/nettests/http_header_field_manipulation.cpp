@@ -21,10 +21,10 @@ TEST_CASE("Synchronous http-header-field-manipulation test") {
 #endif
 
 TEST_CASE("compare_headers_response works") {
-    Var<report::Entry> entry(new report::Entry);
+    SharedPtr<report::Entry> entry(new report::Entry);
     (*entry)["tampering"] = report::Entry::object();
 
-    Var<http::Response> response{new http::Response};
+    SharedPtr<http::Response> response{new http::Response};
 
     SECTION("For empty response") {
         ooni::compare_headers_response({ {"foo", "bar"} },

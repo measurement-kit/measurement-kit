@@ -13,17 +13,17 @@
 using namespace mk::ooni;
 using namespace mk;
 
-static void upload_report(std::string url, int index, char **argv) {
+static void upload_report(std::string url, int index, char **argv, SharedPtr<Reactor> reactor) {
     if (argv[index] == nullptr) {
-        break_loop();
+        reactor->stop();
         return;
     }
     info("submitting report %s...", argv[index]);
     collector::submit_report(argv[index], url, [=](Error err) {
         info("submitting report %s... %d", argv[index], err.code);
-        call_soon([=]() {
+        reactor->call_soon([=]() {
             debug("scheduling submit of next report...");
-            upload_report(url, index + 1, argv);
+            upload_report(url, index + 1, argv, reactor);
         });
     });
 }
@@ -48,8 +48,9 @@ int main(int argc, char **argv) {
     argc -= optind;
     argv += optind;
 
-    loop_with_initial_event([&]() {
-        upload_report(url, 0, argv);
+    SharedPtr<Reactor> reactor = Reactor::make();
+    reactor->run_with_initial_event([=]() {
+        upload_report(url, 0, argv, reactor);
     });
 
     return 0;

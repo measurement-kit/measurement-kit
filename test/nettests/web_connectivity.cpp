@@ -20,13 +20,13 @@ TEST_CASE("Make sure that IP address scrubbing works") {
     auto test = [](std::function<BaseTest(BaseTest &)> f,
                    Callback<std::string /*ip*/, std::string /*entry*/> g) {
         std::string probe_ip;
-        Var<Reactor> reactor = Reactor::make();
-        reactor->loop_with_initial_event([&]() {
+        SharedPtr<Reactor> reactor = Reactor::make();
+        reactor->run_with_initial_event([&]() {
             ooni::ip_lookup(
                 [&](Error err, std::string ip_addr) {
                     REQUIRE(!err);
                     probe_ip = ip_addr;
-                    reactor->break_loop();
+                    reactor->stop();
                 },
                 {}, reactor, Logger::global());
         });
@@ -65,7 +65,7 @@ TEST_CASE("Make sure that IP address scrubbing works") {
         bool redacted_check = false;
         test(
             [](BaseTest test) {
-                return test.set_options("save_real_probe_ip", false);
+                return test.set_option("save_real_probe_ip", false);
             },
             [&](std::string ip, std::string entry) {
                 ip_check = (entry.find(ip) == std::string::npos);
@@ -84,7 +84,7 @@ TEST_CASE("Make sure that IP address scrubbing works") {
         bool redacted_check = false;
         test(
             [](BaseTest test) {
-                return test.set_options("save_real_probe_ip", true);
+                return test.set_option("save_real_probe_ip", true);
             },
             [&](std::string ip, std::string entry) {
                 ip_check = (entry.find(ip) != std::string::npos);
