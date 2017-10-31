@@ -21,6 +21,7 @@
 #include <measurement_kit/common/non_movable.hpp>  // for mk::NonMovable
 #include <measurement_kit/common/reactor.hpp>      // for mk::Reactor
 #include <measurement_kit/common/socket.hpp>       // for mk::socket_t
+#include <set>                                     // for std::set
 #include <signal.h>                                // for sigaction
 #include <stdexcept>                               // for std::runtime_error
 #include <utility>                                 // for std::move
@@ -33,8 +34,7 @@ namespace mk {
 
 // mk::Reactor implementation using libevent.
 template <MK_MOCK(event_base_new), MK_MOCK(event_base_once),
-        MK_MOCK(event_base_dispatch), MK_MOCK(event_base_loopbreak),
-        MK_MOCK(event_new), MK_MOCK(event_add)>
+        MK_MOCK(event_base_dispatch), MK_MOCK(event_base_loopbreak)>
 class LibeventReactor : public Reactor, public NonCopyable, public NonMovable {
   public:
     // ## Initialization
@@ -66,7 +66,10 @@ class LibeventReactor : public Reactor, public NonCopyable, public NonMovable {
         }
     }
 
-    ~LibeventReactor() override { event_base_free(evbase); }
+    ~LibeventReactor() override {
+        pollfd_cleanup();
+        event_base_free(evbase);
+    }
 
     // ## Event loop management
 
@@ -138,37 +141,119 @@ class LibeventReactor : public Reactor, public NonCopyable, public NonMovable {
         });
     }
 
-    // ## Internals
+    // ## Pending callbacks
 
+    // Most reactor operations lead to the creation of a pending callback to be
+    // called when the corresponding condition is met. The pending callback must
+    // be managed through a shared pointer, whose ownership will be shared by
+    // libevent code and the reactor itself, as detailed below.
+    //
+    // The pending callback structure contains a `cb` field that is the real
+    // callback to be called. This callback takes two arguments. The error that
+    // occurred, if any, and the flags indicating readability (EV_READ) and
+    // writability (EV_WRITE).
+    //
+    // The `libevent_ref` shared pointer is a copy of the shared pointer
+    // initially used to create the structure. The purpose of this field is to
+    // keep the structure alive until libevent has finished using it.
+    //
+    // Another copy of the shared pointer is saved in the `pending` field of
+    // the reactor. To remove this copy from `pending` when the callback is
+    // called by libevent, we need to navigate from the callback itself to the
+    // reactor. Hence the `reactor` pointer field.
+    //
+    // The `reactor` field will be initialized by pollfd() with `this`. It is
+    // a safe assignment, since the pending callback lifecycle cannot be longer
+    // than the lifecycle of the reactor. Note that we do not need to enforce
+    // non-copyability and/or non-movability since the pending callback does
+    // not manage the lifecycle of `reactor` and all other fields use RAII.
+    //
+    // The reason why we want the reactor to know about pending callbacks is to
+    // avoid memory leaks when we exit abruply from the I/O loop, either because
+    // stop() was called or because of an exception.
+    class PendingCallback {
+      public:
+        Callback<Error, short> cb;
+        SharedPtr<PendingCallback> libevent_ref;
+        LibeventReactor *reactor = nullptr;
+    };
+
+    // The pollfd() method creates a pending callback from a socket (use -1 to
+    // indicate no socket), I/O flags (optional; EV_READ and/or EV_WRITE); a
+    // timeout (use a negative value to indicate no timeout), and a callback.
     void pollfd(socket_t sockfd, short evflags, double timeout,
             Callback<Error, short> &&callback) {
         timeval tv{};
-        auto cbp = new Callback<Error, short>(callback);
-        if (event_base_once(evbase, sockfd, evflags, mk_pollfd_cb, cbp,
+        SharedPtr<PendingCallback> cbp{new PendingCallback};
+        cbp->cb = std::move(callback);
+        cbp->reactor = this;
+        if (event_base_once(evbase, sockfd, evflags, mk_pollfd_cb, cbp.get(),
                     timeval_init(&tv, timeout)) != 0) {
-            delete cbp;
             throw std::runtime_error("event_base_once");
+        }
+        // Pollfd() will create the pending callback through a shared pointer,
+        // create the self reference indicating that libevent is using this
+        // pending callback, and store another reference into `pending` to mean
+        // that also the reactor itself is using the pending callback.
+        cbp->libevent_ref = cbp;
+        {
+            // When pollfd() inserts the pending callback shared pointer into
+            // the `pending` set, it protects it using a mutex. In theory, this
+            // is not needed since libevent should be single threaded in this
+            // case, but it's here for future robustness.
+            std::unique_lock<std::recursive_mutex> _{pending_mutex};
+            pending.insert(cbp);
         }
     }
 
+    // When the destructor of the reactor is called, pollfd_cleanup() will
+    // ensure that all pending-but-not-called callbacks (i.e. the ones that are
+    // still inside `pending`) will be destroyed. To this end, it will remove
+    // the libevent-is-using-it self reference. This is not a lie, as at this
+    // point we're about to destroy the `event_base`.
+    void pollfd_cleanup() {
+        for (auto &cbp : pending) {
+            cbp->libevent_ref = nullptr;
+        }
+    }
+
+    // Libevent will eventually call pollfd_cb(), either because the specified
+    // event has occurred, or because the timeout has expired.
     static void pollfd_cb(short evflags, void *opaque) {
-        auto cbp = static_cast<mk::Callback<mk::Error, short> *>(opaque);
+        // Pollfd_cb() will copy the pending callback shared pointer on its
+        // stack to enforce RAII semantics. Then it will remove all the other
+        // shared pointers, since now the callback is not pending anymore.
+        auto cbp = static_cast<PendingCallback *>(opaque)->libevent_ref;
+        {
+            // When removing from the `pending` field we protect it with a
+            // mutex, for future robustness, as explained above.
+            std::unique_lock<std::recursive_mutex> _{
+                    cbp->reactor->pending_mutex};
+            cbp->reactor->pending.erase(cbp);
+        }
+        cbp->libevent_ref = nullptr;
+
         mk::Error err = mk::NoError();
         assert((evflags & (~(EV_TIMEOUT | EV_READ | EV_WRITE))) == 0);
         if ((evflags & EV_TIMEOUT) != 0) {
             err = mk::TimeoutError();
         }
-        // In case of exception here, the stack is going to unwind, tearing down
-        // the libevent loop and leaking forever `cbp` and the event once that
-        // was used to invoke this callback.
-        (*cbp)(std::move(err), evflags);
-        delete cbp;
+
+        // Finally, pollfd_cb() calls the function stored inside the pending
+        // callback structure. Note that, if this function throws an exception,
+        // we correctly free the pending callback because of RAII. Yet, we're
+        // still leaking the event once used to execute this function.
+        //
+        // TODO: rewrite code to use a normal event to remove this limitation.
+        cbp->cb(std::move(err), evflags);
     }
 
   private:
     // ## Private attributes
 
     event_base *evbase = nullptr;
+    std::recursive_mutex pending_mutex;
+    std::set<SharedPtr<PendingCallback>> pending;
     Worker worker;
 };
 

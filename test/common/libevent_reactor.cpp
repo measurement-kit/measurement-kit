@@ -48,29 +48,26 @@ static int event_base_loopbreak_fail(event_base *) { return -1; }
 TEST_CASE("Reactor: basic functionality") {
     SECTION("We deal with event_base_new() failure") {
         REQUIRE_THROWS((LibeventReactor<event_base_new_fail, event_base_once,
-                event_base_dispatch, event_base_loopbreak, event_new,
-                event_add>{}));
+                event_base_dispatch, event_base_loopbreak>{}));
     }
 
     SECTION("We deal with event_base_dispatch() failure") {
         LibeventReactor<event_base_new, event_base_once,
-                event_base_dispatch_fail, event_base_loopbreak, event_new,
-                event_add>
+                event_base_dispatch_fail, event_base_loopbreak>
                 reactor;
         REQUIRE_THROWS(reactor.run());
     }
 
     SECTION("We deal with event_base_dispatch() running out of events") {
         LibeventReactor<event_base_new, event_base_once,
-                event_base_dispatch_no_events, event_base_loopbreak, event_new,
-                event_add>
+                event_base_dispatch_no_events, event_base_loopbreak>
                 reactor;
         reactor.run();
     }
 
     SECTION("We deal with event_base_loopbreak() failure") {
         LibeventReactor<event_base_new, event_base_once, event_base_dispatch,
-                event_base_loopbreak_fail, event_new, event_add>
+                event_base_loopbreak_fail>
                 reactor;
         REQUIRE_THROWS(reactor.stop());
     }
