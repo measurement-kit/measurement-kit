@@ -4,7 +4,7 @@
 #ifndef PRIVATE_DNS_SYSTEM_RESOLVER_HPP
 #define PRIVATE_DNS_SYSTEM_RESOLVER_HPP
 
-#include <measurement_kit/common/detail/mock.hpp>
+#include "private/common/mock.hpp"
 #include <measurement_kit/dns.hpp>
 
 #include "../dns/getaddrinfo_async.hpp"
@@ -14,8 +14,8 @@ namespace dns {
 
 template <MK_MOCK(getaddrinfo), MK_MOCK(inet_ntop)>
 void system_resolver(QueryClass dns_class, QueryType dns_type, std::string name,
-                     Settings settings, SharedPtr<Reactor> reactor,
-                     SharedPtr<Logger> logger, Callback<Error, SharedPtr<Message>> cb) {
+        Settings settings, SharedPtr<Reactor> reactor, SharedPtr<Logger> logger,
+        Callback<Error, SharedPtr<Message>> cb) {
     Query query;
     addrinfo hints = {};
     /*
@@ -29,7 +29,7 @@ void system_resolver(QueryClass dns_class, QueryType dns_type, std::string name,
     hints.ai_socktype = SOCK_STREAM;
 
     if (dns_class != MK_DNS_CLASS_IN) {
-        reactor->call_soon([=]() { cb(UnsupportedClassError(), nullptr); });
+        cb(UnsupportedClassError(), nullptr);
         return;
     }
 
@@ -41,7 +41,7 @@ void system_resolver(QueryClass dns_class, QueryType dns_type, std::string name,
         hints.ai_family = AF_UNSPEC;
         hints.ai_flags |= AI_CANONNAME;
     } else {
-        reactor->call_soon([=]() { cb(UnsupportedTypeError(), nullptr); });
+        cb(UnsupportedTypeError(), nullptr);
         return;
     }
 
@@ -51,7 +51,7 @@ void system_resolver(QueryClass dns_class, QueryType dns_type, std::string name,
      */
     ErrorOr<bool> also_cname = settings.get("dns/resolve_also_cname", false);
     if (!also_cname) {
-        reactor->call_soon([=]() { cb(also_cname.as_error(), nullptr); });
+        cb(also_cname.as_error(), nullptr);
         return;
     }
     if (*also_cname == true) {
@@ -65,12 +65,12 @@ void system_resolver(QueryClass dns_class, QueryType dns_type, std::string name,
     SharedPtr<Message> message{new Message};
     message->queries.push_back(query);
 
-    getaddrinfo_async<getaddrinfo, inet_ntop>(name, hints, reactor, logger, [
-        message = std::move(message), cb = std::move(cb)
-    ](Error error, std::vector<Answer> answers) {
-        message->answers = std::move(answers);
-        cb(error, message);
-    });
+    getaddrinfo_async<getaddrinfo, inet_ntop>(name, hints, reactor, logger,
+            [ message = std::move(message), cb = std::move(cb) ](
+                    Error error, std::vector<Answer> answers) {
+                message->answers = std::move(answers);
+                cb(error, message);
+            });
 }
 
 } // namespace dns

@@ -12,7 +12,7 @@ measurement-kit (`libmeasurement_kit`, `-lmeasurement_kit`)
 #ifndef MEASUREMENT_KIT_COMMON_VERSION_HPP
 #define MEASUREMENT_KIT_COMMON_VERSION_HPP
 
-#define MK_VERSION "0.8.0-dev"
+#define MK_VERSION "0.9.0-dev"
 
 #define MEASUREMENT_KIT_VERSION MK_VERSION /* Backward compatibility */
 

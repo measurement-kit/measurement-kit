@@ -5,7 +5,7 @@
 #define CATCH_CONFIG_MAIN
 #include "private/ext/catch.hpp"
 
-#include <measurement_kit/common/detail/fcompose.hpp>
+#include "private/common/fcompose.hpp"
 
 #include <measurement_kit/common.hpp>
 

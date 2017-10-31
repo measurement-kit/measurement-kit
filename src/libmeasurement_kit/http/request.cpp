@@ -3,7 +3,7 @@
 // and LICENSE for more information on the copying conditions.
 
 #include "private/http/request_impl.hpp"
-#include <measurement_kit/common/detail/utils.hpp>
+#include "private/common/utils.hpp"
 
 namespace mk {
 namespace http {
@@ -143,11 +143,11 @@ void request_recv_response(SharedPtr<Transport> txp,
         cb(ValueError(), response);
         return;
     }
-    parser->on_body([=](std::string s) {
-        if (*ignore_body == false) {
+    if (*ignore_body == false) {
+        parser->on_body([=](std::string s) {
             response->body += s;
-        }
-    });
+        });
+    }
 
     parser->on_end([=]() {
         *reached_end = true;

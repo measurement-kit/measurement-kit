@@ -4,7 +4,7 @@
 #ifndef PRIVATE_NDT_RUN_IMPL_HPP
 #define PRIVATE_NDT_RUN_IMPL_HPP
 
-#include <measurement_kit/common/detail/mock.hpp>
+#include "private/common/mock.hpp"
 
 #include "../ndt/internal.hpp"
 #include <measurement_kit/mlabns.hpp>

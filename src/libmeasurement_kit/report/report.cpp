@@ -2,10 +2,10 @@
 // Measurement-kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
-#include <measurement_kit/common/detail/fmap.hpp>
-#include <measurement_kit/common/detail/parallel.hpp>
+#include "private/common/fmap.hpp"
+#include "private/common/parallel.hpp"
 
-#include <measurement_kit/common/detail/utils.hpp>
+#include "private/common/utils.hpp"
 
 #include <measurement_kit/report.hpp>
 

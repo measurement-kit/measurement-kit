@@ -70,7 +70,7 @@ TEST_CASE("tcp connect returns error if port is missing") {
     reactor->run_with_initial_event([=]() {
         templates::tcp_connect({}, [=](Error err, SharedPtr<net::Transport> txp) {
             REQUIRE(err);
-            REQUIRE(txp == nullptr);
+            REQUIRE(!!txp);
             reactor->stop();
         }, reactor);
     });
@@ -84,7 +84,7 @@ TEST_CASE("tcp connect returns error if port is invalid") {
         templates::tcp_connect(settings,
                                [=](Error err, SharedPtr<net::Transport> txp) {
                                    REQUIRE(err);
-                                   REQUIRE(txp == nullptr);
+                                   REQUIRE(!!txp);
                                    reactor->stop();
                                }, reactor);
     });
@@ -95,11 +95,11 @@ TEST_CASE("http requests template works as expected") {
     SharedPtr<Reactor> reactor = Reactor::make();
     reactor->run_with_initial_event([=]() {
         templates::http_request(
-            entry, {{"http/url", "http://nexa.polito.it/robots.txt"}}, {}, "",
+            entry, {{"http/url", "https://ooni.torproject.org/"}}, {}, "",
             [=](Error err, SharedPtr<http::Response>) {
                 REQUIRE(!err);
                 templates::http_request(
-                    entry, {{"http/url", "http://nexa.polito.it:84/robots.txt"},
+                    entry, {{"http/url", "https://ooni.torproject.org:84/"},
                             {"net/timeout", 1.0}},
                     {}, "", [=](Error err, SharedPtr<http::Response>) {
                         REQUIRE(err);

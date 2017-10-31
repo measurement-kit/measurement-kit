@@ -35,7 +35,7 @@
 #include <errno.h>
 #include <string.h>
 
-#include <measurement_kit/common/detail/citrus_ctype.h>
+#include "private/common/citrus_ctype.h"
 
 size_t
 mk_utf8_mbrtowc(wchar_t * __restrict pwc,

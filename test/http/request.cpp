@@ -122,8 +122,7 @@ TEST_CASE("http::request works as expected") {
     reactor->run_with_initial_event([=]() {
         request(
             {
-                {"http/url",
-                 "http://nexa.polito.it/nexafiles/ComeFunzionaInternet.pdf"},
+                {"http/url", "http://a.http.th.ooni.io/"},
                 {"http/method", "GET"},
                 {"http/http_version", "HTTP/1.1"},
             },
@@ -135,7 +134,7 @@ TEST_CASE("http::request works as expected") {
                 REQUIRE(!error);
                 REQUIRE(response->status_code == 200);
                 REQUIRE(md5(response->body) ==
-                        "efa2a8f1ba8a6335a8d696f91de69737");
+                        "5d2182cb241b5a9aefad8ce584831666");
                 reactor->stop();
             }, reactor);
     });
@@ -168,8 +167,7 @@ TEST_CASE("http::request() works as expected over Tor") {
     reactor->run_with_initial_event([=]() {
         request(
             {
-                {"http/url",
-                 "http://nexa.polito.it/nexafiles/ComeFunzionaInternet.pdf"},
+                {"http/url", "http://a.http.th.ooni.io/"},
                 {"http/method", "GET"},
                 {"http/http_version", "HTTP/1.1"},
                 {"Connection", "close"},
@@ -184,7 +182,7 @@ TEST_CASE("http::request() works as expected over Tor") {
                 if (!error) {
                     REQUIRE(response->status_code == 200);
                     REQUIRE(md5(response->body) ==
-                            "efa2a8f1ba8a6335a8d696f91de69737");
+                        "5d2182cb241b5a9aefad8ce584831666");
                 }
                 reactor->stop();
             }, reactor);
@@ -533,8 +531,7 @@ TEST_CASE("http::request() works as expected using tor_socks_port") {
     reactor->run_with_initial_event([=]() {
         request(
             {
-                {"http/url",
-                 "http://nexa.polito.it/nexafiles/ComeFunzionaInternet.pdf"},
+                {"http/url", "http://a.http.th.ooni.io/"},
                 {"http/method", "POST"},
                 {"http/http_version", "HTTP/1.1"},
                 {"net/tor_socks_port", "9050"},
@@ -548,7 +545,7 @@ TEST_CASE("http::request() works as expected using tor_socks_port") {
                 if (!error) {
                     REQUIRE(response->status_code == 200);
                     REQUIRE(md5(response->body) ==
-                            "efa2a8f1ba8a6335a8d696f91de69737");
+                            "c0eb138de5f70c3b37566ba88146465d");
                 }
                 reactor->stop();
             }, reactor);

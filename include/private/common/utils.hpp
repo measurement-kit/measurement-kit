@@ -1,10 +1,10 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
 // Measurement-kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
-#ifndef MEASUREMENT_KIT_COMMON_UTILS_HPP
-#define MEASUREMENT_KIT_COMMON_UTILS_HPP
+#ifndef PRIVATE_COMMON_UTILS_HPP
+#define PRIVATE_COMMON_UTILS_HPP
 
-#include <measurement_kit/common/detail/mock.hpp>
+#include "private/common/mock.hpp"
 #include <cctype>
 #include <cmath>
 #include <cstdio>
@@ -136,6 +136,10 @@ std::string random_printable(size_t length);
 std::string random_str(size_t length);
 
 std::string random_str_uppercase(size_t length);
+
+std::string random_str_lower_alpha(size_t length);
+
+std::string random_tld();
 
 void dump_settings(Settings &s, std::string prefix, SharedPtr<Logger> logger);
 

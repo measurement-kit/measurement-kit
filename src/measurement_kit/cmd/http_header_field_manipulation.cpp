@@ -13,7 +13,7 @@ int main(std::list<Callback<BaseTest &>> &initializers, int argc, char **argv) {
     for (int ch; (ch = getopt(argc, argv, "b:")) != -1; ) {
         switch (ch) {
         case 'b':
-            test.set_options("backend", optarg);
+            test.set_option("backend", optarg);
             break;
         default:
             fprintf(stderr, "%s\n", USAGE);

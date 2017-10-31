@@ -5,7 +5,7 @@
 #define TEST_NETTESTS_UTILS_HPP
 
 #include "private/nettests/runnable.hpp"
-#include <measurement_kit/common/detail/worker.hpp>
+#include "private/common/worker.hpp"
 
 #include <measurement_kit/nettests.hpp>
 #include <measurement_kit/ooni.hpp>
@@ -24,16 +24,16 @@ static inline void run_test(mk::nettests::BaseTest &test) {
 
 template <typename T> void with_test(with_test_cb &&lambda) {
     lambda(
-          T{}.set_options("geoip_country_path", "GeoIP.dat")
-                .set_options("geoip_asn_path", "GeoIPASNum.dat")
+          T{}.set_option("geoip_country_path", "GeoIP.dat")
+                .set_option("geoip_asn_path", "GeoIPASNum.dat")
                 .set_verbosity(MK_LOG_INFO)
                 /*
                  * FIXME: the testing bouncer is not working. So use the testing
                  * collector with the production bouncer.
                  */
-                .set_options("collector_base_url",
+                .set_option("collector_base_url",
                              mk::ooni::collector::testing_collector_url())
-                .set_options("bouncer_base_url",
+                .set_option("bouncer_base_url",
                              mk::ooni::bouncer::production_bouncer_url()));
     /*
      * Wait for the default tasks queue to empty, so we exit from the
@@ -48,7 +48,7 @@ template <typename T> void with_test(with_test_cb &&lambda) {
 template <typename T> void with_test(std::string s, with_test_cb &&lambda) {
     with_test<T>([ s = std::move(s),
                    lambda = std::move(lambda) ](mk::nettests::BaseTest & test) {
-        lambda(test.set_input_filepath("./test/fixtures/" + s));
+        lambda(test.add_input_filepath("./test/fixtures/" + s));
     });
 }
 

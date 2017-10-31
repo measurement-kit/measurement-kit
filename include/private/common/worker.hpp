@@ -1,8 +1,8 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
 // Measurement-kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
-#ifndef MEASUREMENT_KIT_COMMON_DETAIL_WORKER_HPP
-#define MEASUREMENT_KIT_COMMON_DETAIL_WORKER_HPP
+#ifndef PRIVATE_COMMON_WORKER_HPP
+#define PRIVATE_COMMON_WORKER_HPP
 
 #include <measurement_kit/common/callback.hpp>
 #include <measurement_kit/common/logger.hpp>
@@ -31,7 +31,7 @@ class Worker {
         std::list<Callback<>> queue;
     };
 
-    void call_in_thread(Callback<> &&func);
+    void call_in_thread(SharedPtr<Logger> logger, Callback<> &&func);
 
     unsigned short parallelism() const;
 

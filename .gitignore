@@ -51,7 +51,7 @@
 /example/ooni/oorchestrate
 /include.am
 /include/measurement_kit/*.hpp
-/include/measurement_kit/common/git_version.hpp
+/include/measurement_kit/common/version.h
 /maxmind-geoip.*.dat*
 /measurement_kit
 /measurement_kit_exe
@@ -108,6 +108,7 @@
 /test/net/socks5
 /test/net/transport
 /test/net/utils
+/test/nettests/captive_portal
 /test/nettests/dash
 /test/nettests/dns_injection
 /test/nettests/facebook_messenger
@@ -121,12 +122,14 @@
 /test/nettests/telegram
 /test/nettests/utils
 /test/nettests/web_connectivity
+/test/nettests/whatsapp
 /test/ooni/bouncer
 /test/ooni/collector_client
 /test/ooni/orchestrate
 /test/ooni/resources
 /test/ooni/templates
 /test/ooni/utils
+/test/ooni/web_connectivity
 /test/report/entry
 /test/report/file_reporter
 /test/report/report

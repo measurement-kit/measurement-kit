@@ -17,6 +17,7 @@ using namespace mk::nettests;
 
 #define MK_CMDLINE_SUBCOMMANDS                                                 \
     XX(dash)                                                                   \
+    XX(captiveportal)                                                         \
     XX(dns_injection)                                                          \
     XX(facebook_messenger)                                                     \
     XX(http_header_field_manipulation)                                         \
@@ -26,7 +27,8 @@ using namespace mk::nettests;
     XX(ndt)                                                                    \
     XX(tcp_connect)                                                            \
     XX(telegram)                                                               \
-    XX(web_connectivity)
+    XX(web_connectivity)                                                       \
+    XX(whatsapp)
 
 #define XX(_namespace_)                                                        \
     namespace _namespace_ {                                                    \

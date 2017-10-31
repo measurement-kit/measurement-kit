@@ -5,6 +5,8 @@
 #define MEASUREMENT_KIT_OONI_TEMPLATES_HPP
 
 #include <measurement_kit/dns.hpp>
+#include <measurement_kit/http.hpp>
+#include <measurement_kit/net.hpp>
 #include <measurement_kit/report.hpp>
 
 namespace mk {

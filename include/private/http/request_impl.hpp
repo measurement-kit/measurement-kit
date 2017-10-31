@@ -5,7 +5,7 @@
 #define PRIVATE_HTTP_REQUEST_IMPL_HPP
 
 #include <measurement_kit/common/json.hpp>
-#include <measurement_kit/common/detail/mock.hpp>
+#include "private/common/mock.hpp"
 
 #include "../http/response_parser.hpp"
 
