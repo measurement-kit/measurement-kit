@@ -19,6 +19,7 @@
 #include <measurement_kit/common/logger.hpp>       // for mk::warn
 #include <measurement_kit/common/non_copyable.hpp> // for mk::NonCopyable
 #include <measurement_kit/common/non_movable.hpp>  // for mk::NonMovable
+#include <measurement_kit/common/raw_ptr.hpp>      // for mk::RawPtr
 #include <measurement_kit/common/reactor.hpp>      // for mk::Reactor
 #include <measurement_kit/common/socket.hpp>       // for mk::socket_t
 #include <signal.h>                                // for sigaction
@@ -31,10 +32,25 @@ static inline void mk_pollfd_cb(evutil_socket_t, short, void *);
 
 namespace mk {
 
-// mk::Reactor implementation using libevent.
+// Deleter for an event_base pointer.
+class EventBaseDeleter {
+  public:
+    void operator()(event_base *evbase) {
+        if (evbase != nullptr) {
+            event_base_free(evbase);
+        }
+    }
+};
+
+// LibeventReactor is an mk::Reactor implementation using libevent.
+//
+// The current implementation as of 2017-11-01 does not need to be explicitly
+// non-copyable and non-movable. But, given that in the future we will need
+// probably to pass `this` to some libevent functions, and that anyway it is
+// always used as mk::SharedPtr<mk::Reactor>, it seems more robust to keep it
+// explicitly non-copyable and non-movable.
 template <MK_MOCK(event_base_new), MK_MOCK(event_base_once),
-        MK_MOCK(event_base_dispatch), MK_MOCK(event_base_loopbreak),
-        MK_MOCK(event_new), MK_MOCK(event_add)>
+        MK_MOCK(event_base_dispatch), MK_MOCK(event_base_loopbreak)>
 class LibeventReactor : public Reactor, public NonCopyable, public NonMovable {
   public:
     // ## Initialization
@@ -61,12 +77,13 @@ class LibeventReactor : public Reactor, public NonCopyable, public NonMovable {
 
     LibeventReactor() {
         libevent_init_once();
-        if ((evbase = event_base_new()) == nullptr) {
+        evbase.reset(event_base_new());
+        if (evbase.get() == nullptr) {
             throw std::runtime_error("event_base_new");
         }
     }
 
-    ~LibeventReactor() override { event_base_free(evbase); }
+    ~LibeventReactor() override {}
 
     // ## Event loop management
 
@@ -168,7 +185,7 @@ class LibeventReactor : public Reactor, public NonCopyable, public NonMovable {
   private:
     // ## Private attributes
 
-    event_base *evbase = nullptr;
+    RawPtr<event_base, EventBaseDeleter> evbase;
     Worker worker;
 };
 
