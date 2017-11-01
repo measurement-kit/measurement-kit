@@ -17,6 +17,8 @@
 #include <measurement_kit/common/callback.hpp>     // for mk::Callback
 #include <measurement_kit/common/error.hpp>        // for mk::Error
 #include <measurement_kit/common/logger.hpp>       // for mk::warn
+#include <measurement_kit/common/non_copyable.hpp> // for mk::NonCopyable
+#include <measurement_kit/common/non_movable.hpp>  // for mk::NonMovable
 #include <measurement_kit/common/raw_ptr.hpp>      // for mk::RawPtr
 #include <measurement_kit/common/reactor.hpp>      // for mk::Reactor
 #include <measurement_kit/common/socket.hpp>       // for mk::socket_t
