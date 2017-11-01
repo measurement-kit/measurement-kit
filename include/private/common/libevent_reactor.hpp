@@ -40,10 +40,16 @@ class EventBaseDeleter {
     }
 };
 
-// mk::Reactor implementation using libevent.
+// LibeventReactor is an mk::Reactor implementation using libevent.
+//
+// The current implementation as of 2017-11-01 does not need to be explicitly
+// non-copyable and non-movable. But, given that in the future we will need
+// probably to pass `this` to some libevent functions, and that anyway it is
+// always used as mk::SharedPtr<mk::Reactor>, it seems more robust to keep it
+// explicitly non-copyable and non-movable.
 template <MK_MOCK(event_base_new), MK_MOCK(event_base_once),
         MK_MOCK(event_base_dispatch), MK_MOCK(event_base_loopbreak)>
-class LibeventReactor : public Reactor {
+class LibeventReactor : public Reactor, public NonCopyable, public NonMovable {
   public:
     // ## Initialization
 
