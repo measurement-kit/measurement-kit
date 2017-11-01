@@ -13,7 +13,7 @@ int main(std::list<Callback<BaseTest &>> &initializers, int argc, char **argv) {
     for (int ch; (ch = getopt(argc, argv, "e")) != -1;) {
         switch (ch) {
         case 'e':
-            test.set_options("all_endpoints", 1);
+            test.set_option("all_endpoints", 1);
             break;
         default:
             fprintf(stderr, "%s\n", USAGE);
