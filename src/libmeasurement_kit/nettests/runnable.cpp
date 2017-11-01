@@ -121,7 +121,7 @@ void Runnable::run_next_measurement(size_t thread_id, Callback<Error> cb,
         fixup_entry(entry); // Let drivers possibly fix-up the entry
         if (entry_cb) {
             try {
-                entry_cb(entry.dump(4));
+                entry_cb(entry.dump());
             } catch (const std::exception &exc) {
                 logger->warn("Unhandled exception in entry_cb(): %s",
                              exc.what());
