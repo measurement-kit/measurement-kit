@@ -13,8 +13,9 @@ namespace mk {
 // # RawPtr
 //
 // RawPtr is a template class depending on a Type and on a TypeDeleter that
-// is used to provide RAII semantics for raw pointers. We will only invoke the
-// type deleter when the underlying pointer is not null.
+// is used to provide RAII semantics for raw pointers. By default the deleter
+// is `std::default_delete<Type>`, hence note that the deleter must be able
+// to delete a `nullptr` pointer without crashing.
 //
 // In designing this class, we have used the same method names of existing
 // libc++ smart pointers to provide the least surprise. However:
