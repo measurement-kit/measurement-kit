@@ -193,6 +193,14 @@ class EmitterBase : public Transport {
 
     void clear_timeout() override { set_timeout(-1); }
 
+    bufferevent *get_bufferevent() override {
+        throw std::runtime_error("not_attached");
+    }
+
+    void set_bufferevent(bufferevent *) override {
+        throw std::runtime_error("not_attached");
+    }
+
     // Protected methods of TransportPollable: not implemented
 
     /*
