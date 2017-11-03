@@ -2,6 +2,7 @@
 // Measurement-kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
+#include <measurement_kit/ooni/orchestrate.hpp> // for orchestrate::Client
 #include "private/ooni/utils_impl.hpp"
 #include "private/common/utils.hpp"
 
@@ -16,6 +17,17 @@ void ip_lookup(Callback<Error, std::string> callback, Settings settings,
 void resolver_lookup(Callback<Error, std::string> callback, Settings settings,
                      SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
     resolver_lookup_impl(callback, settings, reactor, logger);
+}
+
+void find_location(std::string geoip_country_path, std::string geoip_asn_path,
+        Settings settings, SharedPtr<Logger> logger,
+        Callback<Error &&, std::string &&, std::string &&> &&cb) {
+    orchestrate::Client client;
+    client.logger = logger;
+    client.geoip_asn_path = geoip_asn_path;
+    client.geoip_country_path = geoip_country_path;
+    client.settings = settings;
+    client.find_location(std::move(cb));
 }
 
 /* static */ SharedPtr<GeoipCache> GeoipCache::thread_local_instance() {
