@@ -7,6 +7,8 @@
 #include <measurement_kit/net/buffer.hpp>
 #include <measurement_kit/net/utils.hpp>
 
+struct bufferevent; /* Forward declaration */
+
 namespace mk {
 
 namespace dns {
@@ -66,6 +68,21 @@ class TransportPollable {
 
     virtual void set_timeout(double) = 0;
     virtual void clear_timeout() = 0;
+
+    // `get_bufferevent` returns the bufferevent associated with this
+    // transport, or throws an exception if this transport is not
+    // attached to a bufferevent, either because it is just an emitter
+    // or because we're not using libevent as out backend.
+    virtual bufferevent *get_bufferevent() = 0;
+
+    // `set_bufferevent` allows to override the bufferevent associated
+    // with this transport. The original bufferevent will not be destroyed
+    // and therefore this method may lead to a leak (unless, of course,
+    // you're stacking one bufferevent on top of the other). In the event
+    // in which this transport is not attached to a bufferevent, either
+    // because this is just an emitter or libevent is not the backend that
+    // we're using, an exception will be thrown.
+    virtual void set_bufferevent(bufferevent *bev) = 0;
 
     /*
      * This is the interface with the underlying I/O system. As such, it is
