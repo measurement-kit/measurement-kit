@@ -75,6 +75,7 @@ void connect_first_of(SharedPtr<ConnectResult> result, int port,
     }
     double timeout = settings.get("net/timeout", 30.0);
     connect_base(result->resolve_result.addresses[index], port,
+                 timeout, reactor, logger,
                  [=](Error err, bufferevent *bev, double connect_time) {
                      errors->push_back(err);
                      if (err) {
@@ -86,8 +87,7 @@ void connect_first_of(SharedPtr<ConnectResult> result, int port,
                      logger->debug2("connect_first_of success");
                      result->connect_time = connect_time;
                      cb(*errors, bev);
-                 },
-                 timeout, reactor, logger);
+                 });
 }
 
 void connect_logic(std::string hostname, int port,
