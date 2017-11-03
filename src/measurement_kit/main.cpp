@@ -3,6 +3,7 @@
 // and LICENSE for more information on the copying conditions.
 
 #include "../measurement_kit/cmdline.hpp"
+#include "private/common/utils.hpp"
 
 #include <cstdio>
 #include <cstring>
@@ -18,6 +19,7 @@ static const struct {
 };
 
 static OptionSpec kv_specs[] = {
+    {'A', "annotation", true, "key=value", "Add annotation"},
     {'b', "bouncer", true, "URL", "Set custom bouncer base URL"},
     {'c', "collector", true, "URL", "Set custom collector base URL"},
     {'g', "no-geoip", false, nullptr, "Disable geoip lookup"},
@@ -51,6 +53,20 @@ int main(int argc, char **argv) {
     for (int ch; (ch = getopt_long(argc, argv, stropt.c_str(),
                                    long_options.data(), nullptr)) != -1;) {
         switch (ch) {
+        case 'A':
+            // Note: this option is `-A` and not `-a` because it's not
+            // compatible with the ooniprobe one.
+            {
+                std::vector<std::string> v =
+                        mk::split<std::vector<std::string>>(optarg, "=");
+                if (v.size() != 2) {
+                    printf("invalid annotation: %s\n", optarg);
+                    return 1;
+                }
+                initializers.push_back(
+                    [v](BaseTest &test) { test.add_annotation(v[0], v[1]); });
+            }
+            break;
         case 'b':
             [&]() {
                 std::string bouncer = optarg;
