@@ -36,6 +36,7 @@ class Runnable : public NonCopyable, public NonMovable {
     bool use_bouncer = true;
     std::map<std::string, std::string> test_helpers_data;
     std::map<std::string, std::string> annotations;
+    Delegate<DataUsage> data_usage_cb;
 
     std::string test_name = "ooni_test";
     std::string test_version = "0.0.1";

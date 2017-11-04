@@ -109,6 +109,11 @@ BaseTest &BaseTest::on_destroy(Callback<> &&cb) {
     return *this;
 }
 
+BaseTest &BaseTest::on_data_usage(Callback<DataUsage> &&cb) {
+    runnable->data_usage_cb = std::move(cb);
+    return *this;
+}
+
 static void start_internal_(SharedPtr<Runnable> &&r, std::promise<void> *promise,
                             Callback<> &&callback) {
     // Note:

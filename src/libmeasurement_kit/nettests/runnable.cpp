@@ -422,6 +422,15 @@ void Runnable::end(Callback<Error> cb) {
     logger->set_progress_scale(1.0);
     logger->progress(0.95, "ending the test");
     report.close([=](Error err) {
+        reactor->with_current_data_usage([=](DataUsage &du) {
+            if (!!data_usage_cb) {
+                try {
+                    data_usage_cb(du);
+                } catch (const std::exception &) {
+                    /* Suppress */ ;
+                }
+            }
+        });
         logger->progress(1.00, "test complete");
         cb(err);
     });

@@ -6,6 +6,7 @@
 
 #include <cstdint>
 #include <functional>
+#include <measurement_kit/common/data_usage.hpp>
 #include <measurement_kit/common/lexical_cast.hpp>
 #include <measurement_kit/common/shared_ptr.hpp>
 #include <string>
@@ -69,6 +70,8 @@ class BaseTest {
     BaseTest &on_end(std::function<void()> &&);
 
     BaseTest &on_destroy(std::function<void()> &&);
+
+    BaseTest &on_data_usage(std::function<void(DataUsage)> &&);
 
     void run();
 
