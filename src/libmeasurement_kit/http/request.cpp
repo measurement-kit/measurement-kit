@@ -222,17 +222,17 @@ static void request_recv_response_loop(SharedPtr<RequestRecvResponse> ctx) {
         }
         ctx->reactor->call_soon([ctx, err]() {
             ctx->logger->debug2("http: end of closure");
-            // Note: the following two changes (resetting `txp` and moving the
-            // final calback out of the context class are needed to break loops
-            // that otherwise prevent the transport from being destroyed and
-            // as such its destructor to be called, which leads to ending the
-            // test early because the on-destroy callback is not called. I guess
-            // we can do some work to reduce the amount of complexity caused by
-            // having a shared transport and relying on its on-destroy callback
-            // being called as part of v0.9.0 (will file an issue).
+            // Completely reset all fields of the context, moving out all that
+            // we don't need in this context so to avoid reference loops.
+            ctx->buff.reset();
             auto cb = std::move(ctx->cb);
+            ctx->logger.reset();
+            ctx->parser.reset();
+            ctx->reactor.reset();
+            auto response = std::move(ctx->response);
+            ctx->settings = {};
             ctx->txp.reset();
-            cb(err, ctx->response);
+            cb(err, response);
         });
     }, ctx->reactor);
 }
