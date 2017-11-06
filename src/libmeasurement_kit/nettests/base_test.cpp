@@ -109,7 +109,7 @@ BaseTest &BaseTest::on_destroy(Callback<> &&cb) {
     return *this;
 }
 
-BaseTest &BaseTest::on_data_usage(Callback<DataUsage> &&cb) {
+BaseTest &BaseTest::on_overall_data_usage(Callback<DataUsage> &&cb) {
     runnable->data_usage_cb = std::move(cb);
     return *this;
 }
