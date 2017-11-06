@@ -15,6 +15,7 @@
 #include <event2/thread.h>                         // for evthread_use_*
 #include <event2/util.h>                           // for evutil_socket_t
 #include <measurement_kit/common/callback.hpp>     // for mk::Callback
+#include <measurement_kit/common/data_usage.hpp>   // for mk::DataUsage
 #include <measurement_kit/common/error.hpp>        // for mk::Error
 #include <measurement_kit/common/logger.hpp>       // for mk::warn
 #include <measurement_kit/common/non_copyable.hpp> // for mk::NonCopyable
@@ -22,6 +23,7 @@
 #include <measurement_kit/common/raw_ptr.hpp>      // for mk::RawPtr
 #include <measurement_kit/common/reactor.hpp>      // for mk::Reactor
 #include <measurement_kit/common/socket.hpp>       // for mk::socket_t
+#include <mutex>                                   // for std::recursive_mutex
 #include <signal.h>                                // for sigaction
 #include <stdexcept>                               // for std::runtime_error
 #include <utility>                                 // for std::move
@@ -182,10 +184,19 @@ class LibeventReactor : public Reactor, public NonCopyable, public NonMovable {
         delete cbp;
     }
 
+    // ## Data usage
+
+    void with_current_data_usage(Callback<DataUsage &> &&cb) override {
+        std::unique_lock<std::recursive_mutex> _{data_usage_mutex};
+        cb(data_usage);
+    }
+
   private:
     // ## Private attributes
 
     RawPtr<event_base, EventBaseDeleter> evbase;
+    std::recursive_mutex data_usage_mutex;
+    DataUsage data_usage;
     Worker worker;
 };
 

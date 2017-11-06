@@ -6,6 +6,7 @@
 
 #include "private/common/mock.hpp"
 #include "private/common/utils.hpp"
+#include "private/dns/utils.hpp"
 #include "../net/utils.hpp"
 
 #include <event2/dns.h>
@@ -118,14 +119,17 @@ class QueryContext : public NonMovable, public NonCopyable {
     Callback<Error, SharedPtr<Message>> callback;
 
     SharedPtr<Logger> logger = Logger::global();
+    SharedPtr<Reactor> reactor = Reactor::global();
 
     QueryContext(evdns_base *b, Callback<Error, SharedPtr<Message>> c,
-            SharedPtr<Message> m, SharedPtr<Logger> l = Logger::global()) {
+            SharedPtr<Message> m, SharedPtr<Logger> l = Logger::global(),
+            SharedPtr<Reactor> r = Reactor::global()) {
         base = b;
         callback = c;
         message = m;
         ticks = mk::time_now();
         logger = l;
+        reactor = r;
     }
 };
 
@@ -310,6 +314,14 @@ static inline void dns_callback(int code, char type, int count, int ttl,
 
     context->message->answers = build_answers_evdns(code, type, count, ttl,
                                                     addresses, context->logger);
+    context->reactor->with_current_data_usage([&context](DataUsage &du) {
+        if (context->message->queries.size() < 1) {
+            throw std::runtime_error("malformed message");
+        }
+        auto query = context->message->queries[0];
+        dns::estimate_data_usage(du, query.name, context->message->answers,
+                context->logger);
+    });
     try {
         if (context->message->error_code != DNS_ERR_NONE) {
             context->callback(dns_error(context->message->error_code),
@@ -405,7 +417,8 @@ void query(QueryClass dns_class, QueryType dns_type, std::string name,
     //
     if (dns_type == MK_DNS_TYPE_A) {
         logger->debug("dns query: IN A %s", name.c_str());
-        QueryContext *context = new QueryContext(base, cb, message);
+        QueryContext *context = new QueryContext(base, cb, message,
+                logger, reactor);
         if (evdns_base_resolve_ipv4(base, name.c_str(), DNS_QUERY_NO_SEARCH,
                                     mk_evdns_handle_resolve,
                                     context) == nullptr) {
@@ -417,7 +430,8 @@ void query(QueryClass dns_class, QueryType dns_type, std::string name,
 
     if (dns_type == MK_DNS_TYPE_AAAA) {
         logger->debug("dns query: IN AAAA %s", name.c_str());
-        QueryContext *context = new QueryContext(base, cb, message);
+        QueryContext *context = new QueryContext(base, cb, message,
+                logger, reactor);
         if (evdns_base_resolve_ipv6(base, name.c_str(), DNS_QUERY_NO_SEARCH,
                                     mk_evdns_handle_resolve,
                                     context) == nullptr) {
@@ -436,7 +450,8 @@ void query(QueryClass dns_class, QueryType dns_type, std::string name,
             return;
         }
 
-        QueryContext *context = new QueryContext(base, cb, message);
+        QueryContext *context = new QueryContext(base, cb, message,
+                logger, reactor);
         if (evdns_base_resolve_reverse(base, &netaddr, DNS_QUERY_NO_SEARCH,
                                        mk_evdns_handle_resolve,
                                        context) == nullptr) {
@@ -455,7 +470,8 @@ void query(QueryClass dns_class, QueryType dns_type, std::string name,
             return;
         }
 
-        QueryContext *context = new QueryContext(base, cb, message);
+        QueryContext *context = new QueryContext(base, cb, message,
+                logger, reactor);
         if (evdns_base_resolve_reverse_ipv6(base, &netaddr, DNS_QUERY_NO_SEARCH,
                                             mk_evdns_handle_resolve,
                                             context) == nullptr) {
@@ -472,7 +488,6 @@ void query(QueryClass dns_class, QueryType dns_type, std::string name,
 
 } // namespace libevent
 } // namespace mk
-#endif
 
 static inline void mk_evdns_handle_resolve(int code, char type, int count,
                                            int ttl, void *addresses,
@@ -481,3 +496,4 @@ static inline void mk_evdns_handle_resolve(int code, char type, int count,
     auto context = static_cast<QueryContext *>(opaque);
     dns_callback(code, type, count, ttl, addresses, context);
 }
+#endif
