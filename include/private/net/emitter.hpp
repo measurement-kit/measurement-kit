@@ -49,6 +49,9 @@ class EmitterBase : public Transport {
             logger->debug2("emitter: no handler set; ignoring");
             return;
         }
+        reactor->with_current_data_usage([&data](DataUsage &du) {
+            du.down += data.length();
+        });
         do_data(data);
     }
 
@@ -164,6 +167,9 @@ class EmitterBase : public Transport {
         if (do_record_sent_data) {
             sent_data_record.write(data.peek());
         }
+        reactor->with_current_data_usage([&data](DataUsage &du) {
+            du.up += data.length();
+        });
         output_buff << data;
         if (close_pending) {
             logger->debug2("emitter: already closed; ignoring");
