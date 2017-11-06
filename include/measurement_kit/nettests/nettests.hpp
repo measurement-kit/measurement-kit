@@ -6,6 +6,7 @@
 
 #include <cstdint>
 #include <functional>
+#include <measurement_kit/common/data_usage.hpp>
 #include <measurement_kit/common/lexical_cast.hpp>
 #include <measurement_kit/common/shared_ptr.hpp>
 #include <string>
@@ -69,6 +70,11 @@ class BaseTest {
     BaseTest &on_end(std::function<void()> &&);
 
     BaseTest &on_destroy(std::function<void()> &&);
+
+    // `on_overall_data_usage` allows you to register a callback to be called
+    // only once, at the end of the test with information on the overall amount
+    // of data (upload and download) used during the this test.
+    BaseTest &on_overall_data_usage(std::function<void(DataUsage)> &&);
 
     void run();
 

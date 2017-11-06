@@ -15,6 +15,10 @@ BaseTest &common_init(std::list<Callback<BaseTest &>> il, BaseTest &test) {
             printf("%.0f%%: %s\n", 100.0 * progress, msg.c_str());
             fflush(stdout);
         })
+        .on_overall_data_usage([](DataUsage du) {
+            printf("Overall data usage (bytes): %llu down - %llu up\n",
+                    du.down, du.up);
+        })
         .on_log([](uint32_t level, const char *message) {
             if (level <= MK_LOG_WARNING) {
                 fprintf(stderr, "[!] ");
