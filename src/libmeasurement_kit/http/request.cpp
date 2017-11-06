@@ -124,76 +124,120 @@ void request_maybe_send(ErrorOr<SharedPtr<Request>> request, SharedPtr<Transport
     });
 }
 
+// ## request_recv_response()
+
+class RequestRecvResponse {
+  public:
+    SharedPtr<Buffer> buff;
+    Callback<Error, SharedPtr<Response>> cb;
+    SharedPtr<Logger> logger;
+    SharedPtr<ResponseParserNg> parser;
+    bool reached_end = false;
+    SharedPtr<Reactor> reactor;
+    SharedPtr<Response> response;
+    Settings settings;
+    SharedPtr<Transport> txp;
+    bool valid_response = false;
+};
+
+static void request_recv_response_start(SharedPtr<RequestRecvResponse>);
+static void request_recv_response_loop(SharedPtr<RequestRecvResponse>);
+
 void request_recv_response(SharedPtr<Transport> txp,
                            Callback<Error, SharedPtr<Response>> cb, Settings settings,
                            SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
-    SharedPtr<ResponseParserNg> parser{new ResponseParserNg{logger}};
-    SharedPtr<Response> response(new Response);
-    SharedPtr<bool> prevent_emit(new bool(false));
-    SharedPtr<bool> valid_response(new bool(false));
 
-    // Note: any parser error at this point is an exception catched by the
-    // connection code and routed to the error handler function below
-    txp->on_data([=](Buffer data) { parser->feed(data); });
+    SharedPtr<RequestRecvResponse> ctx{new RequestRecvResponse};
+    ctx->buff.reset(new Buffer);
+    ctx->cb = std::move(cb);
+    // Note: we cannot move logger because it must be shared by `ctx` and
+    // by the response parser, hence we make a copy of it.
+    ctx->logger = logger;
+    ctx->parser.reset(new ResponseParserNg{logger});
+    ctx->reactor = std::move(reactor);
+    ctx->response.reset(new Response);
+    ctx->settings = std::move(settings);
+    ctx->txp = std::move(txp);
+    request_recv_response_start(std::move(ctx));
+}
 
-    parser->on_response([=](Response r) {
-        *response = r;
-        *valid_response = true;
-    });
+static void request_recv_response_start(SharedPtr<RequestRecvResponse> ctx) {
 
-    ErrorOr<bool> ignore_body = settings.get("http/ignore_body", false);
+    ErrorOr<bool> ignore_body = ctx->settings.get("http/ignore_body", false);
     if (!ignore_body) {
-        cb(ValueError(), response);
+        ctx->cb(ValueError(), ctx->response);
         return;
     }
     if (*ignore_body == false) {
-        parser->on_body([=](std::string s) {
-            response->body += s;
+        ctx->parser->on_body([ctx](std::string s) {
+            ctx->response->body += s;
         });
     }
 
-    // TODO: we should improve the parser such that the transport forwards the
-    // "error" event to it and then the parser does the right thing, so that the
-    // code becomes less "twisted" here.
-    //
-    // XXX actually trying to do that could make things worse as we have
-    // seen in #690; we should refactor this code with care.
-
-    parser->on_end([=]() {
-        if (*prevent_emit == true) {
-            return;
-        }
-        if (response->body.size() > 0) {
-            logger->debug2("%s", response->body.c_str());
-        }
-        txp->emit_error(NoError());
+    ctx->parser->on_response([ctx](Response r) {
+        *ctx->response = r;
+        ctx->valid_response = true;
     });
-    txp->on_error([=](Error err) {
-        logger->debug("http: received error %d on connection", err.code);
-        if (err == EofError() && *valid_response == true) {
-            // Calling parser->on_eof() could trigger parser->on_end() and
-            // we don't want this function to call ->emit_error()
-            *prevent_emit = true;
-            // Assume there was no error. The parser will tell us if that
-            // is true (it was in final state) or false.
-            err = NoError();
+
+    ctx->parser->on_end([ctx]() {
+        ctx->reached_end = true;
+        if (ctx->response->body.size() > 0) {
+            ctx->logger->debug2("%s", ctx->response->body.c_str());
+        }
+    });
+
+    ctx->logger->debug("http: started reading response");
+    request_recv_response_loop(std::move(ctx));
+}
+
+static void request_recv_response_loop(SharedPtr<RequestRecvResponse> ctx) {
+    net::read(ctx->txp, ctx->buff, [ctx](Error err) {
+        if (err == NoError() && ctx->buff->length() > 0) {
+            ctx->logger->debug("http: passing read data to parser");
             try {
-                logger->debug("Now passing EOF to parser");
-                parser->eof();
-            } catch (Error &second_error) {
-                logger->warn("Parsing error at EOF: %d", second_error.code);
+                ctx->parser->feed(*ctx->buff);
+            } catch (const Error &second_error) {
                 err = second_error;
                 // FALLTHRU
             }
         }
-        txp->on_error(nullptr);
-        txp->on_data(nullptr);
-        reactor->call_soon([=]() {
-            logger->debug2("http: end of closure");
-            cb(err, response);
+        if (err == NoError() && ctx->reached_end == false) {
+            ctx->logger->debug("http: continue reading for the response");
+            request_recv_response_loop(std::move(ctx));
+            return; // basically: continue reading
+        }
+        ctx->logger->debug("http: received error %d on connection", err.code);
+        if (err == EofError() && ctx->valid_response == true) {
+            // Assume there was no error. The parser will tell us if that
+            // is true (it was in final state) or false.
+            err = NoError();
+            try {
+                ctx->logger->debug("Now passing EOF to parser");
+                ctx->parser->eof();
+            } catch (const Error &second_error) {
+                ctx->logger->warn("Parsing error at EOF: %d", second_error.code);
+                err = second_error;
+                // FALLTHRU
+            }
+        }
+        ctx->reactor->call_soon([ctx, err]() {
+            ctx->logger->debug2("http: end of closure");
+            // Note: the following two changes (resetting `txp` and moving the
+            // final calback out of the context class are needed to break loops
+            // that otherwise prevent the transport from being destroyed and
+            // as such its destructor to be called, which leads to ending the
+            // test early because the on-destroy callback is not called. I guess
+            // we can do some work to reduce the amount of complexity caused by
+            // having a shared transport and relying on its on-destroy callback
+            // being called as part of v0.9.0 (will file an issue).
+            auto cb = std::move(ctx->cb);
+            ctx->txp.reset();
+            cb(err, ctx->response);
         });
-    });
+    }, ctx->reactor);
 }
+
+// ## request_sendrecv()
 
 void request_sendrecv(SharedPtr<Transport> txp, Settings settings, Headers headers,
                       std::string body, Callback<Error, SharedPtr<Response>> callback,
