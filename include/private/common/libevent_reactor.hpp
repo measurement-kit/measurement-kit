@@ -20,7 +20,7 @@
 #include <measurement_kit/common/logger.hpp>       // for mk::warn
 #include <measurement_kit/common/non_copyable.hpp> // for mk::NonCopyable
 #include <measurement_kit/common/non_movable.hpp>  // for mk::NonMovable
-#include <measurement_kit/common/raw_ptr.hpp>      // for mk::RawPtr
+#include <measurement_kit/common/unique_ptr.hpp>   // for mk::UniquePtr
 #include <measurement_kit/common/reactor.hpp>      // for mk::Reactor
 #include <measurement_kit/common/socket.hpp>       // for mk::socket_t
 #include <mutex>                                   // for std::recursive_mutex
@@ -89,11 +89,11 @@ class LibeventReactor : public Reactor, public NonCopyable, public NonMovable {
 
     // ## Event loop management
 
-    event_base *get_event_base() override { return evbase; }
+    event_base *get_event_base() override { return evbase.get(); }
 
     void run() override {
         do {
-            auto ev_status = event_base_dispatch(evbase);
+            auto ev_status = event_base_dispatch(evbase.get());
             if (ev_status < 0) {
                 throw std::runtime_error("event_base_dispatch");
             }
@@ -121,7 +121,7 @@ class LibeventReactor : public Reactor, public NonCopyable, public NonMovable {
     }
 
     void stop() override {
-        if (event_base_loopbreak(evbase) != 0) {
+        if (event_base_loopbreak(evbase.get()) != 0) {
             throw std::runtime_error("event_base_loopbreak");
         }
     }
@@ -163,7 +163,7 @@ class LibeventReactor : public Reactor, public NonCopyable, public NonMovable {
             Callback<Error, short> &&callback) {
         timeval tv{};
         auto cbp = new Callback<Error, short>(callback);
-        if (event_base_once(evbase, sockfd, evflags, mk_pollfd_cb, cbp,
+        if (event_base_once(evbase.get(), sockfd, evflags, mk_pollfd_cb, cbp,
                     timeval_init(&tv, timeout)) != 0) {
             delete cbp;
             throw std::runtime_error("event_base_once");
@@ -194,7 +194,7 @@ class LibeventReactor : public Reactor, public NonCopyable, public NonMovable {
   private:
     // ## Private attributes
 
-    RawPtr<event_base, EventBaseDeleter> evbase;
+    UniquePtr<event_base, EventBaseDeleter> evbase;
     std::recursive_mutex data_usage_mutex;
     DataUsage data_usage;
     Worker worker;
