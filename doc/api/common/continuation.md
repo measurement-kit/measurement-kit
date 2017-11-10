@@ -1,29 +1,29 @@
 # NAME
-Continuation &mdash; Syntactic sugar for functions that resume a paused function.
+
+`measurement_kit/common/continuation.hpp`
 
 # LIBRARY
-MeasurementKit (libmeasurement_kit, -lmeasurement_kit).
+
+measurement-kit (`libmeasurement_kit`, `-lmeasurement_kit`)
 
 # SYNOPSIS
+
 ```C++
-#include <measurement_kit/common.hpp>
+#ifndef MEASUREMENT_KIT_COMMON_CONTINUATION_HPP
+#define MEASUREMENT_KIT_COMMON_CONTINUATION_HPP
 
 namespace mk {
 
 template <typename... T>
 using Continuation = std::function<void(Callback<T...>)>;
 
-}
+} // namespace mk
+#endif
 ```
-
-# STABILITY
-2 - Stable
 
 # DESCRIPTION
 
-The `Continuation` alias allows to more compactly express a function that
-resumes another function that has paused waiting for explicit continuation.
+`Continuation` is a function that will call another function when complete. In several places we need to return code to be executed later, perhaps in parallel with other code. In such cases, we usually return a function that captures relevant parameters and receives in input a callback to be called later when done. The `Continuation` alias allows to express the returned function more compactly. 
 
-# HISTORY
+Available since measurement-kit v0.2.0.
 
-The `Continuation` alias appeared in MeasurementKit 0.2.0.

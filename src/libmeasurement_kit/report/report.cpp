@@ -1,6 +1,6 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software. See AUTHORS and LICENSE for more
-// information on the copying conditions.
+// Measurement-kit is free software under the BSD license. See AUTHORS
+// and LICENSE for more information on the copying conditions.
 
 #include "private/common/fmap.hpp"
 #include "private/common/parallel.hpp"
@@ -16,7 +16,7 @@ Report::Report() {
     memset(&test_start_time, 0, sizeof (test_start_time));
 }
 
-void Report::add_reporter(Var<BaseReporter> reporter) {
+void Report::add_reporter(SharedPtr<BaseReporter> reporter) {
     reporters_.push_back(reporter);
 }
 
@@ -45,16 +45,16 @@ Entry Report::get_dummy_entry() const {
     return entry;
 }
 
-#define FMAP mk::fmap<Var<BaseReporter>, Continuation<Error>>
+#define FMAP mk::fmap<SharedPtr<BaseReporter>, Continuation<Error>>
 
 void Report::open(Callback<Error> callback) {
-    mk::parallel(FMAP(reporters_, [=](Var<BaseReporter> r) {
+    mk::parallel(FMAP(reporters_, [=](SharedPtr<BaseReporter> r) {
         return r->open(*this);
     }), callback);
 }
 
 void Report::write_entry(Entry entry, Callback<Error> callback,
-                         Var<Logger> logger) {
+                         SharedPtr<Logger> logger) {
     if (report_id == "") {
         auto count = 0;
         for (auto &reporter : reporters_) {
@@ -91,13 +91,13 @@ void Report::write_entry(Entry entry, Callback<Error> callback,
             entry["report_id"].dump().c_str());
     }
 
-    mk::parallel(FMAP(reporters_, [=](Var<BaseReporter> r) {
+    mk::parallel(FMAP(reporters_, [=](SharedPtr<BaseReporter> r) {
         return r->write_entry(entry);
     }), callback);
 }
 
 void Report::close(Callback<Error> callback) {
-    mk::parallel(FMAP(reporters_, [](Var<BaseReporter> r) {
+    mk::parallel(FMAP(reporters_, [](SharedPtr<BaseReporter> r) {
         return r->close();
     }), callback);
 }

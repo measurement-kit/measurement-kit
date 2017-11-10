@@ -1,7 +1,7 @@
 /*-
  * Part of measurement-kit <https://measurement-kit.github.io/>.
- * Measurement-kit is free software. See AUTHORS and LICENSE for more
- * information on the copying conditions.
+ * Measurement-kit is free software under the BSD license. See AUTHORS
+ * and LICENSE for more information on the copying conditions.
  * =========================================================================
  * Based on Portolan code contributed by its authors.
  * See <http://portolanproject.iit.cnr.it/>.
@@ -124,7 +124,7 @@ template <class Impl> class Prober : public ProberInterface {
     /// \param port The port to bind
     /// \param evbase Event base to use (optional)
     /// \throws Exception on error
-    Prober(bool use_ipv4, int port, Var<Reactor> reactor = Reactor::global()) {
+    Prober(bool use_ipv4, int port, SharedPtr<Reactor> reactor = Reactor::global()) {
         impl_.reset(new Impl(use_ipv4, port, reactor));
     }
 

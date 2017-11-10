@@ -1,6 +1,6 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software. See AUTHORS and LICENSE for more
-// information on the copying conditions.
+// Measurement-kit is free software under the BSD license. See AUTHORS
+// and LICENSE for more information on the copying conditions.
 
 #define CATCH_CONFIG_MAIN
 #include "private/ext/catch.hpp"
@@ -29,8 +29,8 @@ static void dtor(evbuffer *p) {
     REQUIRE(p == (evbuffer *)0xabad1dea);
 }
 
-TEST_CASE("make_shared_evbuffer creates a Var where evbuffer_free is called "
-          "when the last Var is gone") {
+TEST_CASE("make_shared_evbuffer creates a SharedPtr where evbuffer_free is called "
+          "when the last SharedPtr is gone") {
     REQUIRE(ctor_called == false);
     REQUIRE(dtor_called == false);
     { make_shared_evbuffer<ctor, dtor>(); }
@@ -38,8 +38,8 @@ TEST_CASE("make_shared_evbuffer creates a Var where evbuffer_free is called "
     REQUIRE(dtor_called == true);
 }
 
-TEST_CASE("Var<evbuffer> works as expected") {
+TEST_CASE("SharedPtr<evbuffer> works as expected") {
     // This test is mean to check whether there are leaks or not using Valgrind
-    Var<evbuffer> evbuf = make_shared_evbuffer();
+    SharedPtr<evbuffer> evbuf = make_shared_evbuffer();
     REQUIRE(evbuf.get() != nullptr);
 }

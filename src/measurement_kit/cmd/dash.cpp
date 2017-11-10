@@ -1,9 +1,9 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software. See AUTHORS and LICENSE for more
-// information on the copying conditions.
+// Measurement-kit is free software under the BSD license. See AUTHORS
+// and LICENSE for more information on the copying conditions.
 
 #include "../cmdline.hpp"
-#include <measurement_kit/ext/json.hpp>
+#include <measurement_kit/common/json.hpp>
 
 namespace dash {
 
@@ -16,10 +16,10 @@ int main(std::list<Callback<BaseTest &>> &initializers, int argc, char **argv) {
     for (int ch; (ch = getopt(argc, argv, "b:U:")) != -1;) {
         switch (ch) {
         case 'b':
-            test.set_options("constant_bitrate", optarg);
+            test.set_option("constant_bitrate", optarg);
             break;
         case 'U':
-            test.set_options("uuid", optarg);
+            test.set_option("uuid", optarg);
             break;
         default:
             fprintf(stderr, "%s\n", USAGE);
@@ -34,12 +34,12 @@ int main(std::list<Callback<BaseTest &>> &initializers, int argc, char **argv) {
         /* NOTREACHED */
     }
     if (argc == 1) {
-        test.set_options("hostname", argv[0]);
+        test.set_option("hostname", argv[0]);
     }
 
     common_init(initializers, test)
           .on_entry([](std::string s) {
-              nlohmann::json doc = nlohmann::json::parse(s);
+              Json doc = Json::parse(s);
               auto simple = doc["test_keys"]["simple"];
               printf("\nTest summary\n");
               printf("------------\n");

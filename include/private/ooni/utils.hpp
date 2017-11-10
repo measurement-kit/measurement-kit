@@ -1,6 +1,6 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software. See AUTHORS and LICENSE for more
-// information on the copying conditions.
+// Measurement-kit is free software under the BSD license. See AUTHORS
+// and LICENSE for more information on the copying conditions.
 #ifndef PRIVATE_OONI_UTILS_HPP
 #define PRIVATE_OONI_UTILS_HPP
 
@@ -8,8 +8,6 @@
 
 #include <GeoIP.h>
 #include <GeoIPCity.h>
-
-using json = nlohmann::json;
 
 namespace mk {
 namespace ooni {
@@ -19,34 +17,34 @@ class GeoipDatabase {
     GeoipDatabase(std::string path) : path(path) {}
 
     ErrorOr<std::string>
-    resolve_country_code(std::string ip, Var<Logger> = Logger::global());
+    resolve_country_code(std::string ip, SharedPtr<Logger> = Logger::global());
 
     ErrorOr<std::string>
-    resolve_country_name(std::string ip, Var<Logger> = Logger::global());
+    resolve_country_name(std::string ip, SharedPtr<Logger> = Logger::global());
 
     ErrorOr<std::string>
-    resolve_city_name(std::string ip, Var<Logger> = Logger::global());
+    resolve_city_name(std::string ip, SharedPtr<Logger> = Logger::global());
 
     ErrorOr<std::string>
-    resolve_asn(std::string ip, Var<Logger> = Logger::global());
+    resolve_asn(std::string ip, SharedPtr<Logger> = Logger::global());
 
     std::string path;
 
   private:
     ErrorOr<std::string>
     with_open_database_do(std::function<ErrorOr<std::string>()> action,
-                          Var<Logger> logger);
+                          SharedPtr<Logger> logger);
 
-    Var<GeoIP> db;
+    SharedPtr<GeoIP> db;
 };
 
 class GeoipCache {
   public:
-    static Var<GeoipCache> thread_local_instance();
+    static SharedPtr<GeoipCache> thread_local_instance();
 
-    Var<GeoipDatabase> get(std::string path, bool &did_open);
+    SharedPtr<GeoipDatabase> get(std::string path, bool &did_open);
 
-    Var<GeoipDatabase> get(std::string path) {
+    SharedPtr<GeoipDatabase> get(std::string path) {
         bool did_open = false;
         return get(path, did_open);
     }
@@ -59,7 +57,7 @@ class GeoipCache {
 
     ErrorOr<std::string>
     resolve_country_code(std::string path, std::string ip,
-                         Var<Logger> logger = Logger::global()) {
+                         SharedPtr<Logger> logger = Logger::global()) {
         logger->debug("resolve country code '%s' using '%s'",
                       ip.c_str(), path.c_str());
         return get(path)->resolve_country_code(ip, logger);
@@ -67,7 +65,7 @@ class GeoipCache {
 
     ErrorOr<std::string>
     resolve_country_name(std::string path, std::string ip,
-                         Var<Logger> logger = Logger::global()) {
+                         SharedPtr<Logger> logger = Logger::global()) {
         logger->debug("resolve country name '%s' using '%s'",
                       ip.c_str(), path.c_str());
         return get(path)->resolve_country_name(ip, logger);
@@ -75,7 +73,7 @@ class GeoipCache {
 
     ErrorOr<std::string>
     resolve_city_name(std::string path, std::string ip,
-                      Var<Logger> logger = Logger::global()) {
+                      SharedPtr<Logger> logger = Logger::global()) {
         logger->debug("resolve city code '%s' using '%s'",
                       ip.c_str(), path.c_str());
         return get(path)->resolve_city_name(ip, logger);
@@ -83,7 +81,7 @@ class GeoipCache {
 
     ErrorOr<std::string>
     resolve_asn(std::string path, std::string ip,
-                Var<Logger> logger = Logger::global()) {
+                SharedPtr<Logger> logger = Logger::global()) {
         logger->debug("resolve asn '%s' using '%s'",
                       ip.c_str(), path.c_str());
         return get(path)->resolve_asn(ip, logger);
@@ -94,7 +92,7 @@ class GeoipCache {
     size_t max_size = 3;
 
   private:
-    std::map<std::string, Var<GeoipDatabase>> instances;
+    std::map<std::string, SharedPtr<GeoipDatabase>> instances;
 };
 
 std::string extract_html_title(std::string body);

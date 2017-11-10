@@ -1,6 +1,6 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software. See AUTHORS and LICENSE for more
-// information on the copying conditions.
+// Measurement-kit is free software under the BSD license. See AUTHORS
+// and LICENSE for more information on the copying conditions.
 
 #include "private/nettests/runnable.hpp"
 #include <measurement_kit/nettests.hpp>
@@ -17,11 +17,11 @@ DashTest::DashTest() : BaseTest() {
 }
 
 void DashRunnable::main(std::string /*input*/, Settings options,
-                        Callback<Var<report::Entry>> cb) {
-    auto entry = Var<report::Entry>::make();
+                        Callback<SharedPtr<report::Entry>> cb) {
+    auto entry = SharedPtr<report::Entry>::make();
     neubot::dash::negotiate(entry, options, reactor, logger, [=](Error error) {
         if (error) {
-            (*entry)["failure"] = error.as_ooni_error();
+            (*entry)["failure"] = error.reason;
         } else {
             (*entry)["failure"] = nullptr;
         }

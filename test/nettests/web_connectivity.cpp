@@ -1,6 +1,6 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software. See AUTHORS and LICENSE for more
-// information on the copying conditions.
+// Measurement-kit is free software under the BSD license. See AUTHORS
+// and LICENSE for more information on the copying conditions.
 
 #ifdef ENABLE_INTEGRATION_TESTS
 #define CATCH_CONFIG_MAIN
@@ -12,38 +12,35 @@ using namespace mk::nettests;
 using namespace mk;
 
 TEST_CASE("Synchronous web connectivity test") {
-    test::nettests::make_test<WebConnectivityTest>("urls.txt")
-        .run();
-}
-
-TEST_CASE("Asynchronous web-connectivity test") {
-    test::nettests::run_async(
-        test::nettests::make_test<WebConnectivityTest>("urls.txt")
-    );
+    test::nettests::with_test<WebConnectivityTest>("urls.txt",
+                                                   test::nettests::run_test);
 }
 
 TEST_CASE("Make sure that IP address scrubbing works") {
-    auto test = [](std::function<BaseTest(BaseTest)> f,
+    auto test = [](std::function<BaseTest(BaseTest &)> f,
                    Callback<std::string /*ip*/, std::string /*entry*/> g) {
         std::string probe_ip;
-        Var<Reactor> reactor = Reactor::make();
-        reactor->loop_with_initial_event([&]() {
+        SharedPtr<Reactor> reactor = Reactor::make();
+        reactor->run_with_initial_event([&]() {
             ooni::ip_lookup(
                 [&](Error err, std::string ip_addr) {
                     REQUIRE(!err);
                     probe_ip = ip_addr;
-                    reactor->break_loop();
+                    reactor->stop();
                 },
                 {}, reactor, Logger::global());
         });
         REQUIRE(probe_ip != "");
         auto called = 0;
-        f(test::nettests::make_test<WebConnectivityTest>("scrub.txt")
+        test::nettests::with_test<WebConnectivityTest>("scrub.txt",
+              [&](mk::nettests::BaseTest &test) {
+            f(test
               .on_entry([&](std::string entry) {
                   g(probe_ip, entry);
                   called += 1;
               }))
             .run();
+        });
         REQUIRE(called == 1);
     };
 
@@ -68,7 +65,7 @@ TEST_CASE("Make sure that IP address scrubbing works") {
         bool redacted_check = false;
         test(
             [](BaseTest test) {
-                return test.set_options("save_real_probe_ip", false);
+                return test.set_option("save_real_probe_ip", false);
             },
             [&](std::string ip, std::string entry) {
                 ip_check = (entry.find(ip) == std::string::npos);
@@ -87,7 +84,7 @@ TEST_CASE("Make sure that IP address scrubbing works") {
         bool redacted_check = false;
         test(
             [](BaseTest test) {
-                return test.set_options("save_real_probe_ip", true);
+                return test.set_option("save_real_probe_ip", true);
             },
             [&](std::string ip, std::string entry) {
                 ip_check = (entry.find(ip) != std::string::npos);

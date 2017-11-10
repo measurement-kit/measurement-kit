@@ -1,6 +1,6 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software. See AUTHORS and LICENSE for more
-// information on the copying conditions.
+// Measurement-kit is free software under the BSD license. See AUTHORS
+// and LICENSE for more information on the copying conditions.
 
 #include <measurement_kit/net.hpp>
 
@@ -45,28 +45,29 @@ int main(int argc, char **argv) {
     }
     std::string domain = argv[0];
 
-    loop_with_initial_event([&domain, &port, &settings]() {
-        connect(domain, port, [](Error err, Var<Transport> txp) {
-            std::cout << "Overall connect result: " << err.as_ooni_error() << "\n";
+    SharedPtr<Reactor> reactor = Reactor::make();
+    reactor->run_with_initial_event([=]() {
+        connect(domain, port, [=](Error err, SharedPtr<Transport> txp) {
+            std::cout << "Overall connect result: " << err << "\n";
             auto resolve_result = txp->dns_result();
             std::cout << "input was valid ipv4: " <<
                     resolve_result.inet_pton_ipv4 << "\n";
             std::cout << "input was valid ipv6: " <<
                     resolve_result.inet_pton_ipv6 << "\n";
             std::cout << "ipv4 resolve error: " <<
-                    resolve_result.ipv4_err.as_ooni_error() << "\n";
+                    resolve_result.ipv4_err << "\n";
             std::cout << "ipv6 resolve error: " <<
-                    resolve_result.ipv6_err.as_ooni_error() << "\n";
+                    resolve_result.ipv6_err << "\n";
             std::cout << "list of addresses returned:\n";
             for (auto addr : resolve_result.addresses) {
                 std::cout << "    - " << addr << "\n";
             }
             std::cout << "errors returned by the various connects:\n";
             for (auto e : txp->connect_errors()) {
-                std::cout << "    - " << e.as_ooni_error() << "\n";
+                std::cout << "    - " << e << "\n";
             }
-            txp->close([]() { break_loop(); });
-        }, settings);
+            txp->close([=]() { reactor->stop(); });
+        }, settings, reactor);
     });
 
     return 0;

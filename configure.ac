@@ -1,9 +1,9 @@
 # Part of measurement-kit <https://measurement-kit.github.io/>.
-# Measurement-kit is free software. See AUTHORS and LICENSE for more
-# information on the copying conditions.
+# Measurement-kit is free software under the BSD license. See AUTHORS
+# and LICENSE for more information on the copying conditions.
 
 # Autoconf requirements
-AC_INIT(measurement_kit, 0.7.11, bassosimone@gmail.com)
+AC_INIT(measurement_kit, 0.8.0-beta, bassosimone@gmail.com)
 
 # information on the package
 AC_CONFIG_SRCDIR([Makefile.am])

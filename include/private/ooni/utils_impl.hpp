@@ -1,28 +1,23 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software. See AUTHORS and LICENSE for more
-// information on the copying conditions.
+// Measurement-kit is free software under the BSD license. See AUTHORS
+// and LICENSE for more information on the copying conditions.
 #ifndef PRIVATE_OONI_UTILS_IMPL_HPP
 #define PRIVATE_OONI_UTILS_IMPL_HPP
 
 #include "private/common/encoding.hpp"
 #include "private/common/mock.hpp"
-
-#include "private/common/encoding.hpp"
-#include "private/common/mock.hpp"
-
 #include "../ooni/utils.hpp"
-
-using json = nlohmann::json;
+#include <regex>
 
 namespace mk {
 namespace ooni {
 
 template <MK_MOCK_AS(http::get, http_get)>
 void ip_lookup_impl(Callback<Error, std::string> callback, Settings settings = {},
-               Var<Reactor> reactor = Reactor::global(),
-               Var<Logger> logger = Logger::global()) {
+               SharedPtr<Reactor> reactor = Reactor::global(),
+               SharedPtr<Logger> logger = Logger::global()) {
     http_get("http://geoip.ubuntu.com/lookup",
-            [=](Error err, Var<http::Response> response) {
+            [=](Error err, SharedPtr<http::Response> response) {
                 if (err) {
                     callback(err, "");
                     return;
@@ -49,10 +44,10 @@ void ip_lookup_impl(Callback<Error, std::string> callback, Settings settings = {
 template <MK_MOCK_AS(dns::query, dns_query)>
 void resolver_lookup_impl(Callback<Error, std::string> callback,
                           Settings settings = {},
-                          Var<Reactor> reactor = Reactor::global(),
-                          Var<Logger> logger = Logger::global()) {
+                          SharedPtr<Reactor> reactor = Reactor::global(),
+                          SharedPtr<Logger> logger = Logger::global()) {
   dns_query("IN", "A", "whoami.akamai.net",
-      [=](Error error, Var<dns::Message> message) {
+      [=](Error error, SharedPtr<dns::Message> message) {
         if (!error) {
           for (auto answer : message->answers) {
             if (answer.ipv4 != "") {

@@ -1,6 +1,6 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software. See AUTHORS and LICENSE for more
-// information on the copying conditions.
+// Measurement-kit is free software under the BSD license. See AUTHORS
+// and LICENSE for more information on the copying conditions.
 
 #define CATCH_CONFIG_MAIN
 #include "private/ext/catch.hpp"
@@ -12,8 +12,8 @@ using namespace mk::report;
 
 class CountedReporter : public BaseReporter {
   public:
-    static Var<CountedReporter> make() {
-        return Var<CountedReporter>(new CountedReporter);
+    static SharedPtr<CountedReporter> make() {
+        return SharedPtr<CountedReporter>(new CountedReporter);
     }
 
     ~CountedReporter() override;
@@ -48,8 +48,8 @@ CountedReporter::~CountedReporter() {}
 
 class FailingReporter : public BaseReporter {
   public:
-    static Var<FailingReporter> make() {
-        return Var<FailingReporter>(new FailingReporter);
+    static SharedPtr<FailingReporter> make() {
+        return SharedPtr<FailingReporter>(new FailingReporter);
     }
 
     ~FailingReporter() override;
@@ -101,35 +101,35 @@ TEST_CASE("The open() method works correctly") {
     report.open([&](Error err) {
         REQUIRE(!err);
         report.open([&](Error err) {
-            REQUIRE(err.code == NoError().code);
+            REQUIRE(err == NoError());
             REQUIRE(err.child_errors.size() == 1);
-            REQUIRE(err.child_errors[0]->code == NoError().code);
-            REQUIRE(err.child_errors[0]->child_errors.size() == 1);
-            REQUIRE(err.child_errors[0]->child_errors[0]->code ==
-                    ReportAlreadyOpenError().code);
+            REQUIRE(err.child_errors[0] == NoError());
+            REQUIRE(err.child_errors[0].child_errors.size() == 1);
+            REQUIRE(err.child_errors[0].child_errors[0] ==
+                    ReportAlreadyOpenError());
         });
     });
 }
 
 TEST_CASE("We can retry a partially successful open") {
-    Var<CountedReporter> counted_reporter = CountedReporter::make();
-    Var<FailingReporter> failing_reporter = FailingReporter::make();
+    SharedPtr<CountedReporter> counted_reporter = CountedReporter::make();
+    SharedPtr<FailingReporter> failing_reporter = FailingReporter::make();
     Report report;
     report.add_reporter(counted_reporter.as<BaseReporter>());
     report.add_reporter(failing_reporter.as<BaseReporter>());
     report.open([&](Error err) {
-        REQUIRE(err.code == ParallelOperationError().code);
+        REQUIRE(err == ParallelOperationError());
         REQUIRE(err.child_errors.size() == 2);
-        REQUIRE(err.child_errors[0]->code == NoError().code);
-        REQUIRE(err.child_errors[1]->code == MockedError().code);
+        REQUIRE(err.child_errors[0] == NoError());
+        REQUIRE(err.child_errors[1] == MockedError());
         report.open([&](Error err) {
-            REQUIRE(err.code == NoError().code);
+            REQUIRE(err == NoError());
             REQUIRE(err.child_errors.size() == 2);
-            REQUIRE(err.child_errors[0]->code == NoError().code);
-            REQUIRE(err.child_errors[0]->child_errors.size() == 1);
-            REQUIRE(err.child_errors[0]->child_errors[0]->code ==
-                    ReportAlreadyOpenError().code);
-            REQUIRE(err.child_errors[1]->code == NoError().code);
+            REQUIRE(err.child_errors[0] == NoError());
+            REQUIRE(err.child_errors[0].child_errors.size() == 1);
+            REQUIRE(err.child_errors[0].child_errors[0] ==
+                    ReportAlreadyOpenError());
+            REQUIRE(err.child_errors[1] == NoError());
         });
     });
     REQUIRE(counted_reporter->open_count == 1);
@@ -141,23 +141,23 @@ TEST_CASE("The write_entry() method works correctly") {
     report.add_reporter(BaseReporter::make());
     Entry entry;
     report.write_entry(entry, [&](Error err) {
-        REQUIRE(err.code == ParallelOperationError().code);
+        REQUIRE(err == ParallelOperationError());
         REQUIRE(err.child_errors.size() == 1);
-        REQUIRE(err.child_errors[0]->code == ReportNotOpenError().code);
+        REQUIRE(err.child_errors[0] == ReportNotOpenError());
         report.open([&](Error err) {
             REQUIRE(!err);
             entry["foobar"] = 1;
             report.write_entry(entry, [&](Error err) {
                 REQUIRE(!err);
                 REQUIRE(err.child_errors.size() == 1);
-                REQUIRE(err.child_errors[0]->code == NoError().code);
-                REQUIRE(err.child_errors[0]->child_errors.size() == 0);
+                REQUIRE(err.child_errors[0] == NoError());
+                REQUIRE(err.child_errors[0].child_errors.size() == 0);
                 entry["foobar"] = 2;
                 report.write_entry(entry, [&](Error err) {
                     REQUIRE(!err);
                     REQUIRE(err.child_errors.size() == 1);
-                    REQUIRE(err.child_errors[0]->code == NoError().code);
-                    REQUIRE(err.child_errors[0]->child_errors.size() == 0);
+                    REQUIRE(err.child_errors[0] == NoError());
+                    REQUIRE(err.child_errors[0].child_errors.size() == 0);
                     entry["foobar"] = 3;
                     report.write_entry(entry, [&](Error err) {
                         REQUIRE(!err);
@@ -165,16 +165,16 @@ TEST_CASE("The write_entry() method works correctly") {
                             REQUIRE(!err);
                             REQUIRE(err.child_errors.size() == 1);
                             REQUIRE(
-                                err.child_errors[0]->code == NoError().code);
+                                err.child_errors[0] == NoError());
                             REQUIRE(
-                                err.child_errors[0]->child_errors.size() == 0);
+                                err.child_errors[0].child_errors.size() == 0);
                             entry["foobar"] = 4;
                             report.write_entry(entry, [&](Error err) {
-                                REQUIRE(err.code ==
-                                        ParallelOperationError().code);
+                                REQUIRE(err ==
+                                        ParallelOperationError());
                                 REQUIRE(err.child_errors.size() == 1);
-                                REQUIRE(err.child_errors[0]->code ==
-                                        ReportAlreadyClosedError().code);
+                                REQUIRE(err.child_errors[0] ==
+                                        ReportAlreadyClosedError());
                             }, Logger::global());
                         });
                     }, Logger::global());
@@ -185,30 +185,30 @@ TEST_CASE("The write_entry() method works correctly") {
 }
 
 TEST_CASE("We can retry a partially successful write_entry()") {
-    Var<CountedReporter> counted_reporter = CountedReporter::make();
-    Var<FailingReporter> failing_reporter = FailingReporter::make();
+    SharedPtr<CountedReporter> counted_reporter = CountedReporter::make();
+    SharedPtr<FailingReporter> failing_reporter = FailingReporter::make();
     failing_reporter->open_count = 1; // So open won't fail
     Report report;
     report.add_reporter(counted_reporter.as<BaseReporter>());
     report.add_reporter(failing_reporter.as<BaseReporter>());
     report.open([&](Error err) {
-        REQUIRE(err.code == NoError().code);
+        REQUIRE(err == NoError());
         Entry entry;
         entry["foobar"] = 17;
         entry["baz"] = "foobar";
         report.write_entry(entry, [&](Error err) {
-            REQUIRE(err.code == ParallelOperationError().code);
+            REQUIRE(err == ParallelOperationError());
             REQUIRE(err.child_errors.size() == 2);
-            REQUIRE(err.child_errors[0]->code == NoError().code);
-            REQUIRE(err.child_errors[1]->code == MockedError().code);
+            REQUIRE(err.child_errors[0] == NoError());
+            REQUIRE(err.child_errors[1] == MockedError());
             report.write_entry(entry, [&](Error err) {
-                REQUIRE(err.code == NoError().code);
+                REQUIRE(err == NoError());
                 REQUIRE(err.child_errors.size() == 2);
-                REQUIRE(err.child_errors[0]->code == NoError().code);
-                REQUIRE(err.child_errors[0]->child_errors.size() == 1);
-                REQUIRE(err.child_errors[0]->child_errors[0]->code ==
-                        DuplicateEntrySubmitError().code);
-                REQUIRE(err.child_errors[1]->code == NoError().code);
+                REQUIRE(err.child_errors[0] == NoError());
+                REQUIRE(err.child_errors[0].child_errors.size() == 1);
+                REQUIRE(err.child_errors[0].child_errors[0] ==
+                        DuplicateEntrySubmitError());
+                REQUIRE(err.child_errors[1] == NoError());
             }, Logger::global());
         }, Logger::global());
     });
@@ -224,39 +224,39 @@ TEST_CASE("The close() method works correctly") {
         report.close([&](Error err) {
             REQUIRE(!err);
             report.close([&](Error err) {
-                REQUIRE(err.code == NoError().code);
+                REQUIRE(err == NoError());
                 REQUIRE(err.child_errors.size() == 1);
-                REQUIRE(err.child_errors[0]->code == NoError().code);
-                REQUIRE(err.child_errors[0]->child_errors.size() == 1);
-                REQUIRE(err.child_errors[0]->child_errors[0]->code ==
-                        ReportAlreadyClosedError().code);
+                REQUIRE(err.child_errors[0] == NoError());
+                REQUIRE(err.child_errors[0].child_errors.size() == 1);
+                REQUIRE(err.child_errors[0].child_errors[0] ==
+                        ReportAlreadyClosedError());
             });
         });
     });
 }
 
 TEST_CASE("We can retry a partially successful close") {
-    Var<CountedReporter> counted_reporter = CountedReporter::make();
-    Var<FailingReporter> failing_reporter = FailingReporter::make();
+    SharedPtr<CountedReporter> counted_reporter = CountedReporter::make();
+    SharedPtr<FailingReporter> failing_reporter = FailingReporter::make();
     failing_reporter->open_count = 1; // So open won't fail
     Report report;
     report.add_reporter(counted_reporter.as<BaseReporter>());
     report.add_reporter(failing_reporter.as<BaseReporter>());
     report.open([&](Error err) {
-        REQUIRE(err.code == NoError().code);
+        REQUIRE(err == NoError());
         report.close([&](Error err) {
-            REQUIRE(err.code == ParallelOperationError().code);
+            REQUIRE(err == ParallelOperationError());
             REQUIRE(err.child_errors.size() == 2);
-            REQUIRE(err.child_errors[0]->code == NoError().code);
-            REQUIRE(err.child_errors[1]->code == MockedError().code);
+            REQUIRE(err.child_errors[0] == NoError());
+            REQUIRE(err.child_errors[1] == MockedError());
             report.close([&](Error err) {
-                REQUIRE(err.code == NoError().code);
+                REQUIRE(err == NoError());
                 REQUIRE(err.child_errors.size() == 2);
-                REQUIRE(err.child_errors[0]->code == NoError().code);
-                REQUIRE(err.child_errors[0]->child_errors.size() == 1);
-                REQUIRE(err.child_errors[0]->child_errors[0]->code ==
-                        ReportAlreadyClosedError().code);
-                REQUIRE(err.child_errors[1]->code == NoError().code);
+                REQUIRE(err.child_errors[0] == NoError());
+                REQUIRE(err.child_errors[0].child_errors.size() == 1);
+                REQUIRE(err.child_errors[0].child_errors[0] ==
+                        ReportAlreadyClosedError());
+                REQUIRE(err.child_errors[1] == NoError());
             });
         });
     });
@@ -266,8 +266,8 @@ TEST_CASE("We can retry a partially successful close") {
 
 class ReturningIdReporter : public BaseReporter {
   public:
-    static Var<ReturningIdReporter> make() {
-        return Var<ReturningIdReporter>(new ReturningIdReporter);
+    static SharedPtr<ReturningIdReporter> make() {
+        return SharedPtr<ReturningIdReporter>(new ReturningIdReporter);
     }
 
     ~ReturningIdReporter() override;
@@ -283,12 +283,12 @@ TEST_CASE(
     report.add_reporter(ReturningIdReporter::make().as<BaseReporter>());
     report.add_reporter(ReturningIdReporter::make().as<BaseReporter>());
     report.open([&](Error err) {
-        REQUIRE(err.code == NoError().code);
+        REQUIRE(err == NoError());
         Entry entry;
         entry["foobar"] = 17;
         entry["baz"] = "foobar";
         report.write_entry(entry, [&](Error err) {
-            REQUIRE(err.code == MultipleReportIdsError().code);
+            REQUIRE(err == MultipleReportIdsError());
         }, Logger::global());
     });
 }

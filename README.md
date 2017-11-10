@@ -2,14 +2,14 @@
 
 > Portable C++14 network measurement library
 
-[![Android](https://api.bintray.com/packages/measurement-kit/android/android-libs/images/download.svg)](https://bintray.com/measurement-kit/android/android-libs/_latestVersion) [![GitHub license](https://img.shields.io/badge/License-BSD%202--Clause-orange.svg)](https://raw.githubusercontent.com/measurement-kit/measurement-kit/master/LICENSE) [![Github Releases](https://img.shields.io/github/release/measurement-kit/measurement-kit.svg)](https://github.com/measurement-kit/measurement-kit/releases) [![Github Issues](https://img.shields.io/github/issues/measurement-kit/measurement-kit.svg)](https://github.com/measurement-kit/measurement-kit/issues)
+[![Android](https://img.shields.io/bintray/v/measurement-kit/android/android-libs.svg)](https://bintray.com/measurement-kit/android/android-libs/_latestVersion) [![GitHub license](https://img.shields.io/badge/License-BSD%202--Clause-orange.svg)](https://raw.githubusercontent.com/measurement-kit/measurement-kit/master/LICENSE) [![Github Releases](https://img.shields.io/github/release/measurement-kit/measurement-kit.svg)](https://github.com/measurement-kit/measurement-kit/releases) [![Github Issues](https://img.shields.io/github/issues/measurement-kit/measurement-kit.svg)](https://github.com/measurement-kit/measurement-kit/issues)
 
 - - -
 
-| branch | travis-ci | coveralls | gitlab-ci | circle-ci|
-|--------|-----------|-----------|-----------|----------|
-| master | [![Travis Build Status](https://travis-ci.org/measurement-kit/measurement-kit.svg?branch=master)](https://travis-ci.org/measurement-kit/measurement-kit) | [![Coverage Status](https://coveralls.io/repos/github/measurement-kit/measurement-kit/badge.svg?branch=master)](https://coveralls.io/github/measurement-kit/measurement-kit?branch=master) | [![GitLab Build Status](https://gitlab.com/measurement-kit/measurement-kit/badges/master/build.svg)](https://gitlab.com/measurement-kit/measurement-kit/commits/master) | [![CircleCI](https://circleci.com/gh/measurement-kit/measurement-kit.svg?style=svg)](https://circleci.com/gh/measurement-kit/measurement-kit) |
-| stable | [![Travis Build Status](https://travis-ci.org/measurement-kit/measurement-kit.svg?branch=stable)](https://travis-ci.org/measurement-kit/measurement-kit?branch=stable) | [![Coverage Status](https://coveralls.io/repos/measurement-kit/measurement-kit/badge.svg)](https://coveralls.io/github/measurement-kit/measurement-kit?branch=stable) | [![GitLab Build Status](https://gitlab.com/measurement-kit/measurement-kit/badges/stable/build.svg)](https://gitlab.com/measurement-kit/measurement-kit/commits/stable) | [![CircleCI](https://circleci.com/gh/measurement-kit/measurement-kit/tree/stable.svg?style=svg)](https://circleci.com/gh/measurement-kit/measurement-kit/tree/stable) |
+| branch | travis-ci | coveralls |
+|--------|-----------|-----------|
+| master | [![Travis Build Status](https://img.shields.io/travis/measurement-kit/measurement-kit/master.svg)](https://travis-ci.org/measurement-kit/measurement-kit) | [![Coverage Status](https://img.shields.io/coveralls/measurement-kit/measurement-kit/master.svg)](https://coveralls.io/github/measurement-kit/measurement-kit?branch=master) |
+| stable | [![Travis Build Status](https://img.shields.io/travis/measurement-kit/measurement-kit/stable.svg)](https://travis-ci.org/measurement-kit/measurement-kit?branch=stable) | [![Coverage Status](https://img.shields.io/coveralls/measurement-kit/measurement-kit/stable.svg)](https://coveralls.io/github/measurement-kit/measurement-kit?branch=stable) |
 
 MeasurementKit is a library that implements open network measurement methodologies
 (performance, censorship, etc.) and targets mobile platforms (Android and iOS).
@@ -33,7 +33,13 @@ Currently it implements the following high-level tests:
 
 - [OONI](https://ooni.torproject.org/)'s [HTTP Header Field Manipulation](https://github.com/TheTorProject/ooni-spec/blob/master/test-specs/ts-006-header-field-manipulation.md) test
 
+- [OONI](https://ooni.torproject.org/)'s [Facebook Messenger](https://github.com/TheTorProject/ooni-spec/blob/master/test-specs/ts-019-facebook-messenger.md) test
+
 - Neubot's [MPEG DASH test](https://github.com/neubot/neubot/tree/master/mod_dash)
+
+- [OONI](https://ooni.torproject.org/)'s [Telegram](https://github.com/TheTorProject/ooni-spec/blob/master/test-specs/ts-020-telegram.md) test
+
+- [OONI](https://ooni.torproject.org/)'s [Captiveportal](https://github.com/TheTorProject/ooni-spec/blob/master/test-specs/ts-010-captive-portal.md) test
 
 It contains building-block functionalities useful to implement your own
 tests. More in detail it currently implements:
@@ -107,6 +113,8 @@ Very briefly, to build from the git repository do:
 ./autogen.sh
 ./configure
 make
+sudo make install    # optional, if you want to install to `/usr/local`
+sudo /sbin/ldconfig  # required only on Linux if you install
 ```
 
 See [the Unix tutorial](doc/tutorial/unix.md) for more details.

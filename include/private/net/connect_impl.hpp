@@ -1,12 +1,11 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software. See AUTHORS and LICENSE for more
-// information on the copying conditions.
+// Measurement-kit is free software under the BSD license. See AUTHORS
+// and LICENSE for more information on the copying conditions.
 #ifndef PRIVATE_NET_CONNECT_IMPL_HPP
 #define PRIVATE_NET_CONNECT_IMPL_HPP
 
 #include "private/common/mock.hpp"
-
-#include "private/common/mock.hpp"
+#include "private/common/utils.hpp"
 
 #include <measurement_kit/net.hpp>
 
@@ -15,7 +14,6 @@
 #include <cerrno>
 #include <sstream>
 
-#include "../common/utils.hpp"
 #include "../net/connect.hpp"
 #include "../net/utils.hpp"
 
@@ -37,16 +35,14 @@ static Error make_sockaddr_proxy(std::string s, std::string p,
 template <MK_MOCK(make_sockaddr_proxy), MK_MOCK(bufferevent_socket_new),
           MK_MOCK(bufferevent_set_timeouts),
           MK_MOCK(bufferevent_socket_connect)>
-void connect_base(std::string address, int port,
-                  Callback<Error, bufferevent *, double> cb,
-                  double timeout = 10.0,
-                  Var<Reactor> reactor = Reactor::global(),
-                  Var<Logger> logger = Logger::global()) {
+void connect_base(std::string address, uint16_t port, double timeout,
+                  SharedPtr<Reactor> reactor, SharedPtr<Logger> logger,
+                  Callback<Error, bufferevent *, double> &&cb) {
 
-    std::string endpoint = [&]() {
+    std::string endpoint = [&address, &port]() {
         Endpoint endpoint;
         endpoint.hostname = address;
-        endpoint.port = (uint16_t)port; /* XXX We should change the prototype */
+        endpoint.port = port;
         return serialize_endpoint(endpoint);
     }();
     logger->debug("connect_base %s", endpoint.c_str());
@@ -99,8 +95,7 @@ void connect_base(std::string address, int port,
         if (sys_error == NoError()) {
             sys_error = GenericError(); /* We must report an error */
         }
-        logger->warn("reason why connect() has failed: %s",
-                     sys_error.as_ooni_error().c_str());
+        logger->warn("reason why connect() has failed: %s", sys_error.what());
         cb(sys_error, nullptr, 0.0);
         return;
     }
@@ -116,8 +111,7 @@ void connect_base(std::string address, int port,
                 logger->warn("connect() for %s failed in its callback",
                              endpoint.c_str());
                 bufferevent_free(bev);
-                logger->warn("reason why connect() has failed: %s",
-                             err.as_ooni_error().c_str());
+                logger->warn("reason why connect() has failed: %s", err.what());
                 cb(err, nullptr, 0.0);
                 return;
             }
@@ -128,7 +122,7 @@ void connect_base(std::string address, int port,
 }
 
 template <MK_MOCK_AS(net::connect, net_connect)>
-void connect_many_impl(Var<ConnectManyCtx> ctx) {
+void connect_many_impl(SharedPtr<ConnectManyCtx> ctx) {
     // Implementation note: this function connects sequentially, which
     // is slower but also much simpler to implement and verify
     if (ctx->left <= 0) {
@@ -137,7 +131,7 @@ void connect_many_impl(Var<ConnectManyCtx> ctx) {
         return;
     }
     net_connect(ctx->address, ctx->port,
-                [=](Error err, Var<Transport> txp) {
+                [=](Error err, SharedPtr<Transport> txp) {
                     ctx->connections.push_back(std::move(txp));
                     if (err) {
                         ctx->callback(err, ctx->connections);
@@ -149,11 +143,11 @@ void connect_many_impl(Var<ConnectManyCtx> ctx) {
                 ctx->settings, ctx->reactor, ctx->logger);
 }
 
-static inline Var<ConnectManyCtx>
+static inline SharedPtr<ConnectManyCtx>
 connect_many_make(std::string address, int port, int count,
                   ConnectManyCb callback, Settings settings,
-                  Var<Reactor> reactor, Var<Logger> logger) {
-    Var<ConnectManyCtx> ctx(new ConnectManyCtx);
+                  SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
+    SharedPtr<ConnectManyCtx> ctx(new ConnectManyCtx);
     ctx->left = count;
     ctx->callback = callback;
     ctx->address = address;
@@ -164,8 +158,8 @@ connect_many_make(std::string address, int port, int count,
     return ctx;
 }
 
-static inline Var<Transport> make_txp(Var<Transport> txp, double timeout,
-                                      Var<ConnectResult> r) {
+static inline SharedPtr<Transport> make_txp(SharedPtr<Transport> txp, double timeout,
+                                      SharedPtr<ConnectResult> r) {
     if (timeout > 0.0) {
         txp->set_timeout(timeout);
     }
@@ -178,13 +172,13 @@ static inline Var<Transport> make_txp(Var<Transport> txp, double timeout,
 }
 
 template <typename Type, typename... Args>
-Var<Transport> make_txp(double timeout, Var<ConnectResult> r, Args &&... args) {
+SharedPtr<Transport> make_txp(double timeout, SharedPtr<ConnectResult> r, Args &&... args) {
     // Note: need to pass through `make_shared` because the new Transport that
     // cannot inherit from `shared_ptr` because of the new NDK is less simple
     // to use than the one that inherited from `shared_ptr`. I guess there must
     // be some constructor override that is missing.
     return make_txp(
-          Var<Transport>{std::make_shared<Type>(std::forward<Args>(args)...)},
+          SharedPtr<Transport>{std::make_shared<Type>(std::forward<Args>(args)...)},
           timeout, r);
 }
 

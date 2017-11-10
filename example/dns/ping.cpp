@@ -1,6 +1,6 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software. See AUTHORS and LICENSE for more
-// information on the copying conditions.
+// Measurement-kit is free software under the BSD license. See AUTHORS
+// and LICENSE for more information on the copying conditions.
 
 #include <measurement_kit/dns.hpp>
 
@@ -26,8 +26,8 @@ int main(int argc, char **argv) {
     std::string query_type = "A";
     double interval = 1.0;
     Maybe<double> max_runtime = 10.0;
-    Var<Reactor> reactor = Reactor::make();
-    Var<Logger> logger = Logger::make();
+    SharedPtr<Reactor> reactor = Reactor::make();
+    SharedPtr<Logger> logger = Logger::make();
     for (int ch; (ch = getopt(argc, argv, "c:e:i:m:N:r:T:t:v")) != -1;) {
         switch (ch) {
         case 'c':
@@ -74,10 +74,10 @@ int main(int argc, char **argv) {
         logger->info("Entering into the loop");
         dns::ping_nameserver(query_class, query_type, domain, interval,
                              max_runtime, settings, reactor, logger,
-                             [=](Error err, Var<dns::Message> m) {
+                             [=](Error err, SharedPtr<dns::Message> m) {
                                  std::cout << query_class << " " << query_type;
                                  if (err) {
-                                     std::cout << " " << err.explain() << "\n";
+                                     std::cout << " " << err << "\n";
                                      return;
                                  }
                                  std::cout << " " << m->rtt;

@@ -1,10 +1,11 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software. See AUTHORS and LICENSE for more
-// information on the copying conditions.
+// Measurement-kit is free software under the BSD license. See AUTHORS
+// and LICENSE for more information on the copying conditions.
 
 #include <measurement_kit/ooni.hpp>
 
 #include "private/ooni/orchestrate_impl.hpp"
+#include "private/common/worker.hpp"
 
 namespace mk {
 namespace ooni {
@@ -45,7 +46,7 @@ Error Auth::load(const std::string &filepath) noexcept {
 }
 
 Error Auth::loads(const std::string &s) noexcept {
-    return json_parse_process_and_filter_errors(s, [&](auto json) {
+    return json_process(s, [&](auto json) {
         auth_token = json.at("auth_token");
         expiry_time = json.at("expiry_time");
         logged_in = json.at("logged_in");
@@ -59,7 +60,7 @@ Error Auth::dump(const std::string &filepath) noexcept {
 }
 
 std::string Auth::dumps() noexcept {
-    auto json = nlohmann::json{{"auth_token", auth_token},
+    auto json = Json{{"auth_token", auth_token},
                                {"expiry_time", expiry_time},
                                {"logged_in", logged_in},
                                {"username", username},
@@ -67,7 +68,7 @@ std::string Auth::dumps() noexcept {
     return json.dump(4);
 }
 
-bool Auth::is_valid(Var<Logger> logger) const noexcept {
+bool Auth::is_valid(SharedPtr<Logger> logger) const noexcept {
     if (!logged_in) {
         logger->debug("orchestrator: not logged in");
         return false;
@@ -124,8 +125,8 @@ bool Auth::is_valid(Var<Logger> logger) const noexcept {
  * Registry database
  */
 
-nlohmann::json ClientMetadata::as_json() const {
-    nlohmann::json j;
+Json ClientMetadata::as_json() const {
+    Json j;
     // Keep the following sorted to ease comparison with class definition
     if (!available_bandwidth.empty()) {
         j["available_bandwidth"] = available_bandwidth;
@@ -157,18 +158,20 @@ void Client::register_probe(std::string &&password,
                             Callback<Error &&, Auth &&> &&cb) const {
     // Copy the data contained by this object so we completely detach the
     // destiny of `this` and of the callback.
-    AsyncRunner::global()->start_("orchestrate::register_probe", logger, [
+    //
+    // We must copy or move everything into the initial lambda and then from
+    // there the task is synchronous because run_...() is blocking.
+    Worker::default_tasks_queue()->call_in_thread(Logger::global(), [
         password = std::move(password), meta = *this, cb = std::move(cb)
-    ](Continuation<> && done) mutable {
-        do_register_probe(
-              std::move(password), meta, AsyncRunner::global()->reactor(),
-              [ done = std::move(done),
-                cb = std::move(cb) ](Error && error, Auth && auth) mutable {
-                  done([
-                      error = std::move(error), cb = std::move(cb),
-                      auth = std::move(auth)
-                  ]() mutable { cb(std::move(error), std::move(auth)); });
-              });
+    ]() mutable {
+        SharedPtr<Reactor> reactor = Reactor::make();
+        reactor->run_with_initial_event([&]() {
+            do_register_probe(std::move(password), meta, reactor,
+                              [&](Error &&error, Auth &&auth) {
+                                  reactor->stop();
+                                  cb(std::move(error), std::move(auth));
+                              });
+        });
     });
 }
 
@@ -176,18 +179,20 @@ void Client::find_location(
       Callback<Error &&, std::string &&, std::string &&> &&cb) const {
     // Copy the data contained by this object so we completely detach the
     // destiny of `this` and of the callback.
-    AsyncRunner::global()->start_(
-          "orchestrate::find_location", logger,
-          [ meta = *this, cb = std::move(cb) ](Continuation<> && done) mutable {
-              do_find_location(meta, AsyncRunner::global()->reactor(), [
-                  cb = std::move(cb), done = std::move(done)
-              ](Error && error, std::string && asn, std::string && cc) {
-                  done([
-                      cb = std::move(cb), error = std::move(error),
-                      asn = std::move(asn), cc = std::move(cc)
-                  ]() mutable {
-                      cb(std::move(error), std::move(asn), std::move(cc));
-                  });
+    //
+    // We must copy or move everything into the initial lambda and then from
+    // there the task is synchronous because run_...() is blocking.
+    Worker::default_tasks_queue()->call_in_thread(Logger::global(),
+          [ meta = *this, cb = std::move(cb) ]() {
+              SharedPtr<Reactor> reactor = Reactor::make();
+              reactor->run_with_initial_event([&]() {
+                  do_find_location(meta, reactor,
+                                   [&](Error &&error, std::string &&asn,
+                                       std::string &&cc) {
+                                       reactor->stop();
+                                       cb(std::move(error), std::move(asn),
+                                          std::move(cc));
+                                   });
               });
           });
 }
@@ -195,17 +200,20 @@ void Client::find_location(
 void Client::update(Auth &&auth, Callback<Error &&, Auth &&> &&cb) const {
     // Copy the data contained by this object so we completely detach the
     // destiny of `this` and of the callback.
-    AsyncRunner::global()->start_("orchestrate::update", logger, [
+    //
+    // We must copy or move everything into the initial lambda and then from
+    // there the task is synchronous because run_...() is blocking.
+    Worker::default_tasks_queue()->call_in_thread(Logger::global(), [
         meta = *this, cb = std::move(cb), auth = std::move(auth)
-    ](Continuation<> && done) mutable {
-        do_update(std::move(auth), meta, AsyncRunner::global()->reactor(),
-                  [ cb = std::move(cb), done = std::move(done) ](
-                        Error && error, Auth && auth) mutable {
-                      done([
-                          cb = std::move(cb), error = std::move(error),
-                          auth = std::move(auth)
-                      ]() mutable { cb(std::move(error), std::move(auth)); });
-                  });
+    ]() mutable {
+        SharedPtr<Reactor> reactor = Reactor::make();
+        reactor->run_with_initial_event([&]() {
+            do_update(std::move(auth), meta, reactor,
+                      [&](Error &&error, Auth &&auth) {
+                          reactor->stop();
+                          cb(std::move(error), std::move(auth));
+                      });
+        });
     });
 }
 

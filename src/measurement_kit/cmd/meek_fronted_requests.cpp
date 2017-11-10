@@ -1,6 +1,6 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software. See AUTHORS and LICENSE for more
-// information on the copying conditions.
+// Measurement-kit is free software under the BSD license. See AUTHORS
+// and LICENSE for more information on the copying conditions.
 
 #include "../cmdline.hpp"
 
@@ -16,7 +16,7 @@ int main(std::list<Callback<BaseTest &>> &initializers, int argc, char **argv) {
     while ((ch = getopt(argc, argv, "B:f:")) != -1) {
         switch (ch) {
         case 'B':
-            test.set_options("expected_body", optarg);
+            test.set_option("expected_body", optarg);
             break;
         case 'f':
             test.add_input_filepath(optarg);

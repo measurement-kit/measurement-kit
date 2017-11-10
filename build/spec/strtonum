@@ -1,13 +1,10 @@
-
-# Note: here the pkg_name is libressl such that we only need to clone once
-# the library rather than multiple times for each "package" based on it
 pkg_name=libressl
-pkg_repository=https://github.com/libressl-portable/portable.git
-pkg_branch_or_tag=v2.5.5
-pkg_steps="autogen install"
+pkg_repository=""
+pkg_branch_or_tag=master
+pkg_steps="install"
 
 pkg_install() {
     echo "Installing strtonum.c $pkg_branch_or_tag in MK sources"
-    cp openbsd/src/lib/libc/stdlib/strtonum.c \
-        ../../../src/libmeasurement_kit/portable
+    wget https://raw.githubusercontent.com/libressl-portable/openbsd/${pkg_branch_or_tag}/src/lib/libc/stdlib/strtonum.c
+    cp strtonum.c src/libmeasurement_kit/portable
 }

@@ -1,6 +1,6 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software. See AUTHORS and LICENSE for more
-// information on the copying conditions.
+// Measurement-kit is free software under the BSD license. See AUTHORS
+// and LICENSE for more information on the copying conditions.
 
 #define CATCH_CONFIG_MAIN
 #include "private/ext/catch.hpp"
@@ -14,23 +14,17 @@ using namespace mk;
 #ifdef ENABLE_INTEGRATION_TESTS
 
 TEST_CASE("Synchronous http-header-field-manipulation test") {
-    test::nettests::make_test<HttpHeaderFieldManipulationTest>()
-        .run();
-}
-
-TEST_CASE("Asynchronous http-header-field-manipulation test") {
-    test::nettests::run_async(
-        test::nettests::make_test<HttpHeaderFieldManipulationTest>()
-    );
+    test::nettests::with_test<HttpHeaderFieldManipulationTest>(
+          test::nettests::run_test);
 }
 
 #endif
 
 TEST_CASE("compare_headers_response works") {
-    Var<report::Entry> entry(new report::Entry);
+    SharedPtr<report::Entry> entry(new report::Entry);
     (*entry)["tampering"] = report::Entry::object();
 
-    Var<http::Response> response{new http::Response};
+    SharedPtr<http::Response> response{new http::Response};
 
     SECTION("For empty response") {
         ooni::compare_headers_response({ {"foo", "bar"} },

@@ -1,10 +1,8 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software. See AUTHORS and LICENSE for more
-// information on the copying conditions.
+// Measurement-kit is free software under the BSD license. See AUTHORS
+// and LICENSE for more information on the copying conditions.
 #ifndef PRIVATE_NDT_TEST_META_IMPL_HPP
 #define PRIVATE_NDT_TEST_META_IMPL_HPP
-
-#include "private/common/mock.hpp"
 
 #include "private/common/mock.hpp"
 
@@ -21,7 +19,7 @@ template <MK_MOCK_AS(messages::read_msg, messages_read_msg_first),
           MK_MOCK_AS(messages::format_test_msg, messages_format_test_msg_third),
           MK_MOCK_AS(messages::write, messages_write),
           MK_MOCK_AS(messages::read_msg, messages_read_msg_third)>
-void run_impl(Var<Context> ctx, Callback<Error> cb) {
+void run_impl(SharedPtr<Context> ctx, Callback<Error> cb) {
 
     auto callback = [=](Error err) {
         ctx->logger->progress_relative(0.01, "Sent metadata to server");

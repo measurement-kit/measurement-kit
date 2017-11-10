@@ -1,18 +1,18 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software. See AUTHORS and LICENSE for more
-// information on the copying conditions.
+// Measurement-kit is free software under the BSD license. See AUTHORS
+// and LICENSE for more information on the copying conditions.
 
 #include "private/ooni/bouncer_impl.hpp"
 
 namespace mk {
 namespace ooni {
 
-ErrorOr<Var<BouncerReply>> BouncerReply::create(std::string data,
-                                                Var<Logger> logger) {
+ErrorOr<SharedPtr<BouncerReply>> BouncerReply::create(std::string data,
+                                                SharedPtr<Logger> logger) {
     return bouncer::create_impl(data, logger);
 }
 
-nlohmann::json BouncerReply::get_base() {
+Json BouncerReply::get_base() {
     // Note: this method can throw exceptions
     return response["net-tests"][0];
 }
@@ -86,8 +86,8 @@ namespace bouncer {
 
 void post_net_tests(std::string base_bouncer_url, std::string test_name,
                     std::string test_version, std::list<std::string> helpers,
-                    Callback<Error, Var<BouncerReply>> cb, Settings settings,
-                    Var<Reactor> reactor, Var<Logger> logger) {
+                    Callback<Error, SharedPtr<BouncerReply>> cb, Settings settings,
+                    SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
     post_net_tests_impl(base_bouncer_url, test_name, test_version, helpers, cb,
                         settings, reactor, logger);
 }

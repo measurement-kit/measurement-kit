@@ -1,9 +1,10 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software. See AUTHORS and LICENSE for more
-// information on the copying conditions.
+// Measurement-kit is free software under the BSD license. See AUTHORS
+// and LICENSE for more information on the copying conditions.
 #ifndef PRIVATE_DNS_GETADDRINFO_ASYNC_HPP
 #define PRIVATE_DNS_GETADDRINFO_ASYNC_HPP
 
+#include "private/dns/utils.hpp"
 #include <measurement_kit/dns.hpp>
 
 namespace mk {
@@ -61,7 +62,11 @@ std::vector<Answer> getaddrinfo_async_parse_response(const std::string &name,
             throw GenericError(); /* Avoid g++ warning */
         }
         if (p->ai_canonname != nullptr) {
-            answer.hostname = p->ai_canonname;
+            Answer cname_ans = answer;
+            cname_ans.type = MK_DNS_TYPE_CNAME;
+            cname_ans.hostname = p->ai_canonname;
+            answers.push_back(cname_ans);
+            /* FALLTHROUGH */
         }
         char abuf[128];
         if (inet_ntop(p->ai_family, aptr, abuf, sizeof(abuf)) == nullptr) {
@@ -80,23 +85,22 @@ std::vector<Answer> getaddrinfo_async_parse_response(const std::string &name,
 }
 
 template <MK_MOCK(getaddrinfo), MK_MOCK(inet_ntop)>
-void getaddrinfo_async(std::string name, addrinfo hints, Var<Reactor> reactor,
-                       Var<Logger> logger, Var<Worker> worker,
+void getaddrinfo_async(std::string name, addrinfo hints, SharedPtr<Reactor> reactor,
+                       SharedPtr<Logger> logger,
                        Callback<Error, std::vector<Answer>> cb) {
     /*
      * Move everything down such that there is always just one function in
      * one specific thread having ownership of the state
      */
-    worker->run_in_background_thread([
+    reactor->call_in_thread(logger, [
         name = std::move(name), hints = std::move(hints),
-        reactor = std::move(reactor), logger = std::move(logger),
-        cb = std::move(cb)
+        reactor, logger, cb = std::move(cb)
     ]() {
         addrinfo *rp = nullptr;
         Error error = getaddrinfo_async_map_error(
             getaddrinfo(name.c_str(), nullptr, &hints, &rp));
-        logger->debug("getaddrinfo('%s') => %s", name.c_str(),
-                      error.as_ooni_error().c_str());
+        logger->debug("getaddrinfo('%s') => error: code=%d, reason='%s'",
+                      name.c_str(), error.code, error.what());
         std::vector<Answer> answers;
         if (!error && rp != nullptr) {
             try {
@@ -108,6 +112,10 @@ void getaddrinfo_async(std::string name, addrinfo hints, Var<Reactor> reactor,
         if (rp != nullptr) {
             freeaddrinfo(rp);
         }
+        reactor->with_current_data_usage([&name, &answers, &hints, &logger](
+                DataUsage &du) {
+            dns::estimate_data_usage(du, name, answers, logger);
+        });
         /*
          * Pass through call soon such that the callback executes in the
          * thread in which we're running our async I/O loop.

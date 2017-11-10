@@ -1,10 +1,8 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software. See AUTHORS and LICENSE for more
-// information on the copying conditions.
+// Measurement-kit is free software under the BSD license. See AUTHORS
+// and LICENSE for more information on the copying conditions.
 #ifndef PRIVATE_NDT_PROTOCOL_IMPL_HPP
 #define PRIVATE_NDT_PROTOCOL_IMPL_HPP
-
-#include "private/common/mock.hpp"
 
 #include "private/common/mock.hpp"
 
@@ -15,10 +13,10 @@ namespace ndt {
 namespace protocol {
 
 template <MK_MOCK_AS(net::connect, net_connect)>
-void connect_impl(Var<Context> ctx, Callback<Error> callback) {
+void connect_impl(SharedPtr<Context> ctx, Callback<Error> callback) {
     ctx->logger->debug("ndt: connect ...");
     net_connect(ctx->address, ctx->port,
-                [=](Error err, Var<Transport> txp) {
+                [=](Error err, SharedPtr<Transport> txp) {
                     ctx->logger->debug("ndt: connect ... %d", (int)err);
                     if (err) {
                         callback(ConnectControlConnectionError(err));
@@ -36,7 +34,7 @@ void connect_impl(Var<Context> ctx, Callback<Error> callback) {
 template <MK_MOCK_AS(messages::format_msg_extended_login,
                      messages_format_msg_extended_login),
           MK_MOCK_AS(messages::write, messages_write)>
-void send_extended_login_impl(Var<Context> ctx, Callback<Error> callback) {
+void send_extended_login_impl(SharedPtr<Context> ctx, Callback<Error> callback) {
     ctx->logger->debug("ndt: send login ...");
     ErrorOr<Buffer> out = messages_format_msg_extended_login(ctx->test_suite);
     if (!out) {
@@ -56,7 +54,7 @@ void send_extended_login_impl(Var<Context> ctx, Callback<Error> callback) {
 }
 
 template <MK_MOCK_AS(net::readn, net_readn)>
-void recv_and_ignore_kickoff_impl(Var<Context> ctx, Callback<Error> callback) {
+void recv_and_ignore_kickoff_impl(SharedPtr<Context> ctx, Callback<Error> callback) {
     ctx->logger->debug("ndt: recv and ignore kickoff ...");
     net_readn(ctx->txp, ctx->buff, KICKOFF_MESSAGE_SIZE, [=](Error err) {
         ctx->logger->debug("ndt: recv and ignore kickoff ... %d", (int)err);
@@ -74,11 +72,15 @@ void recv_and_ignore_kickoff_impl(Var<Context> ctx, Callback<Error> callback) {
     }, ctx->reactor);
 }
 
+static inline void call_soon(Callback<> &&cb, SharedPtr<Reactor> reactor) {
+    reactor->call_soon(std::move(cb));
+}
+
 template <MK_MOCK_AS(messages::read_msg, messages_read_msg),
           MK_MOCK_AS(messages::format_msg_waiting, messages_format_msg_waiting),
           MK_MOCK_AS(messages::write_noasync, messages_write_noasync),
           MK_MOCK(call_soon)>
-void wait_in_queue_impl(Var<Context> ctx, Callback<Error> callback) {
+void wait_in_queue_impl(SharedPtr<Context> ctx, Callback<Error> callback) {
     ctx->logger->debug("ndt: wait in queue ...");
     messages_read_msg(ctx, [=](Error err, uint8_t type, std::string s) {
         ctx->logger->debug("ndt: wait in queue ... %d", (int)err);
@@ -135,7 +137,7 @@ void wait_in_queue_impl(Var<Context> ctx, Callback<Error> callback) {
 }
 
 template <MK_MOCK_AS(messages::read_msg, messages_read_msg)>
-void recv_version_impl(Var<Context> ctx, Callback<Error> callback) {
+void recv_version_impl(SharedPtr<Context> ctx, Callback<Error> callback) {
     ctx->logger->debug("ndt: recv server version ...");
     messages_read_msg(ctx, [=](Error err, uint8_t type, std::string s) {
         ctx->logger->debug("ndt: recv server version ... %d", (int)err);
@@ -155,7 +157,7 @@ void recv_version_impl(Var<Context> ctx, Callback<Error> callback) {
 }
 
 template <MK_MOCK_AS(messages::read_msg, messages_read_msg)>
-void recv_tests_id_impl(Var<Context> ctx, Callback<Error> callback) {
+void recv_tests_id_impl(SharedPtr<Context> ctx, Callback<Error> callback) {
     ctx->logger->debug("ndt: recv tests ID ...");
     messages_read_msg(ctx, [=](Error err, uint8_t type, std::string s) {
         ctx->logger->debug("ndt: recv tests ID ... %d", (int)err);
@@ -177,7 +179,7 @@ void recv_tests_id_impl(Var<Context> ctx, Callback<Error> callback) {
 template <MK_MOCK_AS(test_c2s::run, test_c2s_run),
           MK_MOCK_AS(test_meta::run, test_meta_run),
           MK_MOCK_AS(test_s2c::run, test_s2c_run)>
-void run_tests_impl(Var<Context> ctx, Callback<Error> callback) {
+void run_tests_impl(SharedPtr<Context> ctx, Callback<Error> callback) {
 
     if (ctx->granted_suite.size() <= 0) {
         callback(NoError());
@@ -193,7 +195,7 @@ void run_tests_impl(Var<Context> ctx, Callback<Error> callback) {
         return;
     }
 
-    std::function<void(Var<Context>, Callback<Error>)> func;
+    std::function<void(SharedPtr<Context>, Callback<Error>)> func;
     if (*num == TEST_C2S) {
         func = test_c2s_run;
     } else if (*num == TEST_META) {
@@ -216,15 +218,15 @@ void run_tests_impl(Var<Context> ctx, Callback<Error> callback) {
     ctx->logger->debug("Run test with id %d ...", *num);
     func(ctx, [=](Error err) {
         ctx->logger->debug("Run test with id %d ... complete (%s)", *num,
-                           err.explain().c_str());
-        (*ctx->entry)["phase_result"][id_to_name(*num)] = err.as_ooni_error();
+                           err.what());
+        (*ctx->entry)["phase_result"][id_to_name(*num)] = err.reason;
         run_tests_impl<test_c2s_run, test_meta_run, test_s2c_run>(ctx,
                                                                   callback);
     });
 }
 
 template <MK_MOCK_AS(messages::read_msg, messages_read_msg)>
-void recv_results_and_logout_impl(Var<Context> ctx, Callback<Error> callback) {
+void recv_results_and_logout_impl(SharedPtr<Context> ctx, Callback<Error> callback) {
     ctx->logger->debug("ndt: recv RESULTS ...");
     messages_read_msg(ctx, [=](Error err, uint8_t type, std::string s) {
         ctx->logger->debug("ndt: recv RESULTS ... %d", (int)err);
@@ -254,11 +256,11 @@ void recv_results_and_logout_impl(Var<Context> ctx, Callback<Error> callback) {
 }
 
 template <MK_MOCK_AS(net::read, net_read)>
-void wait_close_impl(Var<Context> ctx, Callback<Error> callback) {
+void wait_close_impl(SharedPtr<Context> ctx, Callback<Error> callback) {
     ctx->logger->debug("ndt: wait close ...");
     ctx->txp->set_timeout(1.0);
     // TODO: here we should probably use ctx->buff
-    Var<Buffer> buffer(new Buffer);
+    SharedPtr<Buffer> buffer(new Buffer);
     net_read(ctx->txp, buffer, [=](Error err) {
         ctx->logger->debug("ndt: wait close ... %d", (int)err);
         // Note: the server SHOULD close the connection
@@ -281,9 +283,9 @@ void wait_close_impl(Var<Context> ctx, Callback<Error> callback) {
     }, ctx->reactor);
 }
 
-static inline void disconnect_and_callback_impl(Var<Context> ctx, Error err) {
+static inline void disconnect_and_callback_impl(SharedPtr<Context> ctx, Error err) {
     if (ctx->txp) {
-        Var<Transport> txp = ctx->txp;
+        SharedPtr<Transport> txp = ctx->txp;
         ctx->txp = nullptr;
         txp->close([=]() { ctx->callback(err); });
         return;

@@ -1,6 +1,6 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software. See AUTHORS and LICENSE for more
-// information on the copying conditions.
+// Measurement-kit is free software under the BSD license. See AUTHORS
+// and LICENSE for more information on the copying conditions.
 
 #include <measurement_kit/ooni.hpp>
 
@@ -12,13 +12,13 @@
 #include <sstream>
 #include <unordered_set>
 
-static mk::Var<std::istream> check_variable_expanded(const std::string &path) {
+static mk::SharedPtr<std::istream> check_variable_expanded(const std::string &path) {
     REQUIRE(path == "it");
-    return mk::Var<std::istream>{new std::stringstream{}};
+    return mk::SharedPtr<std::istream>{new std::stringstream{}};
 }
 
-static mk::Var<std::istream> ensure_file_openned(const std::string &path) {
-    mk::Var<std::istream> result = mk::nettests::open_file_(path);
+static mk::SharedPtr<std::istream> ensure_file_openned(const std::string &path) {
+    mk::SharedPtr<std::istream> result = mk::nettests::open_file_(path);
     REQUIRE(result->good());
     return result;
 }

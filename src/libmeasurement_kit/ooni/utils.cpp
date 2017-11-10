@@ -1,7 +1,8 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software. See AUTHORS and LICENSE for more
-// information on the copying conditions.
+// Measurement-kit is free software under the BSD license. See AUTHORS
+// and LICENSE for more information on the copying conditions.
 
+#include <measurement_kit/ooni/orchestrate.hpp> // for orchestrate::Client
 #include "private/ooni/utils_impl.hpp"
 #include "private/common/utils.hpp"
 
@@ -9,16 +10,27 @@ namespace mk {
 namespace ooni {
 
 void ip_lookup(Callback<Error, std::string> callback, Settings settings,
-               Var<Reactor> reactor, Var<Logger> logger) {
+               SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
     ip_lookup_impl(callback, settings, reactor, logger);
 }
 
 void resolver_lookup(Callback<Error, std::string> callback, Settings settings,
-                     Var<Reactor> reactor, Var<Logger> logger) {
+                     SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
     resolver_lookup_impl(callback, settings, reactor, logger);
 }
 
-/* static */ Var<GeoipCache> GeoipCache::thread_local_instance() {
+void find_location(std::string geoip_country_path, std::string geoip_asn_path,
+        Settings settings, SharedPtr<Logger> logger,
+        Callback<Error &&, std::string &&, std::string &&> &&cb) {
+    orchestrate::Client client;
+    client.logger = logger;
+    client.geoip_asn_path = geoip_asn_path;
+    client.geoip_country_path = geoip_country_path;
+    client.settings = settings;
+    client.find_location(std::move(cb));
+}
+
+/* static */ SharedPtr<GeoipCache> GeoipCache::thread_local_instance() {
     // We have experimentally found that iOS armv7 does not support well
     // thread_local. In such case, we allocate a new cache every time rather
     // than using a thread local cache. We will be able to drop this fix
@@ -28,11 +40,11 @@ void resolver_lookup(Callback<Error, std::string> callback, Settings settings,
 #ifndef MK_NO_THREAD_LOCAL
     static thread_local
 #endif
-    Var<GeoipCache> singleton{new GeoipCache};
+    SharedPtr<GeoipCache> singleton{new GeoipCache};
     return singleton;
 }
 
-Var<GeoipDatabase> GeoipCache::get(std::string path, bool &did_open) {
+SharedPtr<GeoipDatabase> GeoipCache::get(std::string path, bool &did_open) {
     if (instances.find(path) != instances.end()) {
         did_open = false;
         return instances.at(path);
@@ -41,13 +53,13 @@ Var<GeoipDatabase> GeoipCache::get(std::string path, bool &did_open) {
     if (instances.size() > max_size) {
         instances.erase(std::prev(instances.end()));
     }
-    instances[path] = Var<GeoipDatabase>(new GeoipDatabase(path));
+    instances[path] = SharedPtr<GeoipDatabase>(new GeoipDatabase(path));
     return instances[path];
 }
 
 ErrorOr<std::string> GeoipDatabase::with_open_database_do(
         std::function<ErrorOr<std::string>()> action,
-        Var<Logger> logger) {
+        SharedPtr<Logger> logger) {
     if (!db) {
         db.reset(GeoIP_open(path.c_str(), GEOIP_MEMORY_CACHE),
                  [](GeoIP *pointer) {
@@ -65,7 +77,7 @@ ErrorOr<std::string> GeoipDatabase::with_open_database_do(
 }
 
 ErrorOr<std::string> GeoipDatabase::resolve_country_code(
-            std::string ip, Var<Logger> logger) {
+            std::string ip, SharedPtr<Logger> logger) {
     return with_open_database_do([=]() -> ErrorOr<std::string> {
         GeoIPLookup gl;
         memset(&gl, 0, sizeof(gl));
@@ -80,7 +92,7 @@ ErrorOr<std::string> GeoipDatabase::resolve_country_code(
 }
 
 ErrorOr<std::string> GeoipDatabase::resolve_country_name(
-            std::string ip, Var<Logger> logger) {
+            std::string ip, SharedPtr<Logger> logger) {
     return with_open_database_do([=]() -> ErrorOr<std::string> {
         GeoIPLookup gl;
         memset(&gl, 0, sizeof(gl));
@@ -95,7 +107,7 @@ ErrorOr<std::string> GeoipDatabase::resolve_country_name(
 }
 
 ErrorOr<std::string> GeoipDatabase::resolve_city_name(
-            std::string ip, Var<Logger> logger) {
+            std::string ip, SharedPtr<Logger> logger) {
     return with_open_database_do([=]() -> ErrorOr<std::string> {
         GeoIPRecord *gir = GeoIP_record_by_name(db.get(), ip.c_str());
         if (gir == nullptr) {
@@ -111,7 +123,7 @@ ErrorOr<std::string> GeoipDatabase::resolve_city_name(
 }
 
 ErrorOr<std::string> GeoipDatabase::resolve_asn(std::string ip,
-                                             Var<Logger> logger) {
+                                             SharedPtr<Logger> logger) {
     return with_open_database_do([=]() -> ErrorOr<std::string> {
         GeoIPLookup gl;
         memset(&gl, 0, sizeof(gl));
@@ -155,7 +167,7 @@ bool is_private_ipv4_addr(const std::string &ipv4_addr) {
 }
 
 report::Entry represent_string(const std::string &s) {
-    Error error = is_valid_utf8_string(s);
+    Error error = utf8_parse(s);
     if (error != NoError()) {
         return report::Entry{{"format", "base64"},
                               {"data", base64_encode(s)}};

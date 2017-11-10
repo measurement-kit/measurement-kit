@@ -1,6 +1,6 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software. See AUTHORS and LICENSE for more
-// information on the copying conditions.
+// Measurement-kit is free software under the BSD license. See AUTHORS
+// and LICENSE for more information on the copying conditions.
 
 #include "private/common/utils.hpp"
 
@@ -9,8 +9,8 @@
 namespace mk {
 namespace report {
 
-/* static */ Var<BaseReporter> BaseReporter::make() {
-    return Var<BaseReporter>(new BaseReporter);
+/* static */ SharedPtr<BaseReporter> BaseReporter::make() {
+    return SharedPtr<BaseReporter>(new BaseReporter);
 }
 
 BaseReporter::~BaseReporter() {}

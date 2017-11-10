@@ -1,11 +1,11 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software. See AUTHORS and LICENSE for more
-// information on the copying conditions.
+// Measurement-kit is free software under the BSD license. See AUTHORS
+// and LICENSE for more information on the copying conditions.
 #ifndef PRIVATE_NDT_MEASURE_SPEED_HPP
 #define PRIVATE_NDT_MEASURE_SPEED_HPP
 
+#include "private/common/utils.hpp"
 #include <measurement_kit/common/callback.hpp>
-#include <measurement_kit/common/utils.hpp>
 
 namespace mk {
 namespace ndt {

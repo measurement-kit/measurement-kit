@@ -1,9 +1,10 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software. See AUTHORS and LICENSE for more
-// information on the copying conditions.
+// Measurement-kit is free software under the BSD license. See AUTHORS
+// and LICENSE for more information on the copying conditions.
 #ifndef PRIVATE_NET_EMITTER_HPP
 #define PRIVATE_NET_EMITTER_HPP
 
+#include "private/common/delegate.hpp"
 #include <measurement_kit/net.hpp>
 #include <measurement_kit/dns.hpp>
 
@@ -12,7 +13,7 @@ namespace net {
 
 class EmitterBase : public Transport {
   public:
-    EmitterBase(Var<Reactor> reactor, Var<Logger> logger)
+    EmitterBase(SharedPtr<Reactor> reactor, SharedPtr<Logger> logger)
         : reactor(reactor), logger(logger) {}
 
     ~EmitterBase() override;
@@ -22,73 +23,76 @@ class EmitterBase : public Transport {
      */
 
     void emit_connect() override {
-        logger->log(MK_LOG_DEBUG2, "emitter: emit 'connect' event");
+        logger->debug2("emitter: emit 'connect' event");
         if (close_pending) {
-            logger->log(MK_LOG_DEBUG2, "emitter: already closed; ignoring");
+            logger->debug2("emitter: already closed; ignoring");
             return;
         }
         if (!do_connect) {
-            logger->log(MK_LOG_DEBUG2, "emitter: no handler set; ignoring");
+            logger->debug2("emitter: no handler set; ignoring");
             return;
         }
         do_connect();
     }
 
     void emit_data(Buffer data) override {
-        logger->log(MK_LOG_DEBUG2, "emitter: emit 'data' event "
+        logger->debug2("emitter: emit 'data' event "
                     "(num_bytes = %zu)", data.length());
         if (close_pending) {
-            logger->log(MK_LOG_DEBUG2, "emitter: already closed; ignoring");
+            logger->debug2("emitter: already closed; ignoring");
             return;
         }
         if (do_record_received_data) {
             received_data_record.write(data.peek());
         }
         if (!do_data) {
-            logger->log(MK_LOG_DEBUG2, "emitter: no handler set; ignoring");
+            logger->debug2("emitter: no handler set; ignoring");
             return;
         }
+        reactor->with_current_data_usage([&data](DataUsage &du) {
+            du.down += data.length();
+        });
         do_data(data);
     }
 
     void emit_flush() override {
-        logger->log(MK_LOG_DEBUG2, "emitter: emit 'flush' event");
+        logger->debug2("emitter: emit 'flush' event");
         if (close_pending) {
-            logger->log(MK_LOG_DEBUG2, "emitter: already closed; ignoring");
+            logger->debug2("emitter: already closed; ignoring");
             return;
         }
         if (!do_flush) {
-            logger->log(MK_LOG_DEBUG2, "emitter: no handler set; ignoring");
+            logger->debug2("emitter: no handler set; ignoring");
             return;
         }
         do_flush();
     }
 
     void emit_error(Error err) override {
-        logger->log(MK_LOG_DEBUG2, "emitter: emit 'error' event "
-                    "(error = '%s')", err.explain().c_str());
+        logger->debug2("emitter: emit 'error' event "
+                    "(error = '%s')", err.what());
         if (close_pending) {
-            logger->log(MK_LOG_DEBUG2, "emitter: already closed; ignoring");
+            logger->debug2("emitter: already closed; ignoring");
             return;
         }
         if (!do_error) {
-            logger->log(MK_LOG_DEBUG2, "emitter: no handler set; ignoring");
+            logger->debug2("emitter: no handler set; ignoring");
             return;
         }
         do_error(err);
     }
 
     void on_connect(std::function<void()> fn) override {
-        logger->log(MK_LOG_DEBUG2, "emitter: %sregister 'connect' handler",
+        logger->debug2("emitter: %sregister 'connect' handler",
                     (fn != nullptr) ? "" : "un");
         do_connect = fn;
     }
 
     void on_data(std::function<void(Buffer)> fn) override {
-        logger->log(MK_LOG_DEBUG2, "emitter: %sregister 'data' handler",
+        logger->debug2("emitter: %sregister 'data' handler",
                     (fn != nullptr) ? "" : "un");
         if (close_pending) {
-            logger->log(MK_LOG_DEBUG2, "emitter: already closed; ignoring");
+            logger->debug2("emitter: already closed; ignoring");
             return;
         }
         if (fn) {
@@ -100,13 +104,13 @@ class EmitterBase : public Transport {
     }
 
     void on_flush(std::function<void()> fn) override {
-        logger->log(MK_LOG_DEBUG2, "emitter: %sregister 'flush' handler",
+        logger->debug2("emitter: %sregister 'flush' handler",
                     (fn != nullptr) ? "" : "un");
         do_flush = fn;
     }
 
     void on_error(std::function<void(Error)> fn) override {
-        logger->log(MK_LOG_DEBUG2, "emitter: %sregister 'error' handler",
+        logger->debug2("emitter: %sregister 'error' handler",
                     (fn != nullptr) ? "" : "un");
         do_error = fn;
     }
@@ -146,7 +150,7 @@ class EmitterBase : public Transport {
      */
 
     void write(const void *p, size_t n) override {
-        logger->log(MK_LOG_DEBUG2, "emitter: send opaque data");
+        logger->debug2("emitter: send opaque data");
         if (p == nullptr) {
             throw std::runtime_error("null pointer");
         }
@@ -154,18 +158,21 @@ class EmitterBase : public Transport {
     }
 
     void write(std::string s) override {
-        logger->log(MK_LOG_DEBUG2, "emitter: send string");
+        logger->debug2("emitter: send string");
         write(Buffer(s));
     }
 
     void write(Buffer data) override {
-        logger->log(MK_LOG_DEBUG2, "emitter: send buffer");
+        logger->debug2("emitter: send buffer");
         if (do_record_sent_data) {
             sent_data_record.write(data.peek());
         }
+        reactor->with_current_data_usage([&data](DataUsage &du) {
+            du.up += data.length();
+        });
         output_buff << data;
         if (close_pending) {
-            logger->log(MK_LOG_DEBUG2, "emitter: already closed; ignoring");
+            logger->debug2("emitter: already closed; ignoring");
             return;
         }
         start_writing();
@@ -191,6 +198,14 @@ class EmitterBase : public Transport {
     }
 
     void clear_timeout() override { set_timeout(-1); }
+
+    bufferevent *get_bufferevent() override {
+        throw std::runtime_error("not_attached");
+    }
+
+    void set_bufferevent(bufferevent *) override {
+        throw std::runtime_error("not_attached");
+    }
 
     // Protected methods of TransportPollable: not implemented
 
@@ -220,8 +235,8 @@ class EmitterBase : public Transport {
 
   protected:
     // TODO: it would probably better to have accessors
-    Var<Reactor> reactor = Reactor::global();
-    Var<Logger> logger = Logger::global();
+    SharedPtr<Reactor> reactor = Reactor::global();
+    SharedPtr<Logger> logger = Logger::global();
     Buffer output_buff;
 
   private:
@@ -242,14 +257,14 @@ class EmitterBase : public Transport {
 
 class Emitter : public EmitterBase {
   public:
-    Emitter(Var<Reactor> reactor, Var<Logger> logger)
+    Emitter(SharedPtr<Reactor> reactor, SharedPtr<Logger> logger)
         : EmitterBase(reactor, logger) {}
 
     ~Emitter() override;
 
   protected:
     void adjust_timeout(double timeo) override {
-        logger->log(MK_LOG_DEBUG2, "emitter: adjust_timeout %f", timeo);
+        logger->debug2("emitter: adjust_timeout %f", timeo);
     }
 
     void shutdown() override {}

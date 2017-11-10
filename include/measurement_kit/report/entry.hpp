@@ -1,20 +1,19 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software. See AUTHORS and LICENSE for more
-// information on the copying conditions.
+// Measurement-kit is free software under the BSD license. See AUTHORS
+// and LICENSE for more information on the copying conditions.
 #ifndef MEASUREMENT_KIT_REPORT_ENTRY_HPP
 #define MEASUREMENT_KIT_REPORT_ENTRY_HPP
 
 #include <measurement_kit/common.hpp>
-#include <measurement_kit/ext/json.hpp> // vendored nlohmann::json
 
 namespace mk {
 namespace report {
 
 // A report entry.
-class Entry : public nlohmann::json {
+class Entry : public Json {
   public:
-    Entry() : nlohmann::json() {}
-    template <typename T> Entry(T t) : nlohmann::json(t) {}
+    Entry() : Json() {}
+    template <typename T> Entry(T t) : Json(t) {}
 
     /*
      * I'd like to also declare these two constructors but apparently
@@ -23,10 +22,10 @@ class Entry : public nlohmann::json {
      *
      * Leaving this comment here so maybe someone can teach me.
      */
-    //template <typename T> Entry(T &t) : nlohmann::json(t) {}
-    //template <typename T> Entry(T &&t) : nlohmann::json(t) {}
+    //template <typename T> Entry(T &t) : Json(t) {}
+    //template <typename T> Entry(T &&t) : Json(t) {}
 
-    Entry(std::initializer_list<nlohmann::json> nl) : nlohmann::json(nl) {}
+    Entry(std::initializer_list<Json> nl) : Json(nl) {}
 
     Entry(Entry &) = default;
     Entry(const Entry &) = default;
@@ -36,17 +35,17 @@ class Entry : public nlohmann::json {
     static Entry object();
 
     template <typename T> Entry &operator=(T t) {
-        nlohmann::json::operator=(t);
+        Json::operator=(t);
         return *this;
     }
 
-    Entry &operator=(std::initializer_list<nlohmann::json> t);
+    Entry &operator=(std::initializer_list<Json> t);
     Entry &operator=(Entry &) = default;
     Entry &operator=(Entry &&) = default;
 
     template <typename T> operator ErrorOr<T>() {
         try {
-            return nlohmann::json::operator T();
+            return Json::operator T();
         } catch (const std::domain_error &) {
             return JsonDomainError();
         }
@@ -55,7 +54,7 @@ class Entry : public nlohmann::json {
     // Implementation of dict
     template <typename K> Entry &operator[](const K &key) {
         try {
-            return static_cast<Entry &>(nlohmann::json::operator[](key));
+            return static_cast<Entry &>(Json::operator[](key));
         } catch (const std::domain_error &) {
             throw JsonDomainError();
         }
@@ -69,13 +68,13 @@ class Entry : public nlohmann::json {
 
     template <typename T> void push_back(T t) {
         try {
-            nlohmann::json::push_back(t);
+            Json::push_back(t);
         } catch (const std::domain_error &) {
             throw JsonDomainError();
         }
     }
 
-    void push_back(std::initializer_list<nlohmann::json> j);
+    void push_back(std::initializer_list<Json> j);
 
     std::string dump(const int indent = -1) const;
 

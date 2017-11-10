@@ -1,6 +1,6 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software. See AUTHORS and LICENSE for more
-// information on the copying conditions.
+// Measurement-kit is free software under the BSD license. See AUTHORS
+// and LICENSE for more information on the copying conditions.
 
 #include "private/net/socks5.hpp"
 #include "private/net/connect_impl.hpp"
@@ -10,14 +10,14 @@
 namespace mk {
 namespace net {
 
-Socks5::Socks5(Var<Transport> tx, Settings s, Var<Reactor> r, Var<Logger> lp)
+Socks5::Socks5(SharedPtr<Transport> tx, Settings s, SharedPtr<Reactor> r, SharedPtr<Logger> lp)
     : Emitter(r, lp), settings(s), conn(tx),
       proxy_address(settings["net/socks5_address"]),
       proxy_port(settings["net/socks5_port"]) {
     socks5_connect_();
 }
 
-Buffer socks5_format_auth_request(Var<Logger> logger) {
+Buffer socks5_format_auth_request(SharedPtr<Logger> logger) {
     Buffer out;
     out.write_uint8(5); // Version
     out.write_uint8(1); // Number of methods
@@ -28,7 +28,7 @@ Buffer socks5_format_auth_request(Var<Logger> logger) {
     return out;
 }
 
-ErrorOr<bool> socks5_parse_auth_response(Buffer &buffer, Var<Logger> logger) {
+ErrorOr<bool> socks5_parse_auth_response(Buffer &buffer, SharedPtr<Logger> logger) {
     auto readbuf = buffer.readn(2);
     if (readbuf == "") {
         return false; // Try again after next recv()
@@ -44,7 +44,7 @@ ErrorOr<bool> socks5_parse_auth_response(Buffer &buffer, Var<Logger> logger) {
     return true;
 }
 
-ErrorOr<Buffer> socks5_format_connect_request(Settings settings, Var<Logger> logger) {
+ErrorOr<Buffer> socks5_format_connect_request(Settings settings, SharedPtr<Logger> logger) {
     Buffer out;
 
     out.write_uint8(5); // Version
@@ -79,7 +79,7 @@ ErrorOr<Buffer> socks5_format_connect_request(Settings settings, Var<Logger> log
     return out;
 }
 
-ErrorOr<bool> socks5_parse_connect_response(Buffer &buffer, Var<Logger> logger) {
+ErrorOr<bool> socks5_parse_connect_response(Buffer &buffer, SharedPtr<Logger> logger) {
     if (buffer.length() < 5) {
         return false; // Try again after next recv()
     }
@@ -123,8 +123,8 @@ ErrorOr<bool> socks5_parse_connect_response(Buffer &buffer, Var<Logger> logger) 
 }
 
 void socks5_connect(std::string address, int port, Settings settings,
-        Callback<Error, Var<Transport>> callback,
-        Var<Reactor> reactor, Var<Logger> logger) {
+        Callback<Error, SharedPtr<Transport>> callback,
+        SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
 
     auto proxy = settings["net/socks5_proxy"];
     auto pos = proxy.find(":");
@@ -138,15 +138,15 @@ void socks5_connect(std::string address, int port, Settings settings,
     settings["net/port"] = port;
 
     connect_logic(proxy_address, lexical_cast<int>(proxy_port),
-            [=](Error err, Var<ConnectResult> r) {
+            [=](Error err, SharedPtr<ConnectResult> r) {
                 if (err) {
                     callback(err, make_txp<Emitter>(
                         0.0, r, reactor, logger));
                     return;
                 }
-                Var<Transport> txp = libevent::Connection::make(
+                SharedPtr<Transport> txp = libevent::Connection::make(
                         r->connected_bev, reactor, logger);
-                Var<Transport> socks5 = make_txp<Socks5>(
+                SharedPtr<Transport> socks5 = make_txp<Socks5>(
                         0.0, r, txp, settings, reactor, logger);
                 socks5->on_connect([=]() {
                     socks5->on_connect(nullptr);

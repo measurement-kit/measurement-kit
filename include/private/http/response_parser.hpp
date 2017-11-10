@@ -1,11 +1,12 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software. See AUTHORS and LICENSE for more
-// information on the copying conditions.
+// Measurement-kit is free software under the BSD license. See AUTHORS
+// and LICENSE for more information on the copying conditions.
 #ifndef PRIVATE_HTTP_RESPONSE_PARSER_HPP
 #define PRIVATE_HTTP_RESPONSE_PARSER_HPP
 
 #include "../ext/http_parser.h"
 
+#include "private/common/delegate.hpp"
 #include <measurement_kit/http.hpp>
 
 #include <type_traits>
@@ -22,7 +23,7 @@ enum class HeaderParserState {
 
 class ResponseParserNg : public NonCopyable, public NonMovable {
   public:
-    ResponseParserNg(Var<Logger> = Logger::global());
+    ResponseParserNg(SharedPtr<Logger> = Logger::global());
 
     void on_begin(std::function<void()> fn) { begin_fn_ = fn; }
 
@@ -50,7 +51,7 @@ class ResponseParserNg : public NonCopyable, public NonMovable {
     void eof() { parser_execute(nullptr, 0); }
 
     int do_message_begin_() {
-        logger_->log(MK_LOG_DEBUG2, "http: BEGIN");
+        logger_->debug2("http: BEGIN");
         response_ = Response();
         prev_ = HeaderParserState::NOTHING;
         field_ = "";
@@ -62,25 +63,25 @@ class ResponseParserNg : public NonCopyable, public NonMovable {
     }
 
     int do_status_(const char *s, size_t n) {
-        logger_->log(MK_LOG_DEBUG2, "http: STATUS");
+        logger_->debug2("http: STATUS");
         response_.reason.append(s, n);
         return 0;
     }
 
     int do_header_field_(const char *s, size_t n) {
-        logger_->log(MK_LOG_DEBUG2, "http: FIELD");
+        logger_->debug2("http: FIELD");
         do_header_internal(HeaderParserState::FIELD, s, n);
         return 0;
     }
 
     int do_header_value_(const char *s, size_t n) {
-        logger_->log(MK_LOG_DEBUG2, "http: VALUE");
+        logger_->debug2("http: VALUE");
         do_header_internal(HeaderParserState::VALUE, s, n);
         return 0;
     }
 
     int do_headers_complete_() {
-        logger_->log(MK_LOG_DEBUG2, "http: HEADERS_COMPLETE");
+        logger_->debug2("http: HEADERS_COMPLETE");
         if (field_ != "") { // Also copy last header
             response_.headers[field_] = value_;
         }
@@ -95,6 +96,7 @@ class ResponseParserNg : public NonCopyable, public NonMovable {
         for (auto kv : response_.headers) {
             logger_->debug("< %s: %s", kv.first.c_str(), kv.second.c_str());
         }
+        logger_->debug("<");
         if (response_fn_) {
             response_fn_(response_);
         }
@@ -102,7 +104,7 @@ class ResponseParserNg : public NonCopyable, public NonMovable {
     }
 
     int do_body_(const char *s, size_t n) {
-        logger_->log(MK_LOG_DEBUG2, "http: BODY");
+        logger_->debug2("http: BODY");
         if (body_fn_) {
             body_fn_(std::string(s, n));
         }
@@ -110,10 +112,18 @@ class ResponseParserNg : public NonCopyable, public NonMovable {
     }
 
     int do_message_complete_() {
-        logger_->log(MK_LOG_DEBUG2, "http: END");
+        logger_->debug2("http: END");
         if (end_fn_) {
             end_fn_();
         }
+        // Rationale: we want to pause the parser after the first message
+        // because otherwise, if for whatever reason we receive two messages
+        // back to back, only the second will be stored.
+        //
+        // If this will ever become a limitation because we decide for some
+        // reason to reuse the same parser for more than a single response
+        // we can simply fix by allowing the caller to unpause us.
+        http_parser_pause(&parser_, 1);
         return 0;
     }
 
@@ -123,7 +133,7 @@ class ResponseParserNg : public NonCopyable, public NonMovable {
     Delegate<std::string> body_fn_;
     Delegate<> end_fn_;
 
-    Var<Logger> logger_ = Logger::global();
+    SharedPtr<Logger> logger_ = Logger::global();
     http_parser parser_;
     http_parser_settings settings_;
     Buffer buffer_;
@@ -171,9 +181,25 @@ class ResponseParserNg : public NonCopyable, public NonMovable {
     size_t parser_execute(const void *p, size_t n) {
         size_t x =
             http_parser_execute(&parser_, &settings_, (const char *)p, n);
-        if (parser_.upgrade) {
-            throw UpgradeError();
-        }
+        // FIX: I initially coded `upgrade` as the following commented out code
+        // does, because I did read [the documentation of http-parser](
+        // https://github.com/nodejs/http-parser#the-special-problem-of-upgrade)
+        // but it seems that is written more with servers in mind.
+        //
+        // For a client, unless `upgrade` is requested by us, the resulting
+        // headers are just informational and, as such, we can continue.
+        //
+        // For reference see: <https://tools.ietf.org/html/rfc7230#section-6.7>.
+        //
+        // This fixes for example the `http://aseansec.org/` URL.
+        //
+        // I am going to keep the code below commented out and this comment
+        // so the choices I made are clear and documented.
+        //
+        // if (parser_.upgrade) {
+        //    throw UpgradeError();
+        // }
+        //
         if (x != n) {
             throw ParserError(map_parser_error_());
         }

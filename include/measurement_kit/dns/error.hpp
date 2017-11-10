@@ -1,6 +1,6 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software. See AUTHORS and LICENSE for more
-// information on the copying conditions.
+// Measurement-kit is free software under the BSD license. See AUTHORS
+// and LICENSE for more information on the copying conditions.
 #ifndef MEASUREMENT_KIT_DNS_ERROR_HPP
 #define MEASUREMENT_KIT_DNS_ERROR_HPP
 
@@ -16,7 +16,7 @@ MK_DEFINE_ERR(MK_ERR_DNS(3), NotImplementedError, "dns_lookup_error")
 MK_DEFINE_ERR(MK_ERR_DNS(4), RefusedError, "dns_lookup_error")
 MK_DEFINE_ERR(MK_ERR_DNS(5), TruncatedError, "dns_lookup_error")
 MK_DEFINE_ERR(MK_ERR_DNS(6), UnknownError, "dns_unknown_error")
-MK_DEFINE_ERR(MK_ERR_DNS(7), TimeoutError, "generic_timeout_error")
+using TimeoutError = mk::TimeoutError; /* Was: MK_ERR_DNS(7) */
 MK_DEFINE_ERR(MK_ERR_DNS(8), ShutdownError, "dns_shutdown")
 MK_DEFINE_ERR(MK_ERR_DNS(9), CancelError, "dns_cancel")
 MK_DEFINE_ERR(MK_ERR_DNS(10), NoDataError, "dns_lookup_error")

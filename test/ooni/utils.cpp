@@ -1,59 +1,60 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software. See AUTHORS and LICENSE for more
-// information on the copying conditions.
+// Measurement-kit is free software under the BSD license. See AUTHORS
+// and LICENSE for more information on the copying conditions.
 
 #define CATCH_CONFIG_MAIN
 #include "private/ext/catch.hpp"
 
+#include "private/common/worker.hpp"
 #include "private/ooni/utils_impl.hpp"
 
 using namespace mk;
 
-static void fail(std::string, Callback<Error, Var<http::Response>> callback,
-                 http::Headers, Settings, Var<Reactor> reactor, Var<Logger>,
-                 Var<http::Response>, int) {
+static void fail(std::string, Callback<Error, SharedPtr<http::Response>> callback,
+                 http::Headers, Settings, SharedPtr<Reactor> reactor, SharedPtr<Logger>,
+                 SharedPtr<http::Response>, int) {
     reactor->call_soon([=]() { callback(MockedError(), nullptr); });
 }
 
-static void http_err(std::string, Callback<Error, Var<http::Response>> callback,
-                     http::Headers, Settings, Var<Reactor> reactor, Var<Logger>,
-                     Var<http::Response>, int) {
-    Var<http::Response> r{new http::Response};
+static void http_err(std::string, Callback<Error, SharedPtr<http::Response>> callback,
+                     http::Headers, Settings, SharedPtr<Reactor> reactor, SharedPtr<Logger>,
+                     SharedPtr<http::Response>, int) {
+    SharedPtr<http::Response> r{new http::Response};
     r->status_code = 500;
     reactor->call_soon([=]() { callback(NoError(), r); });
 }
 
-static void re_fail(std::string, Callback<Error, Var<http::Response>> callback,
-                    http::Headers, Settings, Var<Reactor> reactor, Var<Logger>,
-                    Var<http::Response>, int) {
-    Var<http::Response> r{new http::Response};
+static void re_fail(std::string, Callback<Error, SharedPtr<http::Response>> callback,
+                    http::Headers, Settings, SharedPtr<Reactor> reactor, SharedPtr<Logger>,
+                    SharedPtr<http::Response>, int) {
+    SharedPtr<http::Response> r{new http::Response};
     r->status_code = 200;
     r->body = "antani";
     reactor->call_soon([=]() { callback(NoError(), r); });
 }
 
-static void no_ip(std::string, Callback<Error, Var<http::Response>> callback,
-                  http::Headers, Settings, Var<Reactor> reactor, Var<Logger>,
-                  Var<http::Response>, int) {
-    Var<http::Response> r{new http::Response};
+static void no_ip(std::string, Callback<Error, SharedPtr<http::Response>> callback,
+                  http::Headers, Settings, SharedPtr<Reactor> reactor, SharedPtr<Logger>,
+                  SharedPtr<http::Response>, int) {
+    SharedPtr<http::Response> r{new http::Response};
     r->status_code = 200;
     r->body = "<Ip>antani</Ip>";
     reactor->call_soon([=]() { callback(NoError(), r); });
 }
 
-static void is_v4(std::string, Callback<Error, Var<http::Response>> callback,
-                  http::Headers, Settings, Var<Reactor> reactor, Var<Logger>,
-                  Var<http::Response>, int) {
-    Var<http::Response> r{new http::Response};
+static void is_v4(std::string, Callback<Error, SharedPtr<http::Response>> callback,
+                  http::Headers, Settings, SharedPtr<Reactor> reactor, SharedPtr<Logger>,
+                  SharedPtr<http::Response>, int) {
+    SharedPtr<http::Response> r{new http::Response};
     r->status_code = 200;
     r->body = "<Ip>8.8.8.8</Ip>";
     reactor->call_soon([=]() { callback(NoError(), r); });
 }
 
-static void is_v6(std::string, Callback<Error, Var<http::Response>> callback,
-                  http::Headers, Settings, Var<Reactor> reactor, Var<Logger>,
-                  Var<http::Response>, int) {
-    Var<http::Response> r{new http::Response};
+static void is_v6(std::string, Callback<Error, SharedPtr<http::Response>> callback,
+                  http::Headers, Settings, SharedPtr<Reactor> reactor, SharedPtr<Logger>,
+                  SharedPtr<http::Response>, int) {
+    SharedPtr<http::Response> r{new http::Response};
     r->status_code = 200;
     r->body = "<Ip>fe80::1</Ip>";
     reactor->call_soon([=]() { callback(NoError(), r); });
@@ -62,74 +63,74 @@ static void is_v6(std::string, Callback<Error, Var<http::Response>> callback,
 TEST_CASE("ip lookup works") {
 
     SECTION("is robust to network error") {
-        Var<Reactor> reactor = Reactor::make();
-        reactor->loop_with_initial_event([=]() {
+        SharedPtr<Reactor> reactor = Reactor::make();
+        reactor->run_with_initial_event([=]() {
             ooni::ip_lookup_impl<fail>([=](Error err, std::string) {
                 REQUIRE(err == MockedError());
-                reactor->break_loop();
+                reactor->stop();
             }, {}, reactor, Logger::global());
         });
     }
 
     SECTION("is robust to http error") {
-        Var<Reactor> reactor = Reactor::make();
-        reactor->loop_with_initial_event([=]() {
+        SharedPtr<Reactor> reactor = Reactor::make();
+        reactor->run_with_initial_event([=]() {
             ooni::ip_lookup_impl<http_err>([=](Error err, std::string) {
                 REQUIRE(err == ooni::HttpRequestError());
-                reactor->break_loop();
+                reactor->stop();
             }, {}, reactor, Logger::global());
         });
     }
 
     SECTION("is robust to regex failure error error") {
-        Var<Reactor> reactor = Reactor::make();
-        reactor->loop_with_initial_event([=]() {
+        SharedPtr<Reactor> reactor = Reactor::make();
+        reactor->run_with_initial_event([=]() {
             ooni::ip_lookup_impl<re_fail>([=](Error err, std::string) {
                 REQUIRE(err == ooni::RegexSearchError());
-                reactor->break_loop();
+                reactor->stop();
             }, {}, reactor, Logger::global());
         });
     }
 
     SECTION("is robust to invalid ip addrress in page") {
-        Var<Reactor> reactor = Reactor::make();
-        reactor->loop_with_initial_event([=]() {
+        SharedPtr<Reactor> reactor = Reactor::make();
+        reactor->run_with_initial_event([=]() {
             ooni::ip_lookup_impl<no_ip>([=](Error err, std::string) {
                 REQUIRE(err == ValueError());
-                reactor->break_loop();
+                reactor->stop();
             }, {}, reactor, Logger::global());
         });
     }
 
     SECTION("correctly recognizes ipv4") {
-        Var<Reactor> reactor = Reactor::make();
-        reactor->loop_with_initial_event([=]() {
+        SharedPtr<Reactor> reactor = Reactor::make();
+        reactor->run_with_initial_event([=]() {
             ooni::ip_lookup_impl<is_v4>([=](Error err, std::string s) {
                 REQUIRE(err == NoError());
                 REQUIRE(s == "8.8.8.8");
-                reactor->break_loop();
+                reactor->stop();
             }, {}, reactor, Logger::global());
         });
     }
 
     SECTION("correctly recognizes ipv6") {
-        Var<Reactor> reactor = Reactor::make();
-        reactor->loop_with_initial_event([=]() {
+        SharedPtr<Reactor> reactor = Reactor::make();
+        reactor->run_with_initial_event([=]() {
             ooni::ip_lookup_impl<is_v6>([=](Error err, std::string s) {
                 REQUIRE(err == NoError());
                 REQUIRE(s == "fe80::1");
-                reactor->break_loop();
+                reactor->stop();
             }, {}, reactor, Logger::global());
         });
     }
 
 #ifdef ENABLE_INTEGRATION_TESTS
     SECTION("integration test") {
-        Var<Reactor> reactor = Reactor::make();
-        reactor->loop_with_initial_event([=]() {
+        SharedPtr<Reactor> reactor = Reactor::make();
+        reactor->run_with_initial_event([=]() {
             ooni::ip_lookup([=](Error err, std::string) {
                 REQUIRE(err == NoError());
-                reactor->break_loop();
+                reactor->stop();
             }, {}, reactor, Logger::global());
         });
     }
@@ -149,14 +150,9 @@ TEST_CASE("geoip works") {
             "GeoIP.dat",
             "130.192.16.172"
     );
-    auto city = ooni::GeoipCache::thread_local_instance()->resolve_city_name(
-            "GeoLiteCity.dat",
-            "130.192.16.172"
-    );
     REQUIRE(*asn == std::string{"AS137"});
     REQUIRE(*cc == std::string{"IT"});
     REQUIRE(*cname == std::string{"Italy"});
-    REQUIRE(*city == std::string{"Turin"});
 }
 
 TEST_CASE("geoip memoization works") {
@@ -165,9 +161,8 @@ TEST_CASE("geoip memoization works") {
     // Open more then once. After the first open we should not really open.
     auto gi = ooni::GeoipCache::thread_local_instance()->get(
         "GeoIP.dat");
-    bool first_open;
 
-    first_open = true;
+    bool first_open = true;
     gi = ooni::GeoipCache::thread_local_instance()->get(
         "GeoIP.dat", first_open);
     REQUIRE(first_open == false);
@@ -188,7 +183,7 @@ TEST_CASE("geoip memoization works") {
 
     first_open = false;
     gi = ooni::GeoipCache::thread_local_instance()->get(
-        "GeoLiteCity.dat", first_open);
+        "GeoIPASNum.dat", first_open);
     REQUIRE(first_open == true);
 
     // Make sure that, if we close, then of course we reopen
@@ -197,7 +192,7 @@ TEST_CASE("geoip memoization works") {
 
     first_open = false;
     gi = ooni::GeoipCache::thread_local_instance()->get(
-        "GeoLiteCity.dat", first_open);
+        "GeoIPASNum.dat", first_open);
     REQUIRE(first_open == true);
 
 }
@@ -263,3 +258,22 @@ TEST_CASE("represent_string works") {
                  .dump()));
     }
 }
+
+#ifdef ENABLE_INTEGRATION_TESTS
+TEST_CASE("find_location() works correctly") {
+    ooni::find_location("GeoIP.dat", "GeoIPASNum.dat", {}, Logger::global(),
+            [](Error &&err, std::string &&asn, std::string &&cc) {
+        REQUIRE(!err);
+        REQUIRE(!asn.empty());
+        REQUIRE(!cc.empty());
+    });
+    /*
+     * Wait for the default tasks queue to empty, so we exit from the
+     * process without still running detached threads and we don't leak
+     * memory and, therefore, valgrind memcheck does not fail.
+     *
+     * See also `test/ooni/orchestrate.cpp`.
+     */
+    mk::Worker::default_tasks_queue()->wait_empty_();
+}
+#endif

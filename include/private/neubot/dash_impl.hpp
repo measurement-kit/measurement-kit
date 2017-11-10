@@ -1,6 +1,6 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software. See AUTHORS and LICENSE for more
-// information on the copying conditions.
+// Measurement-kit is free software under the BSD license. See AUTHORS
+// and LICENSE for more information on the copying conditions.
 #ifndef PRIVATE_NEUBOT_DASH_IMPL_HPP
 #define PRIVATE_NEUBOT_DASH_IMPL_HPP
 
@@ -52,9 +52,9 @@
  *    seems anyway to be a reasonable starting point.)
  */
 
-#include "private/common/json.hpp"
 #include "private/common/mock.hpp"
 #include "private/common/utils.hpp"
+#include <measurement_kit/common/json.hpp>
 #include <measurement_kit/ext/sole.hpp>
 #include <measurement_kit/http.hpp>
 #include <measurement_kit/mlabns.hpp>
@@ -74,7 +74,7 @@ const std::vector<int> &dash_rates(); // Implemented in dash.cpp
 static inline size_t select_lower_rate_index(int speed_kbit) {
     size_t rate_index = 0;
     while (dash_rates()[rate_index] < speed_kbit &&
-           rate_index < dash_rates().size()) {
+            rate_index < dash_rates().size()) {
         rate_index++;
     }
     if (rate_index > 0) { // Make sure we don't underflow
@@ -89,19 +89,19 @@ class DashLoopCtx {
     std::string auth_token;
     Callback<Error> cb;
     int speed_kbit = -1; // Means: determine best initial value
-    Var<report::Entry> entry;
+    SharedPtr<report::Entry> entry;
     int iteration = 1;
-    Var<Logger> logger;
-    Var<Reactor> reactor;
+    SharedPtr<Logger> logger;
+    SharedPtr<Reactor> reactor;
     std::string real_address;
     Settings settings;
-    Var<net::Transport> txp;
+    SharedPtr<net::Transport> txp;
     std::string uuid;
 };
 
 template <MK_MOCK_AS(http::request_send, http_request_send),
           MK_MOCK_AS(http::request_recv_response, http_request_recv_response)>
-void run_loop_(Var<DashLoopCtx> ctx) {
+void run_loop_(SharedPtr<DashLoopCtx> ctx) {
     // TODO: We may want to move this parsing of options in the setup
     // phase of the test and store them inside `ctx`.
     ErrorOr<bool> fast_scale_down =
@@ -218,6 +218,7 @@ void run_loop_(Var<DashLoopCtx> ctx) {
     std::string path = "/dash/download/";
     path += std::to_string(count);
     Settings settings = ctx->settings; /* Make a local copy */
+    settings["http/ignore_body"] = true;
     settings["http/path"] = path;
     settings["http/method"] = "GET";
     ctx->logger->debug("dash: requesting '%s'", path.c_str());
@@ -233,30 +234,42 @@ void run_loop_(Var<DashLoopCtx> ctx) {
           ctx->txp, settings,
           {
                 {"Authorization", ctx->auth_token},
+                {"Cache-Control", "no-cache, no-store, must-revalidate"},
           },
-          "", [=](Error error, Var<http::Request> req) {
+          "", ctx->logger, [=](Error error, SharedPtr<http::Request> req) {
               if (error) {
-                  ctx->logger->warn("dash: request failed: %s",
-                                    error.explain().c_str());
+                  ctx->logger->warn("dash: request failed: %s", error.what());
                   ctx->cb(error);
                   return;
               }
               assert(!!req);
               http_request_recv_response(
                     ctx->txp,
-                    [=](Error error, Var<http::Response> res) {
+                    [=](Error error, SharedPtr<http::Response> res) {
                         if (error) {
                             ctx->logger->warn(
                                   "dash: cannot receive response: %s",
-                                  error.explain().c_str());
+                                  error.what());
                             ctx->cb(error);
                             return;
                         }
                         assert(!!res);
                         if (res->status_code != 200) {
                             ctx->logger->warn("dash: invalid response code: %s",
-                                              error.explain().c_str());
+                                              error.what());
                             ctx->cb(http::HttpRequestFailedError());
+                            return;
+                        }
+                        /*
+                         * XXX: This test assumes that HTTP caches are not
+                         * closing the connection after each request. But there
+                         * are networks in which this happens, as documented
+                         * in measurement-kit/measurement-kit#1322. In such case
+                         * what we do is that we abort the test.
+                         */
+                        if (res->headers["connection"] == "close") {
+                            ctx->logger->warn("dash: middlebox detected error");
+                            ctx->cb(MiddleboxDetectedError());
                             return;
                         }
                         res->request = req;
@@ -325,7 +338,7 @@ void run_loop_(Var<DashLoopCtx> ctx) {
                         run_loop_<http_request_send,
                                   http_request_recv_response>(ctx);
                     },
-                    ctx->reactor, ctx->logger);
+                    ctx->settings, ctx->reactor, ctx->logger);
           });
 }
 
@@ -333,9 +346,9 @@ template <MK_MOCK_AS(http::request_connect, http_request_connect),
           MK_MOCK_AS(http::request_send, http_request_send),
           MK_MOCK_AS(http::request_recv_response, http_request_recv_response)>
 void run_impl(std::string url, std::string auth_token, std::string real_address,
-              Var<report::Entry> entry, Settings settings, Var<Reactor> reactor,
-              Var<Logger> logger, Callback<Error> cb) {
-    Var<DashLoopCtx> ctx = Var<DashLoopCtx>::make();
+              SharedPtr<report::Entry> entry, Settings settings, SharedPtr<Reactor> reactor,
+              SharedPtr<Logger> logger, Callback<Error> cb) {
+    SharedPtr<DashLoopCtx> ctx = SharedPtr<DashLoopCtx>::make();
     ctx->auth_token = auth_token;
     ctx->entry = entry;
     ctx->logger = logger;
@@ -358,10 +371,10 @@ void run_impl(std::string url, std::string auth_token, std::string real_address,
     logger->info("Start dash test with: %s", url.c_str());
     http_request_connect(
           settings,
-          [=](Error error, Var<net::Transport> txp) {
+          [=](Error error, SharedPtr<net::Transport> txp) {
               if (error) {
                   logger->warn("dash: cannot connect to server: %s",
-                               error.explain().c_str());
+                               error.what());
                   cb(error);
                   return;
               }
@@ -386,9 +399,9 @@ void run_impl(std::string url, std::string auth_token, std::string real_address,
  * implemented by Neubot (probably using a Continuation).
  */
 template <MK_MOCK_AS(http::request_sendrecv, http_request_sendrecv)>
-void negotiate_loop_(Var<report::Entry> entry, Var<net::Transport> txp,
-                     Settings settings, Var<Reactor> reactor,
-                     Var<Logger> logger,
+void negotiate_loop_(SharedPtr<report::Entry> entry, SharedPtr<net::Transport> txp,
+                     Settings settings, SharedPtr<Reactor> reactor,
+                     SharedPtr<Logger> logger,
                      Callback<Error, std::string, std::string> callback,
                      int iteration = 0, std::string auth_token = "") {
     report::Entry value = {{"dash_rates", dash_rates()}};
@@ -405,12 +418,12 @@ void negotiate_loop_(Var<report::Entry> entry, Var<net::Transport> txp,
           {
                 {"Content-Type", "application/json"},
                 {"Authorization", auth_token},
+                {"Cache-Control", "no-cache, no-store, must-revalidate"},
           },
           body,
-          [=](Error error, Var<http::Response> res) {
+          [=](Error error, SharedPtr<http::Response> res) {
               if (error) {
-                  logger->warn("neubot: negotiate failed: %s",
-                               error.explain().c_str());
+                  logger->warn("neubot: negotiate failed: %s", error.what());
                   callback(error, "", "");
                   return;
               }
@@ -424,8 +437,8 @@ void negotiate_loop_(Var<report::Entry> entry, Var<net::Transport> txp,
               int queue_pos = 0;
               std::string real_address;
               int unchoked = 0;
-              error = json_parse_process_and_filter_errors(
-                    res->body, [&](nlohmann::json &respbody) {
+              error = json_process(
+                    res->body, [&](Json &respbody) {
                         auth = respbody.at("authorization");
                         queue_pos = respbody.at("queue_pos");
                         real_address = respbody.at("real_address");
@@ -433,7 +446,7 @@ void negotiate_loop_(Var<report::Entry> entry, Var<net::Transport> txp,
                     });
               if (error) {
                   logger->warn("neubot: cannot parse negotiate response: %s",
-                               error.as_ooni_error().c_str());
+                               error.what());
                   callback(error, "", "");
                   return;
               }
@@ -450,9 +463,9 @@ void negotiate_loop_(Var<report::Entry> entry, Var<net::Transport> txp,
 }
 
 template <MK_MOCK_AS(http::request_sendrecv, http_request_sendrecv)>
-void collect_(Var<net::Transport> txp, Var<report::Entry> entry,
-              std::string auth, Settings settings, Var<Reactor> reactor,
-              Var<Logger> logger, Callback<Error> cb) {
+void collect_(SharedPtr<net::Transport> txp, SharedPtr<report::Entry> entry,
+              std::string auth, Settings settings, SharedPtr<Reactor> reactor,
+              SharedPtr<Logger> logger, Callback<Error> cb) {
     std::string body = (*entry)["receiver_data"].dump();
     logger->debug("Body sent to server: %s", body.c_str());
     settings["http/method"] = "POST";
@@ -461,12 +474,12 @@ void collect_(Var<net::Transport> txp, Var<report::Entry> entry,
           txp, settings,
           {
                 {"Content-Type", "application/json"}, {"Authorization", auth},
+                {"Cache-Control", "no-cache, no-store, must-revalidate"},
           },
           body,
-          [=](Error error, Var<http::Response> res) {
+          [=](Error error, SharedPtr<http::Response> res) {
               if (error) {
-                  logger->warn("neubot: collect failed: %s",
-                               error.as_ooni_error().c_str());
+                  logger->warn("neubot: collect failed: %s", error.what());
                   cb(error);
                   return;
               }
@@ -477,8 +490,8 @@ void collect_(Var<net::Transport> txp, Var<report::Entry> entry,
               }
               logger->debug("Response received from server: %s",
                             res->body.c_str());
-              error = json_parse_process_and_filter_errors(
-                    res->body, [&](nlohmann::json &json) {
+              error = json_process(
+                    res->body, [&](Json &json) {
                         (*entry)["sender_data"] = json;
                     });
               cb(error);
@@ -489,9 +502,9 @@ void collect_(Var<net::Transport> txp, Var<report::Entry> entry,
 template <MK_MOCK_AS(http::request_connect, http_request_connect),
           MK_MOCK_AS(http::request_sendrecv, http_request_sendrecv_negotiate),
           MK_MOCK_AS(http::request_sendrecv, http_request_sendrecv_collect)>
-void negotiate_with_(std::string hostname, Var<report::Entry> entry,
-                     Settings settings, Var<Reactor> reactor,
-                     Var<Logger> logger, Callback<Error> cb) {
+void negotiate_with_(std::string hostname, SharedPtr<report::Entry> entry,
+                     Settings settings, SharedPtr<Reactor> reactor,
+                     SharedPtr<Logger> logger, Callback<Error> cb) {
     logger->info("Negotiating with: %s", hostname.c_str());
     std::stringstream ss;
     ss << "http://" << hostname << "/";
@@ -499,12 +512,12 @@ void negotiate_with_(std::string hostname, Var<report::Entry> entry,
     settings["http/url"] = url;
     http_request_connect(
           settings,
-          [=](Error error, Var<net::Transport> txp) {
+          [=](Error error, SharedPtr<net::Transport> txp) {
               if (error) {
                   // Note: in this case we don't need to close the transport
                   // because we get passed a dumb transport on error
                   logger->warn("neubot: cannot connect to negotiate server: %s",
-                               error.explain().c_str());
+                               error.what());
                   cb(error);
                   return;
               }
@@ -516,7 +529,7 @@ void negotiate_with_(std::string hostname, Var<report::Entry> entry,
                         std::string real_address) {
                         if (error) {
                             logger->warn("neubot: negotiate failed: %s",
-                                         error.explain().c_str());
+                                         error.what());
                             txp->close([=]() { cb(error); });
                             return;
                         }
@@ -525,7 +538,7 @@ void negotiate_with_(std::string hostname, Var<report::Entry> entry,
                                  reactor, logger, [=](Error error) {
                                      if (error) {
                                          logger->warn("neubot: test failed: %s",
-                                                      error.explain().c_str());
+                                                      error.what());
                                          /* FALLTHROUGH */
                                      }
                                      logger->info("Collecting results");
@@ -542,8 +555,8 @@ void negotiate_with_(std::string hostname, Var<report::Entry> entry,
 }
 
 template <MK_MOCK_AS(mlabns::query, mlabns_query)>
-void negotiate_impl(Var<report::Entry> entry, Settings settings,
-                    Var<Reactor> reactor, Var<Logger> logger,
+void negotiate_impl(SharedPtr<report::Entry> entry, Settings settings,
+                    SharedPtr<Reactor> reactor, SharedPtr<Logger> logger,
                     Callback<Error> cb) {
     if (settings.find("hostname") != settings.end()) {
         negotiate_with_(settings["hostname"], entry, settings,
@@ -555,7 +568,7 @@ void negotiate_impl(Var<report::Entry> entry, Settings settings,
                  [=](Error error, mlabns::Reply reply) {
                      if (error) {
                          logger->warn("neubot: mlabns error: %s",
-                                      error.explain().c_str());
+                                      error.what());
                          cb(error);
                          return;
                      }

@@ -1,6 +1,6 @@
 // Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software. See AUTHORS and LICENSE for more
-// information on the copying conditions.
+// Measurement-kit is free software under the BSD license. See AUTHORS
+// and LICENSE for more information on the copying conditions.
 
 #include <measurement_kit/report.hpp>
 
@@ -20,8 +20,8 @@ static Error map_error(std::ostream &file) {
     return GenericError();
 }
 
-/* static */ Var<BaseReporter> FileReporter::make(std::string s) {
-    Var<FileReporter> reporter(new FileReporter);
+/* static */ SharedPtr<BaseReporter> FileReporter::make(std::string s) {
+    SharedPtr<FileReporter> reporter(new FileReporter);
     reporter->filename = s;
     return reporter.as<BaseReporter>();
 }
