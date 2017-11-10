@@ -75,9 +75,9 @@
 /test/common/maybe
 /test/common/parallel
 /test/common/range
-/test/common/raw_ptr
 /test/common/settings
 /test/common/shared_ptr
+/test/common/unique_ptr
 /test/common/utils
 /test/common/version
 /test/common/worker
