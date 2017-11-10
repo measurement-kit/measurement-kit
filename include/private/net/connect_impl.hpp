@@ -35,16 +35,14 @@ static Error make_sockaddr_proxy(std::string s, std::string p,
 template <MK_MOCK(make_sockaddr_proxy), MK_MOCK(bufferevent_socket_new),
           MK_MOCK(bufferevent_set_timeouts),
           MK_MOCK(bufferevent_socket_connect)>
-void connect_base(std::string address, int port,
-                  Callback<Error, bufferevent *, double> cb,
-                  double timeout = 10.0,
-                  SharedPtr<Reactor> reactor = Reactor::global(),
-                  SharedPtr<Logger> logger = Logger::global()) {
+void connect_base(std::string address, uint16_t port, double timeout,
+                  SharedPtr<Reactor> reactor, SharedPtr<Logger> logger,
+                  Callback<Error, bufferevent *, double> &&cb) {
 
-    std::string endpoint = [&]() {
+    std::string endpoint = [&address, &port]() {
         Endpoint endpoint;
         endpoint.hostname = address;
-        endpoint.port = (uint16_t)port; /* XXX We should change the prototype */
+        endpoint.port = port;
         return serialize_endpoint(endpoint);
     }();
     logger->debug("connect_base %s", endpoint.c_str());

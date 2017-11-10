@@ -75,6 +75,7 @@
 /test/common/maybe
 /test/common/parallel
 /test/common/range
+/test/common/raw_ptr
 /test/common/settings
 /test/common/shared_ptr
 /test/common/utils
@@ -122,6 +123,7 @@
 /test/nettests/telegram
 /test/nettests/utils
 /test/nettests/web_connectivity
+/test/nettests/whatsapp
 /test/ooni/bouncer
 /test/ooni/collector_client
 /test/ooni/orchestrate

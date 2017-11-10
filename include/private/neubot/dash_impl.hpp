@@ -52,9 +52,9 @@
  *    seems anyway to be a reasonable starting point.)
  */
 
-#include <measurement_kit/common/json.hpp>
 #include "private/common/mock.hpp"
 #include "private/common/utils.hpp"
+#include <measurement_kit/common/json.hpp>
 #include <measurement_kit/ext/sole.hpp>
 #include <measurement_kit/http.hpp>
 #include <measurement_kit/mlabns.hpp>
@@ -74,7 +74,7 @@ const std::vector<int> &dash_rates(); // Implemented in dash.cpp
 static inline size_t select_lower_rate_index(int speed_kbit) {
     size_t rate_index = 0;
     while (dash_rates()[rate_index] < speed_kbit &&
-           rate_index < dash_rates().size()) {
+            rate_index < dash_rates().size()) {
         rate_index++;
     }
     if (rate_index > 0) { // Make sure we don't underflow
@@ -234,6 +234,7 @@ void run_loop_(SharedPtr<DashLoopCtx> ctx) {
           ctx->txp, settings,
           {
                 {"Authorization", ctx->auth_token},
+                {"Cache-Control", "no-cache, no-store, must-revalidate"},
           },
           "", ctx->logger, [=](Error error, SharedPtr<http::Request> req) {
               if (error) {
@@ -257,6 +258,18 @@ void run_loop_(SharedPtr<DashLoopCtx> ctx) {
                             ctx->logger->warn("dash: invalid response code: %s",
                                               error.what());
                             ctx->cb(http::HttpRequestFailedError());
+                            return;
+                        }
+                        /*
+                         * XXX: This test assumes that HTTP caches are not
+                         * closing the connection after each request. But there
+                         * are networks in which this happens, as documented
+                         * in measurement-kit/measurement-kit#1322. In such case
+                         * what we do is that we abort the test.
+                         */
+                        if (res->headers["connection"] == "close") {
+                            ctx->logger->warn("dash: middlebox detected error");
+                            ctx->cb(MiddleboxDetectedError());
                             return;
                         }
                         res->request = req;
@@ -405,6 +418,7 @@ void negotiate_loop_(SharedPtr<report::Entry> entry, SharedPtr<net::Transport> t
           {
                 {"Content-Type", "application/json"},
                 {"Authorization", auth_token},
+                {"Cache-Control", "no-cache, no-store, must-revalidate"},
           },
           body,
           [=](Error error, SharedPtr<http::Response> res) {
@@ -460,6 +474,7 @@ void collect_(SharedPtr<net::Transport> txp, SharedPtr<report::Entry> entry,
           txp, settings,
           {
                 {"Content-Type", "application/json"}, {"Authorization", auth},
+                {"Cache-Control", "no-cache, no-store, must-revalidate"},
           },
           body,
           [=](Error error, SharedPtr<http::Response> res) {

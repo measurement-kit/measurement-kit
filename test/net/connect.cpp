@@ -33,13 +33,12 @@ static Error fail(std::string, std::string, sockaddr_storage *, socklen_t *) {
 TEST_CASE("connect_base deals with evutil_parse_sockaddr_port error") {
     SharedPtr<Reactor> reactor = Reactor::make();
     reactor->run_with_initial_event([=]() {
-        connect_base<fail>("130.192.16.172", 80,
+        connect_base<fail>("130.192.16.172", 80, 3.14, reactor, Logger::global(),
                            [=](Error e, bufferevent *b, double) {
                                REQUIRE(e);
                                REQUIRE(b == nullptr);
                                reactor->stop();
-                           },
-                           3.14, reactor);
+                           });
     });
 }
 
@@ -48,8 +47,8 @@ static bufferevent *fail(event_base *, evutil_socket_t, int) { return nullptr; }
 TEST_CASE("connect_base deals with bufferevent_socket_new error") {
     bool ok = false;
     try {
-        connect_base<make_sockaddr_proxy, fail>("130.192.16.172", 80,
-                                                nullptr, 3.14);
+        connect_base<make_sockaddr_proxy, fail>("130.192.16.172", 80, 3.14,
+                Reactor::global(), Logger::global(), nullptr);
     } catch (GenericError &) {
         ok = true;
     }
@@ -62,7 +61,8 @@ TEST_CASE("connect_base deals with bufferevent_set_timeouts error") {
     bool ok = false;
     try {
         connect_base<make_sockaddr_proxy, ::bufferevent_socket_new,
-                     fail>("130.192.16.172", 80, nullptr, 3.14);
+                     fail>("130.192.16.172", 80, 3.14, Reactor::global(),
+                           Logger::global(), nullptr);
     } catch (GenericError &) {
         ok = true;
     }
@@ -86,13 +86,12 @@ TEST_CASE("connect_base deals with bufferevent_socket_connect error") {
     reactor->run_with_initial_event([=]() {
         connect_base<make_sockaddr_proxy, ::bufferevent_socket_new,
                      bufferevent_set_timeouts, Fail::fail>(
-            "130.192.16.172", 80,
+            "130.192.16.172", 80, 3.14, reactor, Logger::global(),
             [=](Error e, bufferevent *b, double) {
                 REQUIRE(e);
                 REQUIRE(b == nullptr);
                 reactor->stop();
-            },
-            3.14, reactor);
+            });
     });
 }
 
@@ -144,14 +143,13 @@ TEST_CASE("net::connect_many() correctly handles net::connect() failure") {
 TEST_CASE("connect_base works with ipv4") {
     SharedPtr<Reactor> reactor = Reactor::make();
     reactor->run_with_initial_event([=]() {
-        connect_base("130.192.16.172", 80,
+        connect_base("130.192.16.172", 80, 3.14, reactor, Logger::global(),
                      [=](Error err, bufferevent *bev, double) {
                          REQUIRE(!err);
                          REQUIRE(bev);
                          ::bufferevent_free(bev);
                          reactor->stop();
-                     },
-                     3.14, reactor);
+                     });
     });
 }
 
@@ -162,33 +160,31 @@ static bool check_error(Error err) {
 TEST_CASE("connect_base works with ipv4 and closed port") {
     SharedPtr<Reactor> reactor = Reactor::make();
     reactor->run_with_initial_event([=]() {
-        connect_base("130.192.16.172", 81,
+        connect_base("130.192.16.172", 81, 3.14, reactor, Logger::global(),
                      [=](Error err, bufferevent *bev, double) {
                          REQUIRE(check_error(err));
                          REQUIRE(bev == nullptr);
                          reactor->stop();
-                     },
-                     3.14, reactor);
+                     });
     });
 }
 
 TEST_CASE("connect_base works with ipv4 and timeout") {
     SharedPtr<Reactor> reactor = Reactor::make();
     reactor->run_with_initial_event([=]() {
-        connect_base("130.192.16.172", 80,
+        connect_base("130.192.16.172", 80, 0.00001, reactor, Logger::global(),
                      [=](Error err, bufferevent *bev, double) {
                          REQUIRE(err == TimeoutError());
                          REQUIRE(bev == nullptr);
                          reactor->stop();
-                     },
-                     0.00001, reactor);
+                     });
     });
 }
 
 TEST_CASE("connect_base works with ipv6") {
     SharedPtr<Reactor> reactor = Reactor::make();
     reactor->run_with_initial_event([=]() {
-        connect_base("2a00:1450:4001:801::1004", 80,
+        connect_base("2a00:1450:4001:801::1004", 80, 3.14, reactor, Logger::global(),
                      [=](Error err, bufferevent *bev, double) {
                          /* Coverage note: depending on whether IPv6
                             works or not here we're going to see either
@@ -202,8 +198,7 @@ TEST_CASE("connect_base works with ipv6") {
                              ::bufferevent_free(bev);
                          }
                          reactor->stop();
-                     },
-                     3.14, reactor);
+                     });
     });
 }
 

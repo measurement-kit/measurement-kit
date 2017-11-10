@@ -4,6 +4,7 @@
 #ifndef PRIVATE_DNS_GETADDRINFO_ASYNC_HPP
 #define PRIVATE_DNS_GETADDRINFO_ASYNC_HPP
 
+#include "private/dns/utils.hpp"
 #include <measurement_kit/dns.hpp>
 
 namespace mk {
@@ -91,10 +92,9 @@ void getaddrinfo_async(std::string name, addrinfo hints, SharedPtr<Reactor> reac
      * Move everything down such that there is always just one function in
      * one specific thread having ownership of the state
      */
-    reactor->call_in_thread([
+    reactor->call_in_thread(logger, [
         name = std::move(name), hints = std::move(hints),
-        reactor = std::move(reactor), logger = std::move(logger),
-        cb = std::move(cb)
+        reactor, logger, cb = std::move(cb)
     ]() {
         addrinfo *rp = nullptr;
         Error error = getaddrinfo_async_map_error(
@@ -112,6 +112,10 @@ void getaddrinfo_async(std::string name, addrinfo hints, SharedPtr<Reactor> reac
         if (rp != nullptr) {
             freeaddrinfo(rp);
         }
+        reactor->with_current_data_usage([&name, &answers, &hints, &logger](
+                DataUsage &du) {
+            dns::estimate_data_usage(du, name, answers, logger);
+        });
         /*
          * Pass through call soon such that the callback executes in the
          * thread in which we're running our async I/O loop.

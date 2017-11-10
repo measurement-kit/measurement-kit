@@ -117,11 +117,14 @@ void Runnable::run_next_measurement(size_t thread_id, Callback<Error> cb,
         logger->debug("net_test: tearing down");
         teardown(next_input);
 
+        // Note: annotations must be added before fill_entry because in the
+        // latter we will add additional annotations.
+        entry["annotations"] = annotations;
         report.fill_entry(entry);
         fixup_entry(entry); // Let drivers possibly fix-up the entry
         if (entry_cb) {
             try {
-                entry_cb(entry.dump(4));
+                entry_cb(entry.dump());
             } catch (const std::exception &exc) {
                 logger->warn("Unhandled exception in entry_cb(): %s",
                              exc.what());
@@ -419,6 +422,15 @@ void Runnable::end(Callback<Error> cb) {
     logger->set_progress_scale(1.0);
     logger->progress(0.95, "ending the test");
     report.close([=](Error err) {
+        reactor->with_current_data_usage([=](DataUsage &du) {
+            if (!!data_usage_cb) {
+                try {
+                    data_usage_cb(du);
+                } catch (const std::exception &) {
+                    /* Suppress */ ;
+                }
+            }
+        });
         logger->progress(1.00, "test complete");
         cb(err);
     });

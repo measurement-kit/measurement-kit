@@ -5,7 +5,9 @@
 #define MEASUREMENT_KIT_COMMON_REACTOR_HPP
 
 #include <measurement_kit/common/callback.hpp>
+#include <measurement_kit/common/data_usage.hpp>
 #include <measurement_kit/common/error.hpp>
+#include <measurement_kit/common/logger.hpp>
 #include <measurement_kit/common/shared_ptr.hpp>
 #include <measurement_kit/common/socket.hpp>
 
@@ -54,12 +56,13 @@ class Reactor {
     /// serve them. When there are no further callbacks to execute,
     /// background threads will exit, to save resources.
     ///
+    /// The \p logger parameter is the logger to be used.
+    ///
     /// \throw std::exception (or a derived class) if it is not
     /// possible to create a background thread or schedule the callback.
     ///
-    /// If \p cb throws an exception of type std::exception (or
-    /// derived from it), such exception is swallowed.
-    virtual void call_in_thread(Callback<> &&cb) = 0;
+    /// If \p cb throws an exception, this exception propagates.
+    virtual void call_in_thread(SharedPtr<Logger> logger, Callback<> &&cb) = 0;
 
     /// \brief `call_soon() schedules the execution of \p cb in the
     /// I/O thread as soon as possible.
@@ -134,6 +137,14 @@ class Reactor {
     /// \throw std::exception (or a derived class) if it is not possible
     /// to stop the reactor.
     virtual void stop() = 0;
+
+    // `with_current_data_usage` invokes the specified callback immediately in
+    // a context in which it is safe to read/write the current data usage as
+    // seen by this reactor so far. Data usage is reported by networking level
+    // code and may not be 100% accurate. This is because, e.g., we cannot
+    // see the real content of DNS queries, we cannot see retransmissions as
+    // we're not the kernel, etc.
+    virtual void with_current_data_usage(Callback<DataUsage &> &&cb) = 0;
 };
 
 } // namespace mk

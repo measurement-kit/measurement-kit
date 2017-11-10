@@ -10,6 +10,9 @@ namespace mk {
 namespace neubot {
 namespace dash {
 
+MK_DEFINE_ERR(
+        MK_ERR_NEUBOT(0), MiddleboxDetectedError, "middlebox_detected_error")
+
 void run(
         std::string measurement_server_hostname,
         std::string auth_token,

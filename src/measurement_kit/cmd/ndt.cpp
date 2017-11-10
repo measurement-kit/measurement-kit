@@ -24,14 +24,14 @@ int main(std::list<Callback<BaseTest &>> &initializers, int argc, char **argv) {
     for (int ch; (ch = getopt(argc, argv, "m:N:p:T:")) != -1;) {
         switch (ch) {
         case 'm':
-            test.set_options("mlabns/policy", "metro");
-            test.set_options("mlabns/metro", optarg);
+            test.set_option("mlabns/policy", "metro");
+            test.set_option("mlabns/metro", optarg);
             break;
         case 'N':
-            test.set_options("mlabns_tool_name", optarg);
+            test.set_option("mlabns_tool_name", optarg);
             break;
         case 'p':
-            test.set_options("port", optarg);
+            test.set_option("port", optarg);
             break;
         case 'T':
             use_default_test_suite = false;
@@ -64,11 +64,11 @@ int main(std::list<Callback<BaseTest &>> &initializers, int argc, char **argv) {
     // If the user expressed preference force test suite, otherwise the
     // code would use the default test suite (download|upload).
     if (!use_default_test_suite) {
-        test.set_options("test_suite", test_suite);
+        test.set_option("test_suite", test_suite);
     }
 
     if (argc == 1) {
-        test.set_options("address", argv[0]);
+        test.set_option("address", argv[0]);
     }
 
     ndt_init(initializers, test)
