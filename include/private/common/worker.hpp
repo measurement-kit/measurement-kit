@@ -31,6 +31,10 @@ class Worker {
         std::list<Callback<>> queue;
     };
 
+    Worker();
+
+    Worker(size_t parallelism);
+
     void call_in_thread(SharedPtr<Logger> logger, Callback<> &&func);
 
     unsigned short parallelism() const;

@@ -1,3 +1,8 @@
+# MeasurementKit 0.8.0-beta.1 [2017-11-10]
+
+- small fixes spotted during #1370 (#1477)
+- worker: use parallelism 1 in default queue (#1475)
+
 # MeasurementKit 0.8.0-beta [2017-11-10]
 
 - fix(`tcp_connect` template): never pass null transport to callback (#1372)

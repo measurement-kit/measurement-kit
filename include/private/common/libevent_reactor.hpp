@@ -113,7 +113,6 @@ class LibeventReactor : public Reactor, public NonCopyable, public NonMovable {
                 I have coded more broad checks for robustness.
             */
             if (ev_status > 0 && worker.concurrency() <= 0) {
-                mk::warn("reactor: no pending and/or active events");
                 break;
             }
             call_later(0.250, []() {});
