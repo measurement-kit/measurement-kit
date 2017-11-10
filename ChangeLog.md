@@ -1,3 +1,36 @@
+# MeasurementKit 0.8.0-beta [2017-11-10]
+
+- fix(`tcp_connect` template): never pass null transport to callback (#1372)
+- Repair failing regress tests (#1382)
+- fix(cmake): define project name (#1383)
+- refactor(master): partly revert moving headers around (#1380)
+- refactor(common): clarify: poll{in,out} _once_ (#1381)
+- fix(`collector_client`): recognize build number (#1388)
+- fix(logger): force ofile flush for each entry (#1394)
+- fix(README.md): mention make install and ldconfig (#1403)
+- Fix for systems that don't support `thread_local` (#1404)
+- Update dependencies for v0.8.0 (#1408)
+- travis: improve build flags (#1409)
+- fix(cli): flush stdout more consistently (#1438)
+- version: expose version numbers (#1443)
+- Add `test_squid_cache_manager` test to http invalid request line probes (#1433)
+- Modularise cmake (#1386)
+- Refactor libevent reactor (1/2) (#1446)
+- OONI whatsapp tests plus @bassosimone changes (#1375)
+- reactor: correctly deal with exception in child thread (#1445)
+- nettests: prepare for API v1.0.0 (#1450)
+- nettests: start deprecating some APIs  (#1451)
+- fix(dash): work correctly with HTTP middleboxes (#1322)
+- fix(cmd/whatsapp.cpp) compiler warning (#1455)
+- feature(`raw_ptr`): smart pointer for raw C pointers (#1456)
+- fix(runnable): don't pretty print entry (#1457)
+- net: allow to override transport's bufferevent (#1458)
+- refactor(`connect_base`): change arguments order
+- feature(nettests): allow arbitrary annotations (#1459)
+- feature: implement `find_location` as a free function (#1460)
+- Measure data usage (#1463)
+- Rename `raw_ptr` as `unique_ptr` (#1471)
+
 # MeasurementKit 0.7.11 [2017-10-31]
 
 - fix(`nettests/base_test.cpp`): unbreak nodejs bindings
