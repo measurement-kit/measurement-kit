@@ -144,6 +144,10 @@ void readn(SharedPtr<Transport> txp, SharedPtr<Buffer> buff, size_t n, Callback<
 void read(SharedPtr<Transport> t, SharedPtr<Buffer> buff, Callback<Error> callback,
           SharedPtr<Reactor> reactor = Reactor::global());
 
+void continue_reading(
+      SharedPtr<Transport> txp,
+      Callback<Error, Buffer, std::function<void()> &> callback);
+
 } // namespace net
 } // namespace mk
 #endif

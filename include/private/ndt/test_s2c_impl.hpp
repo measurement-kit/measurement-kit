@@ -5,7 +5,6 @@
 #define PRIVATE_NDT_TEST_S2C_IMPL_HPP
 
 #include "private/common/mock.hpp"
-
 #include "../ndt/internal.hpp"
 
 namespace mk {
@@ -56,48 +55,54 @@ void coroutine_impl(SharedPtr<Entry> report_entry, std::string address, Params p
                 for (auto txp : txp_list) {
                     txp->set_timeout(timeout);
 
-                    txp->on_data([=](Buffer data) {
-                        average->total += data.length();
-                        snaps->total += data.length();
-                        double ct = time_now();
-                        // Note: we stop printing the speed when at least
-                        // one connection has terminated the test
-                        if (*num_completed == 0) {
-                            snaps->maybe_speed(ct, [&](double el, double x) {
-                                log_speed(logger, "download-speed",
-                                          params.num_streams, el, x);
-                                (*report_entry)["receiver_data"].push_back({el, x});
-                            });
-                        }
-                        // TODO: force close the connection after a given
-                        // large amount of time has passed
-                    });
-
-                    txp->on_error([=](Error err) {
-                        if (err == EofError()) {
-                            err = NoError();
-                        }
-                        if (err) {
-                            logger->info("Ending download (%d)", err.code);
-                        }
-                        txp->close([=]() {
-                            ++(*num_completed);
-                            // Note: in this callback we cannot reference
-                            // txp_list or txp because that would keep
-                            // alive txp indefinitely, so we use the num_flows
-                            // variable instead (note that this means that
-                            // the `=` only copies what you use, a thing that
-                            // I was totally unaware of!)
-                            if (*num_completed < num_flows) {
+                    net::continue_reading(
+                        txp, [=](Error err, Buffer data,
+                                 std::function<void()> & /*canceller*/) {
+                            if (err == NoError()) {
+                                average->total += data.length();
+                                snaps->total += data.length();
+                                double ct = time_now();
+                                // Note: we stop printing the speed when at
+                                // least one connection has terminated the test
+                                if (*num_completed == 0) {
+                                    snaps->maybe_speed(ct, [&](double el,
+                                                               double x) {
+                                        log_speed(logger, "download-speed",
+                                                  params.num_streams, el, x);
+                                        (*report_entry)["receiver_data"]
+                                            .push_back({el, x});
+                                    });
+                                }
+                                // TODO: force close the connection after a
+                                // given large amount of time has passed.
+                                // When we do that we can use the `canceller`
+                                // variable ^-).
                                 return;
                             }
-                            double speed = average->speed();
-                            logger->debug("S2C speed %lf kbit/s", speed);
-                            // XXX We need to define what we consider
-                            // error when we have parallel flows
-                            cb((num_flows == 1) ? err : NoError(), speed);
+                            if (err == EofError()) {
+                                err = NoError();
+                            }
+                            if (err) {
+                                logger->info("Ending download (%d)", err.code);
+                            }
+                            txp->close([=]() {
+                                ++(*num_completed);
+                                // Note: in this callback we cannot reference
+                                // txp_list or txp because that would keep
+                                // alive txp indefinitely, so we use the
+                                // num_flows variable instead (note that this
+                                // means that the `=` only copies what you use,
+                                // a thing that I was totally unaware of!)
+                                if (*num_completed < num_flows) {
+                                    return;
+                                }
+                                double speed = average->speed();
+                                logger->debug("S2C speed %lf kbit/s", speed);
+                                // XXX We need to define what we consider
+                                // error when we have parallel flows
+                                cb((num_flows == 1) ? err : NoError(), speed);
+                            });
                         });
-                    });
                 }
             });
         },
