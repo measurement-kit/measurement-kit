@@ -112,7 +112,7 @@ void getaddrinfo_async(std::string name, addrinfo hints, SharedPtr<Reactor> reac
         if (rp != nullptr) {
             freeaddrinfo(rp);
         }
-        reactor->with_current_data_usage([&name, &answers, &hints, &logger](
+        reactor->with_current_data_usage([&name, &answers, &logger](
                 DataUsage &du) {
             dns::estimate_data_usage(du, name, answers, logger);
         });
