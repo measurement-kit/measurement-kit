@@ -1,3 +1,7 @@
+# MeasurementKit 0.7.11 [2017-10-31]
+
+- fix(`nettests/base_test.cpp`): unbreak nodejs bindings
+
 # MeasurementKit 0.7.10 [2017-10-25]
 
 - Exclude version.h.in from common.hpp includes
