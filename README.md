@@ -41,6 +41,8 @@ Currently it implements the following high-level tests:
 
 - [OONI](https://ooni.torproject.org/)'s [Captiveportal](https://github.com/TheTorProject/ooni-spec/blob/master/test-specs/ts-010-captive-portal.md) test
 
+- [OONI](https://ooni.torproject.org/)'s [Whatsapp](https://github.com/TheTorProject/ooni-spec/blob/master/test-specs/ts-018-whatsapp.md) test
+
 It contains building-block functionalities useful to implement your own
 tests. More in detail it currently implements:
 
