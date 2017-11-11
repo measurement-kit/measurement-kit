@@ -136,9 +136,9 @@ static void start_internal_(SharedPtr<Runnable> &&r, std::promise<void> *promise
     assert(!r->reactor);
     // Note: making a copy of the logger and moving `r` inside the closure
     // to avoid creating a reference loop. I like to think at references as
-    // ropes and as reference loops as yards of rope around my head. This
+    // ropes and as reference loops as yards of rope around my neck. This
     // is to say, dammit!, I/we should make sure we have more unique owner-
-    // ship in measurement-kit, to reduce cases where these things happen.
+    // ship in measurement-kit, to reduce cases like this one.
     auto logger = r->logger;
     Worker::default_tasks_queue()->call_in_thread(logger,
           [ r = std::move(r), promise, callback = std::move(callback) ] {
@@ -146,13 +146,13 @@ static void start_internal_(SharedPtr<Runnable> &&r, std::promise<void> *promise
               r->reactor->run_with_initial_event([&]() {
                   r->begin([&](Error) {
                       r->end([&](Error) {
-                          /* NOTHING */
+                          r->reactor->stop();
+                          if (callback) {
+                              callback();
+                          }
                       });
                   });
               });
-              if (callback) {
-                  callback();
-              }
               if (promise != nullptr) {
                   promise->set_value();
               }
