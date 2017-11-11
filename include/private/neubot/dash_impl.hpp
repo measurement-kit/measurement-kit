@@ -492,7 +492,18 @@ void collect_(SharedPtr<net::Transport> txp, SharedPtr<report::Entry> entry,
                             res->body.c_str());
               error = json_process(
                     res->body, [&](Json &json) {
+                        // Store the Web100/tcp_info data from the sender.
                         (*entry)["sender_data"] = json;
+                        // Put the number of congestion signals seen into the
+                        // simple key. This metric is useful when running with
+                        // CBR, to assess whether there was congestion.
+                        (*entry)["simple"]["congestion_signals"] = nullptr;
+                        auto sds = (*entry)["sender_data"].size();
+                        if (sds >= 1) {
+                            (*entry)["simple"]["congestion_signals"] =
+                                    (*entry)["sender_data"][sds - 1][
+                                            "web100_snap"]["CongestionSignals"];
+                        }
                     });
               cb(error);
           },

@@ -46,9 +46,11 @@ int main(std::list<Callback<BaseTest &>> &initializers, int argc, char **argv) {
               double median_bitrate = simple["median_bitrate"];
               double min_playout_delay = simple["min_playout_delay"];
               double connect_latency = simple["connect_latency"];
+              unsigned long congestion_signals = simple["congestion_signals"];
               printf("Connect latency: %.2f ms\n", 1000.0 * connect_latency);
               printf("Median bitrate: %.2f kbit/s\n", median_bitrate);
-              printf("Min. playout delay: %.3f s\n", min_playout_delay);
+              printf("Minimum playout delay: %.3f s\n", min_playout_delay);
+              printf("Congestion signals: %ld\n", congestion_signals);
               printf("\n");
               fflush(stdout);
           })
