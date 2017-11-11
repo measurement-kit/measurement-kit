@@ -134,19 +134,25 @@ static void start_internal_(SharedPtr<Runnable> &&r, std::promise<void> *promise
     // 5. the `promise`, if present, allows to make the test synchronous,
     //    while the callback allows to make it asynchronous.
     assert(!r->reactor);
-    Worker::default_tasks_queue()->call_in_thread(r->logger,
-          [ r, promise, callback = std::move(callback) ] {
+    // Note: making a copy of the logger and moving `r` inside the closure
+    // to avoid creating a reference loop. I like to think at references as
+    // ropes and as reference loops as yards of rope around my head. This
+    // is to say, dammit!, I/we should make sure we have more unique owner-
+    // ship in measurement-kit, to reduce cases where these things happen.
+    auto logger = r->logger;
+    Worker::default_tasks_queue()->call_in_thread(logger,
+          [ r = std::move(r), promise, callback = std::move(callback) ] {
               r->reactor = Reactor::make();
               r->reactor->run_with_initial_event([&]() {
                   r->begin([&](Error) {
                       r->end([&](Error) {
-                          r->reactor->stop();
-                          if (callback) {
-                              callback();
-                          }
+                          /* NOTHING */
                       });
                   });
               });
+              if (callback) {
+                  callback();
+              }
               if (promise != nullptr) {
                   promise->set_value();
               }
