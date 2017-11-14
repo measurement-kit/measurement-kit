@@ -355,17 +355,15 @@ void run_impl(std::string url, std::string auth_token, std::string real_address,
     ctx->reactor = reactor;
     ctx->real_address = real_address;
     ctx->settings = settings;
-    /*
-     * From the Neubot point of view, it is for sure very very useful to save
-     * and reuse the same UUID4. We can attempt to do that by asking the caller
-     * to pass us the unique identifier to be used for this client.
-     */
-    if (ctx->settings.find("uuid") == ctx->settings.end()) {
-        ctx->logger->warn("You passed me no UUID, generating a random one");
-        ctx->uuid = mk::sole::uuid4().str();
-    } else {
-        ctx->uuid = ctx->settings.at("uuid");
-    }
+    //
+    // Neubot used to generate a random UUID for the probe and to keep it
+    // consistent over time to enable time series analyses. The problem of
+    // doing that on mobile is that it will most likely allow to identify
+    // and/or track people. For this reason, the code for allowing setting
+    // a specific UUID has been removed and we generate a random new UUID
+    // each time we run a new DASH test.
+    //
+    ctx->uuid = mk::sole::uuid4().str();
     settings["http/url"] = url;
     settings["http/method"] = "GET";
     logger->info("Start dash test with: %s", url.c_str());
