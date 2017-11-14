@@ -1,3 +1,8 @@
+# MeasurementKit 0.8.0 [2017-11-14]
+
+- fix(dash): enforce random UUID (#1487)
+- `base_test`: break circular ref, fix node bindings (#1484)
+
 # MeasurementKit 0.8.0-beta.1 [2017-11-10]
 
 - small fixes spotted during #1370 (#1477)
