@@ -34,7 +34,7 @@ static void tcp_many(const std::vector<std::string> ip_ports, SharedPtr<Entry> e
                 logger->info("telegram: success TCP connecting to %s:%d",
                     ip.c_str(), port);
                 result["status"]["success"] = true;
-                (*entry)["telegram_tcp_blocking"] = true;
+                (*entry)["telegram_tcp_blocking"] = false;
             }
             (*entry)["tcp_connect"].push_back(result);
             txp->close(nullptr);
