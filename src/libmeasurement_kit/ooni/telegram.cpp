@@ -17,8 +17,6 @@ using namespace mk::report;
 static void tcp_many(const std::vector<std::string> ip_ports, SharedPtr<Entry> entry,
         Settings options, SharedPtr<Reactor> reactor, SharedPtr<Logger> logger,
         Callback<Error> all_done_cb) {
-    // if any endpoints are unblocked, switch this to false
-    (*entry)["telegram_tcp_blocking"] = true;
     auto connected_cb = [=](std::string ip, int port, Callback<Error> done_cb) {
         return [=](Error connect_error, SharedPtr<net::Transport> txp) {
             Entry result = {
@@ -67,10 +65,7 @@ static void tcp_many(const std::vector<std::string> ip_ports, SharedPtr<Entry> e
 static void http_many(const std::vector<std::string> urls, std::string type,
     SharedPtr<Entry> entry, Settings options, SharedPtr<Reactor> reactor,
     SharedPtr<Logger> logger, Callback<Error> all_done_cb) {
-    if (type == "endpoints") {
-        // if any endpoints are unblocked, switch this to false
-        (*entry)["telegram_tcp_blocking"] = true;
-    } else if (type == "web") {
+    if (type == "web") {
         // if any titles are not "Telegram Web", switch this to blocked
         (*entry)["telegram_web_status"] = "ok";
         (*entry)["telegram_web_failure"] = nullptr;
@@ -134,6 +129,9 @@ void telegram(Settings options, Callback<SharedPtr<report::Entry>> callback,
 
     logger->info("starting telegram test");
     SharedPtr<Entry> entry(new Entry);
+
+    // if any endpoints are (TCP or HTTP) reachable, switch this to false
+    (*entry)["telegram_tcp_blocking"] = true;
 
     mk::fcompose(mk::fcompose_policy_async(),
         [=](Callback<> cb) {
