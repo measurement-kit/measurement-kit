@@ -287,6 +287,11 @@ static void tcp_many(host_to_ips_t host_to_ips, SharedPtr<Entry> entry,
         }
         if (!this_host_consistent) {
             (*entry)["whatsapp_endpoints_dns_inconsistent"].push_back(hostname);
+            // "whatsapp_endpoints_blocked" means there were one or more
+            // consistent IPs, but we couldn't connect to any of the
+            // consistent IPs. (if there are no consistent IPs, we don't
+            // put it in the "[tcp_]blocked" list.)
+            blocked_hostnames->erase(hostname);
         }
     }
 }
