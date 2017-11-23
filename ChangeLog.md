@@ -1,4 +1,4 @@
-# MeasurementKit 0.8.0-alpha [2017-09-19]
+# Measurement Kit 0.8.0-alpha [2017-09-19]
 
 - various small cleanups (#1286)
 - cleanup(worker): rewrite with less abstraction (#1287)
