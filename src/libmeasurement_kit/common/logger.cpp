@@ -236,7 +236,7 @@ class DefaultLogger : public Logger, public NonCopyable, public NonMovable {
 };
 
 /*static*/ SharedPtr<Logger> Logger::make() {
-    return std::dynamic_pointer_cast<Logger>(std::make_shared<DefaultLogger>());
+    return SharedPtr<Logger>{std::make_shared<DefaultLogger>()};
 }
 
 /*static*/ SharedPtr<Logger> Logger::global() {
