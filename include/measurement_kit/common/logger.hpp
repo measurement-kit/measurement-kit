@@ -5,7 +5,7 @@
 #define MEASUREMENT_KIT_COMMON_LOGGER_HPP
 
 #include <cstdint>
-#include <measurement_kit/common/aaa_base.hpp>
+#include <measurement_kit/common/aaa_base.h>
 #include <measurement_kit/common/callback.hpp>
 #include <measurement_kit/common/shared_ptr.hpp>
 #include <stdarg.h>

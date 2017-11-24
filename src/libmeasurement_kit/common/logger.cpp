@@ -5,7 +5,7 @@
 #include <cstdint>
 #include <fstream>
 #include <list>
-#include <measurement_kit/common/aaa_base.hpp>
+#include <measurement_kit/common/aaa_base.h>
 #include <measurement_kit/common/callback.hpp>
 #include "private/common/delegate.hpp"
 #include "private/common/locked.hpp"
