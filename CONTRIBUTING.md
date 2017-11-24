@@ -1,6 +1,6 @@
-# Contributing to MeasurementKit
+# Contributing to Measurement Kit
 
-MeasurementKit is a Free and Open Source software project that welcomes new contributions.
+Measurement Kit is a Free and Open Source software project that welcomes new contributions.
 
 ## How to contribute code
 
