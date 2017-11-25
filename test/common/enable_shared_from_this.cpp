@@ -24,6 +24,7 @@ TEST_CASE("EnableSharedFromThis works") {
     SECTION("In the problematic case #1") {
         auto foo = new Foo;
         REQUIRE_THROWS(foo->shared_from_this());
+        delete foo;
     }
 
     SECTION("In the problematic case #2") {
