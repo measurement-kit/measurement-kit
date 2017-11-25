@@ -46,7 +46,7 @@ void coroutine_impl(SharedPtr<Entry> report_entry, std::string address, int port
                     logger->debug("ndt: suspend coroutine");
                     cb(NoError(), [=](Callback<Error> cb) {
                         double begin = time_now();
-                        SharedPtr<MeasureSpeed> snap(new MeasureSpeed(0.5));
+                        SharedPtr<MeasureSpeed> snap{std::make_shared<MeasureSpeed>(0.5)};
                         logger->debug("ndt: resume coroutine");
                         logger->info("Starting upload");
                         txp->set_timeout(timeout);
@@ -105,7 +105,7 @@ void run_impl(SharedPtr<Context> ctx, Callback<Error> callback) {
             return;
         }
 
-        SharedPtr<Entry> cur_entry(new Entry);
+        SharedPtr<Entry> cur_entry{std::make_shared<Entry>()};
         (*cur_entry)["connect_times"] = Entry::array();
         (*cur_entry)["params"] = {{"num_streams", 1}};
         (*cur_entry)["receiver_data"] = {{"avg_speed", nullptr}};

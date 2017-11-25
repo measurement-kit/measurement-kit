@@ -21,7 +21,9 @@ Buffer::Buffer(evbuffer *b) : Buffer() {
     }
 }
 
-/*static*/ SharedPtr<Buffer> Buffer::make() { return SharedPtr<Buffer>(new Buffer); }
+/*static*/ SharedPtr<Buffer> Buffer::make() {
+    return SharedPtr<Buffer>{std::make_shared<Buffer>()};
+}
 
 Buffer::Buffer(std::string s) : Buffer() {
     write(s);

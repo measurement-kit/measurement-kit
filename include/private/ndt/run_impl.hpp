@@ -28,7 +28,7 @@ void run_with_specific_server_impl(SharedPtr<Entry> entry, std::string address,
     // easily change the functions implementing each phase of the protocol
     // thus enabling quick experimentation and unit testing.
 
-    SharedPtr<Context> ctx(new Context);
+    SharedPtr<Context> ctx{std::make_shared<Context>()};
     ctx->address = address;
     ctx->callback = callback;
     ctx->entry = entry;

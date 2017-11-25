@@ -96,7 +96,7 @@ void Worker::wait_empty_() const {
 }
 
 /*static*/ SharedPtr<Worker> Worker::default_tasks_queue() {
-    static SharedPtr<Worker> worker = SharedPtr<Worker>::make(1);
+    static SharedPtr<Worker> worker{std::make_shared<Worker>(1)};
     return worker;
 }
 

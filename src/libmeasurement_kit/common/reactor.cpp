@@ -8,8 +8,7 @@
 namespace mk {
 
 /*static*/ SharedPtr<Reactor> Reactor::make() {
-    return locked_global(
-            []() { return SharedPtr<Reactor>{new LibeventReactor<>}; });
+    return SharedPtr<Reactor>{std::make_shared<LibeventReactor<>>()};
 }
 
 Reactor::~Reactor() {}

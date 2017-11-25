@@ -43,10 +43,10 @@ void coroutine_impl(SharedPtr<Entry> report_entry, std::string address, Params p
                 // The coroutine is resumed and receives data
                 logger->debug("ndt: resume coroutine");
                 logger->debug("Starting download");
-                SharedPtr<MeasureSpeed> average(new MeasureSpeed);
+                SharedPtr<MeasureSpeed> average{std::make_shared<MeasureSpeed>()};
                 // Note: we parse but ignore the server's snap delay
-                SharedPtr<MeasureSpeed> snaps(new MeasureSpeed(0.5));
-                SharedPtr<size_t> num_completed{new size_t{0}};
+                SharedPtr<MeasureSpeed> snaps{std::make_shared<MeasureSpeed>(0.5)};
+                SharedPtr<size_t> num_completed{std::make_shared<size_t>(0)};
                 size_t num_flows = txp_list.size();
                 log_speed(logger, "download-speed", params.num_streams,
                           0.0, 0.0);
@@ -205,7 +205,7 @@ void run_impl(SharedPtr<Context> ctx, Callback<Error> callback) {
         }
         ctx->logger->debug("Num-streams: %d", params.num_streams);
 
-        SharedPtr<Entry> cur_entry(new Entry);
+        SharedPtr<Entry> cur_entry{std::make_shared<Entry>()};
         (*cur_entry)["web100_data"] = Entry::object();
         (*cur_entry)["params"] = Entry::object();
         (*cur_entry)["receiver_data"] = Entry::array();
