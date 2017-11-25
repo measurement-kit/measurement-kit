@@ -30,7 +30,7 @@
  * SUCH DAMAGE.
  */
 
-#include <measurement_kit/common/portable/sys/types.h>
+#include <measurement_kit/common/aaa_base.h>
 
 #include <errno.h>
 #include <string.h>

@@ -4,7 +4,7 @@
 #ifndef MEASUREMENT_KIT_COMMON_SOCKET_HPP
 #define MEASUREMENT_KIT_COMMON_SOCKET_HPP
 
-#include <measurement_kit/common/aaa_base.hpp>
+#include <measurement_kit/common/aaa_base.h>
 
 namespace mk {
 
