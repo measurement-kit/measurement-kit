@@ -5,7 +5,8 @@ print_usage() {
 usage: $0 dependency-name
 
 Clones repository, configure, build and install dependency. By default sources
-are below './third_party' and installed software is below './builtin/'.
+are temporarily downloaded below './src/empty' (except for vendored dependencies
+at './src/third_party') and installed software is below './builtin/'.
 
 Override default behavior by setting these environment variables:
   - pkg_clone_flags: extra flags for 'git clone' (e.g. '--recursive')
@@ -100,7 +101,7 @@ pkg_make_install() {
     if [ "$pkg_tip" != "" ]; then
         vspec="$pkg_tip"
     fi
-    based=$pkg_rootdir/third_party/tmp/$pkg_name-$vspec
+    based=$pkg_rootdir/src/empty/tmp/$pkg_name-$vspec
     adir=$based/$pkg_cross/$pkg_cross_arch
     echo "- make $pkg_make_install_flags $pkg_make_install_rule"
     make $pkg_make_install_flags $pkg_make_install_rule DESTDIR=$adir
@@ -115,7 +116,7 @@ pkg_make_install() {
     echo ""
     echo "- create archive $tarname"
     (cd $based && tar -cvzf $tarname ./)
-    rm -rf $pkg_rootdir/third_party/tmp
+    rm -rf $pkg_rootdir/src/empty/tmp
     echo ""
     echo "- install from $tarname into $pkg_prefix"
     install -d $pkg_prefix
@@ -139,11 +140,14 @@ export pkg_prefix
 cd $pkg_rootdir
 # Note that the spec has access to $pkg_rootdir
 . build/spec/$1
-if [ "$pkg_repository" != "" ]; then
-    rm -rf third_party/src/$pkg_name
+if [ "$pkg_vendor_dir" != "" ]; then
+    echo "INFO: $pkg_name is a vendored dependency" 1>&2
+    cd $pkg_vendor_dir
+elif [ "$pkg_repository" != "" ]; then
+    rm -rf src/empty/$pkg_name
     git clone $pkg_clone_flags --single-branch --depth 2                       \
-        --branch $pkg_branch_or_tag $pkg_repository third_party/src/$pkg_name
-    cd third_party/src/$pkg_name
+        --branch $pkg_branch_or_tag $pkg_repository src/empty/$pkg_name
+    cd src/empty/$pkg_name
     if [ "$pkg_tip" != "" ]; then
         if [ "`git rev-parse HEAD`" != "$pkg_tip" ]; then
             # Mainly because this allows us to know which commit was the
@@ -152,6 +156,8 @@ if [ "$pkg_repository" != "" ]; then
             exit 1
         fi
     fi
+else
+    echo "INFO: $pkg_name not vendored and without a repository" 1>&2
 fi
 
 if [ -z "$pkg_steps" ]; then

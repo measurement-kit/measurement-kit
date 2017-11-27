@@ -181,5 +181,4 @@ site
 src/libmeasurement_kit/ext/Catch/
 src/libmeasurement_kit/ext/http-parser/
 stamp-h1
-third_party/
 xx
