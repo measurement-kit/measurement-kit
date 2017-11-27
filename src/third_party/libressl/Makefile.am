@@ -1,4 +1,4 @@
-SUBDIRS = crypto ssl tls include apps tests man
+SUBDIRS = crypto ssl include
 ACLOCAL_AMFLAGS = -I m4
 
 pkgconfigdir = $(libdir)/pkgconfig
