@@ -91,10 +91,6 @@ VERSION_INFO = 6:2:0
 # is user-visible, and so we can pretty much guarantee that release
 # series won't be binary-compatible.
 
-if INSTALL_LIBEVENT
-dist_bin_SCRIPTS = event_rpcgen.py
-endif
-
 pkgconfigdir=$(libdir)/pkgconfig
 LIBEVENT_PKGCONFIG=libevent.pc libevent_core.pc libevent_extra.pc
 
@@ -130,7 +126,6 @@ endif
 
 if INSTALL_LIBEVENT
 lib_LTLIBRARIES = $(LIBEVENT_LIBS_LA)
-pkgconfig_DATA = $(LIBEVENT_PKGCONFIG)
 else
 noinst_LTLIBRARIES =  $(LIBEVENT_LIBS_LA)
 endif
@@ -143,8 +138,6 @@ CLEANFILES=
 DISTCLEANFILES=
 BUILT_SOURCES =
 include include/include.am
-include sample/include.am
-include test/include.am
 
 if BUILD_WIN32
 
