@@ -58,6 +58,7 @@
 /test-driver
 /test/common/continuation
 /test/common/delegate
+/test/common/enable_shared_from_this
 /test/common/encoding
 /test/common/error
 /test/common/error_or

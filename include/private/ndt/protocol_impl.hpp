@@ -260,7 +260,7 @@ void wait_close_impl(SharedPtr<Context> ctx, Callback<Error> callback) {
     ctx->logger->debug("ndt: wait close ...");
     ctx->txp->set_timeout(1.0);
     // TODO: here we should probably use ctx->buff
-    SharedPtr<Buffer> buffer(new Buffer);
+    SharedPtr<Buffer> buffer{std::make_shared<Buffer>()};
     net_read(ctx->txp, buffer, [=](Error err) {
         ctx->logger->debug("ndt: wait close ... %d", (int)err);
         // Note: the server SHOULD close the connection
@@ -286,7 +286,7 @@ void wait_close_impl(SharedPtr<Context> ctx, Callback<Error> callback) {
 static inline void disconnect_and_callback_impl(SharedPtr<Context> ctx, Error err) {
     if (ctx->txp) {
         SharedPtr<Transport> txp = ctx->txp;
-        ctx->txp = nullptr;
+        ctx->txp = {};
         txp->close([=]() { ctx->callback(err); });
         return;
     }

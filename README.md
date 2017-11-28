@@ -1,4 +1,4 @@
-# MeasurementKit
+# Measurement Kit
 
 > Portable C++14 network measurement library
 
@@ -11,7 +11,7 @@
 | master | [![Travis Build Status](https://img.shields.io/travis/measurement-kit/measurement-kit/master.svg)](https://travis-ci.org/measurement-kit/measurement-kit) | [![Coverage Status](https://img.shields.io/coveralls/measurement-kit/measurement-kit/master.svg)](https://coveralls.io/github/measurement-kit/measurement-kit?branch=master) |
 | stable | [![Travis Build Status](https://img.shields.io/travis/measurement-kit/measurement-kit/stable.svg)](https://travis-ci.org/measurement-kit/measurement-kit?branch=stable) | [![Coverage Status](https://img.shields.io/coveralls/measurement-kit/measurement-kit/stable.svg)](https://coveralls.io/github/measurement-kit/measurement-kit?branch=stable) |
 
-MeasurementKit is a library that implements open network measurement methodologies
+Measurement Kit is a library that implements open network measurement methodologies
 (performance, censorship, etc.) and targets mobile platforms (Android and iOS).
 
 It is meant to be embedded by third party applications with specific network measurement
@@ -64,7 +64,7 @@ tests. More in detail it currently implements:
 
 - the functionality to communicate with the [OONI bouncer](https://github.com/TheTorProject/ooni-backend)
 
-In the short term we plan to add to MeasurementKit:
+In the short term we plan to add to Measurement Kit:
 
 - more OONI tests
 
@@ -75,18 +75,18 @@ The following index illustrates the content of the remainder of this file:
 
 - [How to clone the repository](#how-to-clone-the-repository)
 - [How to test a specific branch](#how-to-test-a-specific-branch)
-- [How to build MeasurementKit](#how-to-build-measurementkit)
-  - [How to build MeasurementKit on a Unix-like system](#how-to-build-measurementkit-on-a-unix-like-system)
-  - [How to test MeasurementKit on a Unix-like system](#how-to-test-measurementkit-on-a-unix-like-system)
-  - [How to build MeasurementKit on Android](#how-to-build-measurementkit-on-android)
-  - [How to build MeasurementKit on iOS](#how-to-build-measurementkit-on-ios)
-  - [How to add MeasurementKit to an Xcode project](#how-to-add-measurementkit-to-an-xcode-project)
-- [How to use MeasurementKit](#how-to-use-measurementkit)
+- [How to build Measurement Kit](#how-to-build-measurementkit)
+  - [How to build Measurement Kit on a Unix-like system](#how-to-build-measurementkit-on-a-unix-like-system)
+  - [How to test Measurement Kit on a Unix-like system](#how-to-test-measurementkit-on-a-unix-like-system)
+  - [How to build Measurement Kit on Android](#how-to-build-measurementkit-on-android)
+  - [How to build Measurement Kit on iOS](#how-to-build-measurementkit-on-ios)
+  - [How to add Measurement Kit to an Xcode project](#how-to-add-measurementkit-to-an-xcode-project)
+- [How to use Measurement Kit](#how-to-use-measurementkit)
 
 
 ## How to clone the repository
 
-To clone MeasurementKit repository, do:
+To clone Measurement Kit repository, do:
 
     git clone https://github.com/measurement-kit/measurement-kit
 
@@ -100,14 +100,14 @@ git fetch origin
 git checkout feature/foo
 ```
 
-Then proceed with the instruction to build and test MeasurementKit.
+Then proceed with the instruction to build and test Measurement Kit.
 
 For more detailed instructions see [contributing instructions](
 CONTRIBUTING.md).
 
-## How to build MeasurementKit
+## How to build Measurement Kit
 
-### How to build MeasurementKit on a Unix-like system
+### How to build Measurement Kit on a Unix-like system
 
 Very briefly, to build from the git repository do:
 
@@ -122,22 +122,22 @@ sudo /sbin/ldconfig  # required only on Linux if you install
 See [the Unix tutorial](doc/tutorial/unix.md) for more details.
 
 
-### How to test MeasurementKit on a Unix-like system
+### How to test Measurement Kit on a Unix-like system
 
-Once you have built MeasurementKit, run tests like:
+Once you have built Measurement Kit, run tests like:
 
 ```
 make check
 ```
 
-### How to build MeasurementKit on Android
+### How to build Measurement Kit on Android
 
 We have [a specific repository](https://github.com/measurement-kit/android-libs)
-for compiling MeasurementKit for Android. You may also want to read the
+for compiling Measurement Kit for Android. You may also want to read the
 [documentation explaining how to cross compile MK dependencies for Android](
 doc/build/android.md).
 
-### How to build MeasurementKit on iOS
+### How to build Measurement Kit on iOS
 
 Having Xcode command line tools installed, run:
 
@@ -147,7 +147,7 @@ Having Xcode command line tools installed, run:
 
 See the [iOS tutorial](doc/tutorial/ios.md) for more info.
 
-### How to add MeasurementKit to an Xcode project.
+### How to add Measurement Kit to an Xcode project.
 
 Make sure your [Podfile](https://guides.cocoapods.org/syntax/podfile.html)
 looks like this:
@@ -164,7 +164,7 @@ Run `pod install` (or `pod update`) and remember to open the
 `.xcworkspace` rather than the `.xcodeproj`. See the [iOS tutorial](
 doc/tutorial/ios.md) for more info.
 
-## How to use MeasurementKit
+## How to use Measurement Kit
 
 You probably want to start using the [nettests API](doc/api/nettests.md)
 that is the high level API for running tests. To this end, see also

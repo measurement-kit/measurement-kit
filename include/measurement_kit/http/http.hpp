@@ -171,13 +171,13 @@ void request_maybe_sendrecv(ErrorOr<SharedPtr<Request>>, SharedPtr<net::Transpor
 
 void request(Settings, Headers, std::string, Callback<Error, SharedPtr<Response>>,
              SharedPtr<Reactor> = Reactor::global(), SharedPtr<Logger> = Logger::global(),
-             SharedPtr<Response> previous = nullptr, int nredirects = 0);
+             SharedPtr<Response> previous = {}, int nredirects = 0);
 
 inline void get(std::string url, Callback<Error, SharedPtr<Response>> cb,
                 Headers headers = {}, Settings settings = {},
                 SharedPtr<Reactor> reactor = Reactor::global(),
                 SharedPtr<Logger> lp = Logger::global(),
-                SharedPtr<Response> previous = nullptr,
+                SharedPtr<Response> previous = {},
                 int nredirects = 0) {
     settings["http/method"] = "GET";
     settings["http/url"] = url;

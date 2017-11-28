@@ -57,8 +57,8 @@ TEST_CASE("The every() template works") {
                       }
                       double cur = time_now();
                       double delta = cur - now;
-                      REQUIRE(delta > 0.8);
-                      REQUIRE(delta < 1.2);
+                      REQUIRE(delta > 0.7);
+                      REQUIRE(delta < 1.3);
                       now = cur;
                   });
         });

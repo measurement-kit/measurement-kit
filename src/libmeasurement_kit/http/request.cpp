@@ -21,7 +21,7 @@ using namespace mk::net;
 
 /*static*/ ErrorOr<SharedPtr<Request>> Request::make(Settings settings, Headers headers,
                                                std::string body) {
-    SharedPtr<Request> request(new Request);
+    SharedPtr<Request> request{std::make_shared<Request>()};
     Error error = request->init(settings, headers, body);
     // Note: the following cannot be simplified using short circuit
     // evaluation because two different types are returned
@@ -114,7 +114,7 @@ void request_maybe_send(ErrorOr<SharedPtr<Request>> request, SharedPtr<Transport
                         SharedPtr<Logger> logger,
                         Callback<Error, SharedPtr<Request>> callback) {
     if (!request) {
-        callback(request.as_error(), nullptr);
+        callback(request.as_error(), {});
         return;
     }
     Buffer buff;
@@ -127,10 +127,10 @@ void request_maybe_send(ErrorOr<SharedPtr<Request>> request, SharedPtr<Transport
 void request_recv_response(SharedPtr<Transport> txp,
                            Callback<Error, SharedPtr<Response>> cb, Settings settings,
                            SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
-    SharedPtr<ResponseParserNg> parser{new ResponseParserNg{logger}};
-    SharedPtr<Response> response(new Response);
-    SharedPtr<bool> prevent_emit(new bool(false));
-    SharedPtr<bool> valid_response(new bool(false));
+    SharedPtr<ResponseParserNg> parser{std::make_shared<ResponseParserNg>(logger)};
+    SharedPtr<Response> response{std::make_shared<Response>()};
+    SharedPtr<bool> prevent_emit{std::make_shared<bool>(false)};
+    SharedPtr<bool> valid_response{std::make_shared<bool>(false)};
 
     // Note: any parser error at this point is an exception catched by the
     // connection code and routed to the error handler function below
@@ -209,7 +209,7 @@ void request_maybe_sendrecv(ErrorOr<SharedPtr<Request>> request, SharedPtr<Trans
     request_maybe_send(request, txp, logger,
                        [=](Error error, SharedPtr<Request> request) {
         if (error) {
-            SharedPtr<Response> response{new Response};
+            SharedPtr<Response> response{std::make_shared<Response>()};
             response->request = request;
             callback(error, response);
             return;
@@ -270,14 +270,14 @@ void request(Settings settings, Headers headers, std::string body,
         "http/max_redirects", 0
     );
     if (!max_redirects) {
-        callback(InvalidMaxRedirectsError(max_redirects.as_error()), nullptr);
+        callback(InvalidMaxRedirectsError(max_redirects.as_error()), {});
         return;
     }
     request_connect(
         settings,
         [=](Error err, SharedPtr<Transport> txp) {
             if (err) {
-                callback(err, nullptr);
+                callback(err, {});
                 return;
             }
             request_sendrecv(

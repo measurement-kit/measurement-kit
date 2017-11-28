@@ -19,7 +19,8 @@ SharedPtr<evbuffer> make_shared_evbuffer() {
     if (p == nullptr) {
         throw std::bad_alloc();
     }
-    return SharedPtr<evbuffer>(p, [](evbuffer *x) { evbuffer_free(x); });
+    return SharedPtr<evbuffer>{std::shared_ptr<evbuffer>{
+        p, [](evbuffer *x) { evbuffer_free(x); }}};
 }
 
 } // namespace net

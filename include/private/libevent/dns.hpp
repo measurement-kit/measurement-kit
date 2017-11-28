@@ -351,22 +351,22 @@ void query(QueryClass dns_class, QueryType dns_type, std::string name,
      */
     ErrorOr<bool> also_cname = settings.get("dns/resolve_also_cname", false);
     if (!also_cname) {
-        cb(also_cname.as_error(), nullptr);
+        cb(also_cname.as_error(), {});
         return;
     }
     if (*also_cname == true) {
-        cb(mk::NotImplementedError(), nullptr);
+        cb(mk::NotImplementedError(), {});
         return;
     }
 
-    SharedPtr<Message> message(new Message);
+    SharedPtr<Message> message{std::make_shared<Message>()};
     Query query;
     evdns_base *base;
 
     try {
         base = create_evdns_base(settings, reactor);
     } catch (std::runtime_error &) {
-        cb(GenericError(), nullptr); // TODO: refine error thrown here
+        cb(GenericError(), {}); // TODO: refine error thrown here
         return;
     } catch (std::bad_alloc &) {
         throw; // Let this propagate as we can do nothing
@@ -374,7 +374,7 @@ void query(QueryClass dns_class, QueryType dns_type, std::string name,
 
     if (dns_class != MK_DNS_CLASS_IN) {
         evdns_base_free(base, 1);
-        cb(UnsupportedClassError(), nullptr);
+        cb(UnsupportedClassError(), {});
         return;
     }
 
@@ -389,7 +389,7 @@ void query(QueryClass dns_class, QueryType dns_type, std::string name,
             name = s;
         } else {
             evdns_base_free(base, 1);
-            cb(InvalidNameForPTRError(), nullptr);
+            cb(InvalidNameForPTRError(), {});
             return;
         }
     }
@@ -423,7 +423,7 @@ void query(QueryClass dns_class, QueryType dns_type, std::string name,
                                     mk_evdns_handle_resolve,
                                     context) == nullptr) {
             delete context;
-            cb(ResolverError(), nullptr);
+            cb(ResolverError(), {});
         }
         return;
     }
@@ -436,7 +436,7 @@ void query(QueryClass dns_class, QueryType dns_type, std::string name,
                                     mk_evdns_handle_resolve,
                                     context) == nullptr) {
             delete context;
-            cb(ResolverError(), nullptr);
+            cb(ResolverError(), {});
         }
         return;
     }
@@ -446,7 +446,7 @@ void query(QueryClass dns_class, QueryType dns_type, std::string name,
         in_addr netaddr;
         if (inet_pton(AF_INET, name.c_str(), &netaddr) != 1) {
             evdns_base_free(base, 1);
-            cb(InvalidIPv4AddressError(), nullptr);
+            cb(InvalidIPv4AddressError(), {});
             return;
         }
 
@@ -456,7 +456,7 @@ void query(QueryClass dns_class, QueryType dns_type, std::string name,
                                        mk_evdns_handle_resolve,
                                        context) == nullptr) {
             delete context;
-            cb(ResolverError(), nullptr);
+            cb(ResolverError(), {});
         }
         return;
     }
@@ -466,7 +466,7 @@ void query(QueryClass dns_class, QueryType dns_type, std::string name,
         in6_addr netaddr;
         if (inet_pton(AF_INET6, name.c_str(), &netaddr) != 1) {
             evdns_base_free(base, 1);
-            cb(InvalidIPv6AddressError(), nullptr);
+            cb(InvalidIPv6AddressError(), {});
             return;
         }
 
@@ -476,14 +476,14 @@ void query(QueryClass dns_class, QueryType dns_type, std::string name,
                                             mk_evdns_handle_resolve,
                                             context) == nullptr) {
             delete context;
-            cb(ResolverError(), nullptr);
+            cb(ResolverError(), {});
             return;
         }
         return;
     }
 
     evdns_base_free(base, 1);
-    cb(UnsupportedTypeError(), nullptr);
+    cb(UnsupportedTypeError(), {});
 }
 
 } // namespace libevent

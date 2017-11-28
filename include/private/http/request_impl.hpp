@@ -21,12 +21,12 @@ void request_connect_impl(Settings settings, Callback<Error, SharedPtr<Transport
                           SharedPtr<Reactor> reactor = Reactor::global(),
                           SharedPtr<Logger> logger = Logger::global()) {
     if (settings.find("http/url") == settings.end()) {
-        cb(MissingUrlError(), nullptr);
+        cb(MissingUrlError(), {});
         return;
     }
     ErrorOr<Url> url = parse_url_noexcept(settings.at("http/url"));
     if (!url) {
-        cb(url.as_error(), nullptr);
+        cb(url.as_error(), {});
         return;
     }
     if (url->schema == "httpo") {
@@ -70,7 +70,7 @@ void request_json_string_impl(
                 });
                 cb(error, response, jresponse);
             },
-            reactor, logger, nullptr, 0);
+            reactor, logger, {}, 0);
 }
 
 } // namespace http

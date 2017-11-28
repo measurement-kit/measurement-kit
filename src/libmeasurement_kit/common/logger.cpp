@@ -5,7 +5,7 @@
 #include <cstdint>
 #include <fstream>
 #include <list>
-#include <measurement_kit/common/aaa_base.hpp>
+#include <measurement_kit/common/aaa_base.h>
 #include <measurement_kit/common/callback.hpp>
 #include "private/common/delegate.hpp"
 #include "private/common/locked.hpp"
@@ -236,7 +236,7 @@ class DefaultLogger : public Logger, public NonCopyable, public NonMovable {
 };
 
 /*static*/ SharedPtr<Logger> Logger::make() {
-    return std::dynamic_pointer_cast<Logger>(std::make_shared<DefaultLogger>());
+    return SharedPtr<Logger>{std::make_shared<DefaultLogger>()};
 }
 
 /*static*/ SharedPtr<Logger> Logger::global() {

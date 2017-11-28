@@ -5,7 +5,7 @@
 #ifndef PRIVATE_EXT_TLS_INTERNAL_H
 #define PRIVATE_EXT_TLS_INTERNAL_H
 
-#include <measurement_kit/common/portable/netinet/in.h>
+#include <measurement_kit/common/aaa_base.h>
 #include <openssl/x509.h>
 
 struct tls {
