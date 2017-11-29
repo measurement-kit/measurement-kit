@@ -83,7 +83,7 @@ static void http_many(const std::vector<std::string> urls, std::string type,
                 logger->info(
                     "telegram: success HTTP connecting to %s", url.c_str());
                 if (type == "endpoints") {
-                    (*entry)["telegram_tcp_blocking"] = false;
+                    (*entry)["telegram_http_blocking"] = false;
                 } else if (type == "web") {
                     if (extract_html_title(response->body) != "Telegram Web") {
                         (*entry)["telegram_web_status"] = "blocked";
@@ -132,6 +132,7 @@ void telegram(Settings options, Callback<SharedPtr<report::Entry>> callback,
 
     // if any endpoints are (TCP or HTTP) reachable, switch this to false
     (*entry)["telegram_tcp_blocking"] = true;
+    (*entry)["telegram_http_blocking"] = true;
 
     mk::fcompose(mk::fcompose_policy_async(),
         [=](Callback<> cb) {
