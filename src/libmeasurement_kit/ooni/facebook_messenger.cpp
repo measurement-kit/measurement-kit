@@ -24,7 +24,7 @@ static const std::map<std::string, std::string> &FB_SERVICE_HOSTNAMES = {
       {"scontent_cdn", "scontent.xx.fbcdn.net"},
       {"star", "star.c10r.facebook.com"}};
 
-static ErrorOr<bool> ip_in_fb_asn(Settings options, std::string ip) {
+static bool ip_in_fb_asn(Settings options, std::string ip) {
     std::string asn_p = options.get("geoip_asn_path", std::string{});
     auto geoip = GeoipCache::thread_local_instance()->get(asn_p);
     ErrorOr<std::string> asn = geoip->resolve_asn(ip);
