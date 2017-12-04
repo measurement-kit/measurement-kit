@@ -147,17 +147,21 @@ tcp_many(Error error, SharedPtr<Entry> entry,
             *ips_tested += 1;
             assert(*ips_tested <= ips_count);
             if (ips_count == *ips_tested) {
-                // if ANY services were not TCP reachable on any consistent IPs,
-                // switch this to true
+                // if ANY services were TCP unreachable on all consistent IPs,
+                // switch this to true.
                 (*entry)["facebook_tcp_blocking"] = false;
                 for (auto const &service_and_hostname : FB_SERVICE_HOSTNAMES) {
                     std::string service = service_and_hostname.first;
                     if (service == "stun") { continue; }
+                    bool consistent =
+                        !!(*entry)["facebook_" + service + "_dns_consistent"];
                     bool reachable =
                         !!(*entry)["facebook_" + service + "_reachable"];
+                    logger->info("service %s DNS consistency: %s",
+                        service.c_str(), (!!consistent) ? "true" : "false");
                     logger->info("service %s TCP reachability: %s",
                         service.c_str(), (!!reachable) ? "true" : "false");
-                    if (!reachable) {
+                    if (consistent && !reachable) {
                         (*entry)["facebook_tcp_blocking"] = true;
                     }
                 }
