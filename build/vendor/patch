@@ -18,10 +18,6 @@ if [ $# -ne 1 ]; then
     exit 1
 fi
 pkg_rootdir=$(cd $(dirname $(dirname $(dirname $0))) && pwd -P)
-if [ -z "$pkg_prefix" ]; then
-    pkg_prefix=$pkg_rootdir/builtin
-fi
-export pkg_prefix
 cd $pkg_rootdir
 # Note that the spec has access to $pkg_rootdir
 . build/spec/$1
