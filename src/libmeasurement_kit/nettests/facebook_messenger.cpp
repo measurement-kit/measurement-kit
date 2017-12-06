@@ -13,7 +13,7 @@ namespace nettests {
 FacebookMessengerTest::FacebookMessengerTest() : BaseTest() {
     runnable.reset(new FacebookMessengerRunnable);
     runnable->test_name = "facebook_messenger";
-    runnable->test_version = "0.0.1";
+    runnable->test_version = "0.0.2";
     runnable->needs_input = false;
 }
 

@@ -202,7 +202,11 @@ bool ip_in_nets(std::string ip, std::vector<std::string> nets) {
 static void tcp_many(host_to_ips_t host_to_ips, SharedPtr<Entry> entry,
         Settings options, SharedPtr<Reactor> reactor,
         SharedPtr<Logger> logger, Callback<Error> cb) {
-    // all hostnames start here; are removed upon a TCP success
+    // a hostname is DNS inconsistent if ALL of its IPs are inconsistent.
+    (*entry)["whatsapp_endpoints_dns_inconsistent"] = Entry::array();
+    // on first TCP success of a consistent IP, set to "ok".
+    (*entry)["whatsapp_endpoints_status"] = "blocked";
+    // all hostnames start here;removed upon a TCP success to a consistent IP
     SharedPtr<std::set<std::string>> blocked_hostnames(
           new std::set<std::string>);
     // at the end, we copy these ^ hostnames into the report:
@@ -214,7 +218,8 @@ static void tcp_many(host_to_ips_t host_to_ips, SharedPtr<Entry> entry,
         ips_count += hostname_ipv.second.size() * 2; // two ports per IP
     }
 
-    auto tcp_cb = [=](std::string hostname, std::string ip, int port) {
+    auto tcp_cb = [=](std::string hostname, std::string ip, int port,
+                      bool this_ip_consistent) {
         return [=](Error connect_err, SharedPtr<net::Transport> txp) {
             Entry result = {
                     {"ip", ip}, {"port", port},
@@ -228,7 +233,12 @@ static void tcp_many(host_to_ips_t host_to_ips, SharedPtr<Entry> entry,
                 logger->info("tcp success to %s:%d", ip.c_str(), port);
                 result["status"]["success"] = true;
                 result["status"]["failure"] = false;
-                blocked_hostnames->erase(hostname);
+                if (this_ip_consistent) {
+                    logger->info("removing %s from blocked_hostnames",
+                            hostname.c_str());
+                    (*entry)["whatsapp_endpoints_status"] = "ok";
+                    blocked_hostnames->erase(hostname);
+                }
             }
             (*entry)["tcp_connect"].push_back(result);
             txp->close(nullptr);
@@ -249,7 +259,19 @@ static void tcp_many(host_to_ips_t host_to_ips, SharedPtr<Entry> entry,
     }
     for (auto const& hostname_ipv : host_to_ips) {
         std::string hostname = hostname_ipv.first;
+        // if *any* ips are in our old view of the whatsapp network,
+        // switch this to true.
+        bool this_host_consistent = false;
         for (auto const& ip : hostname_ipv.second) {
+            bool this_ip_consistent;
+            if (ip_in_nets(ip, WHATSAPP_NETS)) {
+                logger->info("%s seems to belong to Whatsapp", ip.c_str());
+                this_host_consistent = true;
+                this_ip_consistent = true;
+            } else {
+                logger->info("%s seems to NOT belong to Whatsapp", ip.c_str());
+                this_ip_consistent = false;
+            }
             // XXX hardcoded
             std::vector<int> ports{443, 5222};
             for (auto const &port : ports) {
@@ -257,8 +279,18 @@ static void tcp_many(host_to_ips_t host_to_ips, SharedPtr<Entry> entry,
                 local_options["host"] = ip;
                 local_options["port"] = port;
                 templates::tcp_connect(
-                    local_options, tcp_cb(hostname, ip, port), reactor, logger);
+                    local_options,
+                    tcp_cb(hostname, ip, port, this_ip_consistent),
+                    reactor, logger);
             }
+        }
+        if (!this_host_consistent) {
+            (*entry)["whatsapp_endpoints_dns_inconsistent"].push_back(hostname);
+            // "whatsapp_endpoints_blocked" means there were one or more
+            // consistent IPs, but we couldn't connect to any of the
+            // consistent IPs. (if there are no consistent IPs, we don't
+            // put it in the "[tcp_]blocked" list.)
+            blocked_hostnames->erase(hostname);
         }
     }
 }
@@ -266,12 +298,6 @@ static void tcp_many(host_to_ips_t host_to_ips, SharedPtr<Entry> entry,
 static void dns_many(std::vector<std::string> hostnames, SharedPtr<Entry> entry,
         Settings options, SharedPtr<Reactor> reactor, SharedPtr<Logger> logger,
         Callback<Error, host_to_ips_t> cb) {
-    // if ANYthing is consistent, we consider dns not blocked
-    // XXX our view of the whatsapp network is known to be stale,
-    // so this "in network" logic should be considered only a heuristic
-    // with IPs wrongly considered inconsistent ~50% of the time.
-    (*entry)["whatsapp_endpoints_status"] = "blocked";
-    (*entry)["whatsapp_endpoints_dns_inconsistent"] = Entry::array();
     int names_count = hostnames.size();
     logger->info("whatsapp: %d hostnames", names_count);
     SharedPtr<host_to_ips_t> host_to_ips(new host_to_ips_t);
@@ -295,24 +321,8 @@ static void dns_many(std::vector<std::string> hostnames, SharedPtr<Entry> entry,
                         /* NOTHING */;
                     }
                 }
-                // if *any* ips are in our old view of the whatsapp network,
-                // switch this to true.
-                bool this_host_consistent = false;
                 for (auto ip : this_ips) {
-                    if (ip_in_nets(ip, WHATSAPP_NETS)) {
-                        logger->info(
-                                "%s seems to belong to Whatsapp", ip.c_str());
-                        (*host_to_ips)[hostname].push_back(ip);
-                        (*entry)["whatsapp_endpoints_status"] = "ok";
-                        this_host_consistent = true;
-                    } else {
-                        logger->info("%s seems to NOT belong to Whatsapp",
-                                ip.c_str());
-                    }
-                }
-                if (!this_host_consistent) {
-                    (*entry)["whatsapp_endpoints_dns_inconsistent"].push_back(
-                            hostname);
+                    (*host_to_ips)[hostname].push_back(ip);
                 }
             }
             *names_tested += 1;
@@ -321,7 +331,7 @@ static void dns_many(std::vector<std::string> hostnames, SharedPtr<Entry> entry,
                 for (auto const& hostname_ipv : *host_to_ips) {
                     ips_count += hostname_ipv.second.size();
                 }
-                logger->info("dns_many() found %d consistent ips", (int)ips_count);
+                logger->info("dns_many() found %d ips", (int)ips_count);
                 cb(NoError(), *host_to_ips);
             }
         };
