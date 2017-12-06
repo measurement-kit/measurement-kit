@@ -13,6 +13,8 @@ namespace ooni {
 
 using namespace mk::report;
 
+static const std::string FB_ASN = "AS32934";
+
 static const std::map<std::string, std::string> &FB_SERVICE_HOSTNAMES = {
       {"stun", "stun.fbsbx.com"},
       {"b_api", "b-api.facebook.com"},
@@ -21,6 +23,16 @@ static const std::map<std::string, std::string> &FB_SERVICE_HOSTNAMES = {
       {"external_cdn", "external.xx.fbcdn.net"},
       {"scontent_cdn", "scontent.xx.fbcdn.net"},
       {"star", "star.c10r.facebook.com"}};
+
+static bool ip_in_fb_asn(Settings options, std::string ip) {
+    std::string asn_p = options.get("geoip_asn_path", std::string{});
+    auto geoip = GeoipCache::thread_local_instance()->get(asn_p);
+    ErrorOr<std::string> asn = geoip->resolve_asn(ip);
+    if (!!asn && asn.as_value() != "AS0") {
+        return asn.as_value().c_str() == FB_ASN;
+    }
+    return false;
+}
 
 static void
 dns_many(Error error, SharedPtr<Entry> entry, Settings options, SharedPtr<Reactor> reactor,
@@ -44,9 +56,6 @@ dns_many(Error error, SharedPtr<Entry> entry, Settings options, SharedPtr<Reacto
         return;
     }
 
-    // if we find any inconsistent DNS later, switch this to true
-    (*entry)["facebook_dns_blocking"] = false;
-
     size_t names_count = FB_SERVICE_HOSTNAMES.size();
     if (names_count == 0) {
         cb(NoError(), entry, fb_service_ips, options, reactor, logger);
@@ -61,30 +70,12 @@ dns_many(Error error, SharedPtr<Entry> entry, Settings options, SharedPtr<Reacto
                              service.c_str(), hostname.c_str());
             } else {
                 for (auto answer : message->answers) {
-                    if ((answer.ipv4 != "") || (answer.hostname != "")) {
-                        std::string asn_p =
-                              options.get("geoip_asn_path", std::string{});
-                        auto geoip =
-                              GeoipCache::thread_local_instance()->get(asn_p);
-                        ErrorOr<std::string> asn =
-                              geoip->resolve_asn(answer.ipv4);
-                        if (!!asn && asn.as_value() != "AS0") {
-                            logger->info("%s ipv4: %s, %s", hostname.c_str(),
-                                         answer.ipv4.c_str(),
-                                         asn.as_value().c_str());
-                            // if consistent, add to list for tcp connect later
-                            if (asn.as_value() == "AS32934") {
-                                (*fb_service_ips)[service].push_back(
-                                      answer.ipv4);
-                            } else {
-                                (*entry)["facebook_dns_blocking"] = true;
-                            }
-                        }
+                    if (answer.ipv4 != "") {
+                        logger->info("got ip %s for service %s",
+                            answer.ipv4.c_str(), service.c_str());
+                        (*fb_service_ips)[service].push_back(answer.ipv4);
                     }
                 }
-                // if any consistent IPs, consistent = true
-                (*entry)["facebook_" + service + "_dns_consistent"] =
-                      !(*fb_service_ips)[service].empty();
             }
             *names_tested += 1;
             assert(*names_tested <= names_count);
@@ -118,12 +109,6 @@ tcp_many(Error error, SharedPtr<Entry> entry,
         return;
     }
 
-    // if we find any blocked TCP later, switch this to true
-    (*entry)["facebook_tcp_blocking"] = false;
-
-    // Note: we're skipping stun like ooni-probe does
-    (*entry)["facebook_stun_reachable"] = nullptr;
-
     size_t ips_count = 0;
     for (auto const &service_and_ips : *fb_service_ips) {
         // skipping stun for now; this is what ooni-probe does
@@ -138,7 +123,8 @@ tcp_many(Error error, SharedPtr<Entry> entry,
     }
     SharedPtr<size_t> ips_tested(new size_t(0));
 
-    auto tcp_cb = [=](std::string service, std::string ip, uint16_t port) {
+    auto tcp_cb = [=](std::string service, std::string ip, uint16_t port,
+            bool this_ip_consistent) {
         return [=](Error err, SharedPtr<net::Transport> txp) {
             assert(!!txp);
             Entry current_entry{
@@ -146,14 +132,14 @@ tcp_many(Error error, SharedPtr<Entry> entry,
             if (!!err) {
                 logger->info("tcp failure to %s at %s:%d", service.c_str(),
                              ip.c_str(), port);
-                (*entry)["facebook_" + service + "_reachable"] = false;
-                (*entry)["facebook_tcp_blocking"] = true;
                 current_entry["status"]["success"] = false;
                 current_entry["status"]["failure"] = true;
             } else {
                 logger->info("tcp success to %s at %s:%d", service.c_str(),
                              ip.c_str(), port);
-                (*entry)["facebook_" + service + "_reachable"] = true;
+                if (this_ip_consistent) {
+                    (*entry)["facebook_" + service + "_reachable"] = true;
+                }
                 current_entry["status"]["success"] = true;
                 current_entry["status"]["failure"] = false;
             }
@@ -161,29 +147,82 @@ tcp_many(Error error, SharedPtr<Entry> entry,
             *ips_tested += 1;
             assert(*ips_tested <= ips_count);
             if (ips_count == *ips_tested) {
-                txp->close([=] { cb(entry); });
+                // if ANY services were TCP unreachable on all consistent IPs,
+                // switch this to true.
+                (*entry)["facebook_tcp_blocking"] = false;
+                for (auto const &service_and_hostname : FB_SERVICE_HOSTNAMES) {
+                    std::string service = service_and_hostname.first;
+                    if (service == "stun") { continue; }
+                    bool consistent =
+                        !!(*entry)["facebook_" + service + "_dns_consistent"];
+                    bool reachable =
+                        !!(*entry)["facebook_" + service + "_reachable"];
+                    logger->info("service %s DNS consistency: %s",
+                        service.c_str(), (!!consistent) ? "true" : "false");
+                    logger->info("service %s TCP reachability: %s",
+                        service.c_str(), (!!reachable) ? "true" : "false");
+                    if (consistent && !reachable) {
+                        (*entry)["facebook_tcp_blocking"] = true;
+                    }
+                }
+                txp->close([=] {
+                    cb(entry);
+                });
             } else {
                 txp->close([=] {});
             }
         };
     };
 
+    // if we can TCP connect to ANY consistent IP for a service,
+    // switch this to true.
+    for (auto const &service_and_hostname : FB_SERVICE_HOSTNAMES) {
+        std::string service = service_and_hostname.first;
+        (*entry)["facebook_" + service + "_reachable"] = false;
+    }
+    // we're skipping stun like ooni-probe does
+    (*entry)["facebook_stun_reachable"] = nullptr;
+
+
     for (auto const &service_and_ips : *fb_service_ips) {
         std::string service = service_and_ips.first;
-        // skipping stun for now; this is what ooni-probe does
-        if (service == "stun") {
-            continue;
-        }
-        for (auto const &ip : service_and_ips.second) {
+        // if ANY ips for this service are in FB's ASN, switch to true
+        (*entry)["facebook_" + service + "_dns_consistent"] = false;
+        for (auto const ip : service_and_ips.second) {
+            bool this_ip_consistent = ip_in_fb_asn(options, ip);
+            if (this_ip_consistent) {
+                logger->info("%s is in FB's ASN", ip.c_str());
+                (*entry)["facebook_" + service + "_dns_consistent"] = true;
+            } else {
+                logger->info("%s is NOT in FB's ASN", ip.c_str());
+            }
+            // not TCPing to stun, because it's UDP
+            if (service == "stun") {
+                continue;
+            }
             Settings tcp_options{options};
             tcp_options["host"] = ip;
             uint16_t port = 443;
             tcp_options["port"] = port;
             tcp_options["net/timeout"] = 10.0;
-            templates::tcp_connect(tcp_options, tcp_cb(service, ip, port),
-                                   reactor, logger);
+            templates::tcp_connect(tcp_options,
+                tcp_cb(service, ip, port, this_ip_consistent), reactor, logger);
         }
     }
+    // if ANY services are not DNS consistent, switch this to true
+    (*entry)["facebook_dns_blocking"] = false;
+    for (auto const &service_and_hostname : FB_SERVICE_HOSTNAMES) {
+        std::string service = service_and_hostname.first;
+        bool consistent =
+            !!(*entry)["facebook_" + service + "_dns_consistent"];
+        logger->info("service %s DNS consistency: %s", service.c_str(),
+                (!!consistent) ? "true" : "false");
+        if (!consistent) {
+            (*entry)["facebook_dns_blocking"] = true;
+        }
+    }
+
+
 }
 
 void facebook_messenger(Settings options, Callback<SharedPtr<report::Entry>> callback,
