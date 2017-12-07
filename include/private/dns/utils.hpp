@@ -4,7 +4,7 @@
 #ifndef PRIVATE_DNS_UTILS_HPP
 #define PRIVATE_DNS_UTILS_HPP
 
-#include <measurement_kit/common/portable/arpa/nameser.h>
+#include <measurement_kit/common/aaa_base.h>
 #include <measurement_kit/common/data_usage.hpp>
 #include <measurement_kit/dns.hpp>
 

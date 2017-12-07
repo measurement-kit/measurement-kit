@@ -20,6 +20,10 @@
 
 namespace mk {
 
+Worker::Worker() {}
+
+Worker::Worker(size_t p) { state->parallelism = p; }
+
 void Worker::call_in_thread(SharedPtr<Logger> logger, Callback<> &&func) {
     std::unique_lock<std::mutex> _{state->mutex};
 
@@ -92,7 +96,7 @@ void Worker::wait_empty_() const {
 }
 
 /*static*/ SharedPtr<Worker> Worker::default_tasks_queue() {
-    static SharedPtr<Worker> worker = SharedPtr<Worker>::make();
+    static SharedPtr<Worker> worker{std::make_shared<Worker>(1)};
     return worker;
 }
 

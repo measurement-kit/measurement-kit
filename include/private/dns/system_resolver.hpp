@@ -29,7 +29,7 @@ void system_resolver(QueryClass dns_class, QueryType dns_type, std::string name,
     hints.ai_socktype = SOCK_STREAM;
 
     if (dns_class != MK_DNS_CLASS_IN) {
-        cb(UnsupportedClassError(), nullptr);
+        cb(UnsupportedClassError(), {});
         return;
     }
 
@@ -41,7 +41,7 @@ void system_resolver(QueryClass dns_class, QueryType dns_type, std::string name,
         hints.ai_family = AF_UNSPEC;
         hints.ai_flags |= AI_CANONNAME;
     } else {
-        cb(UnsupportedTypeError(), nullptr);
+        cb(UnsupportedTypeError(), {});
         return;
     }
 
@@ -51,7 +51,7 @@ void system_resolver(QueryClass dns_class, QueryType dns_type, std::string name,
      */
     ErrorOr<bool> also_cname = settings.get("dns/resolve_also_cname", false);
     if (!also_cname) {
-        cb(also_cname.as_error(), nullptr);
+        cb(also_cname.as_error(), {});
         return;
     }
     if (*also_cname == true) {
@@ -62,7 +62,7 @@ void system_resolver(QueryClass dns_class, QueryType dns_type, std::string name,
     query.qclass = dns_class;
     query.name = name;
 
-    SharedPtr<Message> message{new Message};
+    SharedPtr<Message> message{std::make_shared<Message>()};
     message->queries.push_back(query);
 
     getaddrinfo_async<getaddrinfo, inet_ntop>(name, hints, reactor, logger,

@@ -21,6 +21,11 @@ namespace mk {
 /// Before MK v0.8.0, SharedPtr was named Var.
 template <typename T> class SharedPtr {
   public:
+
+    // TODO: in order to make this class a real wrapper of std::shared_ptr
+    // we should enforce construction using only the explicit constructor
+    // that takes in input a std::shared_ptr instance.
+
     template <typename Deleter>
     SharedPtr(typename std::add_pointer<T>::type p, Deleter &&deleter)
         : ptr_{std::shared_ptr<T>{p, deleter}} {}
@@ -28,7 +33,7 @@ template <typename T> class SharedPtr {
     SharedPtr(typename std::add_pointer<T>::type p)
         : ptr_{std::shared_ptr<T>{p}} {}
 
-    SharedPtr(std::shared_ptr<T> &&ptr) : ptr_{ptr} {}
+    explicit SharedPtr(std::shared_ptr<T> &&ptr) : ptr_{ptr} {}
 
     SharedPtr() {}
 
@@ -69,7 +74,7 @@ template <typename T> class SharedPtr {
     /// when accessed if the dynamic cast failed. Otherwise, you can of
     /// course safely used the returned SharedPtr.
     template <typename R> SharedPtr<R> as() const {
-        return std::dynamic_pointer_cast<R>(ptr_);
+        return SharedPtr<R>{std::dynamic_pointer_cast<R>(ptr_)};
     }
 
     /// \brief `make()` is an alternative way of constructing a
@@ -79,7 +84,7 @@ template <typename T> class SharedPtr {
     /// std::make_shared rather than make(). We may deprecate make()
     /// in a future version of MK.
     template <typename... A> static SharedPtr<T> make(A &&... a) {
-        return std::make_shared<T>(std::forward<A>(a)...);
+        return SharedPtr<T>{std::make_shared<T>(std::forward<A>(a)...)};
     }
 
   private:

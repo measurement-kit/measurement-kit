@@ -12,10 +12,39 @@ wrappers for Android and iOS are, respectively,
 `./build/android/dependency` and `./build/ios/dependency`.
 
 The `dependency` script reads the proper package build specifications
-from `./build/spec`, downloads the sources, possibly applies patches,
-and builds the dependency. The wrapper scripts set environment
-variable such that the build dependency can be integrated into the
-iOS or Android build process.
+from `./build/spec`, possibly downloads the sources (see below),
+possibly applies patches, and builds the dependency. The wrapper scripts
+set environment variables such that the build dependency can be integrated
+into the iOS or Android build process.
+
+Some dependencies are vendored at `src/third_party`. The `dependency`
+script recognizes them and do not attempt to dowload their sources.
+
+## Updating vendored dependencies
+
+The workflow is the following:
+
+1. update `./build/spec/foo` when there is a new release
+
+2. run `./build/vendor/import foo` to download a pristine version
+   of the new release under `./src/third_party`, and commits
+   the reults on the current branch.
+
+3. run `./build/vendor/patch` to re-apply local patches. You may
+   need to iterate over this step to forward port the old patches.
+   When patches will apply cleanly, a commit will be created in
+   the current branch. Make sure any additional change you make is
+   saved in patches at `./build/patch/vendor`. (This is a relic
+   of how the build system worked in the past and we may want to
+   change some aspects of this step in the future.)
+
+4. Make sure you can successfully build and cross build the new
+   dependency. If necessary, apply more patches :-).
+
+Note that currently you will need to have OpenBSD signify installed
+on your system to verify the libressl tarball. You can easily get
+it for macOS (`signify-osx` on Homebrew) and Debian (`signify-openbsd`
+available from the standard repositories).
 
 ## Cross-compiling dependencies
 
@@ -59,8 +88,8 @@ and for Android:
 ./build/android/dependency /path/to/ndk mk
 ```
 
-This may not necessarily be the best way to cross compile MK for a specific
-platform, however it is a supported option.
+This may not necessarily be the best way to cross compile MK for the Android
+platform, and we may drop suppot for that in the future.
 
 ## Submitting and fetching dependencies
 

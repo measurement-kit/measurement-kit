@@ -24,7 +24,7 @@ void query(QueryClass dns_class, QueryType dns_type, std::string name,
             system_resolver(
                     dns_class, dns_type, name, settings, reactor, logger, cb);
         } else {
-            cb(InvalidDnsEngine(), nullptr);
+            cb(InvalidDnsEngine(), {});
         }
     });
 }
@@ -36,7 +36,8 @@ void resolve_hostname(std::string hostname, Callback<ResolveHostnameResult> cb,
     logger->debug("resolve_hostname: %s", hostname.c_str());
 
     sockaddr_storage storage;
-    SharedPtr<ResolveHostnameResult> result(new ResolveHostnameResult);
+    SharedPtr<ResolveHostnameResult> result{
+            std::make_shared<ResolveHostnameResult>()};
 
     // If address is a valid IPv4 address, connect directly
     memset(&storage, 0, sizeof storage);

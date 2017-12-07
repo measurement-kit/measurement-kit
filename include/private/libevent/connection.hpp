@@ -24,7 +24,7 @@
 #include <measurement_kit/net/error.hpp>
 #include <measurement_kit/net/transport.hpp>
 #include <measurement_kit/net/utils.hpp>
-#include <measurement_kit/common/portable/sys/socket.h>
+#include <measurement_kit/common/aaa_base.h>
 #include <new>
 #include <openssl/err.h>
 #include <ostream>

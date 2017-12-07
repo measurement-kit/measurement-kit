@@ -58,6 +58,7 @@
 /test-driver
 /test/common/continuation
 /test/common/delegate
+/test/common/enable_shared_from_this
 /test/common/encoding
 /test/common/error
 /test/common/error_or
@@ -75,9 +76,9 @@
 /test/common/maybe
 /test/common/parallel
 /test/common/range
-/test/common/raw_ptr
 /test/common/settings
 /test/common/shared_ptr
+/test/common/unique_ptr
 /test/common/utils
 /test/common/version
 /test/common/worker
@@ -180,5 +181,4 @@ site
 src/libmeasurement_kit/ext/Catch/
 src/libmeasurement_kit/ext/http-parser/
 stamp-h1
-third_party/
 xx

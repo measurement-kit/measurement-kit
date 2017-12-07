@@ -21,7 +21,7 @@ using namespace mk::net;
 
 /*static*/ ErrorOr<SharedPtr<Request>> Request::make(Settings settings, Headers headers,
                                                std::string body) {
-    SharedPtr<Request> request(new Request);
+    SharedPtr<Request> request{std::make_shared<Request>()};
     Error error = request->init(settings, headers, body);
     // Note: the following cannot be simplified using short circuit
     // evaluation because two different types are returned
@@ -114,7 +114,7 @@ void request_maybe_send(ErrorOr<SharedPtr<Request>> request, SharedPtr<Transport
                         SharedPtr<Logger> logger,
                         Callback<Error, SharedPtr<Request>> callback) {
     if (!request) {
-        callback(request.as_error(), nullptr);
+        callback(request.as_error(), {});
         return;
     }
     Buffer buff;
@@ -146,16 +146,15 @@ static void request_recv_response_loop(SharedPtr<RequestRecvResponse>);
 void request_recv_response(SharedPtr<Transport> txp,
                            Callback<Error, SharedPtr<Response>> cb, Settings settings,
                            SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
-
-    SharedPtr<RequestRecvResponse> ctx{new RequestRecvResponse};
-    ctx->buff.reset(new Buffer);
+    SharedPtr<RequestRecvResponse> ctx{std::make_shared<RequestRecvResponse>()};
+    ctx->buff.reset(std::make_shared<Buffer>());
     ctx->cb = std::move(cb);
     // Note: we cannot move logger because it must be shared by `ctx` and
     // by the response parser, hence we make a copy of it.
     ctx->logger = logger;
-    ctx->parser.reset(new ResponseParserNg{logger});
+    ctx->parser.reset(std::make_shared<ResponseParserNg>{logger});
     ctx->reactor = std::move(reactor);
-    ctx->response.reset(new Response);
+    ctx->response.reset(std::make_shared<Response>());
     ctx->settings = std::move(settings);
     ctx->txp = std::move(txp);
     request_recv_response_start(std::move(ctx));
@@ -253,7 +252,7 @@ void request_maybe_sendrecv(ErrorOr<SharedPtr<Request>> request, SharedPtr<Trans
     request_maybe_send(request, txp, logger,
                        [=](Error error, SharedPtr<Request> request) {
         if (error) {
-            SharedPtr<Response> response{new Response};
+            SharedPtr<Response> response{std::make_shared<Response>()};
             response->request = request;
             callback(error, response);
             return;
@@ -314,14 +313,14 @@ void request(Settings settings, Headers headers, std::string body,
         "http/max_redirects", 0
     );
     if (!max_redirects) {
-        callback(InvalidMaxRedirectsError(max_redirects.as_error()), nullptr);
+        callback(InvalidMaxRedirectsError(max_redirects.as_error()), {});
         return;
     }
     request_connect(
         settings,
         [=](Error err, SharedPtr<Transport> txp) {
             if (err) {
-                callback(err, nullptr);
+                callback(err, {});
                 return;
             }
             request_sendrecv(
