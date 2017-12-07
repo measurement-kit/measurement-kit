@@ -152,7 +152,7 @@ void request_recv_response(SharedPtr<Transport> txp,
     // Note: we cannot move logger because it must be shared by `ctx` and
     // by the response parser, hence we make a copy of it.
     ctx->logger = logger;
-    ctx->parser.reset(std::make_shared<ResponseParserNg>{logger});
+    ctx->parser.reset(std::make_shared<ResponseParserNg>(logger));
     ctx->reactor = std::move(reactor);
     ctx->response.reset(std::make_shared<Response>());
     ctx->settings = std::move(settings);
