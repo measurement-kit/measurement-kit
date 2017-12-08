@@ -138,25 +138,28 @@ class RequestRecvResponse {
     Settings settings;
     SharedPtr<Transport> txp;
     bool valid_response = false;
+
+    RequestRecvResponse(SharedPtr<Transport> txp,
+            Callback<Error, SharedPtr<Response>> cb, Settings settings,
+            SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) :
+        buff{std::make_shared<Buffer>()}, cb{std::move(cb)},
+        // Note: we cannot move logger because it must be shared by `ctx` and
+        // by the response parser, hence we make a copy of it.
+        logger{logger}, parser{std::make_shared<ResponseParserNg>(logger)},
+        reactor{std::move(reactor)}, response{std::make_shared<Response>()},
+        settings{std::move(settings)}, txp{std::move(txp)} {}
 };
 
 static void request_recv_response_start(SharedPtr<RequestRecvResponse>);
 static void request_recv_response_loop(SharedPtr<RequestRecvResponse>);
 
 void request_recv_response(SharedPtr<Transport> txp,
-                           Callback<Error, SharedPtr<Response>> cb, Settings settings,
-                           SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
-    SharedPtr<RequestRecvResponse> ctx{std::make_shared<RequestRecvResponse>()};
-    ctx->buff.reset(std::make_shared<Buffer>());
-    ctx->cb = std::move(cb);
-    // Note: we cannot move logger because it must be shared by `ctx` and
-    // by the response parser, hence we make a copy of it.
-    ctx->logger = logger;
-    ctx->parser.reset(std::make_shared<ResponseParserNg>(logger));
-    ctx->reactor = std::move(reactor);
-    ctx->response.reset(std::make_shared<Response>());
-    ctx->settings = std::move(settings);
-    ctx->txp = std::move(txp);
+        Callback<Error, SharedPtr<Response>> cb, Settings settings,
+        SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
+    SharedPtr<RequestRecvResponse> ctx{std::make_shared<RequestRecvResponse>(
+        std::move(txp), std::move(cb), std::move(settings), std::move(reactor),
+        std::move(logger)
+    )};
     request_recv_response_start(std::move(ctx));
 }
 
