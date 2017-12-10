@@ -33,7 +33,7 @@ class Worker {
 
     Worker();
 
-    Worker(size_t parallelism);
+    Worker(short parallelism);
 
     void call_in_thread(SharedPtr<Logger> logger, Callback<> &&func);
 
