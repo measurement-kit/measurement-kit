@@ -38,12 +38,12 @@
 #include "private/common/citrus_ctype.h"
 
 size_t
-mk_utf8_mbrtowc(wchar_t * __restrict pwc,
+mk_utf8_mbrtowc(mk_wchar_t * __restrict pwc,
     const char * __restrict s, size_t n, mbstate_t * __restrict ps)
 {
 	struct _utf8_state *us;
 	int ch, i, mask, want;
-	wchar_t lbound, wch;
+	mk_wchar_t lbound, wch;
 
 	us = (struct _utf8_state *)ps;
 
@@ -172,7 +172,7 @@ mk_utf8_mbsinit(const mbstate_t * __restrict ps)
 }
 
 size_t
-mk_utf8_mbsnrtowcs(wchar_t * __restrict dst,
+mk_utf8_mbsnrtowcs(mk_wchar_t * __restrict dst,
     const char ** __restrict src, size_t nmc, size_t len,
     mbstate_t * __restrict ps)
 {
@@ -224,7 +224,7 @@ mk_utf8_mbsnrtowcs(wchar_t * __restrict dst,
 	for (i = o = 0; i < nmc && o < len; i += r, o++) {
 		if ((unsigned char)(*src)[i] < 0x80) {
 			/* Fast path for plain ASCII characters. */
-			dst[o] = (wchar_t)(unsigned char)(*src)[i];
+			dst[o] = (mk_wchar_t)(unsigned char)(*src)[i];
 			if ((*src)[i] == '\0') {
 				*src = NULL;
 				return o;
@@ -252,7 +252,7 @@ mk_utf8_mbsnrtowcs(wchar_t * __restrict dst,
 }
 
 size_t
-mk_utf8_wcrtomb(char * __restrict s, wchar_t wc,
+mk_utf8_wcrtomb(char * __restrict s, mk_wchar_t wc,
     mbstate_t * __restrict ps)
 {
 	struct _utf8_state *us;
@@ -312,7 +312,7 @@ mk_utf8_wcrtomb(char * __restrict s, wchar_t wc,
 
 size_t
 mk_utf8_wcsnrtombs(char * __restrict dst,
-    const wchar_t ** __restrict src, size_t nwc, size_t len,
+    const mk_wchar_t ** __restrict src, size_t nwc, size_t len,
     mbstate_t * __restrict ps)
 {
 	struct _utf8_state *us;
@@ -328,7 +328,7 @@ mk_utf8_wcsnrtombs(char * __restrict dst,
 
 	if (dst == NULL) {
 		for (i = o = 0; i < nwc; i++, o += r) {
-			wchar_t wc = (*src)[i];
+			mk_wchar_t wc = (*src)[i];
 			if (wc >= 0 && wc < 0x80) {
 				/* Fast path for plain ASCII characters. */
 				if (wc == 0)
@@ -344,10 +344,10 @@ mk_utf8_wcsnrtombs(char * __restrict dst,
 	}
 
 	for (i = o = 0; i < nwc && o < len; i++, o += r) {
-		wchar_t wc = (*src)[i];
+		mk_wchar_t wc = (*src)[i];
 		if (wc >= 0 && wc < 0x80) {
 			/* Fast path for plain ASCII characters. */
-			dst[o] = (wchar_t)wc;
+			dst[o] = (mk_wchar_t)wc;
 			if (wc == 0) {
 				*src = NULL;
 				return o;
