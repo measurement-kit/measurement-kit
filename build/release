@@ -23,9 +23,11 @@ for file in                                                                    \
     sed "s/$old_version/$new_version/g" $file.old > $file
     rm $file.old
 done
+# We expect this to fail if version number is not changed
 git commit -am "release $new_version: step 1: update version number"
 
 ./build/includes
+# At least version.h should be changed after this command
 git commit -am "release $new_version: step 2: update headers"
 
 mv ChangeLog.md ChangeLog.md.old
