@@ -1,0 +1,11 @@
+#!/bin/sh
+set -e
+for dir in example/* test/*; do (
+    echo "* $dir"
+    cd $dir
+    rm -rf .gitignore
+    for file in `ls *.cpp`; do
+        stem=`echo $file | sed 's/.cpp$//g'`
+        echo /$stem >> .gitignore
+    done
+) done
