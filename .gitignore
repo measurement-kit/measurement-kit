@@ -37,8 +37,6 @@
 /citizenlab-test-lists.*.csv
 /cmake_install.cmake
 /include.am
-/include/measurement_kit/*.hpp
-/include/measurement_kit/common/version.h
 /maxmind-geoip.*.dat*
 /measurement_kit
 /test-driver
