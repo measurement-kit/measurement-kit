@@ -6,16 +6,33 @@ if [ $# -ne 2 ]; then
 fi
 old_version=$1
 new_version=$2
-for file in configure.ac doc/api/common/version.md doc/index.md                \
-            include/measurement_kit/common/version.h.in build/spec/mk          \
-            measurement_kit.podspec build/ios/library                          \
-            build/ios/archive-library Doxyfile autogen.sh; do
+
+for file in                                                                    \
+        Doxyfile                                                               \
+        build/includes                                                         \
+        build/ios/archive-library                                              \
+        build/ios/library                                                      \
+        build/spec/mk                                                          \
+        configure.ac                                                           \
+        doc/api/common/version.md                                              \
+        doc/index.md                                                           \
+        include/measurement_kit/common/version.h                               \
+        include/measurement_kit/common/version.h.in                            \
+        measurement_kit.podspec; do
     cp $file $file.old
     sed "s/$old_version/$new_version/g" $file.old > $file
     rm $file.old
 done
+# We expect this to fail if version number is not changed
+git commit -am "release $new_version: step 1: update version number"
+
+./build/includes
+# At least version.h should be changed after this command
+git commit -am "release $new_version: step 2: update headers"
+
 mv ChangeLog.md ChangeLog.md.old
 echo "# MeasurementKit $new_version [`date +%Y-%m-%d`]" > ChangeLog.md
 echo "" >> ChangeLog.md
 cat ChangeLog.md.old >> ChangeLog.md
 rm ChangeLog.md.old
+echo "Now edit the changelog and commit the changes to complete the release"

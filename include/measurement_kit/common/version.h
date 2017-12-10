@@ -23,19 +23,19 @@
 // as part of the `./autogen.sh` script that prepares a source tarball. If we
 // cannot run `git` because we're not in a git repository, then we set this
 // variable equal to MK_VERSION.
-#define MK_VERSION_FULL "@MK_VERSION_FULL@"
+#define MK_VERSION_FULL "v0.9.0-dev"
 
 // MK_VERSION_MAJOR is the major version number extracted from MK_VERSION_FULL.
-#define MK_VERSION_MAJOR @MK_VERSION_MAJOR@
+#define MK_VERSION_MAJOR 0
 
 // MK_VERSION_MINOR is the minor version number extracted from MK_VERSION_FULL.
-#define MK_VERSION_MINOR @MK_VERSION_MINOR@
+#define MK_VERSION_MINOR 9
 
 // MK_VERSION_PATCH is the patch version number extracted from MK_VERSION_FULL.
-#define MK_VERSION_PATCH @MK_VERSION_PATCH@
+#define MK_VERSION_PATCH 0
 
 // MK_VERSION_STABLE is 1 if this is a stable release, 0 otherwise.
-#define MK_VERSION_STABLE @MK_VERSION_STABLE@
+#define MK_VERSION_STABLE 0
 
 // MK_VERSION_NUMERIC is the numberic representation of MK_VERSION_FULL,
 // suitable to test the version of MK inside of headers.
@@ -47,7 +47,7 @@
 //       ^^^     ^^^     ^^^     ^^^
 //      major   minor   patch   stable
 // ```
-#define MK_VERSION_NUMERIC 0x@MK_VERSION_NUMERIC@LL
+#define MK_VERSION_NUMERIC 0x00000000009000000LL
 
 #ifdef __cplusplus
 extern "C" {
