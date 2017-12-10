@@ -26,7 +26,7 @@ done
 git commit -am "release $new_version: step 1: update version number"
 
 ./build/includes
-git commit -am "release $new_version: step 1: update headers"
+git commit -am "release $new_version: step 2: update headers"
 
 mv ChangeLog.md ChangeLog.md.old
 echo "# MeasurementKit $new_version [`date +%Y-%m-%d`]" > ChangeLog.md
