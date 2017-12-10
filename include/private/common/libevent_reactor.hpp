@@ -57,7 +57,14 @@ class LibeventReactor : public Reactor, public NonCopyable, public NonMovable {
   public:
     // ## Initialization
 
-    template <MK_MOCK(evthread_use_pthreads), MK_MOCK(sigaction)>
+    template <
+        // Depending on the platform we have different thread init funcs
+#ifdef _WIN32
+        MK_MOCK_AS(evthread_use_windows_threads, evthread_init)
+#else
+        MK_MOCK_AS(evthread_use_pthreads, evthread_init), MK_MOCK(sigaction)
+#endif
+        >
     static inline void libevent_init_once() {
         return locked_global([]() {
             static bool initialized = false;
@@ -65,14 +72,17 @@ class LibeventReactor : public Reactor, public NonCopyable, public NonMovable {
                 return;
             }
             mk::debug("initializing libevent once");
-            if (evthread_use_pthreads() != 0) {
-                throw std::runtime_error("evthread_use_pthreads");
+            if (evthread_init() != 0) {
+                throw std::runtime_error("evthread_init");
             }
+            // SIGPIPE is not an issue on Windows
+#ifndef _WIN32
             struct sigaction sa = {};
             sa.sa_handler = SIG_IGN;
             if (sigaction(SIGPIPE, &sa, nullptr) != 0) {
                 throw std::runtime_error("sigaction");
             }
+#endif
             initialized = true;
         });
     }
