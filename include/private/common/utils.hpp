@@ -89,7 +89,12 @@ Error overwrite_file(std::string path, std::string content) {
     return NoError();
 }
 
-template <MK_MOCK(gettimeofday)> void timeval_now(timeval *tv) {
+#ifdef _WIN32
+template <MK_MOCK_AS(evutil_gettimeofday, gettimeofday)>
+#else
+template <MK_MOCK(gettimeofday)>
+#endif
+void timeval_now(timeval *tv) {
     *tv = {};
     if (gettimeofday(tv, nullptr) != 0) {
         throw std::runtime_error("gettimeofday()");
