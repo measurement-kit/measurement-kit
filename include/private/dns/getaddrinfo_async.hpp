@@ -18,7 +18,6 @@ namespace dns {
     XX(EAI_FAMILY, NotSupportedAIFamilyError)                                  \
     XX(EAI_MEMORY, MemoryAllocationFailureError)                               \
     XX(EAI_NONAME, HostOrServiceNotProvidedOrNotKnownError)                    \
-    XX(EAI_OVERFLOW, ArgumentBufferOverflowError)                              \
     XX(EAI_SERVICE, NotSupportedServnameError)                                 \
     XX(EAI_SOCKTYPE, NotSupportedAISocktypeError)
 
@@ -29,6 +28,10 @@ inline Error getaddrinfo_async_map_error(int error) {
         return class_name_();
         GETADDRINFO_ASYNC_MAP_ERROR
 #undef XX
+#ifdef EAI_OVERFLOW // Not always available
+    case EAI_OVERFLOW:
+        return ArgumentBufferOverflowError();
+#endif
 #ifdef EAI_BADHINTS // Not always available
     case EAI_BADHINTS:
         return InvalidHintsValueError();
