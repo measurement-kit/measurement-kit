@@ -26,7 +26,7 @@ struct bufferevent;
 
 */
 
-static Error fail(std::string, std::string, sockaddr_storage *, socklen_t *) {
+static Error fail(std::string, uint16_t, sockaddr_storage *, socklen_t *) {
     return ValueError();
 }
 
@@ -47,7 +47,7 @@ static bufferevent *fail(event_base *, evutil_socket_t, int) { return nullptr; }
 TEST_CASE("connect_base deals with bufferevent_socket_new error") {
     bool ok = false;
     try {
-        connect_base<make_sockaddr_proxy, fail>("130.192.16.172", 80, 3.14,
+        connect_base<make_sockaddr, fail>("130.192.16.172", 80, 3.14,
                 Reactor::global(), Logger::global(), nullptr);
     } catch (GenericError &) {
         ok = true;
@@ -60,7 +60,7 @@ static int fail(bufferevent *, const timeval *, const timeval *) { return -1; }
 TEST_CASE("connect_base deals with bufferevent_set_timeouts error") {
     bool ok = false;
     try {
-        connect_base<make_sockaddr_proxy, ::bufferevent_socket_new,
+        connect_base<make_sockaddr, ::bufferevent_socket_new,
                      fail>("130.192.16.172", 80, 3.14, Reactor::global(),
                            Logger::global(), nullptr);
     } catch (GenericError &) {
@@ -84,7 +84,7 @@ TEST_CASE("connect_base deals with bufferevent_socket_connect error") {
     // Note: connectivity not required to run this test
     SharedPtr<Reactor> reactor = Reactor::make();
     reactor->run_with_initial_event([=]() {
-        connect_base<make_sockaddr_proxy, ::bufferevent_socket_new,
+        connect_base<make_sockaddr, ::bufferevent_socket_new,
                      bufferevent_set_timeouts, Fail::fail>(
             "130.192.16.172", 80, 3.14, reactor, Logger::global(),
             [=](Error e, bufferevent *b, double) {
