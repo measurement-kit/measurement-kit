@@ -62,7 +62,7 @@ ErrorOr<Buffer> socks5_format_connect_request(Settings settings, SharedPtr<Logge
     if (address.length() > 255) {
         return SocksAddressTooLongError();
     }
-    out.write_uint8(address.length());            // Len
+    out.write_uint8((uint8_t)address.length());   // Len
     out.write(address.c_str(), address.length()); // String
 
     logger->debug("socks5: >> domain len=%d", (uint8_t)address.length());
