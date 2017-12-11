@@ -17,7 +17,7 @@ static inline void run(size_t idx, std::vector<Continuation<Error>> input,
         input[idx]([=](Error error) {
             // XXX: code not thread safe, to make thread safe we could
             // share a mutex or use call_later() to serialize
-            if (error and *overall == NoError()) {
+            if (error && *overall == NoError()) {
                 static const Error template_error = ParallelOperationError();
                 overall->code = template_error.code;
                 overall->reason = template_error.reason;

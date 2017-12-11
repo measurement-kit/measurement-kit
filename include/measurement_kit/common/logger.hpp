@@ -36,6 +36,13 @@
 /// is not plaintext but rather a serialized JSON representing an event.
 #define MK_LOG_EVENT 32
 
+// Note: the attribute we use below is GCC and Clang specific (and Clang
+// identifies itself as GCC), so make sure other compilers are not going to
+// see the attribute definition, which will break the build.
+#ifndef __GNUC__
+#define __attribute__(x_) /* Nothing */
+#endif
+
 namespace mk {
 
 /// \brief `Logger` specifies how logs are processed. It is an abstract class
@@ -229,4 +236,9 @@ void on_log(Callback<uint32_t, const char *> &&fn);
 void set_logfile(std::string path);
 
 } // namespace mk
+
+#ifndef __GNUC__
+#undef __attribute__
+#endif
+
 #endif

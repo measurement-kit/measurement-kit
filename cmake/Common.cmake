@@ -16,6 +16,11 @@ set(MK_UNIX_CFLAGS "-Wall -Wextra -pedantic -I${CMAKE_SOURCE_DIR}/include")
 set(MK_UNIX_CXXFLAGS "-Wall -Wextra -pedantic -I${CMAKE_SOURCE_DIR}/include")
 
 add_definitions(-DENABLE_INTEGRATION_TESTS -DMK_CA_BUNDLE="${MK_CA_BUNDLE}")
+if (WIN32)
+    add_definitions(-DNOMINMAX) # https://stackoverflow.com/a/11544154
+    add_definitions(
+      -D_CRT_SECURE_NO_DEPRECATE) # https://stackoverflow.com/a/14387
+endif()
 
 if("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
   set(CMAKE_CXX_FLAGS
@@ -32,19 +37,17 @@ endif()
 
 # Set target include directories and link libraries:
 
-if(UNIX)
-  if(NOT ("${MK_GEOIP}" STREQUAL ""))
+if(NOT ("${MK_GEOIP}" STREQUAL ""))
     list(APPEND MK_INCLUDE_DIRS "${MK_GEOIP}/include")
     list(APPEND MK_LINK_DIRS "${MK_GEOIP}/lib")
-  endif()
-  if(NOT ("${MK_LIBEVENT}" STREQUAL ""))
+endif()
+if(NOT ("${MK_LIBEVENT}" STREQUAL ""))
     list(APPEND MK_INCLUDE_DIRS "${MK_LIBEVENT}/include")
     list(APPEND MK_LINK_DIRS "${MK_LIBEVENT}/lib")
-  endif()
-  if(NOT ("${MK_OPENSSL}" STREQUAL ""))
+endif()
+if(NOT ("${MK_OPENSSL}" STREQUAL ""))
     list(APPEND MK_INCLUDE_DIRS "${MK_OPENSSL}/include")
     list(APPEND MK_LINK_DIRS "${MK_OPENSSL}/lib")
-  endif()
 endif()
 
 # Check dependencies:

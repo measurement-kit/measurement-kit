@@ -22,7 +22,7 @@ namespace mk {
 
 Worker::Worker() {}
 
-Worker::Worker(size_t p) { state->parallelism = p; }
+Worker::Worker(short p) { state->parallelism = p; }
 
 void Worker::call_in_thread(SharedPtr<Logger> logger, Callback<> &&func) {
     std::unique_lock<std::mutex> _{state->mutex};

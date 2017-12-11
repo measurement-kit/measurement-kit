@@ -40,8 +40,14 @@ timeval *timeval_init(timeval *tv, double delta) {
     if (delta < 0) {
         return nullptr;
     }
+    // Note: on Windows `struct timeval` fields are `long`
+#ifndef _WIN32
     tv->tv_sec = (time_t)floor(delta);
     tv->tv_usec = (suseconds_t)((delta - floor(delta)) * 1000000);
+#else
+    tv->tv_sec = (long)floor(delta);
+    tv->tv_usec = (long)((delta - floor(delta)) * 1000000);
+#endif
     return tv;
 }
 

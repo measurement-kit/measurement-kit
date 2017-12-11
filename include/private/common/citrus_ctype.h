@@ -39,28 +39,42 @@
 # define __restrict /* nothing */
 #endif
 
+/*
+ * On Windows wchar_t is 16 bit, but citrus code is actually assuming that we
+ * work with 32 bit wide characters, which is what we do on Unix. So, for Win32
+ * redefine the type used by Citrus code to be 4 bytes wide.
+ *
+ * See <https://stackoverflow.com/questions/19068748>.
+ */
+#ifdef _WIN32
+#include <stdint.h>
+#define mk_wchar_t uint32_t
+#else
+#define mk_wchar_t wchar_t
+#endif
+
 #define _CITRUS_UTF8_MB_CUR_MAX 4
 
 struct _utf8_state {
-	wchar_t	ch;
-	int	want;
-	wchar_t	lbound;
+	mk_wchar_t	ch;
+	int		want;
+	mk_wchar_t	lbound;
 };
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-size_t	mk_utf8_mbrtowc(wchar_t * __restrict,
+size_t	mk_utf8_mbrtowc(mk_wchar_t * __restrict,
 		const char * __restrict, size_t, mbstate_t * __restrict);
 int     mk_utf8_mbsinit(const mbstate_t * __restrict);
-size_t  mk_utf8_mbsnrtowcs(wchar_t * __restrict,
+size_t  mk_utf8_mbsnrtowcs(mk_wchar_t * __restrict,
 		const char ** __restrict, size_t, size_t,
 		mbstate_t * __restrict);
-size_t  mk_utf8_wcrtomb(char * __restrict, wchar_t,
+size_t  mk_utf8_wcrtomb(char * __restrict, mk_wchar_t,
 		mbstate_t * __restrict);
 size_t  mk_utf8_wcsnrtombs(char * __restrict,
-		const wchar_t ** __restrict, size_t, size_t,
+		const mk_wchar_t ** __restrict, size_t, size_t,
 		mbstate_t * __restrict);
 
 #ifdef __cplusplus
