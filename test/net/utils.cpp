@@ -265,37 +265,6 @@ TEST_CASE("map_errno() works as expected") {
 }
 
 TEST_CASE("make_sockaddr() works as expected") {
-    auto check_for_error = [](std::string address, std::string port) {
-        auto err = mk::net::make_sockaddr(address, port, nullptr, nullptr);
-        REQUIRE(err == mk::ValueError());
-    };
-
-    SECTION("With string port: we deal with invalid port") {
-        check_for_error("8.8.8.8", "antani");
-    }
-
-    SECTION("With string port: we deal with negative port") {
-        check_for_error("8.8.8.8", "-1");
-    }
-
-    SECTION("With string port: we deal with overflow") {
-        check_for_error("8.8.8.8", "65536");
-    }
-
-    SECTION("With string port: it works with a valid port") {
-        sockaddr_storage ss = {};
-        socklen_t sslen = 0;
-        auto err = mk::net::make_sockaddr("8.8.8.8", "22", &ss, &sslen);
-        REQUIRE(err == mk::NoError());
-        REQUIRE(sslen == sizeof(sockaddr_in));
-        sockaddr_in *sin4 = (sockaddr_in *)&ss;
-        REQUIRE(sin4->sin_family == AF_INET);
-        REQUIRE(sin4->sin_port == htons(22));
-        char x[INET_ADDRSTRLEN];
-        REQUIRE(inet_ntop(AF_INET, &sin4->sin_addr, x, sizeof(x)) != nullptr);
-        REQUIRE(std::string{"8.8.8.8"} == x);
-    }
-
     SECTION("With numeric port: it deals with invalid address") {
         auto err = mk::net::make_sockaddr("antani", 22, nullptr, nullptr);
         REQUIRE(err == mk::ValueError());

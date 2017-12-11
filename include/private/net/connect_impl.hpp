@@ -26,13 +26,7 @@ void mk_bufferevent_on_event(bufferevent *, short, void *);
 namespace mk {
 namespace net {
 
-// Proxy required because `make_sockaddr` is overloaded
-static Error make_sockaddr_proxy(std::string s, std::string p,
-                                 sockaddr_storage *ss, socklen_t *len) {
-    return make_sockaddr(s, p, ss, len);
-}
-
-template <MK_MOCK(make_sockaddr_proxy), MK_MOCK(bufferevent_socket_new),
+template <MK_MOCK(make_sockaddr), MK_MOCK(bufferevent_socket_new),
           MK_MOCK(bufferevent_set_timeouts),
           MK_MOCK(bufferevent_socket_connect)>
 void connect_base(std::string address, uint16_t port, double timeout,
@@ -47,10 +41,9 @@ void connect_base(std::string address, uint16_t port, double timeout,
     }();
     logger->debug("connect_base %s", endpoint.c_str());
 
-    std::string port_string = std::to_string(port);
     sockaddr_storage storage = {};
     socklen_t salen = 0;
-    Error err = make_sockaddr_proxy(address, port_string, &storage, &salen);
+    Error err = make_sockaddr(address, port, &storage, &salen);
     if (err != NoError()) {
         logger->warn("cannot parse endpoint: '%s'", endpoint.c_str());
         cb(err, nullptr, 0.0);

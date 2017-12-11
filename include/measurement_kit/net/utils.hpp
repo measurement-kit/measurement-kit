@@ -34,13 +34,6 @@ ErrorOr<Endpoint> endpoint_from_sockaddr_storage(
 
 Error make_sockaddr(
         std::string address,
-        std::string port,
-        sockaddr_storage *storage,
-        socklen_t *len
-) noexcept;
-
-Error make_sockaddr(
-        std::string address,
         uint16_t port,
         sockaddr_storage *storage,
         socklen_t *len
