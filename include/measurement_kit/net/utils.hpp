@@ -6,6 +6,12 @@
 
 #include <measurement_kit/common.hpp>
 
+#ifdef _WIN32
+#include <ws2tcpip.h>
+#endif
+
+struct sockaddr_storage;
+
 namespace mk {
 namespace net {
 
@@ -24,13 +30,6 @@ std::string serialize_endpoint(Endpoint);
 
 ErrorOr<Endpoint> endpoint_from_sockaddr_storage(
         sockaddr_storage *storage
-) noexcept;
-
-Error make_sockaddr(
-        std::string address,
-        std::string port,
-        sockaddr_storage *storage,
-        socklen_t *len
 ) noexcept;
 
 Error make_sockaddr(

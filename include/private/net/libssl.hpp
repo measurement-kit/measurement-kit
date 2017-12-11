@@ -15,12 +15,12 @@
 /// \file private/net/libssl.hpp
 /// \brief Code related to libssl (openssl or libressl).
 
+#include "private/common/locked.hpp"
+#include "private/common/mock.hpp"
 #include "private/ext/tls_internal.h"
 #include "private/net/builtin_ca_bundle.hpp"
 #include <cassert>
 #include <map>
-#include "private/common/locked.hpp"
-#include "private/common/mock.hpp"
 #include <measurement_kit/common/logger.hpp>
 #include <measurement_kit/common/non_copyable.hpp>
 #include <measurement_kit/common/non_movable.hpp>
@@ -92,7 +92,8 @@ class Context : public NonCopyable, public NonMovable {
         in a boolean context) and a `SSL *` on success.
     */
     template <MK_MOCK(SSL_new)>
-    ErrorOr<SSL *> get_client_ssl(std::string hostname, SharedPtr<Logger> logger) {
+    ErrorOr<SSL *> get_client_ssl(
+            std::string hostname, SharedPtr<Logger> logger) {
         assert(ctx_ != nullptr);
         SSL *ssl = SSL_new(ctx_);
         if (ssl == nullptr) {
@@ -125,17 +126,17 @@ class Context : public NonCopyable, public NonMovable {
     */
     template <MK_MOCK(SSL_CTX_new), MK_MOCK(SSL_CTX_load_verify_locations)
 #if (defined LIBRESSL_VERSION_NUMBER && LIBRESSL_VERSION_NUMBER >= 0x2010400fL)
-                                          ,
-              MK_MOCK(SSL_CTX_load_verify_mem)
+                                            ,
+            MK_MOCK(SSL_CTX_load_verify_mem)
 #endif
-              >
-    static ErrorOr<SharedPtr<Context>> make(std::string ca_bundle_path,
-                                      SharedPtr<Logger> logger) {
+            >
+    static ErrorOr<SharedPtr<Context>> make(
+            std::string ca_bundle_path, SharedPtr<Logger> logger) {
         // Implementation note: we need to initialize libssl early otherwise
         // most of the functions of the library will not work properly.
         libssl_init_once(logger);
         logger->debug("ssl: creating SSL_CTX with bundle: '%s'",
-                      ca_bundle_path.c_str());
+                ca_bundle_path.c_str());
         SSL_CTX *ctx = SSL_CTX_new(SSLv23_client_method());
         if (ctx == nullptr) {
             logger->warn("ssl: failed to create SSL_CTX");
@@ -153,14 +154,18 @@ class Context : public NonCopyable, public NonMovable {
          */
         SSL_CTX_set_options(ctx, SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3);
         if (ca_bundle_path != "") {
-            if (!SSL_CTX_load_verify_locations(ctx, ca_bundle_path.c_str(),
-                                               nullptr)) {
+            if (!SSL_CTX_load_verify_locations(
+                        ctx, ca_bundle_path.c_str(), nullptr)) {
                 logger->warn("ssl: failed to load verify location");
                 SSL_CTX_free(ctx);
                 return SslCtxLoadVerifyLocationsError();
             }
         } else {
-#if (defined LIBRESSL_VERSION_NUMBER && LIBRESSL_VERSION_NUMBER >= 0x2010400fL)
+#if (defined LIBRESSL_VERSION_NUMBER &&                                        \
+        LIBRESSL_VERSION_NUMBER >= 0x2010400fL && !defined _MSC_VER)
+            // Note: we disable the CA bundle on Windows where the compiler
+            // fails with internal error when compiling the builtin vector that
+            // contains the bytes of the CA file.
             std::vector<uint8_t> bundle = builtin_ca_bundle();
             logger->debug("ssl: using builtin libressl's ca bundle");
             if (!SSL_CTX_load_verify_mem(ctx, bundle.data(), bundle.size())) {
@@ -219,23 +224,25 @@ template <size_t max_cache_size = 64> class Cache {
     */
 
     /// Return thread local instance of the cache.
+    ///
+    /// @note We have experimentally found that iOS armv7 does not support well
+    /// thread_local. In such case, we allocate a new cache every time rather
+    /// than using a thread local cache. We will be able to drop this fix
+    /// in the moment in which support for 32-bit iOS will be dropped.
+    ///
+    /// See <https://github.com/measurement-kit/measurement-kit/issues/1397>.
     static SharedPtr<Cache> thread_local_instance() {
-        // We have experimentally found that iOS armv7 does not support well
-        // thread_local. In such case, we allocate a new cache every time rather
-        // than using a thread local cache. We will be able to drop this fix
-        // in the moment in which support for 32-bit iOS will be dropped.
-        //
-        // See <https://github.com/measurement-kit/measurement-kit/issues/1397>.
 #ifndef MK_NO_THREAD_LOCAL
         static thread_local
 #endif
-        SharedPtr<Cache> instance{new Cache};
+                SharedPtr<Cache>
+                        instance{new Cache};
         return instance;
     }
 
     /// Inline wrapper for Context::make, for testability
-    static inline ErrorOr<SharedPtr<Context>> mkctx(std::string ca_bundle_path,
-                                              SharedPtr<Logger> logger) {
+    static inline ErrorOr<SharedPtr<Context>> mkctx(
+            std::string ca_bundle_path, SharedPtr<Logger> logger) {
         return Context::make(ca_bundle_path, logger);
     }
 
@@ -263,7 +270,7 @@ template <size_t max_cache_size = 64> class Cache {
     */
     template <MK_MOCK(mkctx)>
     ErrorOr<SSL *> get_client_ssl(std::string ca_bundle_path,
-                                  std::string hostname, SharedPtr<Logger> logger) {
+            std::string hostname, SharedPtr<Logger> logger) {
         /*
            Implementation note: `SSL_CTX *` are reference counted and they will
            be alive as long as there is an `SSL *` using them. As such, we do
@@ -278,7 +285,8 @@ template <size_t max_cache_size = 64> class Cache {
             all_.clear();
         }
         if (all_.count(ca_bundle_path) == 0) {
-            ErrorOr<SharedPtr<Context>> maybe_context = mkctx(ca_bundle_path, logger);
+            ErrorOr<SharedPtr<Context>> maybe_context =
+                    mkctx(ca_bundle_path, logger);
             if (!maybe_context) {
                 return maybe_context.as_error();
             }
@@ -311,7 +319,7 @@ template <size_t max_cache_size = 64> class Cache {
     \return NoError() on success, an error on failure.
 */
 template <MK_MOCK(SSL_get_verify_result), MK_MOCK(SSL_get_peer_certificate),
-          MK_MOCK(tls_check_name)>
+        MK_MOCK(tls_check_name)>
 Error verify_peer(std::string hostname, SSL *ssl, SharedPtr<Logger> logger) {
     assert(ssl != nullptr);
     logger->debug("SSL version: %s", SSL_get_version(ssl));
@@ -319,7 +327,7 @@ Error verify_peer(std::string hostname, SSL *ssl, SharedPtr<Logger> logger) {
     if (verify_err != X509_V_OK) {
         logger->warn("ssl: got an invalid certificate");
         return SslInvalidCertificateError(
-              X509_verify_cert_error_string(verify_err));
+                X509_verify_cert_error_string(verify_err));
     }
     X509 *server_cert = SSL_get_peer_certificate(ssl);
     if (server_cert == nullptr) {
