@@ -6,5 +6,6 @@
 #include <measurement_kit/dns/query_class.hpp>
 #include <measurement_kit/dns/query.hpp>
 #include <measurement_kit/dns/query_type.hpp>
+#include <measurement_kit/dns/nameser.h>
 #include <measurement_kit/dns/resolve_hostname.hpp>
 #endif
