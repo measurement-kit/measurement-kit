@@ -6,6 +6,12 @@
 
 #include <measurement_kit/common.hpp>
 
+#ifdef _WIN32
+#include <ws2tcpip.h>
+#endif
+
+struct sockaddr_storage;
+
 namespace mk {
 namespace net {
 
