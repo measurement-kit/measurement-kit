@@ -93,114 +93,17 @@
 /*
  * Define constants based on rfc883
  */
-#define PACKETSZ	512		/* maximum packet size */
-#define MAXDNAME	1025		/* maximum presentation domain name */
-#define MAXCDNAME	255		/* maximum compressed domain name */
-#define MAXLABEL	63		/* maximum length of domain label */
-#define HFIXEDSZ	12		/* #/bytes of fixed data in header */
-#define QFIXEDSZ	4		/* #/bytes of fixed data in query */
-#define RRFIXEDSZ	10		/* #/bytes of fixed data in r record */
-#define INT32SZ		4		/* for systems without 32-bit ints */
-#define INT16SZ		2		/* for systems without 16-bit ints */
-#define INADDRSZ	4		/* IPv4 T_A */
-#define IN6ADDRSZ	16		/* IPv6 T_AAAA */
-
-/*
- * Internet nameserver port number
- */
-#define NAMESERVER_PORT	53
-
-/*
- * Currently defined opcodes
- */
-#define QUERY		0x0		/* standard query */
-#define IQUERY		0x1		/* inverse query */
-#define STATUS		0x2		/* nameserver status query */
-/*#define xxx		0x3*/		/* 0x3 reserved */
-#define NS_NOTIFY_OP	0x4		/* notify secondary of SOA change */
-/*
- * Currently defined response codes
- */
-#define NOERROR		0		/* no error */
-#define FORMERR		1		/* format error */
-#define SERVFAIL	2		/* server failure */
-#define NXDOMAIN	3		/* non existent domain */
-#define NOTIMP		4		/* not implemented */
-#define REFUSED		5		/* query refused */
-
-/*
- * Type values for resources and queries
- */
-#define T_A		1		/* host address */
-#define T_NS		2		/* authoritative server */
-#define T_MD		3		/* mail destination */
-#define T_MF		4		/* mail forwarder */
-#define T_CNAME		5		/* canonical name */
-#define T_SOA		6		/* start of authority zone */
-#define T_MB		7		/* mailbox domain name */
-#define T_MG		8		/* mail group member */
-#define T_MR		9		/* mail rename name */
-#define T_NULL		10		/* null resource record */
-#define T_WKS		11		/* well known service */
-#define T_PTR		12		/* domain name pointer */
-#define T_HINFO		13		/* host information */
-#define T_MINFO		14		/* mailbox information */
-#define T_MX		15		/* mail routing information */
-#define T_TXT		16		/* text strings */
-#define T_RP		17		/* responsible person */
-#define T_AFSDB		18		/* AFS cell database */
-#define T_X25		19		/* X_25 calling address */
-#define T_ISDN		20		/* ISDN calling address */
-#define T_RT		21		/* router */
-#define T_NSAP		22		/* NSAP address */
-#define T_NSAP_PTR	23		/* reverse NSAP lookup (deprecated) */
-#define T_SIG		24		/* security signature */
-#define T_KEY		25		/* security key */
-#define T_PX		26		/* X.400 mail mapping */
-#define T_GPOS		27		/* geographical position (withdrawn) */
-#define T_AAAA		28		/* IP6 Address */
-#define T_LOC		29		/* Location Information */
-#define T_NXT		30		/* Next Valid Name in Zone */
-#define T_EID		31		/* Endpoint identifier */
-#define T_NIMLOC	32		/* Nimrod locator */
-#define T_SRV		33		/* Server selection */
-#define T_ATMA		34		/* ATM Address */
-#define T_NAPTR		35		/* Naming Authority PoinTeR */
-#define T_KX		36		/* Key Exchanger */
-#define T_CERT		37		/* CERT */
-#define T_A6		38		/* A6 */
-#define T_DNAME		39		/* DNAME */
-#define T_SINK		40		/* SINK */
-#define T_OPT		41		/* OPT pseudo-RR, RFC2671 */
-#define T_APL		42		/* APL */
-#define T_DS		43		/* Delegation Signer */
-#define T_SSHFP		44		/* SSH Key Fingerprint */
-#define T_RRSIG		46		/* RRSIG */
-#define T_NSEC		47		/* NSEC */
-#define T_DNSKEY	48		/* DNSKEY */
-	/* non standard */
-#define T_UINFO		100		/* user (finger) information */
-#define T_UID		101		/* user ID */
-#define T_GID		102		/* group ID */
-#define T_UNSPEC	103		/* Unspecified format (binary data) */
-	/* Query type values which do not appear in resource records */
-#define	T_TKEY		249		/* Transaction Key */
-#define	T_TSIG		250		/* Transaction Signature */
-#define	T_IXFR		251		/* incremental zone transfer */
-#define T_AXFR		252		/* transfer zone of authority */
-#define T_MAILB		253		/* transfer mailbox records */
-#define T_MAILA		254		/* transfer mail agent records */
-#define T_ANY		255		/* wildcard match */
-
-/*
- * Values for class field
- */
-
-#define C_IN		1		/* the arpa internet */
-#define C_CHAOS		3		/* for chaos net (MIT) */
-#define C_HS		4		/* for Hesiod name server (MIT) (XXX) */
-	/* Query class values which do not appear in resource records */
-#define C_ANY		255		/* wildcard match */
+#define NS_PACKETSZ	512		/* maximum packet size */
+#define NS_MAXDNAME	1025		/* maximum presentation domain name */
+#define NS_MAXCDNAME	255		/* maximum compressed domain name */
+#define NS_MAXLABEL	63		/* maximum length of domain label */
+#define NS_HFIXEDSZ	12		/* #/bytes of fixed data in header */
+#define NS_QFIXEDSZ	4		/* #/bytes of fixed data in query */
+#define NS_RRFIXEDSZ	10		/* #/bytes of fixed data in r record */
+#define NS_INT32SZ	4		/* for systems without 32-bit ints */
+#define NS_INT16SZ	2		/* for systems without 16-bit ints */
+#define NS_INADDRSZ	4		/* IPv4 T_A */
+#define NS_IN6ADDRSZ	16		/* IPv6 T_AAAA */
 
 #endif /* !WIN32/WIN32 */
 #endif /* !MEASUREMENT_KIT_DNS_NAMESER_H */
