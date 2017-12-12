@@ -72,14 +72,15 @@ void recv_and_ignore_kickoff_impl(SharedPtr<Context> ctx, Callback<Error> callba
     }, ctx->reactor);
 }
 
-static inline void call_soon(Callback<> &&cb, SharedPtr<Reactor> reactor) {
-    reactor->call_soon(std::move(cb));
-}
+// XXX Used to be inline but Visual Studio does not like it. This is actually
+// a great place where we should mock the Reactor interface rather than having
+// MK_MOCK, which works more naturally for C code.
+void call_soon_wrapper(Callback<> &&cb, SharedPtr<Reactor> reactor);
 
 template <MK_MOCK_AS(messages::read_msg, messages_read_msg),
           MK_MOCK_AS(messages::format_msg_waiting, messages_format_msg_waiting),
           MK_MOCK_AS(messages::write_noasync, messages_write_noasync),
-          MK_MOCK(call_soon)>
+          MK_MOCK_AS(call_soon_wrapper, call_soon)>
 void wait_in_queue_impl(SharedPtr<Context> ctx, Callback<Error> callback) {
     ctx->logger->debug("ndt: wait in queue ...");
     messages_read_msg(ctx, [=](Error err, uint8_t type, std::string s) {
