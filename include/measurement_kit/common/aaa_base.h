@@ -13,7 +13,6 @@
 #include <measurement_kit/common/portable/netinet/in.h>
 #include <measurement_kit/common/portable/netinet/tcp.h>
 #include <measurement_kit/common/portable/arpa/inet.h>
-#include <measurement_kit/common/portable/arpa/nameser.h>
 #include <measurement_kit/common/portable/sys/socket.h>
 #include <measurement_kit/common/portable/sys/time.h>
 #include <measurement_kit/common/portable/netdb.h>

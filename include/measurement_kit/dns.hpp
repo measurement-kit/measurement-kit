@@ -2,6 +2,7 @@
 #ifndef MEASUREMENT_KIT_DNS_HPP
 #define MEASUREMENT_KIT_DNS_HPP
 #include <measurement_kit/dns/error.hpp>
+#include <measurement_kit/dns/nameser.h>
 #include <measurement_kit/dns/qctht_.hpp>
 #include <measurement_kit/dns/query_class.hpp>
 #include <measurement_kit/dns/query.hpp>
