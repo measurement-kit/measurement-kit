@@ -75,7 +75,7 @@ report::Entry compute_speed(report::Entry &sender_or_receiver_data,
             return nullptr;
         }
         return sum / good_speeds.size();
-    } catch (const std::exception &x) {
+    } catch (const std::exception &) {
         logger->warn("Cannot compute %s speed", speed_type);
         // FALLTHROUGH
     }
