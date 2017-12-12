@@ -1,3 +1,8 @@
+# MeasurementKit 0.8.1 [2017-12-12]
+
+- #1510: backport: IM test logic fixing (#1498)
+- #1491: backport: fix(`getaddrinfo_async.hpp`)'s compiler warning (#1481)
+
 # MeasurementKit 0.8.0 [2017-11-14]
 
 - fix(dash): enforce random UUID (#1487)
