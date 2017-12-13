@@ -333,7 +333,7 @@ void run_loop_(SharedPtr<DashLoopCtx> ctx) {
                                 s_k = dash_rates()[0];
                             }
                         }
-                        ctx->speed_kbit = s_k;
+                        ctx->speed_kbit = (int)s_k;
                         ctx->iteration += 1;
                         run_loop_<http_request_send,
                                   http_request_recv_response>(ctx);
