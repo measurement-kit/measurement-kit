@@ -1,5 +1,5 @@
-// Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software under the BSD license. See AUTHORS
+// Part of Measurement Kit <https://measurement-kit.github.io/>.
+// Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
 #ifdef HAVE_CONFIG_H
@@ -9,13 +9,13 @@
 #error "MK_CA_BUNDLE is not set."
 #endif
 
-#include "private/net/connect_impl.hpp"
-#include "private/net/emitter.hpp"
-#include "private/net/socks5.hpp"
-#include "private/net/utils.hpp"
+#include "src/libmeasurement_kit/net/connect_impl.hpp"
+#include "src/libmeasurement_kit/net/emitter.hpp"
+#include "src/libmeasurement_kit/net/socks5.hpp"
+#include "src/libmeasurement_kit/net/utils.hpp"
 
-#include "private/libevent/connection.hpp"
-#include "private/net/libssl.hpp"
+#include "src/libmeasurement_kit/net/libevent_emitter.hpp"
+#include "src/libmeasurement_kit/net/libssl.hpp"
 
 #include <measurement_kit/dns.hpp>
 #include <measurement_kit/net.hpp>
@@ -57,8 +57,6 @@ void mk_bufferevent_on_event(bufferevent *bev, short what, void *ptr) {
 
 namespace mk {
 namespace net {
-
-using namespace mk::libevent;
 
 void connect_first_of(SharedPtr<ConnectResult> result, int port,
                       ConnectFirstOfCb cb, Settings settings,
@@ -280,7 +278,7 @@ void connect(std::string address, int port,
                                 }
                                 assert(err == NoError());
                                 callback(err, make_txp(
-                                    libevent::Connection::make(
+                                    net::LibeventEmitter::make(
                                         bev, reactor, logger),
                                             timeout, r));
                             },
@@ -288,7 +286,7 @@ void connect(std::string address, int port,
                 return;
             }
             assert(err == NoError());
-            callback(err, make_txp(libevent::Connection::make(
+            callback(err, make_txp(net::LibeventEmitter::make(
                 r->connected_bev, reactor, logger),
                     timeout, r));
         },

@@ -1,9 +1,9 @@
-// Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software under the BSD license. See AUTHORS
+// Part of Measurement Kit <https://measurement-kit.github.io/>.
+// Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
-#include "private/ext/http_parser.h"
-#include "private/net/utils.hpp"
+#include "src/libmeasurement_kit/ext/http_parser.h"
+#include "src/libmeasurement_kit/net/utils.hpp"
 
 #include <cassert>
 #include <cstring>
@@ -110,7 +110,7 @@ ErrorOr<Endpoint> parse_endpoint(std::string s, uint16_t default_port) {
 
 ErrorOr<Endpoint>
 endpoint_from_sockaddr_storage(sockaddr_storage *ss) noexcept {
-    // Code adapted from private/dns/getaddrinfo_async.hpp
+    // Code adapted from src/libmeasurement_kit/dns/getaddrinfo_async.hpp
     char abuf[128];
     void *aptr = nullptr;
     Endpoint epnt;

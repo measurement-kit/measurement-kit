@@ -24,7 +24,6 @@ subr_finalize() {
                                --gcov-options '\-lp'                       \
                                --build-root .                              \
                                --exclude include/measurement_kit/ext       \
-                               --exclude include/private/ext               \
                                --exclude src/libmeasurement_kit/ext        \
                                --exclude src/libmeasurement_kit/portable   \
                                --exclude src/measurement_kit               \
