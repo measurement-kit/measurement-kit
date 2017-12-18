@@ -16,7 +16,7 @@ MK_DEFINE_ERR(MK_ERR_DNS(3), NotImplementedError, "dns_lookup_error")
 MK_DEFINE_ERR(MK_ERR_DNS(4), RefusedError, "dns_lookup_error")
 MK_DEFINE_ERR(MK_ERR_DNS(5), TruncatedError, "dns_lookup_error")
 MK_DEFINE_ERR(MK_ERR_DNS(6), UnknownError, "dns_unknown_error")
-using TimeoutError = mk::TimeoutError; /* Was: MK_ERR_DNS(7) */
+/* Was: MK_ERR_DNS(7) */
 MK_DEFINE_ERR(MK_ERR_DNS(8), ShutdownError, "dns_shutdown")
 MK_DEFINE_ERR(MK_ERR_DNS(9), CancelError, "dns_cancel")
 MK_DEFINE_ERR(MK_ERR_DNS(10), NoDataError, "dns_lookup_error")

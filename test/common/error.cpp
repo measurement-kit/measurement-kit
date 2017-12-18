@@ -33,8 +33,9 @@ TEST_CASE("Error constructed with error and message is correctly initialized") {
     REQUIRE(err.reason == "antani");
 }
 
-TEST_CASE("Constructor with underlying error works correctly") {
-    Error err{17, "antani", MockedError()};
+TEST_CASE("An error with underlying error works correctly") {
+    Error err{17, "antani"};
+    err.add_child_error(MockedError());
     REQUIRE(!!err);
     REQUIRE(err.child_errors[0] == MockedError());
     REQUIRE(err == 17);
@@ -51,25 +52,20 @@ TEST_CASE("Unequality works for errors") {
     REQUIRE(first != second);
 }
 
-MK_DEFINE_ERR(17, ExampleError, "example error")
-
 TEST_CASE("The defined-error constructor with string works") {
-    ExampleError ex{"antani"};
+    Error ex = MockedError("antani");
     REQUIRE(!!ex);
-    REQUIRE(ex == 17);
-    REQUIRE(ex.reason == "example error: antani");
-    REQUIRE(strcmp(ex.what(), "example error: antani") == 0);
+    REQUIRE(ex.reason == "mocked_error: antani");
+    REQUIRE(strcmp(ex.what(), "mocked_error: antani") == 0);
 }
 
 TEST_CASE("The add_child_error() method works") {
     Error err;
-    ExampleError ex{"antani"};
-    MockedError merr;
-    err.add_child_error(ex);
-    err.add_child_error(merr);
+    err.add_child_error(MockedError("antani"));
+    err.add_child_error(MockedError());
     REQUIRE((err.child_errors.size() == 2));
-    REQUIRE((err.child_errors[0] == ExampleError()));
-    REQUIRE((err.child_errors[0].reason == "example error: antani"));
+    REQUIRE((err.child_errors[0] == MockedError()));
+    REQUIRE((err.child_errors[0].reason == "mocked_error: antani"));
     REQUIRE((err.child_errors[1] == MockedError()));
     REQUIRE((err.child_errors[1].reason == "mocked_error"));
 }

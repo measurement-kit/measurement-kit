@@ -49,7 +49,7 @@ TEST_CASE("connect_base deals with bufferevent_socket_new error") {
     try {
         connect_base<make_sockaddr, fail>("130.192.16.172", 80, 3.14,
                 Reactor::global(), Logger::global(), nullptr);
-    } catch (GenericError &) {
+    } catch (Error &) {
         ok = true;
     }
     REQUIRE(ok);
@@ -63,7 +63,7 @@ TEST_CASE("connect_base deals with bufferevent_set_timeouts error") {
         connect_base<make_sockaddr, ::bufferevent_socket_new,
                      fail>("130.192.16.172", 80, 3.14, Reactor::global(),
                            Logger::global(), nullptr);
-    } catch (GenericError &) {
+    } catch (Error &) {
         ok = true;
     }
     REQUIRE(ok);
