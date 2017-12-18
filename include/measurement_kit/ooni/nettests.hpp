@@ -13,6 +13,10 @@ void captiveportal(std::string, Settings, Callback<SharedPtr<report::Entry>>,
                     SharedPtr<Reactor> = Reactor::global(),
                     SharedPtr<Logger> = Logger::global());
 
+void dpi_fragment(Settings, Callback<SharedPtr<report::Entry>>,
+                  SharedPtr<Reactor> = Reactor::global(),
+                  SharedPtr<Logger> = Logger::global());
+
 void dns_injection(std::string, Settings, Callback<SharedPtr<report::Entry>>,
                    SharedPtr<Reactor> = Reactor::global(),
                    SharedPtr<Logger> = Logger::global());

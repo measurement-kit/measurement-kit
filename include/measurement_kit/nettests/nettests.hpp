@@ -90,6 +90,7 @@ class BaseTest {
     }
 
 MK_DECLARE_TEST(DashTest);
+MK_DECLARE_TEST(DpiFragmentTest);
 MK_DECLARE_TEST(CaptivePortalTest);
 MK_DECLARE_TEST(DnsInjectionTest);
 MK_DECLARE_TEST(FacebookMessengerTest);
