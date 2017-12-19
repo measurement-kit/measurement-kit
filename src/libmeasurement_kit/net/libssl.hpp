@@ -98,10 +98,10 @@ class Context : public NonCopyable, public NonMovable {
         SSL *ssl = SSL_new(ctx_);
         if (ssl == nullptr) {
             logger->warn("ssl: SSL_new failed");
-            return SslNewError();
+            return {SslNewError(), {}};
         }
         SSL_set_tlsext_host_name(ssl, hostname.c_str());
-        return ssl;
+        return {NoError(), ssl};
     }
 
     /// Destructor.
@@ -140,7 +140,7 @@ class Context : public NonCopyable, public NonMovable {
         SSL_CTX *ctx = SSL_CTX_new(SSLv23_client_method());
         if (ctx == nullptr) {
             logger->warn("ssl: failed to create SSL_CTX");
-            return SslCtxNewError();
+            return {SslCtxNewError(), {}};
         }
         /*
          * Implementation note:
@@ -158,7 +158,7 @@ class Context : public NonCopyable, public NonMovable {
                         ctx, ca_bundle_path.c_str(), nullptr)) {
                 logger->warn("ssl: failed to load verify location");
                 SSL_CTX_free(ctx);
-                return SslCtxLoadVerifyLocationsError();
+                return {SslCtxLoadVerifyLocationsError(), {}};
             }
         } else {
 #if (defined LIBRESSL_VERSION_NUMBER &&                                        \
@@ -171,17 +171,17 @@ class Context : public NonCopyable, public NonMovable {
             if (!SSL_CTX_load_verify_mem(ctx, bundle.data(), bundle.size())) {
                 logger->warn("ssl: failed to load default ca bundle");
                 SSL_CTX_free(ctx);
-                return SslCtxLoadVerifyMemError();
+                return {SslCtxLoadVerifyMemError(), {}};
             }
 #else
             SSL_CTX_free(ctx);
-            return MissingCaBundlePathError();
+            return {MissingCaBundlePathError(), {}};
 #endif
         }
         SSL_CTX_set_verify(ctx, SSL_VERIFY_PEER, nullptr);
         SharedPtr<Context> context{new Context};
         context->ctx_ = ctx;
-        return context;
+        return {NoError(), context};
     }
 
   private:
@@ -288,7 +288,7 @@ template <size_t max_cache_size = 64> class Cache {
             ErrorOr<SharedPtr<Context>> maybe_context =
                     mkctx(ca_bundle_path, logger);
             if (!maybe_context) {
-                return maybe_context.as_error();
+                return {maybe_context.as_error(), {}};
             }
             logger->debug2("ssl: track ctx for: '%s'", ca_bundle_path.c_str());
             all_[ca_bundle_path] = *maybe_context;

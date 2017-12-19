@@ -26,9 +26,9 @@ using namespace mk::net;
     // Note: the following cannot be simplified using short circuit
     // evaluation because two different types are returned
     if (error) {
-        return error;
+        return {error, {}};
     }
-    return request;
+    return {NoError(), request};
 }
 
 Error Request::init(Settings settings, Headers hdrs, std::string bd) {
@@ -165,7 +165,8 @@ void request_recv_response(SharedPtr<Transport> txp,
 
 static void request_recv_response_start(SharedPtr<RequestRecvResponse> ctx) {
 
-    ErrorOr<bool> ignore_body = ctx->settings.get("http/ignore_body", false);
+    ErrorOr<bool> ignore_body = ctx->settings.get_noexcept(
+            "http/ignore_body", false);
     if (!ignore_body) {
         ctx->cb(ValueError(), ctx->response);
         return;

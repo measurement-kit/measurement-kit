@@ -69,7 +69,7 @@ ErrorOr<std::string> GeoipDatabase::with_open_database_do(
                  });
         if (!db) {
             logger->warn("cannot open geoip database: %s", path.c_str());
-            return GeoipDatabaseOpenError();
+            return {GeoipDatabaseOpenError(), std::string{}};
         }
         // FALLTHROUGH
     }
@@ -84,10 +84,10 @@ ErrorOr<std::string> GeoipDatabase::resolve_country_code(
         const char *result;
         result = GeoIP_country_code_by_name_gl(db.get(), ip.c_str(), &gl);
         if (result == nullptr) {
-            return GeoipCountryCodeLookupError();
+            return {GeoipCountryCodeLookupError(), std::string{}};
         }
         std::string country_code = result;
-        return country_code;
+        return {NoError(), country_code};
     }, logger);
 }
 
@@ -99,10 +99,10 @@ ErrorOr<std::string> GeoipDatabase::resolve_country_name(
         const char *result;
         result = GeoIP_country_name_by_name_gl(db.get(), ip.c_str(), &gl);
         if (result == nullptr) {
-            return GeoipCountryNameLookupError();
+            return {GeoipCountryNameLookupError(), std::string{}};
         }
         std::string country_name = result;
-        return country_name;
+        return {NoError(), country_name};
     }, logger);
 }
 
@@ -111,14 +111,14 @@ ErrorOr<std::string> GeoipDatabase::resolve_city_name(
     return with_open_database_do([=]() -> ErrorOr<std::string> {
         GeoIPRecord *gir = GeoIP_record_by_name(db.get(), ip.c_str());
         if (gir == nullptr) {
-            return GeoipCityLookupError();
+            return {GeoipCityLookupError(), std::string{}};
         }
         std::string result;
         if (gir->city != nullptr) {
             result = gir->city;
         }
         GeoIPRecord_delete(gir);
-        return result;
+        return {NoError(), result};
     }, logger);
 }
 
@@ -129,12 +129,12 @@ ErrorOr<std::string> GeoipDatabase::resolve_asn(std::string ip,
         memset(&gl, 0, sizeof(gl));
         char *res = GeoIP_name_by_name_gl(db.get(), ip.c_str(), &gl);
         if (res == nullptr) {
-            return GeoipAsnLookupError();
+            return {GeoipAsnLookupError(), std::string{}};
         }
         std::string asn = res;
         asn = split(asn).front(); // We only want ASXX
         free(res);
-        return asn;
+        return {NoError(), asn};
     }, logger);
 }
 

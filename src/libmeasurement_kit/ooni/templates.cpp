@@ -101,7 +101,7 @@ void http_request(SharedPtr<Entry> entry, Settings settings, http::Headers heade
     (*entry)["socksproxy"] = nullptr;
 
     // Include the name of the agent, like ooni-probe does
-    ErrorOr<int> max_redirects = settings.get("http/max_redirects", 0);
+    ErrorOr<int> max_redirects = settings.get_noexcept("http/max_redirects", 0);
     if (!!max_redirects && *max_redirects > 0) {
         (*entry)["agent"] = "redirect";
     }

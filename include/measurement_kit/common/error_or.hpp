@@ -35,13 +35,7 @@ template <typename T> class ErrorOr {
 
     /// \brief The default constuctor creates a non-initialized ErrorOr. This
     /// means basically constructing it with an error and no value.
-    ErrorOr() : error_(NotInitializedError()) {}
-
-    /// The constructor with value sets the underlying value.
-    ErrorOr(T value) : value_(value) {}
-
-    /// The constructor with error sets the underlying error.
-    ErrorOr(Error error) : error_(error) {}
+    ErrorOr() : ErrorOr{NotInitializedError(), {}} {}
 
     /// The constructor with error and value sets both.
     ErrorOr(Error error, T value) : error_(error), value_(value) {}
