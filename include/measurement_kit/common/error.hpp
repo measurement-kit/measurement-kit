@@ -4,6 +4,8 @@
 #ifndef MEASUREMENT_KIT_COMMON_ERROR_HPP
 #define MEASUREMENT_KIT_COMMON_ERROR_HPP
 
+#include <measurement_kit/common/api.h>
+
 #include <string>
 #include <vector>
 
@@ -98,7 +100,7 @@ class Error : public std::exception {
     Error &operator=(const Error &) = default;
     Error &operator=(Error &&) = default;
 
-    virtual ~Error() override;
+    MK_API virtual ~Error() override;
 };
 
 /// `MK_DEFINE_ERR` allows you to quickly define a class derived from Error.
