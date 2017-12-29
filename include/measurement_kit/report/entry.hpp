@@ -27,7 +27,6 @@ class Entry : public Json {
 
     Entry(std::initializer_list<Json> nl) : Json(nl) {}
 
-    Entry(Entry &) = default;
     Entry(const Entry &) = default;
     Entry(Entry &&) = default;
 
@@ -40,12 +39,12 @@ class Entry : public Json {
     }
 
     Entry &operator=(std::initializer_list<Json> t);
-    Entry &operator=(Entry &) = default;
+    Entry &operator=(const Entry &) = default;
     Entry &operator=(Entry &&) = default;
 
     template <typename T> operator ErrorOr<T>() {
         try {
-            return {NoError(), Json::operator T()};
+            return {NoError(), Json::get<T>()};
         } catch (const std::domain_error &) {
             return {JsonDomainError(), {}};
         }
