@@ -13,11 +13,11 @@ namespace mk {
 namespace ooni {
 namespace bouncer {
 
-static Error
-my_json_parse_process_and_filter_errors(const std::string &data,
-                                        Callback<Json &> &&callable) {
-    return json_process(data, std::move(callable));
-}
+// Moved in CPP file because MSVC does not like it inline. A possibly better
+// way to deal with this issue is to avoid overloading so that we can use
+// directly the free function rather than a convenience wrapper. <- TODO
+Error my_json_parse_process_and_filter_errors(
+        const std::string &data, Callback<Json &> &&callable);
 
 template <MK_MOCK(my_json_parse_process_and_filter_errors)>
 ErrorOr<SharedPtr<BouncerReply>> create_impl(std::string data, SharedPtr<Logger> logger) {

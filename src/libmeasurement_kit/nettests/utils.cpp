@@ -7,6 +7,21 @@
 namespace mk {
 namespace nettests {
 
+SharedPtr<std::istream> open_file_(const std::string &path) {
+    return SharedPtr<std::istream>{new std::ifstream{path}};
+}
+
+bool readline_(std::istream &input, std::string &line) {
+    return static_cast<bool>(std::getline(input, line));
+}
+
+void randomize_input_(std::deque<std::string> &inputs) {
+    // See http://en.cppreference.com/w/cpp/algorithm/shuffle
+    std::random_device rd;
+    std::mt19937 g(rd());
+    std::shuffle(inputs.begin(), inputs.end(), g);
+}
+
 Error process_input_filepaths(std::deque<std::string> &input,
     const bool &needs_input, const std::list<std::string> &input_filepaths,
     const std::string &probe_cc, const Settings &options, SharedPtr<Logger> logger,
