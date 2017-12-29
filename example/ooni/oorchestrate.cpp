@@ -5,7 +5,7 @@
 #include "src/libmeasurement_kit/common/fcompose.hpp"
 #include <measurement_kit/ooni.hpp>
 
-#include <unistd.h>
+#include "src/measurement_kit/portable/getopt.h"
 
 #include <future>
 

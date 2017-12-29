@@ -6,7 +6,7 @@
 
 #include <iostream>
 
-#include <unistd.h>
+#include "src/measurement_kit/portable/getopt.h"
 
 #define USAGE "oonireport [-v] [-c collector-base-url] filepath [...]" 
 

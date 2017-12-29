@@ -4,7 +4,7 @@
 
 #include <measurement_kit/ooni.hpp>
 #include <string>
-#include <unistd.h>
+#include "src/measurement_kit/portable/getopt.h"
 
 #define USAGE "ooniresources [-v] [-d dir]"
 

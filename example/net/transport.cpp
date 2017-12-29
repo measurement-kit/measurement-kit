@@ -10,7 +10,7 @@
 #include <regex>
 #include <stdlib.h>
 #include <string>
-#include <unistd.h>
+#include "src/measurement_kit/portable/getopt.h"
 
 using namespace mk;
 using namespace mk::net;

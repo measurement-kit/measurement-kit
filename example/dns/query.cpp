@@ -6,7 +6,7 @@
 
 #include <iostream>
 
-#include <unistd.h>
+#include "src/measurement_kit/portable/getopt.h"
 
 static const char *kv_usage =
     "usage: measurement_kit dns_query [-N nameserver] [-v] [-c class] [-t type] domain\n";

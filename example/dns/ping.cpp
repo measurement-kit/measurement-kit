@@ -8,7 +8,7 @@
 
 #include <iostream>
 
-#include <unistd.h>
+#include "src/measurement_kit/portable/getopt.h"
 
 static const char *kv_usage =
       "usage: ./example/dns/ping [-v] [-c class] [-e engine] [-i interval]\n"
