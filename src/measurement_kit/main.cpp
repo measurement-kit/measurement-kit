@@ -151,11 +151,13 @@ int main(int argc, char **argv) {
      *
      * Non portable. Assume it's either GNU or BSD. We can do better in
      * configure checking for the proper way to reset options.
+     *
+     * Note: the WIN32 implementation is actually the BSD implementation.
      */
 #ifdef __GLIBC__
     optind = 0;
 #elif (defined __APPLE__ || defined __FreeBSD__ || defined __OpenBSD__ ||      \
-       defined __NetBSD__ || defined __DragonFly__)
+       defined __NetBSD__ || defined __DragonFly__ || defined _WIN32)
     optreset = 1, optind = 1;
 #else
 #error "Don't know how to reset getopt() on your system"
