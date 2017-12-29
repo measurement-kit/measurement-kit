@@ -376,7 +376,11 @@ void request(Settings settings, Headers headers, std::string body,
 
 bool HeadersComparator::operator() (
         const std::string &l, const std::string &r) const {
+#ifndef _WIN32
     return strcasecmp(l.c_str(), r.c_str()) < 0;
+#else
+    return _stricmp(l.c_str(), r.c_str()) < 0;
+#endif
 }
 
 void request_json_string(
