@@ -15,6 +15,7 @@
 #include <openssl/sha.h>
 #include <random>
 #include <regex>
+#include <time.h>
 
 struct timeval;
 
@@ -103,7 +104,18 @@ void timeval_now(timeval *tv) {
 
 double time_now();
 
+#ifdef _WIN32
+// Replacement implemented in utils.cpp
+tm *gmtime_r(const time_t *timep, tm *result);
+#endif
+
+// XXX unclear why this fails on Windows (yeah, now I really repent that
+// I did not implement a single mocking interface).
+#ifndef _WIN32
 template <MK_MOCK(time), MK_MOCK(gmtime_r)>
+#else
+static inline
+#endif
 void utc_time_now(struct tm *utc) {
     time_t tv = {};
     tv = time(nullptr);
