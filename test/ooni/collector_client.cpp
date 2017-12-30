@@ -430,7 +430,7 @@ TEST_CASE("submit_report() deals with get_next_entry error") {
 }
 
 static ErrorOr<Entry> success(SharedPtr<std::istream>, SharedPtr<Logger>) {
-    return Entry{};
+    return ErrorOr<Entry>{NoError(), Entry{}};
 }
 
 static void fail(Settings, Callback<Error, SharedPtr<Transport>> cb, SharedPtr<Reactor>,
