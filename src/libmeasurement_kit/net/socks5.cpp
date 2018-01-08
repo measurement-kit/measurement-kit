@@ -1,11 +1,11 @@
-// Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software under the BSD license. See AUTHORS
+// Part of Measurement Kit <https://measurement-kit.github.io/>.
+// Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
-#include "private/net/socks5.hpp"
-#include "private/net/connect_impl.hpp"
+#include "src/libmeasurement_kit/net/socks5.hpp"
+#include "src/libmeasurement_kit/net/connect_impl.hpp"
 
-#include "private/libevent/connection.hpp"
+#include "src/libmeasurement_kit/net/libevent_emitter.hpp"
 
 namespace mk {
 namespace net {
@@ -144,7 +144,7 @@ void socks5_connect(std::string address, int port, Settings settings,
                         0.0, r, reactor, logger));
                     return;
                 }
-                SharedPtr<Transport> txp = libevent::Connection::make(
+                SharedPtr<Transport> txp = net::LibeventEmitter::make(
                         r->connected_bev, reactor, logger);
                 SharedPtr<Transport> socks5 = make_txp<Socks5>(
                         0.0, r, txp, settings, reactor, logger);

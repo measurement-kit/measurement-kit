@@ -1,9 +1,9 @@
-// Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software under the BSD license. See AUTHORS
+// Part of Measurement Kit <https://measurement-kit.github.io/>.
+// Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
-#include "private/common/citrus_ctype.h"
-#include "private/common/encoding.hpp"
+#include "src/libmeasurement_kit/common/citrus_ctype.h"
+#include "src/libmeasurement_kit/common/encoding.hpp"
 #include <measurement_kit/common/error.hpp>
 
 #include <cassert>

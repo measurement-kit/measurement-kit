@@ -1,13 +1,13 @@
-// Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software under the BSD license. See AUTHORS
+// Part of Measurement Kit <https://measurement-kit.github.io/>.
+// Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
-#include "private/nettests/runnable.hpp"
+#include "src/libmeasurement_kit/nettests/runnable.hpp"
 
 #include <measurement_kit/nettests.hpp>
 #include <measurement_kit/ndt.hpp>
 
-#include "private/ndt/utils.hpp"
+#include "src/libmeasurement_kit/ndt/utils.hpp"
 
 namespace mk {
 namespace nettests {
