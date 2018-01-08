@@ -13,6 +13,7 @@ MK_DEFINE_ERR(MK_ERR_MLABNS(0), InvalidPolicyError, "mlabns_invalid_policy")
 MK_DEFINE_ERR(MK_ERR_MLABNS(1), InvalidAddressFamilyError, "mlabns_invalid_address_family")
 MK_DEFINE_ERR(MK_ERR_MLABNS(2), InvalidMetroError, "mlabns_invalid_metro")
 MK_DEFINE_ERR(MK_ERR_MLABNS(3), InvalidToolNameError, "mlabns_invalid_tool")
+MK_DEFINE_ERR(MK_ERR_MLABNS(4), InvalidCountryError, "mlabns_invalid_country")
 
 /// Reply to mlab-ns query.
 class Reply {
