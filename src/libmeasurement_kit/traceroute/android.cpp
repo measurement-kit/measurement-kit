@@ -346,7 +346,7 @@ void AndroidProber::event_callback(Error err) {
 
     logger->debug("event_callback(%s)", err.what());
 
-    if (err == net::TimeoutError()) {
+    if (err == TimeoutError()) {
         on_timeout();
         timeout_cb_();
 
