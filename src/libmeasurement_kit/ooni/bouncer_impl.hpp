@@ -42,9 +42,9 @@ ErrorOr<SharedPtr<BouncerReply>> create_impl(std::string data, SharedPtr<Logger>
     });
     if (err) {
         logger->warn("bouncer parsing error: %s", err.what());
-        return err;
+        return {err, {}};
     }
-    return reply;
+    return {NoError(), reply};
 }
 
 template <MK_MOCK_AS(http::request, http_request)>

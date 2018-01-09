@@ -22,12 +22,12 @@ static inline ErrorOr<std::string> as_query(Settings &settings) {
     std::string address_family =
         settings.get<std::string>("mlabns/address_family", "");
     if (policy == "" && metro == "" && address_family == "") {
-        return query;
+        return {NoError(), query};
     }
     if (policy != "") {
         if (policy != "geo" && policy != "random" && policy != "metro" &&
             policy != "country") {
-            return InvalidPolicyError();
+            return {InvalidPolicyError(), std::string{}};
         }
         if (query != "") {
             query += "&";
@@ -37,7 +37,7 @@ static inline ErrorOr<std::string> as_query(Settings &settings) {
     if (metro != "") {
         std::regex valid_metro("^[a-z]{3}$");
         if (!std::regex_match(metro, valid_metro)) {
-            return InvalidMetroError();
+            return {InvalidMetroError(), std::string{}};
         }
         if (query != "") {
             query += "&";
@@ -46,7 +46,7 @@ static inline ErrorOr<std::string> as_query(Settings &settings) {
     }
     if (address_family != "") {
         if (address_family != "ipv4" && address_family != "ipv6") {
-            return InvalidAddressFamilyError();
+            return {InvalidAddressFamilyError(), std::string{}};
         }
         if (query != "") {
             query += "&";
@@ -54,7 +54,7 @@ static inline ErrorOr<std::string> as_query(Settings &settings) {
         query += "address_family=" + address_family;
     }
     query = "?" + query;
-    return query;
+    return {NoError(), query};
 }
 
 template <MK_MOCK_AS(http::request_json_no_body, request_json_no_body)>
