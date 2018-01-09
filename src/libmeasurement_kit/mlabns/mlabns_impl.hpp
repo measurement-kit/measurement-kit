@@ -38,7 +38,7 @@ static inline ErrorOr<std::string> as_query(Settings &settings) {
     if (country != "") {
         std::regex valid_country("^[A-Z]{2}$");
         if (!std::regex_match(country, valid_country)) {
-            return InvalidCountryError();
+            return {InvalidCountryError(), std::string{}};
         }
         if (query != "") {
             query += "&";
