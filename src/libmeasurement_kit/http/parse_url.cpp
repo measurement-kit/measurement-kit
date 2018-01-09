@@ -50,9 +50,9 @@ Url parse_url(std::string url) {
 
 ErrorOr<Url> parse_url_noexcept(std::string url) {
     try {
-        return parse_url(url);
+        return {NoError(), parse_url(url)};
     } catch (Error &error) {
-        return error;
+        return {error, {}};
     }
 }
 

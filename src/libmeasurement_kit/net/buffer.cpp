@@ -103,9 +103,9 @@ ErrorOr<std::string> Buffer::readline(size_t maxline) {
         evbuffer_search_eol(evbuf.get(), nullptr, &eol_length, EVBUFFER_EOL_CRLF);
     if (search_result.pos < 0) {
         if (length() > maxline) {
-            return EOLNotFoundError();
+            return {EOLNotFoundError(), std::string{}};
         }
-        return std::string();
+        return {NoError(), std::string{}};
     }
 
     /*
@@ -117,9 +117,9 @@ ErrorOr<std::string> Buffer::readline(size_t maxline) {
     }
     auto len = (size_t)search_result.pos + eol_length;
     if (len > maxline) {
-        return LineTooLongError();
+        return {LineTooLongError(), std::string{}};
     }
-    return read(len);
+    return {NoError(), read(len)};
 }
 
 void Buffer::write(const void *buf, size_t count) {
@@ -131,11 +131,11 @@ void Buffer::write(const void *buf, size_t count) {
 ErrorOr<uint8_t> Buffer::read_uint8() {
     uint8_t value = 0;
     if (length() < sizeof (value)) {
-        return NotEnoughDataError();
+        return {NotEnoughDataError(), {}};
     }
     std::string str = read(sizeof (value));
     memcpy(&value, str.data(), sizeof (value));
-    return value;
+    return {NoError(), value};
 }
 
 void Buffer::write_uint8(uint8_t num) { write(&num, sizeof(num)); }
@@ -143,12 +143,12 @@ void Buffer::write_uint8(uint8_t num) { write(&num, sizeof(num)); }
 ErrorOr<uint16_t> Buffer::read_uint16() {
     uint16_t value = 0;
     if (length() < sizeof (value)) {
-        return NotEnoughDataError();
+        return {NotEnoughDataError(), {}};
     }
     std::string str = read(sizeof (value));
     memcpy(&value, str.data(), sizeof (value));
     value = ntohs(value);
-    return value;
+    return {NoError(), value};
 }
 
 void Buffer::write_uint16(uint16_t num) {
@@ -159,12 +159,12 @@ void Buffer::write_uint16(uint16_t num) {
 ErrorOr<uint32_t> Buffer::read_uint32() {
     uint32_t value = 0;
     if (length() < sizeof (value)) {
-        return NotEnoughDataError();
+        return {NotEnoughDataError(), {}};
     }
     std::string str = read(sizeof (value));
     memcpy(&value, str.data(), sizeof (value));
     value = ntohl(value);
-    return value;
+    return {NoError(), value};
 }
 
 void Buffer::write_uint32(uint32_t num) {

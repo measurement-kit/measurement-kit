@@ -281,7 +281,7 @@ TEST_CASE("Readn works correctly") {
 
 TEST_CASE("Readline works correctly") {
     Buffer buff;
-    ErrorOr<std::string> line("");
+    ErrorOr<std::string> line{NoError(), ""};
 
     SECTION("We can read LF terminated lines") {
         buff << "HTTP/1.1 200 Ok\n"
