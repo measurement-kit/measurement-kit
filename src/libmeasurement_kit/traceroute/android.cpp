@@ -1,6 +1,6 @@
 /*-
- * Part of measurement-kit <https://measurement-kit.github.io/>.
- * Measurement-kit is free software under the BSD license. See AUTHORS
+ * Part of Measurement Kit <https://measurement-kit.github.io/>.
+ * Measurement Kit is free software under the BSD license. See AUTHORS
  * and LICENSE for more information on the copying conditions.
  * =========================================================================
  * Based on Portolan code contributed by its authors.
@@ -40,8 +40,8 @@ void mk_traceroute_android_unused();
 void mk_traceroute_android_unused() {}
 #else
 
-#include "private/net/utils.hpp"
-#include "private/common/utils.hpp"
+#include "src/libmeasurement_kit/net/utils.hpp"
+#include "src/libmeasurement_kit/common/utils.hpp"
 
 #include <measurement_kit/net.hpp>
 #include <measurement_kit/traceroute.hpp>

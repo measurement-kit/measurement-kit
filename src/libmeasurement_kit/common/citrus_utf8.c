@@ -1,6 +1,6 @@
 /*-
- * Part of measurement-kit <https://measurement-kit.github.io/>.
- * Measurement-kit is free software under the BSD license. See AUTHORS
+ * Part of Measurement Kit <https://measurement-kit.github.io/>.
+ * Measurement Kit is free software under the BSD license. See AUTHORS
  * and LICENSE for more information on the copying conditions.
  * =============================================================
  * Based on $OpenBSD: citrus_utf8.c,v 1.18 2016/09/07 17:15:06 schwarze Exp $
@@ -35,7 +35,7 @@
 #include <errno.h>
 #include <string.h>
 
-#include "private/common/citrus_ctype.h"
+#include "src/libmeasurement_kit/common/citrus_ctype.h"
 
 size_t
 mk_utf8_mbrtowc(mk_wchar_t * __restrict pwc,

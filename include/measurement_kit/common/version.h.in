@@ -1,5 +1,5 @@
-// Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software. See AUTHORS and LICENSE for more
+// Part of Measurement Kit <https://measurement-kit.github.io/>.
+// Measurement Kit is free software. See AUTHORS and LICENSE for more
 // information on the copying conditions.
 #ifndef MEASUREMENT_KIT_COMMON_VERSION_H
 #define MEASUREMENT_KIT_COMMON_VERSION_H
