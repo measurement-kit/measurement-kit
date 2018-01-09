@@ -202,7 +202,7 @@ static void msg_test(SharedPtr<Context>, Callback<Error, uint8_t, Json> cb,
     cb(NoError(), TEST_MSG, {});
 }
 
-static ErrorOr<Buffer> failure(std::string) { return MockedError(); }
+static ErrorOr<Buffer> failure(std::string) { return {MockedError(), {}}; }
 
 TEST_CASE("run() deals with format_test_msg() failure") {
     SharedPtr<Context> ctx(new Context);
@@ -213,7 +213,7 @@ TEST_CASE("run() deals with format_test_msg() failure") {
 static ErrorOr<Buffer> success(std::string s) {
     Buffer buff;
     buff.write(s);
-    return buff;
+    return {NoError(), buff};
 }
 
 static void failure(SharedPtr<Context>, Buffer, Callback<Error> cb) {

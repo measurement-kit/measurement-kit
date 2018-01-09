@@ -5,6 +5,7 @@
 #define MEASUREMENT_KIT_COMMON_SETTINGS_HPP
 
 #include <measurement_kit/common/scalar.hpp>
+
 #include <map>
 
 namespace mk {
@@ -24,23 +25,25 @@ class Settings : public std::map<std::string, Scalar> {
   public:
     using std::map<std::string, Scalar>::map;
 
-#define XX(_rv_, _methname_, _accessor_)                                       \
-    template <typename Type>                                                   \
-    _rv_ _methname_(std::string key, Type def_value) const {                   \
-        if (find(key) == end()) {                                              \
-            return def_value;                                                  \
-        }                                                                      \
-        return at(key)._accessor_<Type>();                                     \
-    }
-
     /// \brief `get()` returns the specified \p key if set; otherwise it
     /// returns the default value \p def_value.
     /// \throw ValueError if the value associated to \p key cannot be
     /// converted to the specified type.
-    XX(Type, get, as)
+    template <typename Type> Type get(std::string key, Type def_value) const {
+        if (find(key) == end()) {
+            return def_value;
+        }
+        return at(key).as<Type>();
+    }
 
     /// `as_noexcept` is like `as()` but return Error rather than throwing.
-    XX(ErrorOr<Type>, get_noexcept, as_noexcept)
+    template <typename Type>
+    ErrorOr<Type> get_noexcept(std::string key, Type def_value) const {
+        if (find(key) == end()) {
+            return {NoError(), def_value};
+        }
+        return at(key).as_noexcept<Type>();
+    }
 
 #undef XX
 

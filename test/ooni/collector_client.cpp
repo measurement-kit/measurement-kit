@@ -387,7 +387,7 @@ static void success(SharedPtr<Transport>, std::string, Entry, Callback<Error> cb
 }
 
 static ErrorOr<Entry> fail(SharedPtr<std::istream>, SharedPtr<Logger>) {
-    return MockedError();
+    return {MockedError(), {}};
 }
 
 TEST_CASE("update_and_fetch_next() deals with get_next_entry error") {
@@ -430,7 +430,7 @@ TEST_CASE("submit_report() deals with get_next_entry error") {
 }
 
 static ErrorOr<Entry> success(SharedPtr<std::istream>, SharedPtr<Logger>) {
-    return Entry{};
+    return ErrorOr<Entry>{NoError(), Entry{}};
 }
 
 static void fail(Settings, Callback<Error, SharedPtr<Transport>> cb, SharedPtr<Reactor>,
