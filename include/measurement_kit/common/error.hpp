@@ -1,5 +1,5 @@
-// Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software under the BSD license. See AUTHORS
+// Part of Measurement Kit <https://measurement-kit.github.io/>.
+// Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 #ifndef MEASUREMENT_KIT_COMMON_ERROR_HPP
 #define MEASUREMENT_KIT_COMMON_ERROR_HPP
@@ -203,6 +203,9 @@ MK_DEFINE_ERR(17, JsonProcessingError, "json_processing_error")
 
 /// `MK_ERR_NDT` is like MK_ERR_NET but for ndt.
 #define MK_ERR_NDT(x) (8000 + x)
+
+/// `MK_ERR_NEUBOT` is like MK_ERR_NET but for neubot.
+#define MK_ERR_NEUBOT(x) (9000 + x)
 
 } // namespace mk
 

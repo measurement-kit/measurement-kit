@@ -1,9 +1,9 @@
-// Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software under the BSD license. See AUTHORS
+// Part of Measurement Kit <https://measurement-kit.github.io/>.
+// Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
 #define CATCH_CONFIG_MAIN
-#include "private/ext/catch.hpp"
+#include "src/libmeasurement_kit/ext/catch.hpp"
 
 #include "utils.hpp"
 
@@ -14,7 +14,7 @@ using namespace mk::nettests;
 TEST_CASE("Synchronous dns-injection test") {
     test::nettests::with_test<DnsInjectionTest>(
           "hosts.txt",
-          [](BaseTest &test) { test.set_options("dns/timeout", "0.1").run(); });
+          [](BaseTest &test) { test.set_option("dns/timeout", "0.1").run(); });
 }
 
 #endif
@@ -26,7 +26,7 @@ TEST_CASE("Make sure that set_output_filepath() works") {
        called inside create_test_() throws an exception
     */
     auto runnable = DnsInjectionTest{}
-                        .set_input_filepath("test/fixtures/hosts.txt")
+                        .add_input_filepath("test/fixtures/hosts.txt")
                         .set_output_filepath("foo.txt")
                         .runnable;
     REQUIRE(runnable->output_filepath == "foo.txt");

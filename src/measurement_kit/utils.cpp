@@ -1,5 +1,5 @@
-// Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software under the BSD license. See AUTHORS
+// Part of Measurement Kit <https://measurement-kit.github.io/>.
+// Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
 #include <measurement_kit/common/json.hpp>
@@ -9,10 +9,15 @@
 BaseTest &common_init(std::list<Callback<BaseTest &>> il, BaseTest &test) {
     test
         .set_verbosity(MK_LOG_INFO)
-        .set_options("geoip_country_path", "GeoIP.dat")
-        .set_options("geoip_asn_path", "GeoIPASNum.dat")
+        .set_option("geoip_country_path", "GeoIP.dat")
+        .set_option("geoip_asn_path", "GeoIPASNum.dat")
         .on_progress([](double progress, std::string msg) {
             printf("%.0f%%: %s\n", 100.0 * progress, msg.c_str());
+            fflush(stdout);
+        })
+        .on_overall_data_usage([](DataUsage du) {
+            printf("Overall data usage (bytes): %llu down - %llu up\n",
+                    du.down, du.up);
         })
         .on_log([](uint32_t level, const char *message) {
             if (level <= MK_LOG_WARNING) {

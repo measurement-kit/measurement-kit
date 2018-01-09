@@ -1,8 +1,9 @@
-// Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software under the BSD license. See AUTHORS
+// Part of Measurement Kit <https://measurement-kit.github.io/>.
+// Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
 #include "../measurement_kit/cmdline.hpp"
+#include "src/libmeasurement_kit/common/utils.hpp"
 
 #include <cstdio>
 #include <cstring>
@@ -18,6 +19,7 @@ static const struct {
 };
 
 static OptionSpec kv_specs[] = {
+    {'A', "annotation", true, "key=value", "Add annotation"},
     {'b', "bouncer", true, "URL", "Set custom bouncer base URL"},
     {'c', "collector", true, "URL", "Set custom collector base URL"},
     {'g', "no-geoip", false, nullptr, "Disable geoip lookup"},
@@ -51,11 +53,25 @@ int main(int argc, char **argv) {
     for (int ch; (ch = getopt_long(argc, argv, stropt.c_str(),
                                    long_options.data(), nullptr)) != -1;) {
         switch (ch) {
+        case 'A':
+            // Note: this option is `-A` and not `-a` because it's not
+            // compatible with the ooniprobe one.
+            {
+                std::vector<std::string> v =
+                        mk::split<std::vector<std::string>>(optarg, "=");
+                if (v.size() != 2) {
+                    printf("invalid annotation: %s\n", optarg);
+                    return 1;
+                }
+                initializers.push_back(
+                    [v](BaseTest &test) { test.add_annotation(v[0], v[1]); });
+            }
+            break;
         case 'b':
             [&]() {
                 std::string bouncer = optarg;
                 initializers.push_back([=](BaseTest &test) {
-                    test.set_options("bouncer_base_url", bouncer);
+                    test.set_option("bouncer_base_url", bouncer);
                 });
             }();
             break;
@@ -63,14 +79,14 @@ int main(int argc, char **argv) {
             [&]() {
                 std::string collector = optarg;
                 initializers.push_back([=](BaseTest &test) {
-                    test.set_options("collector_base_url", collector);
+                    test.set_option("collector_base_url", collector);
                 });
             }();
             break;
         case 'g':
             initializers.push_back([](BaseTest &test) {
-                test.set_options("save_real_probe_asn", "0");
-                test.set_options("save_real_probe_cc", "0");
+                test.set_option("save_real_probe_asn", "0");
+                test.set_option("save_real_probe_cc", "0");
             });
             break;
         case 'l':
@@ -82,12 +98,12 @@ int main(int argc, char **argv) {
             break;
         case 'N':
             initializers.push_back([](BaseTest &test) {
-                test.set_options("no_file_report", "1");
+                test.set_option("no_file_report", "1");
             });
             break;
         case 'n':
             initializers.push_back(
-                [](BaseTest &test) { test.set_options("no_collector", "1"); });
+                [](BaseTest &test) { test.set_option("no_collector", "1"); });
             break;
         case 'o':
             [&]() {

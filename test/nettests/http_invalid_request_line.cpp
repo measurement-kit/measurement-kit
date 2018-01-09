@@ -1,11 +1,11 @@
-// Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software under the BSD license. See AUTHORS
+// Part of Measurement Kit <https://measurement-kit.github.io/>.
+// Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
 #ifdef ENABLE_INTEGRATION_TESTS
 
 #define CATCH_CONFIG_MAIN
-#include "private/ext/catch.hpp"
+#include "src/libmeasurement_kit/ext/catch.hpp"
 
 #include "utils.hpp"
 
@@ -18,7 +18,7 @@ TEST_CASE("Synchronous http-invalid-request-line test") {
 
 TEST_CASE("Synchronous http-invalid-request-line test with HTTP backend") {
     test::nettests::with_test<HttpInvalidRequestLineTest>([](BaseTest &test) {
-        test.set_options("backend", "http://data.neubot.org/").run();
+        test.set_option("backend", "http://data.neubot.org/").run();
     });
 }
 

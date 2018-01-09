@@ -1,12 +1,12 @@
-// Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software under the BSD license. See AUTHORS
+// Part of Measurement Kit <https://measurement-kit.github.io/>.
+// Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
-#include "private/common/fcompose.hpp"
-#include "private/common/parallel.hpp"
-#include "private/common/utils.hpp"
-#include "private/ooni/constants.hpp"
-#include "private/ooni/utils.hpp"
+#include "src/libmeasurement_kit/common/fcompose.hpp"
+#include "src/libmeasurement_kit/common/parallel.hpp"
+#include "src/libmeasurement_kit/common/utils.hpp"
+#include "src/libmeasurement_kit/ooni/constants.hpp"
+#include "src/libmeasurement_kit/ooni/utils.hpp"
 #include <measurement_kit/ooni.hpp>
 
 namespace mk {
@@ -17,8 +17,6 @@ using namespace mk::report;
 static void tcp_many(const std::vector<std::string> ip_ports, SharedPtr<Entry> entry,
         Settings options, SharedPtr<Reactor> reactor, SharedPtr<Logger> logger,
         Callback<Error> all_done_cb) {
-    // if any endpoints are unblocked, switch this to false
-    (*entry)["telegram_tcp_blocking"] = true;
     auto connected_cb = [=](std::string ip, int port, Callback<Error> done_cb) {
         return [=](Error connect_error, SharedPtr<net::Transport> txp) {
             Entry result = {
@@ -34,7 +32,7 @@ static void tcp_many(const std::vector<std::string> ip_ports, SharedPtr<Entry> e
                 logger->info("telegram: success TCP connecting to %s:%d",
                     ip.c_str(), port);
                 result["status"]["success"] = true;
-                (*entry)["telegram_tcp_blocking"] = true;
+                (*entry)["telegram_tcp_blocking"] = false;
             }
             (*entry)["tcp_connect"].push_back(result);
             txp->close(nullptr);
@@ -67,10 +65,7 @@ static void tcp_many(const std::vector<std::string> ip_ports, SharedPtr<Entry> e
 static void http_many(const std::vector<std::string> urls, std::string type,
     SharedPtr<Entry> entry, Settings options, SharedPtr<Reactor> reactor,
     SharedPtr<Logger> logger, Callback<Error> all_done_cb) {
-    if (type == "endpoints") {
-        // if any endpoints are unblocked, switch this to false
-        (*entry)["telegram_tcp_blocking"] = true;
-    } else if (type == "web") {
+    if (type == "web") {
         // if any titles are not "Telegram Web", switch this to blocked
         (*entry)["telegram_web_status"] = "ok";
         (*entry)["telegram_web_failure"] = nullptr;
@@ -88,7 +83,7 @@ static void http_many(const std::vector<std::string> urls, std::string type,
                 logger->info(
                     "telegram: success HTTP connecting to %s", url.c_str());
                 if (type == "endpoints") {
-                    (*entry)["telegram_tcp_blocking"] = false;
+                    (*entry)["telegram_http_blocking"] = false;
                 } else if (type == "web") {
                     if (extract_html_title(response->body) != "Telegram Web") {
                         (*entry)["telegram_web_status"] = "blocked";
@@ -134,6 +129,10 @@ void telegram(Settings options, Callback<SharedPtr<report::Entry>> callback,
 
     logger->info("starting telegram test");
     SharedPtr<Entry> entry(new Entry);
+
+    // if any endpoints are (TCP or HTTP) reachable, switch this to false
+    (*entry)["telegram_tcp_blocking"] = true;
+    (*entry)["telegram_http_blocking"] = true;
 
     mk::fcompose(mk::fcompose_policy_async(),
         [=](Callback<> cb) {

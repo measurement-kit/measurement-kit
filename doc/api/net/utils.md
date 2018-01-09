@@ -26,13 +26,6 @@ std::string serialize_endpoint(Endpoint e);
 
 Error make_sockaddr(
         std::string address,
-        std::string port,
-        sockaddr_storage *ss,
-        socklen_t *len
-) noexcept;
-
-Error make_sockaddr(
-        std::string address,
         uint16_t port,
         sockaddr_storage *ss,
         socklen_t *len

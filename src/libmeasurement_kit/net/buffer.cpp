@@ -1,8 +1,8 @@
-// Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software under the BSD license. See AUTHORS
+// Part of Measurement Kit <https://measurement-kit.github.io/>.
+// Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
-#include "private/net/evbuffer.hpp"
+#include "src/libmeasurement_kit/net/evbuffer.hpp"
 
 #include <measurement_kit/net.hpp>
 
@@ -21,7 +21,9 @@ Buffer::Buffer(evbuffer *b) : Buffer() {
     }
 }
 
-/*static*/ SharedPtr<Buffer> Buffer::make() { return SharedPtr<Buffer>(new Buffer); }
+/*static*/ SharedPtr<Buffer> Buffer::make() {
+    return SharedPtr<Buffer>{std::make_shared<Buffer>()};
+}
 
 Buffer::Buffer(std::string s) : Buffer() {
     write(s);

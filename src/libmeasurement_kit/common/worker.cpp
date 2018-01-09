@@ -1,9 +1,9 @@
-// Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software under the BSD license. See AUTHORS
+// Part of Measurement Kit <https://measurement-kit.github.io/>.
+// Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
 #include <measurement_kit/common/callback.hpp>
-#include "private/common/worker.hpp"
+#include "src/libmeasurement_kit/common/worker.hpp"
 #include <measurement_kit/common/logger.hpp>
 #include <measurement_kit/common/non_copyable.hpp>
 #include <measurement_kit/common/non_movable.hpp>
@@ -20,7 +20,11 @@
 
 namespace mk {
 
-void Worker::call_in_thread(Callback<> &&func) {
+Worker::Worker() {}
+
+Worker::Worker(short p) { state->parallelism = p; }
+
+void Worker::call_in_thread(SharedPtr<Logger> logger, Callback<> &&func) {
     std::unique_lock<std::mutex> _{state->mutex};
 
     // Move function such that the running-in-background thread
@@ -33,7 +37,7 @@ void Worker::call_in_thread(Callback<> &&func) {
 
     // Note: pass only the internal state, so that the thread can possibly
     // continue to work even when the external object is gone.
-    auto task = [S = state]() {
+    auto task = [S = state, logger]() {
         for (;;) {
             Callback<> func = [&]() {
                 std::unique_lock<std::mutex> _{S->mutex};
@@ -50,10 +54,17 @@ void Worker::call_in_thread(Callback<> &&func) {
             if (!func) {
                 break;
             }
+            // Exceptions are fatal in measurement-kit. If we get an unhandled
+            // one here is a bug that must be fixed. Make sure it is logged
+            // using the current logger and bail.
             try {
                 func();
+            } catch (const std::exception &exc) {
+                logger->warn("worker: unhandled exception: %s", exc.what());
+                std::rethrow_exception(std::current_exception());
             } catch (...) {
-                mk::warn("worker thread: unhandled exception");
+                logger->warn("worker: unhandled unknown exception");
+                std::rethrow_exception(std::current_exception());
             }
         }
     };
@@ -85,7 +96,7 @@ void Worker::wait_empty_() const {
 }
 
 /*static*/ SharedPtr<Worker> Worker::default_tasks_queue() {
-    static SharedPtr<Worker> worker = SharedPtr<Worker>::make();
+    static SharedPtr<Worker> worker{std::make_shared<Worker>(1)};
     return worker;
 }
 

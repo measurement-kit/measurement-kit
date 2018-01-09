@@ -1,5 +1,5 @@
-// Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software under the BSD license. See AUTHORS
+// Part of Measurement Kit <https://measurement-kit.github.io/>.
+// Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
 #include "../cmdline.hpp"
@@ -16,13 +16,13 @@ int main(std::list<Callback<BaseTest &>> &initializers, int argc, char **argv) {
     for (int ch; (ch = getopt(argc, argv, "b:f:t:u:")) != -1;) {
         switch (ch) {
         case 'b':
-            test.set_options("backend", optarg);
+            test.set_option("backend", optarg);
             break;
         case 'f':
             test.add_input_filepath(optarg);
             break;
         case 't':
-            test.set_options("max_runtime", optarg);
+            test.set_option("max_runtime", optarg);
             break;
         case 'u':
             test.add_input(optarg);

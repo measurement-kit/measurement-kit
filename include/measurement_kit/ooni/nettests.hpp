@@ -1,5 +1,5 @@
-// Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software under the BSD license. See AUTHORS
+// Part of Measurement Kit <https://measurement-kit.github.io/>.
+// Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 #ifndef MEASUREMENT_KIT_OONI_NETTESTS_HPP
 #define MEASUREMENT_KIT_OONI_NETTESTS_HPP
@@ -47,6 +47,10 @@ void telegram(Settings, Callback<SharedPtr<report::Entry>>,
 void facebook_messenger(Settings, Callback<SharedPtr<report::Entry>>,
                         SharedPtr<Reactor> = Reactor::global(),
                         SharedPtr<Logger> = Logger::global());
+
+void whatsapp(Settings, Callback<SharedPtr<report::Entry>>,
+              SharedPtr<Reactor> = Reactor::global(),
+              SharedPtr<Logger> = Logger::global());
 
 } // namespace ooni
 } // namespace mk

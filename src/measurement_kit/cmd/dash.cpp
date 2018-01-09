@@ -1,5 +1,5 @@
-// Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software under the BSD license. See AUTHORS
+// Part of Measurement Kit <https://measurement-kit.github.io/>.
+// Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
 #include "../cmdline.hpp"
@@ -16,10 +16,10 @@ int main(std::list<Callback<BaseTest &>> &initializers, int argc, char **argv) {
     for (int ch; (ch = getopt(argc, argv, "b:U:")) != -1;) {
         switch (ch) {
         case 'b':
-            test.set_options("constant_bitrate", optarg);
+            test.set_option("constant_bitrate", optarg);
             break;
         case 'U':
-            test.set_options("uuid", optarg);
+            test.set_option("uuid", optarg);
             break;
         default:
             fprintf(stderr, "%s\n", USAGE);
@@ -34,7 +34,7 @@ int main(std::list<Callback<BaseTest &>> &initializers, int argc, char **argv) {
         /* NOTREACHED */
     }
     if (argc == 1) {
-        test.set_options("hostname", argv[0]);
+        test.set_option("hostname", argv[0]);
     }
 
     common_init(initializers, test)
@@ -50,6 +50,7 @@ int main(std::list<Callback<BaseTest &>> &initializers, int argc, char **argv) {
               printf("Median bitrate: %.2f kbit/s\n", median_bitrate);
               printf("Min. playout delay: %.3f s\n", min_playout_delay);
               printf("\n");
+              fflush(stdout);
           })
           .run();
     return 0;

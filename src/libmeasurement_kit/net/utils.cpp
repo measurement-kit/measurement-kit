@@ -1,9 +1,9 @@
-// Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software under the BSD license. See AUTHORS
+// Part of Measurement Kit <https://measurement-kit.github.io/>.
+// Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
-#include "private/ext/http_parser.h"
-#include "private/net/utils.hpp"
+#include "src/libmeasurement_kit/ext/http_parser.h"
+#include "src/libmeasurement_kit/net/utils.hpp"
 
 #include <cassert>
 #include <cstring>
@@ -110,7 +110,7 @@ ErrorOr<Endpoint> parse_endpoint(std::string s, uint16_t default_port) {
 
 ErrorOr<Endpoint>
 endpoint_from_sockaddr_storage(sockaddr_storage *ss) noexcept {
-    // Code adapted from private/dns/getaddrinfo_async.hpp
+    // Code adapted from src/libmeasurement_kit/dns/getaddrinfo_async.hpp
     char abuf[128];
     void *aptr = nullptr;
     Endpoint epnt;
@@ -325,28 +325,8 @@ Error map_errno(int error_code) {
     return GenericError();
 }
 
-Error make_sockaddr(std::string s, std::string p, sockaddr_storage *ss,
-                    socklen_t *solen) noexcept {
-    auto maybe_pn = lexical_cast_noexcept<long long>(p);
-    if (!maybe_pn) {
-        return maybe_pn.as_error();
-    }
-    /*
-     * I initially thought that lexical_cast would have been able to detect
-     * overflow caused by negative numbers being feed to it when requested to
-     * parse a positive only integer. It seems it's not always like this.
-     *
-     * See <https://travis-ci.org/measurement-kit/measurement-kit/jobs/194992117#L2007>
-     */
-    if (*maybe_pn < 0 || *maybe_pn > 65535) {
-        return ValueError();
-    }
-    // Static cast good because above we make sure it is feasible
-    return make_sockaddr(s, static_cast<uint16_t>(*maybe_pn), ss, solen);
-}
-
-Error make_sockaddr(std::string s, uint16_t p, sockaddr_storage *ss,
-                    socklen_t *solen) noexcept {
+Error make_sockaddr(std::string s, uint16_t p,
+        sockaddr_storage *ss, socklen_t *solen) noexcept {
     Error err = make_sockaddr_ipv4(s, p, ss, solen);
     if (err != NoError()) {
         err = make_sockaddr_ipv6(s, p, ss, solen);

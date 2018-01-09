@@ -1,12 +1,12 @@
-// Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software under the BSD license. See AUTHORS
+// Part of Measurement Kit <https://measurement-kit.github.io/>.
+// Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
 #define CATCH_CONFIG_MAIN
-#include "private/ext/catch.hpp"
+#include "src/libmeasurement_kit/ext/catch.hpp"
 
-#include "private/common/libevent_reactor.hpp"
-#include "private/common/utils.hpp"
+#include "src/libmeasurement_kit/common/libevent_reactor.hpp"
+#include "src/libmeasurement_kit/common/utils.hpp"
 #include <measurement_kit/common.hpp>
 
 using namespace mk;
@@ -48,29 +48,26 @@ static int event_base_loopbreak_fail(event_base *) { return -1; }
 TEST_CASE("Reactor: basic functionality") {
     SECTION("We deal with event_base_new() failure") {
         REQUIRE_THROWS((LibeventReactor<event_base_new_fail, event_base_once,
-                event_base_dispatch, event_base_loopbreak, event_new,
-                event_add>{}));
+                event_base_dispatch, event_base_loopbreak>{}));
     }
 
     SECTION("We deal with event_base_dispatch() failure") {
         LibeventReactor<event_base_new, event_base_once,
-                event_base_dispatch_fail, event_base_loopbreak, event_new,
-                event_add>
+                event_base_dispatch_fail, event_base_loopbreak>
                 reactor;
         REQUIRE_THROWS(reactor.run());
     }
 
     SECTION("We deal with event_base_dispatch() running out of events") {
         LibeventReactor<event_base_new, event_base_once,
-                event_base_dispatch_no_events, event_base_loopbreak, event_new,
-                event_add>
+                event_base_dispatch_no_events, event_base_loopbreak>
                 reactor;
         reactor.run();
     }
 
     SECTION("We deal with event_base_loopbreak() failure") {
         LibeventReactor<event_base_new, event_base_once, event_base_dispatch,
-                event_base_loopbreak_fail, event_new, event_add>
+                event_base_loopbreak_fail>
                 reactor;
         REQUIRE_THROWS(reactor.stop());
     }

@@ -1,7 +1,7 @@
-// Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software under the BSD license. See AUTHORS
+// Part of Measurement Kit <https://measurement-kit.github.io/>.
+// Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
-#include "private/ndt/utils.hpp"
+#include "src/libmeasurement_kit/ndt/utils.hpp"
 
 namespace mk {
 namespace ndt {
@@ -75,7 +75,7 @@ report::Entry compute_speed(report::Entry &sender_or_receiver_data,
             return nullptr;
         }
         return sum / good_speeds.size();
-    } catch (const std::exception &x) {
+    } catch (const std::exception &) {
         logger->warn("Cannot compute %s speed", speed_type);
         // FALLTHROUGH
     }

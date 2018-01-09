@@ -1,9 +1,9 @@
-// Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software under the BSD license. See AUTHORS
+// Part of Measurement Kit <https://measurement-kit.github.io/>.
+// Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
-#include "private/common/worker.hpp"
-#include "private/nettests/runnable.hpp"
+#include "src/libmeasurement_kit/common/worker.hpp"
+#include "src/libmeasurement_kit/nettests/runnable.hpp"
 
 #include <measurement_kit/nettests.hpp>
 
@@ -13,22 +13,22 @@
 namespace mk {
 namespace nettests {
 
-BaseTest &BaseTest::on_logger_eof(Callback<> func) {
+BaseTest &BaseTest::on_logger_eof(Callback<> &&func) {
     runnable->logger->on_eof(std::move(func));
     return *this;
 }
 
-BaseTest &BaseTest::on_log(Callback<uint32_t, const char *> func) {
+BaseTest &BaseTest::on_log(Callback<uint32_t, const char *> &&func) {
     runnable->logger->on_log(std::move(func));
     return *this;
 }
 
-BaseTest &BaseTest::on_event(Callback<const char *> func) {
+BaseTest &BaseTest::on_event(Callback<const char *> &&func) {
     runnable->logger->on_event(std::move(func));
     return *this;
 }
 
-BaseTest &BaseTest::on_progress(Callback<double, const char *> func) {
+BaseTest &BaseTest::on_progress(Callback<double, const char *> &&func) {
     runnable->logger->on_progress(std::move(func));
     return *this;
 }
@@ -79,23 +79,38 @@ BaseTest &BaseTest::set_options(std::string key, std::string value) {
     return *this;
 }
 
-BaseTest &BaseTest::on_entry(Callback<std::string> cb) {
+BaseTest &BaseTest::add_annotation(std::string key, std::string value) {
+    runnable->annotations[key] = value;
+    return *this;
+}
+
+BaseTest &BaseTest::set_option(std::string key, std::string value) {
+    runnable->options[key] = value;
+    return *this;
+}
+
+BaseTest &BaseTest::on_entry(Callback<std::string> &&cb) {
     runnable->entry_cb = cb;
     return *this;
 }
 
-BaseTest &BaseTest::on_begin(Callback<> cb) {
+BaseTest &BaseTest::on_begin(Callback<> &&cb) {
     runnable->begin_cb = cb;
     return *this;
 }
 
-BaseTest &BaseTest::on_end(Callback<> cb) {
+BaseTest &BaseTest::on_end(Callback<> &&cb) {
     runnable->end_cbs.push_back(cb);
     return *this;
 }
 
-BaseTest &BaseTest::on_destroy(Callback<> cb) {
+BaseTest &BaseTest::on_destroy(Callback<> &&cb) {
     runnable->destroy_cbs.push_back(cb);
+    return *this;
+}
+
+BaseTest &BaseTest::on_overall_data_usage(Callback<DataUsage> &&cb) {
+    runnable->data_usage_cb = std::move(cb);
     return *this;
 }
 
@@ -119,7 +134,13 @@ static void start_internal_(SharedPtr<Runnable> &&r, std::promise<void> *promise
     // 5. the `promise`, if present, allows to make the test synchronous,
     //    while the callback allows to make it asynchronous.
     assert(!r->reactor);
-    Worker::default_tasks_queue()->call_in_thread(
+    // Note: making a copy of the logger and moving `r` inside the closure
+    // to avoid creating a reference loop. I like to think at references as
+    // ropes and as reference loops as yards of rope around my neck. This
+    // is to say, dammit!, I/we should make sure we have more unique owner-
+    // ship in measurement-kit, to reduce cases like this one.
+    auto logger = r->logger;
+    Worker::default_tasks_queue()->call_in_thread(logger,
           [ r = std::move(r), promise, callback = std::move(callback) ] {
               r->reactor = Reactor::make();
               r->reactor->run_with_initial_event([&]() {
@@ -148,7 +169,7 @@ void BaseTest::run() {
 
 }
 
-void BaseTest::start(Callback<> callback) {
+void BaseTest::start(Callback<> &&callback) {
     // Note: using `std::move` to invalidate the `runnable` such that it is
     // not possible to start another test from the same object.
     start_internal_(std::move(runnable), nullptr, std::move(callback));

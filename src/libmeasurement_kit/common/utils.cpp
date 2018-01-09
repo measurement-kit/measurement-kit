@@ -1,9 +1,9 @@
-// Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software under the BSD license. See AUTHORS
+// Part of Measurement Kit <https://measurement-kit.github.io/>.
+// Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
-#include "private/common/mock.hpp"
-#include "private/common/utils.hpp"
+#include "src/libmeasurement_kit/common/mock.hpp"
+#include "src/libmeasurement_kit/common/utils.hpp"
 #include <cctype>
 #include <cmath>
 #include <cstdio>
@@ -40,8 +40,14 @@ timeval *timeval_init(timeval *tv, double delta) {
     if (delta < 0) {
         return nullptr;
     }
+    // Note: on Windows `struct timeval` fields are `long`
+#ifndef _WIN32
     tv->tv_sec = (time_t)floor(delta);
     tv->tv_usec = (suseconds_t)((delta - floor(delta)) * 1000000);
+#else
+    tv->tv_sec = (long)floor(delta);
+    tv->tv_usec = (long)((delta - floor(delta)) * 1000000);
+#endif
     return tv;
 }
 

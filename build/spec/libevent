@@ -1,4 +1,5 @@
 pkg_name=libevent
+pkg_vendor_dir=$pkg_rootdir/src/third_party/$pkg_name
 pkg_repository=https://github.com/libevent/libevent
 pkg_branch_or_tag=patches-2.1
 pkg_tip=e7ff4ef2b4fc950a765008c18e74281cdb5e7668

@@ -1,5 +1,5 @@
-// Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software under the BSD license. See AUTHORS
+// Part of Measurement Kit <https://measurement-kit.github.io/>.
+// Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 #ifndef SRC_MEASUREMENT_KIT_CMDLINE_HPP
 #define SRC_MEASUREMENT_KIT_CMDLINE_HPP
@@ -27,7 +27,8 @@ using namespace mk::nettests;
     XX(ndt)                                                                    \
     XX(tcp_connect)                                                            \
     XX(telegram)                                                               \
-    XX(web_connectivity)
+    XX(web_connectivity)                                                       \
+    XX(whatsapp)
 
 #define XX(_namespace_)                                                        \
     namespace _namespace_ {                                                    \

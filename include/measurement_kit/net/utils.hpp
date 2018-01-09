@@ -1,10 +1,16 @@
-// Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software under the BSD license. See AUTHORS
+// Part of Measurement Kit <https://measurement-kit.github.io/>.
+// Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 #ifndef MEASUREMENT_KIT_NET_UTILS_HPP
 #define MEASUREMENT_KIT_NET_UTILS_HPP
 
 #include <measurement_kit/common.hpp>
+
+#ifdef _WIN32
+#include <ws2tcpip.h>
+#endif
+
+struct sockaddr_storage;
 
 namespace mk {
 namespace net {
@@ -24,13 +30,6 @@ std::string serialize_endpoint(Endpoint);
 
 ErrorOr<Endpoint> endpoint_from_sockaddr_storage(
         sockaddr_storage *storage
-) noexcept;
-
-Error make_sockaddr(
-        std::string address,
-        std::string port,
-        sockaddr_storage *storage,
-        socklen_t *len
 ) noexcept;
 
 Error make_sockaddr(

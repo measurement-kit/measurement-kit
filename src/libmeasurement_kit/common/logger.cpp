@@ -1,14 +1,14 @@
-// Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software under the BSD license. See AUTHORS
+// Part of Measurement Kit <https://measurement-kit.github.io/>.
+// Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
 #include <cstdint>
 #include <fstream>
 #include <list>
-#include <measurement_kit/common/aaa_base.hpp>
+#include <measurement_kit/common/aaa_base.h>
 #include <measurement_kit/common/callback.hpp>
-#include "private/common/delegate.hpp"
-#include "private/common/locked.hpp"
+#include "src/libmeasurement_kit/common/delegate.hpp"
+#include "src/libmeasurement_kit/common/locked.hpp"
 #include <measurement_kit/common/json.hpp>
 #include <measurement_kit/common/logger.hpp>
 #include <measurement_kit/common/non_copyable.hpp>
@@ -236,7 +236,7 @@ class DefaultLogger : public Logger, public NonCopyable, public NonMovable {
 };
 
 /*static*/ SharedPtr<Logger> Logger::make() {
-    return std::dynamic_pointer_cast<Logger>(std::make_shared<DefaultLogger>());
+    return SharedPtr<Logger>{std::make_shared<DefaultLogger>()};
 }
 
 /*static*/ SharedPtr<Logger> Logger::global() {

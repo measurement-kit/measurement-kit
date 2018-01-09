@@ -1,11 +1,11 @@
-// Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software under the BSD license. See AUTHORS
+// Part of Measurement Kit <https://measurement-kit.github.io/>.
+// Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 #ifndef MEASUREMENT_KIT_COMMON_LOGGER_HPP
 #define MEASUREMENT_KIT_COMMON_LOGGER_HPP
 
 #include <cstdint>
-#include <measurement_kit/common/aaa_base.hpp>
+#include <measurement_kit/common/aaa_base.h>
 #include <measurement_kit/common/callback.hpp>
 #include <measurement_kit/common/shared_ptr.hpp>
 #include <stdarg.h>
@@ -35,6 +35,13 @@
 /// verbosity mask. This is used to indicate that the current log message
 /// is not plaintext but rather a serialized JSON representing an event.
 #define MK_LOG_EVENT 32
+
+// Note: the attribute we use below is GCC and Clang specific (and Clang
+// identifies itself as GCC), so make sure other compilers are not going to
+// see the attribute definition, which will break the build.
+#ifndef __GNUC__
+#define __attribute__(x_) /* Nothing */
+#endif
 
 namespace mk {
 
@@ -229,4 +236,9 @@ void on_log(Callback<uint32_t, const char *> &&fn);
 void set_logfile(std::string path);
 
 } // namespace mk
+
+#ifndef __GNUC__
+#undef __attribute__
+#endif
+
 #endif

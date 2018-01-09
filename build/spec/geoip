@@ -1,4 +1,5 @@
 pkg_name=geoip
+pkg_vendor_dir=$pkg_rootdir/src/third_party/$pkg_name
 pkg_repository=https://github.com/maxmind/geoip-api-c.git
 pkg_branch_or_tag=v1.6.11
 

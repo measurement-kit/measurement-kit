@@ -5,6 +5,6 @@ pkg_steps=install
 
 pkg_install() {
     echo "Installing $pkg_name files $pkg_branch_or_tag in MK sources"
-    cp http_parser.h ../../../include/private/ext
+    cp http_parser.h ../../../src/libmeasurement_kit/ext
     cp http_parser.c ../../../src/libmeasurement_kit/ext
 }

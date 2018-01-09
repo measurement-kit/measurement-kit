@@ -1,10 +1,10 @@
-// Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software under the BSD license. See AUTHORS
+// Part of Measurement Kit <https://measurement-kit.github.io/>.
+// Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
 #ifdef ENABLE_INTEGRATION_TESTS
 #define CATCH_CONFIG_MAIN
-#include "private/ext/catch.hpp"
+#include "src/libmeasurement_kit/ext/catch.hpp"
 
 #include "utils.hpp"
 
@@ -65,7 +65,7 @@ TEST_CASE("Make sure that IP address scrubbing works") {
         bool redacted_check = false;
         test(
             [](BaseTest test) {
-                return test.set_options("save_real_probe_ip", false);
+                return test.set_option("save_real_probe_ip", false);
             },
             [&](std::string ip, std::string entry) {
                 ip_check = (entry.find(ip) == std::string::npos);
@@ -84,7 +84,7 @@ TEST_CASE("Make sure that IP address scrubbing works") {
         bool redacted_check = false;
         test(
             [](BaseTest test) {
-                return test.set_options("save_real_probe_ip", true);
+                return test.set_option("save_real_probe_ip", true);
             },
             [&](std::string ip, std::string entry) {
                 ip_check = (entry.find(ip) != std::string::npos);
