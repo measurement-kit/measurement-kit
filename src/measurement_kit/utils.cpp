@@ -4,6 +4,8 @@
 
 #include <measurement_kit/common/json.hpp>
 
+#include <inttypes.h>
+
 #include "../measurement_kit/cmdline.hpp"
 
 BaseTest &common_init(std::list<Callback<BaseTest &>> il, BaseTest &test) {
@@ -16,8 +18,8 @@ BaseTest &common_init(std::list<Callback<BaseTest &>> il, BaseTest &test) {
             fflush(stdout);
         })
         .on_overall_data_usage([](DataUsage du) {
-            printf("Overall data usage (bytes): %llu down - %llu up\n",
-                    du.down, du.up);
+            printf("Overall data usage (bytes): %" PRId64 " down - %"
+                    PRId64 " up\n", du.down, du.up);
         })
         .on_log([](uint32_t level, const char *message) {
             if (level <= MK_LOG_WARNING) {

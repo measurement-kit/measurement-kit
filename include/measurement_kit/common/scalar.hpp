@@ -53,9 +53,9 @@ class Scalar : public std::string {
     /// on error, returns the error that occurred.
     template <typename Type> ErrorOr<Type> as_noexcept() const noexcept {
         try {
-            return as<Type>();
+            return {NoError(), as<Type>()};
         } catch (const Error &e) {
-            return e;
+            return {e, {}};
         }
     }
 

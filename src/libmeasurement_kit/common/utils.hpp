@@ -37,37 +37,37 @@ template <typename T, MK_MOCK_AS(std::fopen, std_fopen),
 ErrorOr<std::vector<T>> slurpv(std::string p) {
     FILE *filep = std_fopen(p.c_str(), "rb");
     if (filep == nullptr) {
-        return FileIoError();
+        return {FileIoError(), {}};
     }
     if (std_fseek_1(filep, 0, SEEK_END) != 0) {
         std_fclose(filep);
-        return FileIoError();
+        return {FileIoError(), {}};
     }
     // Note: ftello() might be better for reading very large files but
     // honestly I do think we should use some kind of mmap for them.
     long pos = std_ftell(filep);
     if (pos < 0) {
         std_fclose(filep);
-        return FileIoError();
+        return {FileIoError(), {}};
     }
     std::vector<T> result;
     // Note: cast to unsigned safe because we excluded negative case above
     result.resize((unsigned long)pos, 0);
     if (std_fseek_2(filep, 0, SEEK_SET) != 0) {
         std_fclose(filep);
-        return FileIoError();
+        return {FileIoError(), {}};
     }
     size_t nread = std_fread(result.data(), 1, result.size(), filep);
     // Note: cast to unsigned safe because we excluded negative case above
     if ((unsigned long)pos != nread) {
         (void)std_fclose(filep);
-        return FileIoError();
+        return {FileIoError(), {}};
     }
     // Note: afaik fclose() should not fail when we're just reading
     if (std_fclose(filep) != 0) {
-        return FileIoError();
+        return {FileIoError(), {}};
     }
-    return result;
+    return {NoError(), std::move(result)};
 }
 
 template <MK_MOCK_AS(std::fopen, std_fopen),
@@ -116,9 +116,9 @@ template <MK_MOCK(strftime)>
 ErrorOr<std::string> timestamp(const struct tm *t) {
     char result[30];
     if (strftime(result, sizeof(result), "%Y-%m-%d %H:%M:%S", t) == 0) {
-        return ValueError();
+        return {ValueError(), std::string{}};
     }
-    return std::string(result);
+    return {NoError(), std::string(result)};
 }
 
 timeval *timeval_init(timeval *tv, double delta);

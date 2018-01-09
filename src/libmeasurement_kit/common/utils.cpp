@@ -137,10 +137,10 @@ std::string sha256_of(std::string input) {
 ErrorOr<std::string> slurp(std::string path) {
     ErrorOr<std::vector<char>> v = slurpv<char>(path);
     if (!v) {
-        return v.as_error();
+        return {v.as_error(), std::string{}};
     }
     std::string s{v->begin(), v->end()};  /* Note that here we make a copy */
-    return s;
+    return {NoError(), std::move(s)};
 }
 
 bool startswith(std::string s, std::string p) {

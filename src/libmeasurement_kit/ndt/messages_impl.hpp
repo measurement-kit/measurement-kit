@@ -108,13 +108,13 @@ static inline ErrorOr<Buffer> format_any(unsigned char type, Json message) {
     out.write_uint8(type);
     std::string s = message.dump();
     if (s.size() > UINT16_MAX) {
-        return MessageTooLongError();
+        return {MessageTooLongError(), Buffer{}};
     }
     // Cast safe because we've just excluded the case where it's bigger
     uint16_t length = (uint16_t)s.size();
     out.write_uint16(length);
     out.write(s.data(), s.size());
-    return out;
+    return {NoError(), out};
 }
 
 } // namespace messages

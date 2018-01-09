@@ -24,7 +24,7 @@ TEST_CASE("we deal with connect() errors") {
     });
 }
 
-static ErrorOr<Buffer> fail(unsigned char) { return MockedError(); }
+static ErrorOr<Buffer> fail(unsigned char) { return {MockedError(), {}}; }
 
 TEST_CASE("send_extended_login() deals with message formatting error") {
     SharedPtr<Context> ctx(new Context);
@@ -33,7 +33,7 @@ TEST_CASE("send_extended_login() deals with message formatting error") {
     });
 }
 
-static ErrorOr<Buffer> success(unsigned char) { return Buffer(); }
+static ErrorOr<Buffer> success(unsigned char) { return {NoError(), Buffer()}; }
 
 static void fail(SharedPtr<Context>, Buffer, Callback<Error> cb) {
     cb(MockedError());
@@ -161,7 +161,7 @@ static void heartbeat(SharedPtr<Context>, Callback<Error, uint8_t, std::string> 
 }
 
 static ErrorOr<Buffer> success_format_msg_waiting() {
-    return NoError();
+    return {NoError(), {}};
 }
 
 static bool check_whether_we_write_flag = false;
@@ -184,7 +184,7 @@ TEST_CASE("wait_in_queue() deals with heartbeat wait time") {
 }
 
 static ErrorOr<Buffer> failure_format_msg_waiting() {
-    return MockedError();
+    return {MockedError(), {}};
 }
 
 TEST_CASE("wait_in_queue() deals with format_msg_waiting_error") {

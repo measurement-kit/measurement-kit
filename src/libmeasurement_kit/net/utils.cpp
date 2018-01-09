@@ -74,14 +74,14 @@ static ErrorOr<Endpoint> parse_endpoint_internal(std::string s) {
      * passed to the CONNECT header, which is in the format we want.
      */
     if (http_parser_parse_url(s.data(), s.size(), 1, &parser) != 0) {
-        return ValueError();
+        return {ValueError(), {}};
     }
     assert(parser.field_set == ((1 << UF_HOST) | (1 << UF_PORT)));
     Endpoint epnt = {};
     epnt.hostname = s.substr(parser.field_data[UF_HOST].off,
                              parser.field_data[UF_HOST].len);
     epnt.port = parser.port;
-    return epnt;
+    return {NoError(), epnt};
 }
 
 static std::string serialize_address_port(std::string a, uint16_t p) {
@@ -121,13 +121,13 @@ endpoint_from_sockaddr_storage(sockaddr_storage *ss) noexcept {
         aptr = &((sockaddr_in6 *)ss)->sin6_addr;
         epnt.port = ntohs(((sockaddr_in6 *)ss)->sin6_port);
     } else {
-        return ValueError("invalid_family");
+        return {ValueError("invalid_family"), {}};
     }
     if (inet_ntop(ss->ss_family, aptr, abuf, sizeof(abuf)) == nullptr) {
-        return GenericError("inet_ntop_failure");
+        return {GenericError("inet_ntop_failure"), {}};
     }
     epnt.hostname = abuf;
-    return epnt;
+    return {NoError(), epnt};
 }
 
 std::string serialize_endpoint(Endpoint epnt) {
