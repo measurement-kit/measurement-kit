@@ -18,6 +18,7 @@ namespace mlabns {
 static inline ErrorOr<std::string> as_query(Settings &settings) {
     std::string query;
     std::string policy = settings.get<std::string>("mlabns/policy", "");
+    std::string country = settings.get<std::string>("mlabns/country", "");
     std::string metro = settings.get<std::string>("mlabns/metro", "");
     std::string address_family =
         settings.get<std::string>("mlabns/address_family", "");
@@ -33,6 +34,16 @@ static inline ErrorOr<std::string> as_query(Settings &settings) {
             query += "&";
         }
         query += "policy=" + policy;
+    }
+    if (country != "") {
+        std::regex valid_country("^[A-Z]{2}$");
+        if (!std::regex_match(country, valid_country)) {
+            return {InvalidCountryError(), std::string{}};
+        }
+        if (query != "") {
+            query += "&";
+        }
+        query += "country=" + country;
     }
     if (metro != "") {
         std::regex valid_metro("^[a-z]{3}$");
