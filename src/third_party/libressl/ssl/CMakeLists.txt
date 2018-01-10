@@ -48,7 +48,8 @@ set(
 
 add_library(ssl-objects OBJECT ${SSL_SRC})
 if (BUILD_SHARED)
-	add_library(ssl STATIC $<TARGET_OBJECTS:ssl-objects>)
+	# MK: only build what we need
+	#add_library(ssl STATIC $<TARGET_OBJECTS:ssl-objects>)
 	add_library(ssl-shared SHARED $<TARGET_OBJECTS:ssl-objects>)
 	export_symbol(ssl-shared ${CMAKE_CURRENT_SOURCE_DIR}/ssl.sym)
 	if (WIN32)
@@ -60,7 +61,11 @@ if (BUILD_SHARED)
 		ARCHIVE_OUTPUT_NAME ssl${SSL_POSTFIX})
 	set_target_properties(ssl-shared PROPERTIES VERSION ${SSL_VERSION}
 		SOVERSION ${SSL_MAJOR_VERSION})
-	install(TARGETS ssl ssl-shared DESTINATION ${CMAKE_INSTALL_LIBDIR})
+        # MK: tweak where stuff is installed
+	install(TARGETS ssl-shared
+		LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT lib
+		ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT lib
+		RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT bin)
 else()
 	add_library(ssl STATIC ${SSL_SRC})
 	install(TARGETS ssl DESTINATION ${CMAKE_INSTALL_LIBDIR})

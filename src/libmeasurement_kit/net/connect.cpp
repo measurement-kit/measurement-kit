@@ -35,7 +35,7 @@ void mk_bufferevent_on_event(bufferevent *bev, short what, void *ptr) {
     if ((what & BEV_EVENT_CONNECTED) != 0) {
         (*cb)(mk::NoError(), bev);
     } else if ((what & BEV_EVENT_TIMEOUT) != 0) {
-        (*cb)(mk::net::TimeoutError(), bev);
+        (*cb)(mk::TimeoutError(), bev);
     } else {
         mk::Error err;
         /*
@@ -47,7 +47,7 @@ void mk_bufferevent_on_event(bufferevent *bev, short what, void *ptr) {
             err = mk::net::map_errno(errno);
         } else {
             long ssl_err = bufferevent_get_openssl_error(bev);
-            std::string s = ERR_error_string(ssl_err, nullptr);
+            const char *s = ERR_error_string(ssl_err, nullptr);
             err = mk::net::SslError(s);
         }
         (*cb)(err, bev);
@@ -118,7 +118,7 @@ void connect_logic(std::string hostname, int port,
                                      // Otherwise, report them all
                                      Error connect_error = ConnectFailedError();
                                      for (auto se: e) {
-                                         connect_error.add_child_error(se);
+                                         connect_error.add_child_error(std::move(se));
                                      }
                                      cb(connect_error, result);
                                      return;
@@ -127,7 +127,7 @@ void connect_logic(std::string hostname, int port,
                                     bufferevent_getfd(result->connected_bev)
                                  );
                                  for (auto se: e) {
-                                    nagle_error.add_child_error(se);
+                                    nagle_error.add_child_error(std::move(se));
                                  }
                                  cb(nagle_error, result);
                              },

@@ -26,9 +26,33 @@ endif()
 
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release
-        CACHE STRING "Set build type to Debug o Release (default Release)" FORCE)
+        CACHE STRING
+        "Set build type to Debug o Release (default Release)" FORCE)
 endif()
 string(TOLOWER "${CMAKE_BUILD_TYPE}" CMAKE_BUILD_TYPE_LOWER)
+
+# MK: the following settings are to tweak the build for our needs. For now
+# we mainly have in mind the Win32/Win64 use case.
+if (WIN32)
+    if("${CMAKE_GENERATOR}" MATCHES "(Win64|IA64)")
+        set(MK__WINDIR "${CMAKE_CURRENT_SOURCE_DIR}/../../../build/win64")
+    else()
+        set(MK__WINDIR "${CMAKE_CURRENT_SOURCE_DIR}/../../../build/win32")
+    endif()
+    set(CMAKE_INSTALL_PREFIX "${MK__WINDIR}"
+        CACHE STRING "Set install prefix" FORCE)
+    set(OPENSSL_INCLUDE_DIR "${MK__WINDIR}/include"
+        CACHE STRING "Set LibreSSL include dir" FORCE)
+    # Note that we force linking with a specific LibreSSL ABI. For now we do
+    # not provide automatic support for other user cases. This means that for
+    # building for Node, for now, one needs to perform some manual config.
+    #
+    # TODO: we can remove this limitation in a subsequent release.
+    set(LIB_EAY_RELEASE "${MK__WINDIR}/lib/crypto-41.lib"
+        CACHE STRING "Set LibreSSL's location" FORCE)
+    set(SSL_EAY_RELEASE "${MK__WINDIR}/lib/ssl-43.lib"
+        CACHE STRING "Set LibreSSL's libssl location" FORCE)
+endif()
 
 # get rid of the extra default configurations
 # what? why would you get id of other useful build types? - Ellzey
@@ -101,8 +125,10 @@ endif()
 set(EVENT_VERSION
 	"${EVENT_VERSION_MAJOR}.${EVENT_VERSION_MINOR}.${EVENT_VERSION_PATCH}-${EVENT_STAGE_NAME}")
 
+# MK: change the default of options to speed up the build
+
 option(EVENT__BUILD_SHARED_LIBRARIES
-    "Define if libevent should be built with shared libraries instead of archives" OFF)
+    "Define if libevent should be built with shared libraries instead of archives" ON)
 
 option(EVENT__DISABLE_DEBUG_MODE
     "Define if libevent should build without support for a debug mode" OFF)
@@ -120,16 +146,16 @@ option(EVENT__DISABLE_OPENSSL
     "Define if libevent should build without support for OpenSSL encrpytion" OFF)
 
 option(EVENT__DISABLE_BENCHMARK
-    "Defines if libevent should build without the benchmark exectuables" OFF)
+    "Defines if libevent should build without the benchmark exectuables" ON)
 
 option(EVENT__DISABLE_TESTS
-    "If tests should be compiled or not" OFF)
+    "If tests should be compiled or not" ON)
 
 option(EVENT__DISABLE_REGRESS
-    "Disable the regress tests" OFF)
+    "Disable the regress tests" ON)
 
 option(EVENT__DISABLE_SAMPLES
-    "Disable sample files" OFF)
+    "Disable sample files" ON)
 
 option(EVENT__DISABLE_CLOCK_GETTIME
     "Do not use clock_gettime even if it is available" OFF)
@@ -603,12 +629,13 @@ set(HDR_PRIVATE
     evconfig-private.h
     compat/sys/queue.h)
 
-set(HDR_COMPAT
-    include/evdns.h
-    include/evrpc.h
-    include/event.h
-    include/evhttp.h
-    include/evutil.h)
+# MK: we do not use these headers
+#set(HDR_COMPAT
+#    include/evdns.h
+#    include/evrpc.h
+#    include/event.h
+#    include/evhttp.h
+#    include/evutil.h)
 
 set(HDR_PUBLIC
     include/event2/buffer.h
@@ -800,18 +827,25 @@ configure_file(
 #
 
 # TODO: Add dynamic versions of the libraries as well.
-add_library(event_core ${EVENT__LIBRARY_TYPE}
-    ${HDR_PRIVATE}
-    ${HDR_COMPAT}
-    ${HDR_PUBLIC}
-    ${SRC_CORE})
 
-add_library(event_extra ${EVENT__LIBRARY_TYPE}
-    ${HDR_PRIVATE}
-    ${HDR_COMPAT}
-    ${HDR_PUBLIC}
-    ${SRC_CORE}
-    ${SRC_EXTRA})
+# Rationale: in this version of libevent, libevent_extra contains also the
+# core sources, unlike what they do on master. As such, linking with the
+# extra library is basically equivalent to linking with the legacy library.
+#
+# Thus just build the legacy event library for MK purposes.
+
+#add_library(event_core ${EVENT__LIBRARY_TYPE}
+#    ${HDR_PRIVATE}
+#    ${HDR_COMPAT}
+#    ${HDR_PUBLIC}
+#    ${SRC_CORE})
+
+#add_library(event_extra ${EVENT__LIBRARY_TYPE}
+#    ${HDR_PRIVATE}
+#    ${HDR_COMPAT}
+#    ${HDR_PUBLIC}
+#    ${SRC_CORE}
+#    ${SRC_EXTRA})
 
 # library exists for historical reasons; it contains the contents of
 # both libevent_core and libevent_extra. You shouldn’t use it; it may
@@ -824,39 +858,41 @@ add_library(event ${EVENT__LIBRARY_TYPE}
     ${SRC_EXTRA})
 
 if (EVENT__BUILD_SHARED_LIBRARIES)
+    # For MK: avoid building the extra_static library; we don't need it.
+
     # Prepare static library to be linked to tests that need hidden symbols
-    add_library(event_extra_static STATIC
-        ${HDR_PRIVATE}
-        ${HDR_COMPAT}
-        ${HDR_PUBLIC}
-        ${SRC_CORE}
-        ${SRC_EXTRA})
+#   add_library(event_extra_static STATIC
+#       ${HDR_PRIVATE}
+#       ${HDR_COMPAT}
+#       ${HDR_PUBLIC}
+#       ${SRC_CORE}
+#       ${SRC_EXTRA})
 
-    set(EVENT_EXTRA_FOR_TEST event_extra_static)
+#   set(EVENT_EXTRA_FOR_TEST event_extra_static)
 
-   target_link_libraries(event_core ${OPENSSL_LIBRARIES}
-                                    ${CMAKE_THREAD_LIBS_INIT}
-                                    ${LIB_PLATFORM})
+#  target_link_libraries(event_core ${OPENSSL_LIBRARIES}
+#                                   ${CMAKE_THREAD_LIBS_INIT}
+#                                   ${LIB_PLATFORM})
 
    target_link_libraries(event ${OPENSSL_LIBRARIES}
                                ${CMAKE_THREAD_LIBS_INIT}
                                ${LIB_PLATFORM})
 
-   target_link_libraries(event_extra ${OPENSSL_LIBRARIES}
-                                      ${CMAKE_THREAD_LIBS_INIT}
-                                      ${LIB_PLATFORM})
+#  target_link_libraries(event_extra ${OPENSSL_LIBRARIES}
+#                                     ${CMAKE_THREAD_LIBS_INIT}
+#                                     ${LIB_PLATFORM})
 
   set_target_properties(event
         PROPERTIES SOVERSION
             ${EVENT_ABI_LIBVERSION})
 
-  set_target_properties(event_core
-        PROPERTIES SOVERSION
-            ${EVENT_ABI_LIBVERSION})
+# set_target_properties(event_core
+#       PROPERTIES SOVERSION
+#           ${EVENT_ABI_LIBVERSION})
 
-  set_target_properties(event_extra
-        PROPERTIES SOVERSION
-            ${EVENT_ABI_LIBVERSION})
+# set_target_properties(event_extra
+#       PROPERTIES SOVERSION
+#           ${EVENT_ABI_LIBVERSION})
 
 else (EVENT__BUILD_SHARED_LIBRARIES)
     set(EVENT_EXTRA_FOR_TEST event_extra)
@@ -1351,8 +1387,8 @@ foreach(p LIB BIN INCLUDE CMAKE)
 endforeach()
 
 # Export targets (This is used for other CMake projects to easily find the libraries and include files).
-export(TARGETS event event_extra event_core
-        FILE "${PROJECT_BINARY_DIR}/LibeventTargets.cmake")
+#export(TARGETS event #event_extra event_core
+#        FILE "${PROJECT_BINARY_DIR}/LibeventTargets.cmake")
 export(PACKAGE libevent)
 
 # Generate the config file for the build-tree.
@@ -1391,43 +1427,43 @@ configure_file(${PROJECT_SOURCE_DIR}/cmake/LibeventConfigVersion.cmake.in
                 @ONLY)
 
 # Define the public headers.
-set_target_properties(event event_core event_extra
+set_target_properties(event #event_core event_extra
     PROPERTIES PUBLIC_HEADER "${HDR_PUBLIC}")
 
 #
 # Install targets.
 #
-install(TARGETS event event_core event_extra
-        EXPORT LibeventTargets
+install(TARGETS event #event_core event_extra
+#       EXPORT LibeventTargets
         RUNTIME DESTINATION "${EVENT_INSTALL_BIN_DIR}" COMPONENT bin
         LIBRARY DESTINATION "${EVENT_INSTALL_LIB_DIR}" COMPONENT lib
         ARCHIVE DESTINATION "${EVENT_INSTALL_LIB_DIR}" COMPONENT lib
         PUBLIC_HEADER DESTINATION "${EVENT_INSTALL_INCLUDE_DIR}/event2" COMPONENT dev)
 
 # Install compat headers
-install(FILES ${HDR_COMPAT}
-    DESTINATION
-            "${EVENT_INSTALL_INCLUDE_DIR}"
-    COMPONENT dev)
+#install(FILES ${HDR_COMPAT}
+#    DESTINATION
+#            "${EVENT_INSTALL_INCLUDE_DIR}"
+#    COMPONENT dev)
 
 # Install the configs.
-install(FILES
-    ${PROJECT_BINARY_DIR}/${CMAKE_FILES_DIRECTORY}/LibeventConfig.cmake
-    ${PROJECT_BINARY_DIR}/LibeventConfigVersion.cmake
-    DESTINATION
-            "${EVENT_INSTALL_CMAKE_DIR}"
-        COMPONENT dev)
+#install(FILES
+#    ${PROJECT_BINARY_DIR}/${CMAKE_FILES_DIRECTORY}/LibeventConfig.cmake
+#    ${PROJECT_BINARY_DIR}/LibeventConfigVersion.cmake
+#    DESTINATION
+#            "${EVENT_INSTALL_CMAKE_DIR}"
+#        COMPONENT dev)
 
 # Install exports for the install-tree.
-install(EXPORT LibeventTargets
-        DESTINATION
-                    "${EVENT_INSTALL_CMAKE_DIR}"
-                COMPONENT dev)
+#install(EXPORT LibeventTargets
+#        DESTINATION
+#                    "${EVENT_INSTALL_CMAKE_DIR}"
+#                COMPONENT dev)
 
 set(LIBEVENT_LIBRARIES
         event
-        event_core
-        event_extra
+#        event_core
+#        event_extra
         CACHE STRING "Libevent libraries")
 
 message(STATUS "")

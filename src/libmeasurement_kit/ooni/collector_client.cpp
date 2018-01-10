@@ -53,7 +53,7 @@ Error valid_entry(Entry entry) {
             return MissingMandatoryKeyError(s.as_error());
         }
         if (!std::regex_match(*s, pair.second)) {
-            return InvalidMandatoryValueError(pair.first);
+            return InvalidMandatoryValueError(pair.first.c_str());
         }
     }
     return NoError();

@@ -92,7 +92,7 @@ void run_impl(SharedPtr<Context> ctx, Callback<Error> callback) {
     messages_read_msg_first(ctx, [=](Error err, uint8_t type, std::string s) {
         ctx->logger->debug("ndt: recv TEST_PREPARE ... %d", (int)err);
         if (err) {
-            callback(ReadingTestPrepareError(err));
+            callback(ReadingTestPrepareError(std::move(err)));
             return;
         }
         if (type != TEST_PREPARE) {
@@ -118,7 +118,7 @@ void run_impl(SharedPtr<Context> ctx, Callback<Error> callback) {
             [=](Error err, Continuation<Error> cc) {
                 ctx->logger->debug("ndt: start c2s coroutine ... %d", (int)err);
                 if (err) {
-                    callback(ConnectTestConnectionError(err));
+                    callback(ConnectTestConnectionError(std::move(err)));
                     return;
                 }
 
@@ -128,7 +128,7 @@ void run_impl(SharedPtr<Context> ctx, Callback<Error> callback) {
                                                   std::string) {
                     ctx->logger->debug("ndt: recv TEST_START ... %d", (int)err);
                     if (err) {
-                        callback(ReadingTestStartError(err));
+                        callback(ReadingTestStartError(std::move(err)));
                         return;
                     }
                     if (type != TEST_START) {
@@ -156,7 +156,7 @@ void run_impl(SharedPtr<Context> ctx, Callback<Error> callback) {
                             ctx->logger->debug("ndt: recv TEST_MSG ... %d",
                                                (int)err);
                             if (err) {
-                                callback(ReadingTestMsgError(err));
+                                callback(ReadingTestMsgError(std::move(err)));
                                 return;
                             }
                             if (type != TEST_MSG) {
@@ -182,7 +182,7 @@ void run_impl(SharedPtr<Context> ctx, Callback<Error> callback) {
                                         "ndt: recv TEST_FINALIZE ... %d",
                                         (int)err);
                                     if (err) {
-                                        callback(ReadingTestFinalizeError(err));
+                                        callback(ReadingTestFinalizeError(std::move(err)));
                                         return;
                                     }
                                     if (type != TEST_FINALIZE) {

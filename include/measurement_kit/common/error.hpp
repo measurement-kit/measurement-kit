@@ -45,25 +45,18 @@ namespace mk {
 /// as part of measurement-kit v0.8.0 as part of a refactoring of common.
 class Error : public std::exception {
   public:
-
     /// \brief The default constructor initializes the error code to zero.
     Error() : Error(0, "") {}
 
     /// \brief The constructor with error initializes the error code to the
     /// specified error code.
-    Error(int e) : Error(e, "") {}
+    explicit Error(int e) : Error(e, "") {}
 
     /// \brief The constructor with error and reason string initializes both.
     Error(int e, std::string r) : code{e}, reason{r} {
         if (code != 0 && reason == "") {
             reason = "unknown_failure " + std::to_string(code);
         }
-    }
-
-    /// \brief The constructor with error code, reason string, and child
-    /// error also initializes the child error.
-    Error(int e, std::string r, const Error &c) : Error(e, r) {
-        child_errors.push_back(c);
     }
 
     /// The bool operator evaluates to true if the error code is nonzero.
@@ -87,8 +80,8 @@ class Error : public std::exception {
     const char *what() const noexcept override { return reason.c_str(); }
 
     /// `add_child_error` allows you tou append additional child errors.
-    void add_child_error(const Error &err) {
-        child_errors.push_back(err);
+    void add_child_error(Error &&err) {
+        child_errors.push_back(std::move(err));
     }
 
     /// `child_errors` contains all the child errors.
@@ -99,21 +92,31 @@ class Error : public std::exception {
 
     /// `reason` contains the reason string.
     std::string reason;
+
+    Error(const Error &) = default;
+    Error(Error &&) = default;
+    Error &operator=(const Error &) = default;
+    Error &operator=(Error &&) = default;
+
+    virtual ~Error() override;
 };
 
 /// `MK_DEFINE_ERR` allows you to quickly define a class derived from Error.
 #define MK_DEFINE_ERR(_code_, _name_, _reason_)                                \
-    class _name_ : public Error {                                              \
-      public:                                                                  \
-        _name_() : Error(_code_, _reason_) {}                                  \
+    static inline Error _name_() { return Error(_code_, _reason_); }           \
                                                                                \
-        _name_(std::string s) : Error(_code_, _reason_) {                      \
-            reason += ": ";                                                    \
-            reason += s;                                                       \
-        }                                                                      \
+    static inline Error _name_(const char *extra_reason) {                     \
+        Error error{_code_, _reason_};                                         \
+        error.reason += ": ";                                                   \
+        error.reason += extra_reason;                                          \
+        return error;                                                          \
+    }                                                                          \
                                                                                \
-        _name_(Error e) : Error(_code_, _reason_, e) {}                        \
-    };
+    static inline Error _name_(Error &&child) {                                \
+        Error error{_code_, _reason_};                                         \
+        error.add_child_error(std::move(child));                               \
+        return error;                                                          \
+    }
 
 /// `NoError` represents the absence of errors.
 MK_DEFINE_ERR(0, NoError, "")

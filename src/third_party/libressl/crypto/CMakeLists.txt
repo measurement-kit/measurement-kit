@@ -791,6 +791,7 @@ else()
 	endif()
 endif()
 
+# FIXME: we should probably prevent the default prefix from being used
 if(NOT "${OPENSSLDIR}" STREQUAL "")
 	add_definitions(-DOPENSSLDIR=\"${OPENSSLDIR}\")
 else()
@@ -811,7 +812,8 @@ endif()
 
 add_library(crypto-objects OBJECT ${CRYPTO_SRC})
 if (BUILD_SHARED)
-	add_library(crypto STATIC $<TARGET_OBJECTS:crypto-objects>)
+	# MK: only build what we need
+	#add_library(crypto STATIC $<TARGET_OBJECTS:crypto-objects>)
 	add_library(crypto-shared SHARED $<TARGET_OBJECTS:crypto-objects>)
 	export_symbol(crypto-shared ${CMAKE_CURRENT_SOURCE_DIR}/crypto_p.sym)
 	if (WIN32)
@@ -823,9 +825,12 @@ if (BUILD_SHARED)
 		ARCHIVE_OUTPUT_NAME crypto${CRYPTO_POSTFIX})
 	set_target_properties(crypto-shared PROPERTIES VERSION
 		${CRYPTO_VERSION} SOVERSION ${CRYPTO_MAJOR_VERSION})
-	install(TARGETS crypto crypto-shared DESTINATION ${CMAKE_INSTALL_LIBDIR})
+        # MK: tweak where stuff is being installed
+	install(TARGETS crypto-shared
+		LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT lib
+		ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT lib
+		RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT bin)
 else()
 	add_library(crypto STATIC ${CRYPTO_SRC})
 	install(TARGETS crypto DESTINATION ${CMAKE_INSTALL_LIBDIR})
 endif()
-
