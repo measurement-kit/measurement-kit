@@ -112,7 +112,7 @@ void finalizing_test_impl(SharedPtr<Context> ctx, SharedPtr<Entry> cur_entry,
     messages_read_msg(ctx, [=](Error err, uint8_t type, std::string s) {
         ctx->logger->debug("ndt: recv TEST_MSG ... %d", (int)err);
         if (err) {
-            callback(ReadingTestMsgError(err));
+            callback(ReadingTestMsgError(std::move(err)));
             return;
         }
         if (type == TEST_FINALIZE) {
@@ -151,7 +151,7 @@ void run_impl(SharedPtr<Context> ctx, Callback<Error> callback) {
     messages_read_msg_first(ctx, [=](Error err, uint8_t type, std::string s) {
         ctx->logger->debug("ndt: recv TEST_PREPARE ... %d", err.code);
         if (err) {
-            callback(ReadingTestPrepareError(err));
+            callback(ReadingTestPrepareError(std::move(err)));
             return;
         }
         if (type != TEST_PREPARE) {
@@ -217,7 +217,7 @@ void run_impl(SharedPtr<Context> ctx, Callback<Error> callback) {
             [=](Error err, Continuation<Error, double> cc) {
                 ctx->logger->debug("ndt: start s2c coroutine ... %d", (int)err);
                 if (err) {
-                    callback(ConnectTestConnectionError(err));
+                    callback(ConnectTestConnectionError(std::move(err)));
                     return;
                 }
 
@@ -227,7 +227,7 @@ void run_impl(SharedPtr<Context> ctx, Callback<Error> callback) {
                                                   std::string) {
                     ctx->logger->debug("ndt: recv TEST_START ... %d", (int)err);
                     if (err) {
-                        callback(ReadingTestStartError(err));
+                        callback(ReadingTestStartError(std::move(err)));
                         return;
                     }
                     if (type != TEST_START) {
@@ -251,7 +251,7 @@ void run_impl(SharedPtr<Context> ctx, Callback<Error> callback) {
                             ctx->logger->debug("ndt: recv TEST_MSG ... %d",
                                                (int)err);
                             if (err) {
-                                callback(ReadingTestMsgError(err));
+                                callback(ReadingTestMsgError(std::move(err)));
                                 return;
                             }
                             if (type != TEST_MSG) {
@@ -275,7 +275,7 @@ void run_impl(SharedPtr<Context> ctx, Callback<Error> callback) {
                                 ctx->logger->debug("ndt: send TEST_MSG ... %d",
                                                    (int)err);
                                 if (err) {
-                                    callback(WritingTestMsgError(err));
+                                    callback(WritingTestMsgError(std::move(err)));
                                     return;
                                 }
 

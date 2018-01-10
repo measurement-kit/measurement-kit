@@ -31,7 +31,7 @@ void run_impl(SharedPtr<Context> ctx, Callback<Error> cb) {
     messages_read_msg_first(ctx, [=](Error err, uint8_t type, std::string) {
         ctx->logger->debug("ndt: recv TEST_PREPARE ... %d", (int)err);
         if (err) {
-            callback(ReadingTestPrepareError(err));
+            callback(ReadingTestPrepareError(std::move(err)));
             return;
         }
         if (type != TEST_PREPARE) {
@@ -43,7 +43,7 @@ void run_impl(SharedPtr<Context> ctx, Callback<Error> cb) {
             ctx, [=](Error err, uint8_t type, std::string) {
                 ctx->logger->debug("ndt: recv TEST_START ... %d", (int)err);
                 if (err) {
-                    callback(ReadingTestStartError(err));
+                    callback(ReadingTestStartError(std::move(err)));
                     return;
                 }
                 if (type != TEST_START) {
@@ -89,7 +89,7 @@ void run_impl(SharedPtr<Context> ctx, Callback<Error> cb) {
                     ctx->logger->debug("ndt: send final empty message ... %d",
                                        (int)err);
                     if (err) {
-                        callback(WritingMetaError(err));
+                        callback(WritingMetaError(std::move(err)));
                         return;
                     }
 
@@ -102,7 +102,7 @@ void run_impl(SharedPtr<Context> ctx, Callback<Error> cb) {
                             ctx->logger->debug("ndt: recv TEST_FINALIZE ... %d",
                                                (int)err);
                             if (err) {
-                                callback(ReadingTestFinalizeError(err));
+                                callback(ReadingTestFinalizeError(std::move(err)));
                                 return;
                             }
                             if (type != TEST_FINALIZE) {
