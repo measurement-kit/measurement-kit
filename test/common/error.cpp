@@ -65,8 +65,8 @@ TEST_CASE("The add_child_error() method works") {
     Error err;
     ExampleError ex{"antani"};
     MockedError merr;
-    err.add_child_error(ex);
-    err.add_child_error(merr);
+    err.add_child_error(std::move(ex));
+    err.add_child_error(std::move(merr));
     REQUIRE((err.child_errors.size() == 2));
     REQUIRE((err.child_errors[0] == ExampleError()));
     REQUIRE((err.child_errors[0].reason == "example error: antani"));

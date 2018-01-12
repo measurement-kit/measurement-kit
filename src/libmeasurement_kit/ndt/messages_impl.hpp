@@ -34,7 +34,7 @@ void read_ll_impl(SharedPtr<Context> ctx,
     // Receive message type (1 byte) and length (2 bytes)
     net_readn_first(ctx->txp, ctx->buff, 3, [=](Error err) {
         if (err) {
-            callback(ReadingMessageTypeLengthError(err), 0, "");
+            callback(ReadingMessageTypeLengthError(std::move(err)), 0, "");
             return;
         }
         ErrorOr<uint8_t> type = ctx->buff->read_uint8();
@@ -46,7 +46,7 @@ void read_ll_impl(SharedPtr<Context> ctx,
         // Now read the message payload (`*length` bytes in total)
         net_readn_second(ctx->txp, ctx->buff, *length, [=](Error err) {
             if (err) {
-                callback(ReadingMessagePayloadError(err), 0, "");
+                callback(ReadingMessagePayloadError(std::move(err)), 0, "");
                 return;
             }
             std::string s = ctx->buff->readn(*length);
