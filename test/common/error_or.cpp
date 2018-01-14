@@ -38,7 +38,7 @@ TEST_CASE("The ErrorOr template works as expected when there is an error") {
     ErrorOr<int> eo{GenericError(), {}};
     REQUIRE(static_cast<bool>(eo) == false);
     REQUIRE(eo.as_error() == GenericError());
-    REQUIRE_THROWS_AS(*eo, Error);
+    REQUIRE_THROWS_AS(*eo, std::runtime_error);
 }
 
 TEST_CASE("The ErrorOr template works as expected when the empty "
@@ -46,7 +46,7 @@ TEST_CASE("The ErrorOr template works as expected when the empty "
     ErrorOr<int> eo;
     REQUIRE(static_cast<bool>(eo) == false);
     REQUIRE(eo.as_error() == NotInitializedError());
-    REQUIRE_THROWS_AS(*eo, Error);
+    REQUIRE_THROWS_AS(*eo, std::runtime_error);
 }
 
 TEST_CASE("One can use arrow operator to access structure wrapped "
@@ -58,20 +58,20 @@ TEST_CASE("One can use arrow operator to access structure wrapped "
 
 TEST_CASE("Operator-* throws on error if ErrorOr is not initialized") {
     ErrorOr<int> eo;
-    REQUIRE_THROWS_AS(*eo, Error);
+    REQUIRE_THROWS_AS(*eo, std::runtime_error);
 }
 
 TEST_CASE("Operator-> throws on error if ErrorOr is not initialized") {
     ErrorOr<Foobar> eo;
-    REQUIRE_THROWS_AS(eo->foo = 10, Error);
+    REQUIRE_THROWS_AS(eo->foo = 10, std::runtime_error);
 }
 
 TEST_CASE("Operator-* throws on error if ErrorOr is an error") {
     ErrorOr<int> eo{GenericError(), {}};
-    REQUIRE_THROWS_AS(*eo, Error);
+    REQUIRE_THROWS_AS(*eo, std::runtime_error);
 }
 
 TEST_CASE("Operator-> throws on error if ErrorOr is an error") {
     ErrorOr<Foobar> eo{GenericError(), {}};
-    REQUIRE_THROWS_AS(eo->foo = 10, Error);
+    REQUIRE_THROWS_AS(eo->foo = 10, std::runtime_error);
 }

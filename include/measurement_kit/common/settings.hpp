@@ -27,7 +27,7 @@ class Settings : public std::map<std::string, Scalar> {
 
     /// \brief `get()` returns the specified \p key if set; otherwise it
     /// returns the default value \p def_value.
-    /// \throw ValueError if the value associated to \p key cannot be
+    /// \throw std::runtime_error if the value associated to \p key cannot be
     /// converted to the specified type.
     template <typename Type> Type get(std::string key, Type def_value) const {
         if (find(key) == end()) {
@@ -36,7 +36,7 @@ class Settings : public std::map<std::string, Scalar> {
         return at(key).as<Type>();
     }
 
-    /// `as_noexcept` is like `as()` but return Error rather than throwing.
+    /// `get_noexcept` is like `get()` but returns Error rather than throwing.
     template <typename Type>
     ErrorOr<Type> get_noexcept(std::string key, Type def_value) const {
         if (find(key) == end()) {
@@ -44,8 +44,6 @@ class Settings : public std::map<std::string, Scalar> {
         }
         return at(key).as_noexcept<Type>();
     }
-
-#undef XX
 
   protected:
   private:
