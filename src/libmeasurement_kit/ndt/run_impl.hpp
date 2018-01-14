@@ -136,7 +136,7 @@ void run_impl(SharedPtr<Entry> entry, Callback<Error> callback, Settings setting
     mlabns_query(settings.get<std::string>("mlabns_tool_name", "ndt"),
                  [=](Error err, mlabns::Reply reply) {
                      if (err) {
-                         callback(MlabnsQueryError(err));
+                         callback(MlabnsQueryError(std::move(err)));
                          return;
                      }
                      run_with_specific_server(entry, reply.fqdn, *port,
