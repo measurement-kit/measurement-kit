@@ -75,7 +75,7 @@ TEST_CASE("Context::make() works") {
 }
 
 static ErrorOr<SharedPtr<Context>> context_make_fail(std::string, SharedPtr<Logger>) {
-    return MockedError();
+    return {MockedError(), {}};
 }
 
 TEST_CASE("Cache works as expected") {

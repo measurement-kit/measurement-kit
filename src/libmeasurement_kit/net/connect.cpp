@@ -118,7 +118,7 @@ void connect_logic(std::string hostname, int port,
                                      // Otherwise, report them all
                                      Error connect_error = ConnectFailedError();
                                      for (auto se: e) {
-                                         connect_error.add_child_error(se);
+                                         connect_error.add_child_error(std::move(se));
                                      }
                                      cb(connect_error, result);
                                      return;
@@ -127,7 +127,7 @@ void connect_logic(std::string hostname, int port,
                                     bufferevent_getfd(result->connected_bev)
                                  );
                                  for (auto se: e) {
-                                    nagle_error.add_child_error(se);
+                                    nagle_error.add_child_error(std::move(se));
                                  }
                                  cb(nagle_error, result);
                              },

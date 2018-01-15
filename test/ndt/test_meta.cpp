@@ -52,12 +52,12 @@ TEST_CASE("run() deals with unexpected message on second read") {
         ctx, [](Error err) { REQUIRE(err == NotTestStartError()); });
 }
 
-static ErrorOr<Buffer> fail(std::string) { return MockedError(); }
+static ErrorOr<Buffer> fail(std::string) { return {MockedError(), {}}; }
 
 static ErrorOr<Buffer> success(std::string s) {
     Buffer buff;
     buff.write(s);
-    return buff;
+    return {NoError(), buff};
 }
 
 static void test_start(SharedPtr<Context>, Callback<Error, uint8_t, std::string> cb,

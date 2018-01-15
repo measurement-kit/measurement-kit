@@ -19,7 +19,7 @@ void connect_impl(SharedPtr<Context> ctx, Callback<Error> callback) {
                 [=](Error err, SharedPtr<Transport> txp) {
                     ctx->logger->debug("ndt: connect ... %d", (int)err);
                     if (err) {
-                        callback(ConnectControlConnectionError(err));
+                        callback(ConnectControlConnectionError(std::move(err)));
                         return;
                     }
                     txp->set_timeout(ctx->timeout);
@@ -45,7 +45,7 @@ void send_extended_login_impl(SharedPtr<Context> ctx, Callback<Error> callback) 
     messages_write(ctx, *out, [=](Error err) {
         ctx->logger->debug("ndt: send login ... %d", (int)err);
         if (err) {
-            callback(WriteExtendedLoginMessageError(err));
+            callback(WriteExtendedLoginMessageError(std::move(err)));
             return;
         }
         ctx->logger->debug("Sent LOGIN with test suite: %d", ctx->test_suite);
@@ -59,7 +59,7 @@ void recv_and_ignore_kickoff_impl(SharedPtr<Context> ctx, Callback<Error> callba
     net_readn(ctx->txp, ctx->buff, KICKOFF_MESSAGE_SIZE, [=](Error err) {
         ctx->logger->debug("ndt: recv and ignore kickoff ... %d", (int)err);
         if (err) {
-            callback(ReadingKickoffMessageError(err));
+            callback(ReadingKickoffMessageError(std::move(err)));
             return;
         }
         std::string s = ctx->buff->readn(KICKOFF_MESSAGE_SIZE);
@@ -86,7 +86,7 @@ void wait_in_queue_impl(SharedPtr<Context> ctx, Callback<Error> callback) {
     messages_read_msg(ctx, [=](Error err, uint8_t type, std::string s) {
         ctx->logger->debug("ndt: wait in queue ... %d", (int)err);
         if (err) {
-            callback(ReadingSrvQueueMessageError(err));
+            callback(ReadingSrvQueueMessageError(std::move(err)));
             return;
         }
         if (type != SRV_QUEUE) {
@@ -143,7 +143,7 @@ void recv_version_impl(SharedPtr<Context> ctx, Callback<Error> callback) {
     messages_read_msg(ctx, [=](Error err, uint8_t type, std::string s) {
         ctx->logger->debug("ndt: recv server version ... %d", (int)err);
         if (err) {
-            callback(ReadingServerVersionMessageError(err));
+            callback(ReadingServerVersionMessageError(std::move(err)));
             return;
         }
         if (type != MSG_LOGIN) {
@@ -163,7 +163,7 @@ void recv_tests_id_impl(SharedPtr<Context> ctx, Callback<Error> callback) {
     messages_read_msg(ctx, [=](Error err, uint8_t type, std::string s) {
         ctx->logger->debug("ndt: recv tests ID ... %d", (int)err);
         if (err) {
-            callback(ReadingTestsIdMessageError(err));
+            callback(ReadingTestsIdMessageError(std::move(err)));
             return;
         }
         if (type != MSG_LOGIN) {
@@ -232,7 +232,7 @@ void recv_results_and_logout_impl(SharedPtr<Context> ctx, Callback<Error> callba
     messages_read_msg(ctx, [=](Error err, uint8_t type, std::string s) {
         ctx->logger->debug("ndt: recv RESULTS ... %d", (int)err);
         if (err) {
-            callback(ReadingResultsOrLogoutError(err));
+            callback(ReadingResultsOrLogoutError(std::move(err)));
             return;
         }
         if (type == MSG_RESULTS) {
@@ -276,7 +276,7 @@ void wait_close_impl(SharedPtr<Context> ctx, Callback<Error> callback) {
             return;
         }
         if (err) {
-            callback(WaitingCloseError(err));
+            callback(WaitingCloseError(std::move(err)));
             return;
         }
         ctx->logger->debug("ndt: got extra data: %s", buffer->read().c_str());

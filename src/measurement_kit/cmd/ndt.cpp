@@ -21,8 +21,12 @@ int main(std::list<Callback<BaseTest &>> &initializers, int argc, char **argv) {
     int test_suite = 0;
     int use_default_test_suite = true;
 
-    for (int ch; (ch = getopt(argc, argv, "m:N:p:T:")) != -1;) {
+    for (int ch; (ch = getopt(argc, argv, "C:m:N:p:T:")) != -1;) {
         switch (ch) {
+        case 'C':
+            test.set_option("mlabns/policy", "country");
+            test.set_option("mlabns/country", optarg);
+            break;
         case 'm':
             test.set_option("mlabns/policy", "metro");
             test.set_option("mlabns/metro", optarg);

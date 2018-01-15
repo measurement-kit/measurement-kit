@@ -349,7 +349,8 @@ void libevent_query(QueryClass dns_class, QueryType dns_type, std::string name,
      *
      * This is not yet implemented in the libevent engine.
      */
-    ErrorOr<bool> also_cname = settings.get("dns/resolve_also_cname", false);
+    ErrorOr<bool> also_cname = settings.get_noexcept(
+            "dns/resolve_also_cname", false);
     if (!also_cname) {
         cb(also_cname.as_error(), {});
         return;

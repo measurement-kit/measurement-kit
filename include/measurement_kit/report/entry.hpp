@@ -45,9 +45,9 @@ class Entry : public Json {
 
     template <typename T> operator ErrorOr<T>() {
         try {
-            return Json::operator T();
+            return {NoError(), Json::operator T()};
         } catch (const std::domain_error &) {
-            return JsonDomainError();
+            return {JsonDomainError(), {}};
         }
     }
 

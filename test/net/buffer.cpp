@@ -281,7 +281,7 @@ TEST_CASE("Readn works correctly") {
 
 TEST_CASE("Readline works correctly") {
     Buffer buff;
-    ErrorOr<std::string> line("");
+    ErrorOr<std::string> line{NoError(), ""};
 
     SECTION("We can read LF terminated lines") {
         buff << "HTTP/1.1 200 Ok\n"
@@ -348,7 +348,7 @@ TEST_CASE("Readline works correctly") {
         line = buff.readline(3);
         REQUIRE(!line);
         REQUIRE(line.as_error() == EOLNotFoundError());
-        REQUIRE_THROWS_AS(*line, Error);
+        REQUIRE_THROWS_AS(*line, std::runtime_error);
     }
 
     SECTION("Line-too-long error is correctly reported") {
@@ -356,7 +356,7 @@ TEST_CASE("Readline works correctly") {
         line = buff.readline(3);
         REQUIRE(!line);
         REQUIRE(line.as_error() == LineTooLongError());
-        REQUIRE_THROWS_AS(*line, Error);
+        REQUIRE_THROWS_AS(*line, std::runtime_error);
     }
 }
 

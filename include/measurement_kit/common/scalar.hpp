@@ -19,7 +19,6 @@ namespace mk {
 /// Before MK v0.8.0 Scalar was named SettingsEntry.
 class Scalar : public std::string {
   public:
-
     /// \brief The default constructor constructs an empty scalar. This
     /// basicall means that internall we will store an empty string.
     Scalar() {}
@@ -34,17 +33,17 @@ class Scalar : public std::string {
     }
 
     /// \brief `as()` converts the scalar into the specified type.
-    /// \throw ValueError if the conversion is not possible.
+    /// \throw std::runtime_error if the conversion is not possible.
     /// \return the converted value otherwise.
     template <typename Type> Type as() const {
         std::stringstream ss{c_str()};
         Type value{};
         ss >> value;
         if (!ss.eof()) {
-            throw ValueError(); // Not all input was converted
+            throw std::runtime_error("not_all_input_was_converted");
         }
         if (ss.fail()) {
-            throw ValueError(); // Input format was wrong
+            throw std::runtime_error("wrong_input_format");
         }
         return value;
     }
@@ -53,9 +52,9 @@ class Scalar : public std::string {
     /// on error, returns the error that occurred.
     template <typename Type> ErrorOr<Type> as_noexcept() const noexcept {
         try {
-            return as<Type>();
-        } catch (const Error &e) {
-            return e;
+            return {NoError(), as<Type>()};
+        } catch (const std::runtime_error &e) {
+            return {ValueError{e.what()}, {}};
         }
     }
 
