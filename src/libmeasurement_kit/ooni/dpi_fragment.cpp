@@ -347,7 +347,8 @@ std::string fragmented_https_request(bool do_fragment, bool do_ssl,
 
 void dpi_fragment(Settings options, Callback<SharedPtr<report::Entry>> callback,
                         SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
-    reactor->call_in_thread(logger, [=]() {
+    reactor->call_in_thread(logger, [callback = std::move(callback),
+                                     logger = std::move(logger)]() {
         logger->info("starting dpi_fragment");
         SharedPtr<Entry> entry(new Entry);
 
