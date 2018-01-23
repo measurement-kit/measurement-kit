@@ -54,7 +54,7 @@ timeval *timeval_init(timeval *tv, double delta) {
 std::string random_within_charset(const std::string charset, size_t length) {
     // See <http://stackoverflow.com/questions/440133/>
     if (charset.size() < 1) {
-        throw ValueError();
+        throw std::runtime_error("random_within_charset_with_empty_charset");
     }
     auto randchar = [&charset]() {
         int rand = 0;

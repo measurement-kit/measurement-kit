@@ -14,7 +14,8 @@ TEST_CASE("We are NOT using the default random seed") {
 }
 
 TEST_CASE("random_within_charset() works with zero length string") {
-    REQUIRE_THROWS_AS(mk::random_within_charset("", 16), mk::ValueError);
+    REQUIRE_THROWS_AS(mk::random_within_charset("", 16),
+                      const std::runtime_error &);
 }
 
 TEST_CASE("random_within_charset() uses all the available charset") {

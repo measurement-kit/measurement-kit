@@ -62,7 +62,7 @@ std::vector<Answer> getaddrinfo_async_parse_response(const std::string &name,
             answer.type = MK_DNS_TYPE_AAAA;
             aptr = &((sockaddr_in6 *)p->ai_addr)->sin6_addr;
         } else {
-            throw GenericError(); /* Avoid g++ warning */
+            throw std::runtime_error("unexpected_family"); // Avoid g++ warning
         }
         if (p->ai_canonname != nullptr) {
             Answer cname_ans = answer;
@@ -73,7 +73,7 @@ std::vector<Answer> getaddrinfo_async_parse_response(const std::string &name,
         }
         char abuf[128];
         if (inet_ntop(p->ai_family, aptr, abuf, sizeof(abuf)) == nullptr) {
-            throw InetNtopFailureError();
+            throw std::runtime_error("inet_ntop_failed"); // Should not occur
         }
         if (p->ai_family == AF_INET) {
             answer.ipv4 = abuf;
@@ -106,11 +106,7 @@ void getaddrinfo_async(std::string name, addrinfo hints, SharedPtr<Reactor> reac
                       name.c_str(), error.code, error.what());
         std::vector<Answer> answers;
         if (!error && rp != nullptr) {
-            try {
-                answers = getaddrinfo_async_parse_response<inet_ntop>(name, rp);
-            } catch (const Error &err) {
-                error = std::move(err);
-            }
+            answers = getaddrinfo_async_parse_response<inet_ntop>(name, rp);
         }
         if (rp != nullptr) {
             freeaddrinfo(rp);
