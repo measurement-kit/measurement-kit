@@ -348,7 +348,8 @@ std::string fragmented_https_request(bool do_fragment, bool do_ssl,
 void dpi_fragment(Settings options, Callback<SharedPtr<report::Entry>> callback,
                         SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
     reactor->call_in_thread(logger, [callback = std::move(callback),
-                                     logger = std::move(logger)]() {
+                                     logger = std::move(logger),
+                                     reactor = std::move(reactor)]() {
         logger->info("starting dpi_fragment");
         SharedPtr<Entry> entry(new Entry);
 
@@ -366,7 +367,10 @@ void dpi_fragment(Settings options, Callback<SharedPtr<report::Entry>> callback,
         logger->info("unfragmented https response length: %d", unfragmented_https.length());
         logger->info("fragmented http response length: %d", fragmented_http.length());
         logger->info("unfragmented http response length: %d", unfragmented_http.length());
-        callback(entry);
+        reactor->call_soon([entry = std::move(entry),
+                            callback = std::move(callback)]() {
+            callback(entry);
+        });
     });
 }
 
