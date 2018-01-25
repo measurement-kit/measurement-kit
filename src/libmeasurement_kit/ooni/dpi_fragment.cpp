@@ -11,17 +11,12 @@
 #include <openssl/ssl.h>
 #include <openssl/err.h>
 #include <openssl/bio.h>
-
 #include <stdexcept>
-
 #include <iostream>
-
 #include <string>
-
 #include <openssl/ssl.h>
 #include <openssl/err.h>
 #include <openssl/bio.h>
-
 #include <sys/select.h>
 #include <sys/socket.h>
 #include <sys/types.h>
@@ -35,15 +30,10 @@
 #include <arpa/inet.h> 
 #include <sys/time.h>
 
-
-
-
 namespace mk {
 namespace ooni {
 
 using namespace mk::report;
-
-
 
 class SSLFilter {
     public:
@@ -341,9 +331,6 @@ std::string fragmented_https_request(bool do_fragment, bool do_ssl,
 
     return *aread;
 }
-
-
-
 
 void dpi_fragment(Settings options, Callback<SharedPtr<report::Entry>> callback,
                         SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
