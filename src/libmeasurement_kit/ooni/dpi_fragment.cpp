@@ -4,195 +4,32 @@
 
 #include "src/libmeasurement_kit/ooni/constants.hpp"
 #include "src/libmeasurement_kit/ooni/utils.hpp"
+#include "src/libmeasurement_kit/ooni/ssl_filter.hpp"
 #include "src/libmeasurement_kit/common/fcompose.hpp"
 #include "src/libmeasurement_kit/common/utils.hpp"
 #include <measurement_kit/ooni.hpp>
-
-#include <openssl/ssl.h>
-#include <openssl/err.h>
-#include <openssl/bio.h>
-#include <stdexcept>
-#include <iostream>
-#include <string>
-#include <openssl/ssl.h>
-#include <openssl/err.h>
-#include <openssl/bio.h>
-#include <sys/select.h>
-#include <sys/socket.h>
-#include <sys/types.h>
-#include <netinet/in.h>
-#include <netdb.h>
 #include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
 #include <unistd.h>
-#include <errno.h>
-#include <arpa/inet.h> 
-#include <sys/time.h>
 
 namespace mk {
 namespace ooni {
 
 using namespace mk::report;
 
-class SSLFilter {
-    public:
-        SSLFilter(SSL_CTX* ctxt,
-                  std::shared_ptr<std::string> nread,
-                  std::shared_ptr<std::string> nwrite,
-                  std::shared_ptr<std::string> aread,
-                  std::shared_ptr<std::string> awrite,
-                  std::string hostname);
-        virtual ~SSLFilter();
-
-        void update();
-
-    private:
-        bool continue_ssl_(int function_return);
-
-        SSL * ssl;
-        BIO * rbio;
-        BIO * wbio;
-
-        std::shared_ptr<std::string> nread;
-        std::shared_ptr<std::string> nwrite;
-        std::shared_ptr<std::string> aread;
-        std::shared_ptr<std::string> awrite;
-};
-
-SSLFilter::SSLFilter(SSL_CTX* ctxt,
-                     std::shared_ptr<std::string> nread,
-                     std::shared_ptr<std::string> nwrite,
-                     std::shared_ptr<std::string> aread,
-                     std::shared_ptr<std::string> awrite,
-                     std::string hostname)
-                      :
-                     nread(nread),
-                     nwrite(nwrite),
-                     aread(aread),
-                     awrite(awrite) {
-
-    rbio = BIO_new(BIO_s_mem());
-    wbio = BIO_new(BIO_s_mem());
-
-    ssl = SSL_new(ctxt);
-    if (ssl == NULL) {
-        exit(-1); //XXX
-    }
-
-    //XXX for now, we're only doing client-side,
-	// but maybe make it configurable?
-    //SSL_set_accept_state(ssl);
-    SSL_set_connect_state(ssl);
-    SSL_set_bio(ssl, rbio, wbio);
-    int success = SSL_set_tlsext_host_name(ssl, hostname.c_str()); //XXX error code
-}
-
-SSLFilter::~SSLFilter() {
-    SSL_free(ssl);
-}
-
-// XXX ought we to specify FilterDirection?
-//void SSLFilter::update(Filter::FilterDirection) {
-void SSLFilter::update() {
-    // If we have data from the network to process, put it the memory BIO for OpenSSL
-    if (!nread->empty()) {
-        int written = BIO_write(rbio, nread->c_str(), nread->length());
-        if (written > 0) {
-            nread->erase(0, written);
-        }
-    }
-
-    // If the application wants to write data out to the network, process it with SSL_write
-    if (!awrite->empty()) {
-        int written = SSL_write(ssl, awrite->c_str(), awrite->length());
-
-        if (!continue_ssl_(written)) {
-            throw std::runtime_error("An SSL error occured.");
-        }
-
-        if (written > 0) {
-            awrite->erase(0, written);
-        }
-    }
-
-    // Read data for the application from the encrypted connection and place it in the string for the app to read
-    while (1) {
-        char *readto = new char[1024];
-        int read = SSL_read(ssl, readto, 1024);
-
-        if (!continue_ssl_(read)) {
-            delete readto;
-            throw std::runtime_error("An SSL error occured.");
-        }
-
-        if (read > 0) {
-            size_t cur_size = aread->length();
-            aread->resize(cur_size + read);
-            std::copy(readto, readto + read, aread->begin() + cur_size);
-        }
-
-        delete readto;
-
-        if (static_cast<size_t>(read) != 1024 || read == 0) break;
-    }
-
-    // Read any data to be written to the network from the memory BIO and copy it to nwrite
-    while (1) {
-        char *readto = new char[1024];
-        int read = BIO_read(wbio, readto, 1024);
-
-        if (read > 0) {
-            size_t cur_size = nwrite->length();
-            nwrite->resize(cur_size + read);
-            std::copy(readto, readto + read, nwrite->begin() + cur_size);
-        }
-
-        delete readto;
-
-        if (static_cast<size_t>(read) != 1024 || read == 0) break;
-    }
-}
-bool SSLFilter::continue_ssl_(int function_return) {
-    int err = SSL_get_error(ssl, function_return);
-    char desc[120];
-
-    if (err != SSL_ERROR_NONE) {
-        ERR_error_string(err, desc);
-        ERR_print_errors_fp(stdout);
-    }
-
-    if (err == SSL_ERROR_NONE || err == SSL_ERROR_WANT_READ) {
-        return true;
-    }
-
-    if (err == SSL_ERROR_SYSCALL) {
-        ERR_print_errors_fp(stderr);
-        perror("syscall error: ");
-        return false;
-    }
-
-    if (err == SSL_ERROR_SSL) {
-        ERR_print_errors_fp(stderr);
-        return false;
-    }
-    return true;
-}
-
 std::string fragmented_https_request(bool do_fragment, bool do_ssl,
                         SharedPtr<Logger> logger) {
     std::string hostname { "example.com" };
     std::string ip { "93.184.216.34" };
 
-    auto nread = std::make_shared<std::string>();
-    auto nwrite = std::make_shared<std::string>();
-    auto aread = std::make_shared<std::string>();
-    auto awrite = std::make_shared<std::string>();
+    SharedPtr<std::string> nread(new std::string);
+    SharedPtr<std::string> nwrite(new std::string);
+    SharedPtr<std::string> aread(new std::string);
+    SharedPtr<std::string> awrite(new std::string);
 
     SSL_CTX* ctx = SSL_CTX_new(SSLv23_method()); //XXX don't ignore errors
     if (ctx == NULL) {
         logger->info("failed to make context\n");
-        exit(1);
+        return *aread; //XXX probably raise exception
     }   
     SSL_CTX_set_verify(ctx, SSL_VERIFY_NONE, NULL); //XXX probably want to verify eventually
 
