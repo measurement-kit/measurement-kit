@@ -2,10 +2,10 @@
 // Measurement-kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
-#include "private/ooni/constants.hpp"
-#include "private/ooni/utils.hpp"
-#include "private/common/fcompose.hpp"
-#include "private/common/utils.hpp"
+#include "src/libmeasurement_kit/ooni/constants.hpp"
+#include "src/libmeasurement_kit/ooni/utils.hpp"
+#include "src/libmeasurement_kit/common/fcompose.hpp"
+#include "src/libmeasurement_kit/common/utils.hpp"
 #include <measurement_kit/ooni.hpp>
 
 #include <openssl/ssl.h>
