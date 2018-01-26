@@ -23,3 +23,8 @@ debian_deps="$debian_deps libtool"
 debian_deps="$debian_deps make"
 debian_deps="$debian_deps valgrind"
 debian_deps="$debian_deps wget"
+
+# XXX workaround for broken libc++ in artful.
+# See https://bugs.launchpad.net/ubuntu/+source/libc++/+bug/1725858
+# See https://github.com/llvm-mirror/libcxx/commit/6e02e89f65ca1ca1d6ce30fbc557563164dd327e
+install -m644 /dev/null /usr/include/xlocale.h
