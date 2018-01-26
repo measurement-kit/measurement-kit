@@ -8,4 +8,4 @@ REPOROOT=$(cd $(dirname $(dirname $(dirname $0))) && pwd -P)
 #
 # (Honestly, to use a different distro for builds is not that bit
 # problem, IMHO. What matters is that we can measure coverage.)
-$REPOROOT/build/docker/script/setup ubuntu:zesty coveralls
+$REPOROOT/build/docker/script/setup ubuntu:xenial coveralls
