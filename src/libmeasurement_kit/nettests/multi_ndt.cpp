@@ -1,13 +1,13 @@
-// Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software under the BSD license. See AUTHORS
+// Part of Measurement Kit <https://measurement-kit.github.io/>.
+// Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
-#include "private/nettests/runnable.hpp"
+#include "src/libmeasurement_kit/nettests/runnable.hpp"
 
 #include <measurement_kit/nettests.hpp>
 #include <measurement_kit/ndt.hpp>
 
-#include "private/ndt/utils.hpp"
+#include "src/libmeasurement_kit/ndt/utils.hpp"
 
 namespace mk {
 namespace nettests {
@@ -93,7 +93,7 @@ void MultiNdtRunnable::main(std::string, Settings ndt_settings,
         logger->set_progress_offset(0.55);
         logger->set_progress_scale(0.35);
         logger->progress(0.0, "Starting multi-stream test");
-        ndt::run(neubot_entry, [=](Error neubot_error) {
+        ndt::run(neubot_entry, [=](Error neubot_error) mutable {
             logger->progress(1.0, "Test completed");
             if (neubot_error) {
                 (*neubot_entry)["failure"] = neubot_error.reason;
@@ -106,8 +106,8 @@ void MultiNdtRunnable::main(std::string, Settings ndt_settings,
             (*overall_entry)["single_stream"] = *ndt_entry;
             if (ndt_error or neubot_error) {
                 Error overall_error = SequentialOperationError();
-                overall_error.add_child_error(ndt_error);
-                overall_error.add_child_error(neubot_error);
+                overall_error.add_child_error(std::move(ndt_error));
+                overall_error.add_child_error(std::move(neubot_error));
                 (*overall_entry)["failure"] = overall_error.reason;
                 // FALLTHROUGH
             }

@@ -1,11 +1,11 @@
-// Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software under the BSD license. See AUTHORS
+// Part of Measurement Kit <https://measurement-kit.github.io/>.
+// Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
 #define CATCH_CONFIG_MAIN
-#include "private/ext/catch.hpp"
+#include "src/libmeasurement_kit/ext/catch.hpp"
 
-#include "private/net/socks5.hpp"
+#include "src/libmeasurement_kit/net/socks5.hpp"
 
 using namespace mk;
 using namespace mk::net;
@@ -42,7 +42,7 @@ TEST_CASE("parse_auth_response() works as expected") {
         input.write_uint8(0);
         ErrorOr<bool> rc = socks5_parse_auth_response(input);
         REQUIRE(rc.as_error() == BadSocksVersionError());
-        REQUIRE_THROWS_AS(rc.as_value(), Error);
+        REQUIRE_THROWS_AS(rc.as_value(), std::runtime_error);
     }
 
     SECTION("When the preferred_auth is wrong") {
@@ -51,7 +51,7 @@ TEST_CASE("parse_auth_response() works as expected") {
         input.write_uint8(16);
         ErrorOr<bool> rc = socks5_parse_auth_response(input);
         REQUIRE(rc.as_error() == NoAvailableSocksAuthenticationError());
-        REQUIRE_THROWS_AS(rc.as_value(), Error);
+        REQUIRE_THROWS_AS(rc.as_value(), std::runtime_error);
     }
 
     SECTION("When the input is OK") {
@@ -70,7 +70,7 @@ TEST_CASE("format_connect_request() works as expected") {
             {"net/address", std::string(1024, 'A')},
         });
         REQUIRE(rc.as_error() == SocksAddressTooLongError());
-        REQUIRE_THROWS_AS(rc.as_value(), Error);
+        REQUIRE_THROWS_AS(rc.as_value(), std::runtime_error);
     }
 
     SECTION("When the port number is negative") {
@@ -78,7 +78,7 @@ TEST_CASE("format_connect_request() works as expected") {
             {"net/address", "130.192.91.211"}, {"net/port", -1},
         });
         REQUIRE(rc.as_error() == SocksInvalidPortError());
-        REQUIRE_THROWS_AS(rc.as_value(), Error);
+        REQUIRE_THROWS_AS(rc.as_value(), std::runtime_error);
     }
 
     SECTION("When the port number is too large") {
@@ -86,7 +86,7 @@ TEST_CASE("format_connect_request() works as expected") {
             {"net/address", "130.192.91.211"}, {"net/port", 65536},
         });
         REQUIRE(rc.as_error() == SocksInvalidPortError());
-        REQUIRE_THROWS_AS(rc.as_value(), Error);
+        REQUIRE_THROWS_AS(rc.as_value(), std::runtime_error);
     }
 
     SECTION("When input is OK") {
@@ -127,7 +127,7 @@ TEST_CASE("parse_connect_response() works as expected") {
         input.write_uint8(0);
         ErrorOr<bool> rc = socks5_parse_connect_response(input);
         REQUIRE(rc.as_error() == BadSocksVersionError());
-        REQUIRE_THROWS_AS(rc.as_value(), Error);
+        REQUIRE_THROWS_AS(rc.as_value(), std::runtime_error);
     }
 
     SECTION("When there was a network error") {
@@ -139,7 +139,7 @@ TEST_CASE("parse_connect_response() works as expected") {
         input.write_uint8(0);
         ErrorOr<bool> rc = socks5_parse_connect_response(input);
         REQUIRE(rc.as_error() == SocksError());
-        REQUIRE_THROWS_AS(rc.as_value(), Error);
+        REQUIRE_THROWS_AS(rc.as_value(), std::runtime_error);
     }
 
     SECTION("When the reserved field is invalid") {
@@ -151,7 +151,7 @@ TEST_CASE("parse_connect_response() works as expected") {
         input.write_uint8(0);
         ErrorOr<bool> rc = socks5_parse_connect_response(input);
         REQUIRE(rc.as_error() == BadSocksReservedFieldError());
-        REQUIRE_THROWS_AS(rc.as_value(), Error);
+        REQUIRE_THROWS_AS(rc.as_value(), std::runtime_error);
     }
 
     SECTION("When the atype field is invalid") {
@@ -163,7 +163,7 @@ TEST_CASE("parse_connect_response() works as expected") {
         input.write_uint8(0);
         ErrorOr<bool> rc = socks5_parse_connect_response(input);
         REQUIRE(rc.as_error() == BadSocksAtypeValueError());
-        REQUIRE_THROWS_AS(rc.as_value(), Error);
+        REQUIRE_THROWS_AS(rc.as_value(), std::runtime_error);
     }
 
     SECTION("When not the whole message was read") {

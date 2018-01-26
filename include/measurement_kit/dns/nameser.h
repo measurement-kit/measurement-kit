@@ -2,8 +2,8 @@
 /*	$OpenBSD: nameser.h,v 1.13 2015/01/16 00:01:28 deraadt Exp $	*/
 
 /*
- * Part of measurement-kit <https://measurement-kit.github.io/>.
- * Measurement-kit is free software under the BSD license. See AUTHORS
+ * Part of Measurement Kit <https://measurement-kit.github.io/>.
+ * Measurement Kit is free software under the BSD license. See AUTHORS
  * and LICENSE for more information on the copying conditions.
  * ======================================================================
  * ++Copyright++ 1983, 1989, 1993

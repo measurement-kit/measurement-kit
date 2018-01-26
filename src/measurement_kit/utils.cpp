@@ -1,8 +1,10 @@
-// Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software under the BSD license. See AUTHORS
+// Part of Measurement Kit <https://measurement-kit.github.io/>.
+// Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
 #include <measurement_kit/common/json.hpp>
+
+#include <inttypes.h>
 
 #include "../measurement_kit/cmdline.hpp"
 
@@ -16,8 +18,8 @@ BaseTest &common_init(std::list<Callback<BaseTest &>> il, BaseTest &test) {
             fflush(stdout);
         })
         .on_overall_data_usage([](DataUsage du) {
-            printf("Overall data usage (bytes): %llu down - %llu up\n",
-                    du.down, du.up);
+            printf("Overall data usage (bytes): %" PRId64 " down - %"
+                    PRId64 " up\n", du.down, du.up);
         })
         .on_log([](uint32_t level, const char *message) {
             if (level <= MK_LOG_WARNING) {

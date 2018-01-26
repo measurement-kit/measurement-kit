@@ -1,11 +1,11 @@
-// Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software under the BSD license. See AUTHORS
+// Part of Measurement Kit <https://measurement-kit.github.io/>.
+// Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
 #define CATCH_CONFIG_MAIN
-#include "private/ext/catch.hpp"
+#include "src/libmeasurement_kit/ext/catch.hpp"
 
-#include "private/ndt/test_s2c_impl.hpp"
+#include "src/libmeasurement_kit/ndt/test_s2c_impl.hpp"
 
 using namespace mk;
 using namespace mk::ndt;
@@ -202,7 +202,7 @@ static void msg_test(SharedPtr<Context>, Callback<Error, uint8_t, Json> cb,
     cb(NoError(), TEST_MSG, {});
 }
 
-static ErrorOr<Buffer> failure(std::string) { return MockedError(); }
+static ErrorOr<Buffer> failure(std::string) { return {MockedError(), {}}; }
 
 TEST_CASE("run() deals with format_test_msg() failure") {
     SharedPtr<Context> ctx(new Context);
@@ -213,7 +213,7 @@ TEST_CASE("run() deals with format_test_msg() failure") {
 static ErrorOr<Buffer> success(std::string s) {
     Buffer buff;
     buff.write(s);
-    return buff;
+    return {NoError(), buff};
 }
 
 static void failure(SharedPtr<Context>, Buffer, Callback<Error> cb) {

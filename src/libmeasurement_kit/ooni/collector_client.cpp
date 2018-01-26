@@ -1,8 +1,8 @@
-// Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software under the BSD license. See AUTHORS
+// Part of Measurement Kit <https://measurement-kit.github.io/>.
+// Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
-#include "private/ooni/collector_client_impl.hpp"
+#include "src/libmeasurement_kit/ooni/collector_client_impl.hpp"
 #include <regex>
 
 namespace mk {
@@ -116,20 +116,20 @@ ErrorOr<Entry> get_next_entry(SharedPtr<std::istream> file, SharedPtr<Logger> lo
     std::getline(*file, line);
     if (file->eof()) {
         logger->info("End of file found");
-        return FileEofError();
+        return {FileEofError(), {}};
     }
     if (!file->good()) {
         logger->warn("I/O error reading file");
-        return FileIoError();
+        return {FileIoError(), {}};
     }
     logger->debug("Read line from report: %s", line.c_str());
     Entry entry;
     // Works because we are using Json::json() as Entry::Entry()
     auto e = json_process(line, [&](auto j) { entry = j; });
     if (e != NoError()) {
-        return e;
+        return {e, {}};
     }
-    return entry;
+    return {NoError(), entry};
 }
 
 void submit_report(std::string filepath, std::string collector_base_url,

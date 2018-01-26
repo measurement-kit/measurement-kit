@@ -1,8 +1,8 @@
-// Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software under the BSD license. See AUTHORS
+// Part of Measurement Kit <https://measurement-kit.github.io/>.
+// Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
-#include "private/neubot/dash_impl.hpp"
+#include "src/libmeasurement_kit/neubot/dash_impl.hpp"
 
 namespace mk {
 namespace neubot {

@@ -1,9 +1,9 @@
-// Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software under the BSD license. See AUTHORS
+// Part of Measurement Kit <https://measurement-kit.github.io/>.
+// Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
-#include "private/common/mock.hpp"
-#include "private/common/utils.hpp"
+#include "src/libmeasurement_kit/common/mock.hpp"
+#include "src/libmeasurement_kit/common/utils.hpp"
 #include <cctype>
 #include <cmath>
 #include <cstdio>
@@ -137,10 +137,10 @@ std::string sha256_of(std::string input) {
 ErrorOr<std::string> slurp(std::string path) {
     ErrorOr<std::vector<char>> v = slurpv<char>(path);
     if (!v) {
-        return v.as_error();
+        return {v.as_error(), std::string{}};
     }
     std::string s{v->begin(), v->end()};  /* Note that here we make a copy */
-    return s;
+    return {NoError(), std::move(s)};
 }
 
 bool startswith(std::string s, std::string p) {

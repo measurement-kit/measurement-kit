@@ -21,7 +21,7 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  * IN THE SOFTWARE.
  */
-#include "private/ext/http_parser.h"
+#include "src/libmeasurement_kit/ext/http_parser.h"
 
 #include <assert.h>
 #include <stddef.h>

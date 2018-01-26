@@ -1,15 +1,14 @@
-// Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software under the BSD license. See AUTHORS
+// Part of Measurement Kit <https://measurement-kit.github.io/>.
+// Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
 #define CATCH_CONFIG_MAIN
-#include "private/ext/catch.hpp"
+#include "src/libmeasurement_kit/ext/catch.hpp"
 
-#include "private/libevent/dns.hpp"
+#include "src/libmeasurement_kit/dns/libevent_query.hpp"
 
 using namespace mk;
 using namespace mk::dns;
-using namespace mk::libevent; // TODO: should split the tests
 
 // Now testing query()
 static evdns_request *null_resolver(evdns_base *, const char *, int,
@@ -142,21 +141,21 @@ TEST_CASE("throw error with ntop conversion error") {
 }
 
 TEST_CASE("dns::query deals with failing evdns_base_resolve_ipv4") {
-    query<::evdns_base_free, null_resolver>(
+    libevent_query<::evdns_base_free, null_resolver>(
         "IN", "A", "www.google.com",
         [](Error e, SharedPtr<Message>) { REQUIRE(e == ResolverError()); }, {},
         Reactor::global(), Logger::global());
 }
 
 TEST_CASE("dns::query deals with failing evdns_base_resolve_ipv6") {
-    query<::evdns_base_free, ::evdns_base_resolve_ipv4, null_resolver>(
+    libevent_query<::evdns_base_free, ::evdns_base_resolve_ipv4, null_resolver>(
         "IN", "AAAA", "github.com",
         [](Error e, SharedPtr<Message>) { REQUIRE(e == ResolverError()); }, {},
         Reactor::global(), Logger::global());
 }
 
 TEST_CASE("dns::query deals with failing evdns_base_resolve_reverse") {
-    query<::evdns_base_free, ::evdns_base_resolve_ipv4,
+    libevent_query<::evdns_base_free, ::evdns_base_resolve_ipv4,
                 ::evdns_base_resolve_ipv6, null_resolver_reverse>(
         "IN", "REVERSE_A", "8.8.8.8",
         [](Error e, SharedPtr<Message>) { REQUIRE(e == ResolverError()); }, {},
@@ -164,7 +163,7 @@ TEST_CASE("dns::query deals with failing evdns_base_resolve_reverse") {
 }
 
 TEST_CASE("dns::query deals with failing evdns_base_resolve_reverse_ipv6") {
-    query<::evdns_base_free, ::evdns_base_resolve_ipv4,
+    libevent_query<::evdns_base_free, ::evdns_base_resolve_ipv4,
                 ::evdns_base_resolve_ipv6, ::evdns_base_resolve_reverse,
                 null_resolver_reverse>(
         "IN", "REVERSE_AAAA", "::1",
@@ -174,7 +173,7 @@ TEST_CASE("dns::query deals with failing evdns_base_resolve_reverse_ipv6") {
 }
 
 TEST_CASE("dns::query deals with inet_pton returning 0") {
-    query<::evdns_base_free, ::evdns_base_resolve_ipv4,
+    libevent_query<::evdns_base_free, ::evdns_base_resolve_ipv4,
                 ::evdns_base_resolve_ipv6, ::evdns_base_resolve_reverse,
                 ::evdns_base_resolve_reverse_ipv6, null_inet_pton>(
         "IN", "REVERSE_A", "8.8.8.8",
@@ -182,7 +181,7 @@ TEST_CASE("dns::query deals with inet_pton returning 0") {
         [](Error e, SharedPtr<Message>) { REQUIRE(e == InvalidIPv4AddressError()); }, {},
         Reactor::global(), Logger::global());
 
-    query<::evdns_base_free, ::evdns_base_resolve_ipv4,
+    libevent_query<::evdns_base_free, ::evdns_base_resolve_ipv4,
                 ::evdns_base_resolve_ipv6, ::evdns_base_resolve_reverse,
                 ::evdns_base_resolve_reverse_ipv6, null_inet_pton>(
         "IN", "REVERSE_AAAA", "::1",

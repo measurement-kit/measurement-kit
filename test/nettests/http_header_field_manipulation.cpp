@@ -1,10 +1,10 @@
-// Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software under the BSD license. See AUTHORS
+// Part of Measurement Kit <https://measurement-kit.github.io/>.
+// Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
 #define CATCH_CONFIG_MAIN
-#include "private/ext/catch.hpp"
-#include "private/ooni/http_header_field_manipulation.hpp"
+#include "src/libmeasurement_kit/ext/catch.hpp"
+#include "src/libmeasurement_kit/ooni/http_header_field_manipulation.hpp"
 
 #include "utils.hpp"
 
@@ -49,7 +49,7 @@ TEST_CASE("compare_headers_response works") {
                                        response,
                                        entry,
                                        Logger::global());
-        REQUIRE((*entry)["tampering"]["total"] == false);
+        REQUIRE((*entry)["tampering"]["total"].get<bool>() == false);
         REQUIRE((*entry)["tampering"]["request_line_capitalization"] == true);
     }
     SECTION("For altered request line") {
@@ -58,7 +58,7 @@ TEST_CASE("compare_headers_response works") {
                                        response,
                                        entry,
                                        Logger::global());
-        REQUIRE((*entry)["tampering"]["total"] == false);
+        REQUIRE((*entry)["tampering"]["total"].get<bool>() == false);
         REQUIRE((*entry)["tampering"]["request_line_capitalization"] == true);
     }
     SECTION("For non-altered request line") {
@@ -67,8 +67,8 @@ TEST_CASE("compare_headers_response works") {
                                        response,
                                        entry,
                                        Logger::global());
-        REQUIRE((*entry)["tampering"]["total"] == false);
-        REQUIRE((*entry)["tampering"]["request_line_capitalization"] == false);
+        REQUIRE((*entry)["tampering"]["total"].get<bool>() == false);
+        REQUIRE((*entry)["tampering"]["request_line_capitalization"].get<bool>() == false);
     }
     SECTION("For extra header in response") {
         response->body = "{\"headers_dict\": {\"foo\": \"bar\", \
@@ -96,6 +96,6 @@ TEST_CASE("compare_headers_response works") {
                                        entry,
                                        Logger::global());
         REQUIRE((*entry)["tampering"]["header_name_diff"] == std::set<std::string>{});
-        REQUIRE((*entry)["tampering"]["header_field_name"] == false);
+        REQUIRE((*entry)["tampering"]["header_field_name"].get<bool>() == false);
     }
 }
