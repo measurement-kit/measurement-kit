@@ -1,0 +1,53 @@
+#!/bin/sh
+set -e
+
+pkg_topdir=$(cd $(dirname $(dirname $(dirname $(dirname $0)))) && pwd -P)
+
+[ "${pkg_os}" = "" ] && pkg_os=`uname -s | tr -s 'A-Z' 'a-z'`
+[ "${pkg_arch}" = "" ] && pkg_arch=`uname -m`
+
+pkg_name=libevent
+pkg_repository=https://github.com/libevent/libevent
+pkg_branch=patches-2.1
+pkg_expected_head=e7ff4ef2b4fc950a765008c18e74281cdb5e7668
+
+pkg_dist_dir=${pkg_topdir}/MK_DIST/${pkg_os}/${pkg_arch}/${pkg_name}
+rm -rf ${pkg_dist_dir}
+mkdir -p ${pkg_dist_dir}
+
+pkg_build_dir=${pkg_topdir}/MK_BUILD/${pkg_os}/${pkg_arch}/${pkg_name}
+rm -rf ${pkg_build_dir}
+mkdir -p ${pkg_build_dir}
+
+(
+    set -e
+
+    cd ${pkg_build_dir}
+    git clone -b ${pkg_branch} --single-branch --depth 3  -b ${pkg_branch}     \
+            ${pkg_repository} ${pkg_name}
+
+    cd ${pkg_name}
+    current_head=$(git rev-parse HEAD)
+
+    if [ "${current_head}" != "${pkg_expected_head}" ]; then
+        # Mainly because this allows us to know which commit was the
+        # tip of the branch when we compiled a dependency
+        echo "FATAL: unexpected HEAD commit SHA-1" 1>&2
+        exit 1
+    fi
+
+    git apply ${pkg_topdir}/script/build/libevent-000.patch
+
+    ./autogen.sh
+
+    export CPPFLAGS="${CPPFLAGS}  -I${pkg_dist_dir}/../libressl/include"
+    export LDFLAGS="${LDFLAGS} -L${pkg_dist_dir}/../libressl/lib"
+
+    ./configure --prefix=${pkg_dist_dir} --disable-shared                      \
+            --disable-clock-gettime ${pkg_configure_flags}
+
+    make V=0 -j4 include/event2/event-config.h install-libLTLIBRARIES          \
+            install-include_event2HEADERS
+
+    rm -rf ${pkg_dist_dir}/lib/*.la
+)

@@ -1,0 +1,50 @@
+#!/bin/sh
+set -e
+
+pkg_topdir=$(cd $(dirname $(dirname $(dirname $(dirname $0)))) && pwd -P)
+
+[ "${pkg_os}" = "" ] && pkg_os=`uname -s | tr -s 'A-Z' 'a-z'`
+[ "${pkg_arch}" = "" ] && pkg_arch=`uname -m`
+
+pkg_name=libressl
+pkg_pgp_key=${pkg_topdir}/script/build/libressl.asc
+pkg_version=2.5.5
+pkg_tarball_url=https://ftp.openbsd.org/pub/OpenBSD/LibreSSL/libressl-${pkg_version}.tar.gz
+pkg_signature_url=${pkg_tarball_url}.asc
+
+pkg_dist_dir=${pkg_topdir}/MK_DIST/${pkg_os}/${pkg_arch}/${pkg_name}
+rm -rf ${pkg_dist_dir}
+mkdir -p ${pkg_dist_dir}
+
+pkg_build_dir=${pkg_topdir}/MK_BUILD/${pkg_os}/${pkg_arch}/${pkg_name}
+rm -rf ${pkg_build_dir}
+mkdir -p ${pkg_build_dir}
+
+gpg --import ${pkg_pgp_key}
+
+(
+    set -e
+
+    cd ${pkg_build_dir}
+    wget ${pkg_signature_url} ${pkg_tarball_url}
+    signature=$(basename ${pkg_signature_url})
+    tarball=$(basename ${pkg_tarball_url})
+    gpg --verify ${signature}
+    tar -xf ${tarball}
+    srcdir=$(echo ${tarball} | sed 's/\.tar.gz//g')
+    cd ${srcdir}
+
+    git apply ${pkg_topdir}/script/build/libressl-000.patch
+
+    ./configure --prefix=${pkg_dist_dir} --disable-shared ${pkg_configure_flags}
+
+    # Note: there is no `libinclude.la` but we use `-rf` so it doesn't matter
+    for module in include crypto ssl; do
+        (
+            set -e
+            cd ${module}
+            make V=0 -j4 install
+        )
+        rm -rf ${pkg_dist_dir}/lib/lib${module}.la
+    done
+)
