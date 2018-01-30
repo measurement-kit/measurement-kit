@@ -47,8 +47,8 @@ inline Error getaddrinfo_async_map_error(int error) {
 }
 
 template <MK_MOCK(inet_ntop)>
-std::vector<Answer> getaddrinfo_async_parse_response(const std::string &name,
-                                                     addrinfo *rp) {
+ErrorOr<std::vector<Answer>> getaddrinfo_async_parse_response(
+        const std::string &name, addrinfo *rp) {
     std::vector<Answer> answers;
     for (addrinfo *p = rp; p != nullptr; p = p->ai_next) {
         Answer answer;
@@ -62,7 +62,7 @@ std::vector<Answer> getaddrinfo_async_parse_response(const std::string &name,
             answer.type = MK_DNS_TYPE_AAAA;
             aptr = &((sockaddr_in6 *)p->ai_addr)->sin6_addr;
         } else {
-            throw std::runtime_error("unexpected_family"); // Avoid g++ warning
+            return {ValueError(), {}}; // Unexpected
         }
         if (p->ai_canonname != nullptr) {
             Answer cname_ans = answer;
@@ -73,18 +73,18 @@ std::vector<Answer> getaddrinfo_async_parse_response(const std::string &name,
         }
         char abuf[128];
         if (inet_ntop(p->ai_family, aptr, abuf, sizeof(abuf)) == nullptr) {
-            throw std::runtime_error("inet_ntop_failed"); // Should not occur
+            return {GenericError{"inet_ntop_failed"}, {}}; // Unexpected
         }
         if (p->ai_family == AF_INET) {
             answer.ipv4 = abuf;
         } else if (p->ai_family == AF_INET6) {
             answer.ipv6 = abuf;
         } else {
-            /* Case excluded above */;
+            throw std::runtime_error("case_excluded_above");
         }
         answers.push_back(answer);
     }
-    return answers;
+    return {NoError(), std::move(answers)};
 }
 
 template <MK_MOCK(getaddrinfo), MK_MOCK(inet_ntop)>
@@ -106,7 +106,13 @@ void getaddrinfo_async(std::string name, addrinfo hints, SharedPtr<Reactor> reac
                       name.c_str(), error.code, error.what());
         std::vector<Answer> answers;
         if (!error && rp != nullptr) {
-            answers = getaddrinfo_async_parse_response<inet_ntop>(name, rp);
+            ErrorOr<std::vector<Answer>> maybe_answers =
+                    getaddrinfo_async_parse_response<inet_ntop>(name, rp);
+            if (maybe_answers.as_error() != NoError()) {
+                error = maybe_answers.as_error();
+            } else {
+                std::swap(answers, maybe_answers.as_value());
+            }
         }
         if (rp != nullptr) {
             freeaddrinfo(rp);

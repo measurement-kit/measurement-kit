@@ -46,10 +46,11 @@ TEST_CASE("the system resolver can handle a getaddrinfo error") {
 #ifdef ENABLE_INTEGRATION_TESTS
 
 TEST_CASE("the system resolver can handle a inet_ntop error") {
-    REQUIRE_THROWS_AS(
-        (run_system_resolver<getaddrinfo, fail_inet_ntop>(
-            "IN", "A", "neubot.org", [](Error, SharedPtr<Message>) {})),
-        const std::runtime_error &);
+    run_system_resolver<getaddrinfo, fail_inet_ntop>(
+            "IN", "A", "neubot.org", [](Error e, SharedPtr<Message>) {
+                REQUIRE(e == GenericError());
+                REQUIRE(e.reason == "generic_error: inet_ntop_failed");
+            });
 }
 
 #endif
