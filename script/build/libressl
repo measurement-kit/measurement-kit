@@ -36,6 +36,10 @@ gpg --import ${pkg_pgp_key}
 
     git apply ${pkg_topdir}/script/build/libressl-000.patch
 
+    # Required because `autoreconf -i` was probably run on Linux and so when
+    # building for Android there is an attempt to run `ldconfig`.
+    autoreconf -i
+
     ./configure --prefix=${pkg_dist_dir} --disable-shared ${pkg_configure_flags}
 
     # Note: there is no `libinclude.la` but we use `-rf` so it doesn't matter
