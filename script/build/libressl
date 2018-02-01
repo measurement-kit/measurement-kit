@@ -38,7 +38,6 @@ gpg --import ${pkg_pgp_key}
 
     if [ "$pkg_os" = "windows" ]; then
         cmake.exe -G "${pkg_windows_cmake_generator}" -DCMAKE_INSTALL_PREFIX="..\\..\\..\\..\\..\\MK_DIST\\${pkg_os}\\${pkg_arch}\\${pkg_name}"
-        #devenv.com LibreSSL.sln /build "Debug" /project crypto /project ssl
         devenv.com LibreSSL.sln /build "Debug" /project install
 	exit 0
     fi

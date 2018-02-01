@@ -38,6 +38,12 @@ mkdir -p ${pkg_build_dir}
 
     git apply ${pkg_topdir}/script/build/libevent-000.patch
 
+    if [ "$pkg_os" = "windows" ]; then
+        cmake.exe -G "${pkg_windows_cmake_generator}" -DCMAKE_INSTALL_PREFIX="..\\..\\..\\..\\..\\MK_DIST\\${pkg_os}\\${pkg_arch}\\${pkg_name}" -DOPENSSL_INCLUDE_DIR="..\\..\\..\\..\\..\\MK_DIST\\${pkg_os}\\${pkg_arch}\\libressl\\include" -DLIB_EAY_DEBUG="..\\..\\..\\..\\..\\MK_DIST\\${pkg_os}\\${pkg_arch}\\libressl\\lib\\crypto-41.lib" -DSSL_EAY_DEBUG="..\\..\\..\\..\\..\\MK_DIST\\${pkg_os}\\${pkg_arch}\\libressl\\lib\\ssl-43.lib" -DEVENT__DISABLE_BENCHMARK=ON -DEVENT__DISABLE_TESTS=ON -DEVENT__DISABLE_REGRESS=ON -DEVENT__DISABLE_SAMPLES=ON -DEVENT__BUILD_SHARED_LIBRARIES=ON
+        devenv.com libevent.sln /build "Debug" /project install
+	exit 0
+    fi
+
     ./autogen.sh
 
     export CPPFLAGS="${CPPFLAGS}  -I${pkg_dist_dir}/../libressl/include"
