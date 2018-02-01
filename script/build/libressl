@@ -36,6 +36,13 @@ gpg --import ${pkg_pgp_key}
 
     git apply ${pkg_topdir}/script/build/libressl-000.patch
 
+    if [ "$pkg_os" = "windows" ]; then
+        cmake.exe -G "${pkg_windows_cmake_generator}" -DCMAKE_INSTALL_PREFIX="..\\..\\..\\..\\..\\MK_DIST\\${pkg_os}\\${pkg_arch}\\${pkg_name}"
+        #devenv.com LibreSSL.sln /build "Debug" /project crypto /project ssl
+        devenv.com LibreSSL.sln /build "Debug" /project install
+	exit 0
+    fi
+
     # Required because `autoreconf -i` was probably run on Linux and so when
     # building for Android there is an attempt to run `ldconfig`.
     autoreconf -i
