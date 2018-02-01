@@ -7,6 +7,8 @@
 #include "src/libmeasurement_kit/dns/utils.hpp"
 #include <measurement_kit/dns.hpp>
 
+#include <assert.h>
+
 namespace mk {
 namespace dns {
 
@@ -80,7 +82,7 @@ ErrorOr<std::vector<Answer>> getaddrinfo_async_parse_response(
         } else if (p->ai_family == AF_INET6) {
             answer.ipv6 = abuf;
         } else {
-            throw std::runtime_error("case_excluded_above");
+            assert(false); // case excluded above, cannot happen
         }
         answers.push_back(answer);
     }
