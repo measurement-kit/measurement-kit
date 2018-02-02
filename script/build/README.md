@@ -77,10 +77,9 @@ We assume that:
 3. you have installed Ubuntu and `ubuntu.exe` is available from your
    developer command prompt (that should be the case)
 
-4. you are typing commands from the Developer Command prompt specific of
-   the architecture that you want to build for (i.e. x32 or x64)
+4. you are typing inside the x32 or x64 Developer Command prompt
 
-5. you are inside the top-level directory of MK sources
+5. you `chdir`-ed into the top-level directory of MK sources
 
 ```
 cd script\build
