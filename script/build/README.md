@@ -1,7 +1,13 @@
 # Simplified build system
 
 This directory contains the simplified build system. You can use this to
-compile MK or its dependencies.
+compile the following pieces of source code:
+
+- `geoip`: [geoip](https://github.com/maxmind/geoip-api-c)
+- `libressl`: [libressl](https://github.com/libressl-portable)
+- `libevent`: [libevent](https://github.com/libevent/libevent)
+- `c-ares`: [c-ares](https://github.com/c-ares/c-ares)
+- `mk`: Measurement Kit itself
 
 If needed, the build system will fetch the required sources and possibly
 apply patches. In such case, sources will live in
