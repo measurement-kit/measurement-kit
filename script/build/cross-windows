@@ -1,16 +1,33 @@
 #!/bin/sh
 set -e
 
+export pkg_os=windows
+export pkg_arch=$1
+shift
+
+if [ $# -gt 0 ]; then
+    $@
+else
+    env
+fi
+exit 0
+
 failed=0
 if ! command -v cmake.exe >/dev/null; then
     echo "FATAL: $0: please expand your PATH to include cmake.exe"
-    echo 'E.g.: export PATH="$PATH:/mnt/c/Program Files/CMake/bin/cmake.exe"'
+    echo 'E.g.: export PATH="$PATH:/mnt/c/Program Files/CMake/bin"'
     echo 'Or, if you do not have cmake for windows, please install it'
     failed=1
 fi
 if ! command -v devenv.exe >/dev/null; then
     echo "FATAL: $0: please expand your PATH to include Visual Studio devenv.exe"
-    echo 'E.g.: export PATH="$PATH:/mnt/c/Program Files (x86)/Microsoft Visual Studio/2017/Community/Common7/IDE/devenv.exe"'
+    echo 'E.g.: export PATH="$PATH:/mnt/c/Program Files (x86)/Microsoft Visual Studio/2017/Community/Common7/IDE"'
+    echo 'Or, if you do not have Visual Studio Community 2017 for windows, please install it'
+    failed=1
+fi
+if ! command -v VsDevCmd.bat >/dev/null; then
+    echo "FATAL: $0: plase expand your PATH to include Visual Studio VsDevCmd.bat"
+    echo 'E.g.: export PATH="$PATH:/mnt/c/Program Files (x86)/Microsoft Visual Studio/2017/Community/Common7/Tools"'
     echo 'Or, if you do not have Visual Studio Community 2017 for windows, please install it'
     failed=1
 fi

@@ -1,7 +1,7 @@
 #!/bin/sh
 set -e
 
-pkg_topdir=$(cd $(dirname $(dirname $(dirname $(dirname $0)))) && pwd -P)
+pkg_topdir=$(cd $(dirname $0)/../../ && pwd -P)
 
 [ "${pkg_os}" = "" ] && pkg_os=`uname -s | tr -s 'A-Z' 'a-z'`
 [ "${pkg_arch}" = "" ] && pkg_arch=`uname -m`
@@ -37,8 +37,10 @@ gpg --import ${pkg_pgp_key}
     git apply ${pkg_topdir}/script/build/libressl-000.patch
 
     if [ "$pkg_os" = "windows" ]; then
-        cmake.exe -G "${pkg_windows_cmake_generator}" -DCMAKE_INSTALL_PREFIX="..\\..\\..\\..\\..\\MK_DIST\\${pkg_os}\\${pkg_arch}\\${pkg_name}"
-        devenv.com LibreSSL.sln /build "Debug" /project install
+        os_dir="..\\..\\..\\..\\..\\MK_DIST\\${pkg_os}"
+        cmake.exe -G "NMake Makefiles"                                        \
+          -DCMAKE_INSTALL_PREFIX="${os_dir}\\${pkg_arch}\\${pkg_name}"
+        nmake.exe /f Makefile install
 	exit 0
     fi
 

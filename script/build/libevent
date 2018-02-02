@@ -1,7 +1,7 @@
 #!/bin/sh
 set -e
 
-pkg_topdir=$(cd $(dirname $(dirname $(dirname $(dirname $0)))) && pwd -P)
+pkg_topdir=$(cd $(dirname $0)/../../ && pwd -P)
 
 [ "${pkg_os}" = "" ] && pkg_os=`uname -s | tr -s 'A-Z' 'a-z'`
 [ "${pkg_arch}" = "" ] && pkg_arch=`uname -m`
@@ -39,8 +39,20 @@ mkdir -p ${pkg_build_dir}
     git apply ${pkg_topdir}/script/build/libevent-000.patch
 
     if [ "$pkg_os" = "windows" ]; then
-        cmake.exe -G "${pkg_windows_cmake_generator}" -DCMAKE_INSTALL_PREFIX="..\\..\\..\\..\\..\\MK_DIST\\${pkg_os}\\${pkg_arch}\\${pkg_name}" -DOPENSSL_INCLUDE_DIR="..\\..\\..\\..\\..\\MK_DIST\\${pkg_os}\\${pkg_arch}\\libressl\\include" -DLIB_EAY_DEBUG="..\\..\\..\\..\\..\\MK_DIST\\${pkg_os}\\${pkg_arch}\\libressl\\lib\\crypto-41.lib" -DSSL_EAY_DEBUG="..\\..\\..\\..\\..\\MK_DIST\\${pkg_os}\\${pkg_arch}\\libressl\\lib\\ssl-43.lib" -DEVENT__DISABLE_BENCHMARK=ON -DEVENT__DISABLE_TESTS=ON -DEVENT__DISABLE_REGRESS=ON -DEVENT__DISABLE_SAMPLES=ON -DEVENT__BUILD_SHARED_LIBRARIES=ON
-        devenv.com libevent.sln /build "Debug" /project install
+        dist_dir="..\\..\\..\\..\\..\\MK_DIST"
+        install_prefix="${dist_dir}\\${pkg_os}\\${pkg_arch}\\${pkg_name}"
+        libressl_prefix="${dist_dir}\\${pkg_os}\\${pkg_arch}\\libressl"
+        cmake.exe -G "NMake Makefiles"                                         \
+          -DCMAKE_INSTALL_PREFIX="${install_prefix}"                           \
+          -DOPENSSL_INCLUDE_DIR="${libressl_prefix}\\include"                  \
+          -DLIB_EAY_DEBUG="${libressl_prefix}\\lib\\crypto-41.lib"             \
+          -DSSL_EAY_DEBUG="${libressl_prefix}\\lib\\ssl-43.lib"                \
+          -DEVENT__DISABLE_BENCHMARK=ON                                        \
+          -DEVENT__DISABLE_TESTS=ON                                            \
+          -DEVENT__DISABLE_REGRESS=ON                                          \
+          -DEVENT__DISABLE_SAMPLES=ON                                          \
+          -DEVENT__BUILD_SHARED_LIBRARIES=ON
+        nmake.exe /f Makefile install
 	exit 0
     fi
 

@@ -1,7 +1,7 @@
 #!/bin/sh
 set -e
 
-pkg_topdir=$(cd $(dirname $(dirname $(dirname $(dirname $0)))) && pwd -P)
+pkg_topdir=$(cd $(dirname $0)/../../ && pwd -P)
 
 [ "${pkg_os}" = "" ] && pkg_os=`uname -s | tr -s 'A-Z' 'a-z'`
 [ "${pkg_arch}" = "" ] && pkg_arch=`uname -m`
@@ -25,6 +25,10 @@ mkdir -p ${pkg_build_dir}
     git clone -b ${pkg_branch} --single-branch --depth 3 -b ${pkg_branch}      \
             ${pkg_repository} ${pkg_name}
 
+    if [ "${pkg_os}" = "windows" ]; then
+        exit 0  # Exit subshell
+    fi
+
     # Fix for the "missing _rpl_malloc() symbol" issue when cross-linking
     # See <http://wiki.buici.com/xwiki/bin/view/Programing+C+and+C%2B%2B/Autoconf+and+RPL_MALLOC>
     export ac_cv_func_malloc_0_nonnull=yes
@@ -41,3 +45,7 @@ mkdir -p ${pkg_build_dir}
 
     rm -rf ${pkg_dist_dir}/lib/libGeoIP.la
 )
+
+if [ "${pkg_os}" = "windows" ]; then
+    cmd.exe /c geoip_nmake.bat "${pkg_arch}"
+fi
