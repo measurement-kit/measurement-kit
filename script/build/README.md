@@ -1,10 +1,10 @@
 # Simplified build system
 
 This directory contains the simplified build system. You can use this to
-compile Measurement Kit or its dependencies in specific cases.
+compile Measurement Kit or its dependencies.
 
-If needed, the simplified build system will fetch the required sources
-and possibly apply patches. In such case, sources will live in
+If needed, the build system will fetch the required sources and possibly
+apply patches. In such case, sources will live in
 
 ```
 ./MK_BUILD/<os>/<arch>/<package>/<package-sources-dir>
