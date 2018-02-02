@@ -53,11 +53,10 @@ using the `android-toolchain` script:
 ```
 
 Run the script without arguments to see all the available `<arch>` options.
-
 The toolchain will be created in:
 
 ```
-./MK_BUILD/android/toolchain/<arch>
+./MK_BUILD/android/toolchain/<arch>/
 ```
 
 Then cross compile using:
