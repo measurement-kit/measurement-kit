@@ -126,10 +126,10 @@ export LDFLAGS="${LDFLAGS} -L${SYSROOT}/usr/lib${LIB_SUFFIX} -L${ANDROID_TOOLCHA
 # Tell configure to use the toolchain
 export pkg_configure_flags="--host=${TOOLCHAIN_NAME} $CONFIG_EXTRA"
 
-# Tell ./build/dependency that we are cross compiling
+# Tell ./script/build/<package> that we are cross compiling
 export pkg_os="android"
 
-# Tell ./build/dependency the name of the cross architecture
+# Tell ./script/build/<package> the name of the cross architecture
 export pkg_arch="${DESTDIR_NAME}"
 
 if [ $# -gt 0 ]; then
