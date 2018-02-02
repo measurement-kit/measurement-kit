@@ -46,7 +46,7 @@ To see available `<os>` and `<arch>` values, run `cross-ios` without arguments.
 ## Cross compile for Android
 
 We assume that you have the NDK installed. Create a standalone Android toolchain
-using the `android-toolchain` script. For example:
+using the `android-toolchain` script:
 
 ```
 ./script/build/android-toolchain <ndk-bundle-path> <arch>
