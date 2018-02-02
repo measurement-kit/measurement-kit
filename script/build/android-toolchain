@@ -1,4 +1,7 @@
 #!/bin/sh
+
+# Adapted from build/android/make-toolchain
+
 set -e
 
 if [ $# -ne 2 -a $# -ne 3 ]; then
