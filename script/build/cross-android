@@ -120,7 +120,7 @@ export LDFLAGS="${LDFLAGS} -L${SYSROOT}/usr/lib${LIB_SUFFIX} -L${ANDROID_TOOLCHA
 #export LIBS="-lm"
 
 #
-# Flags for ./build/dependency (cross-)build system
+# Flags for ./script/build/<package> (cross-)build system
 #
 
 # Tell configure to use the toolchain
