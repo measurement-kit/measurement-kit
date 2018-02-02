@@ -81,7 +81,7 @@ We assume that:
    during the install process (important!)
 
 3. you have installed Ubuntu and `ubuntu.exe` is available from your
-   developer command prompt (that should be the case)
+   path (that should be the case)
 
 4. you are typing inside the x32 or x64 Developer Command prompt
 
