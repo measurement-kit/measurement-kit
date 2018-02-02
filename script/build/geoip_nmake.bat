@@ -3,7 +3,7 @@
 rem GeoIP makefile.vc is horrible. We need a wrapper.
 
 if [%1] NEQ [] (
-    cd ..\..\MK_BUILD\windows\%1\geoip\geoip\libGeoIP
+    cd ..\..\MK_BUILD\windows\%1\geoip\geoip-api-c\libGeoIP
     nmake -f Makefile.vc
     mkdir ..\..\..\..\..\..\MK_DIST\windows\%1\geoip\lib
     copy GeoIP.dll ..\..\..\..\..\..\MK_DIST\windows\%1\geoip\lib
