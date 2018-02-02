@@ -38,6 +38,16 @@ Just call the script named after the package to build. E.g.:
 ./script/build/libressl
 ```
 
+In addition to Unix essential commands, you'll need:
+
+- make
+- autoconf and automake
+- g++ or clang (must be C++14-capable)
+- libstdc++ or libc++ (again must be C++14-capable)
+- git
+- libtool
+- wget
+
 ## Cross compile for iOS
 
 We assume that you have a macOS system with Xcode installed and the command

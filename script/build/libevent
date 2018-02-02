@@ -23,8 +23,7 @@ mkdir -p ${pkg_build_dir}
     set -e
 
     cd ${pkg_build_dir}
-    git clone -b ${pkg_branch} --single-branch --depth 3  -b ${pkg_branch}     \
-            ${pkg_repository} ${pkg_name}
+    git clone -b ${pkg_branch} --single-branch --depth 3 ${pkg_repository}
 
     cd ${pkg_name}
     current_head=$(git rev-parse HEAD)
@@ -61,11 +60,11 @@ mkdir -p ${pkg_build_dir}
     export CPPFLAGS="${CPPFLAGS}  -I${pkg_dist_dir}/../libressl/include"
     export LDFLAGS="${LDFLAGS} -L${pkg_dist_dir}/../libressl/lib"
 
-    ./configure --prefix=${pkg_dist_dir} --disable-shared                      \
-            --disable-clock-gettime ${pkg_configure_flags}
+    ./configure --prefix=${pkg_dist_dir} --disable-shared  --disable-samples   \
+            --disable-libevent-regress --disable-clock-gettime                 \
+            ${pkg_configure_flags}
 
-    make V=0 -j4 include/event2/event-config.h install-libLTLIBRARIES          \
-            install-include_event2HEADERS
+    make V=0 -j4 install
 
     rm -rf ${pkg_dist_dir}/lib/*.la
 )
