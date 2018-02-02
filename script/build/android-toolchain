@@ -18,7 +18,7 @@ if [ $# -ne 2 -a $# -ne 3 ]; then
     exit 1
 fi
 
-ROOTDIR=$(cd $(dirname $(dirname $(dirname $0))) && pwd -P)
+ROOTDIR=$(cd $(dirname $0)/../../ && pwd -P)
 
 NDK_DIR=$1
 ARCH=$2
