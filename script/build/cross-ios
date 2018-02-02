@@ -1,4 +1,7 @@
 #!/bin/sh
+
+# Adapted from ./build/cross/ios
+
 set -e
 
 if [ $# -lt 2 ]; then
@@ -14,16 +17,16 @@ shift
 
 MINIOSVERSION="9.0"
 if [ "$PLATFORM" = "iphoneos" ]; then
-    EXTRA_CONFIG="--host=arm-apple-darwin --target=arm-apple-darwin --disable-shared"
+    EXTRA_CONFIG="--host=arm-apple-darwin --target=arm-apple-darwin"
     MINVERSION="-miphoneos-version-min=$MINIOSVERSION"
     if [ "$ARCH" = "armv7" -o "$ARCH" = "armv7s" ]; then
         CPPFLAGS="-DMK_NO_THREAD_LOCAL"
     fi
 elif [ "$ARCH" = "i386" ]; then
-    EXTRA_CONFIG="--host=i386-apple-darwin --target=i386-apple-darwin --disable-shared"
+    EXTRA_CONFIG="--host=i386-apple-darwin --target=i386-apple-darwin"
     MINVERSION="-mios-simulator-version-min=$MINIOSVERSION"
 elif [ "$ARCH" = "x86_64" ]; then
-    EXTRA_CONFIG="--host=x86_64-apple-darwin --target=x86_64-apple-darwin --disable-shared"
+    EXTRA_CONFIG="--host=x86_64-apple-darwin --target=x86_64-apple-darwin"
     MINVERSION="-mios-simulator-version-min=$MINIOSVERSION"
 else
     echo "$0: unsupported configuration" 1>&2
