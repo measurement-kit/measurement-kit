@@ -7,7 +7,7 @@ set -e
 ROOTDIR=$(cd $(dirname $0)/../../ && pwd -P)
 
 if [ $# -lt 1 ]; then
-    echo "Usage: $0 ARCH" 1>&2
+    echo "Usage: $0 ARCH [command [arguments...]]" 1>&2
     echo "" 1>&2
     echo "  ARCH: armeabi, armeabi-v7a, arm64, mips, mips64, x86, x86_64" 1>&2
     echo "" 1>&2
