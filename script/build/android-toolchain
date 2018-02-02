@@ -23,7 +23,7 @@ ROOTDIR=$(cd $(dirname $(dirname $(dirname $0))) && pwd -P)
 NDK_DIR=$1
 ARCH=$2
 API=$3
-BASEDIR=$ROOTDIR/MK_BUILD/android-toolchain
+BASEDIR=$ROOTDIR/MK_BUILD/android/toolchain
 
 # Directory where to install the toolchain. This must be done _before_
 # mapping the input architecture to a real toolchain architecture.

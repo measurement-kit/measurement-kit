@@ -20,7 +20,7 @@ echo ""
 echo "Cross compiling for $ARCH"
 
 # Place where make-toolchain creates a standalone toolchain
-export ANDROID_TOOLCHAIN=${ROOTDIR}/MK_BUILD/android-toolchain/${ARCH}
+export ANDROID_TOOLCHAIN=${ROOTDIR}/MK_BUILD/android/toolchain/${ARCH}
 
 # Directory under the toolchain where we have headers and libs
 export SYSROOT=${ANDROID_TOOLCHAIN}/sysroot
