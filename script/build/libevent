@@ -56,7 +56,7 @@ mkdir -p ${pkg_build_dir}
 
     ./autogen.sh
 
-    export CPPFLAGS="${CPPFLAGS}  -I${pkg_dist_dir}/../libressl/include"
+    export CPPFLAGS="${CPPFLAGS} -I${pkg_dist_dir}/../libressl/include"
     export LDFLAGS="${LDFLAGS} -L${pkg_dist_dir}/../libressl/lib"
 
     ./configure --prefix=${pkg_dist_dir} --disable-shared  --disable-samples   \
