@@ -1,7 +1,8 @@
 # Simplified build system
 
 This directory contains the simplified build system. You can use this to
-compile the following _packages_:
+compile, and cross compile, Measurement Kit and its dependencies. Specifically
+the following are the _packages_ that you can compile:
 
 - `geoip`: [geoip](https://github.com/maxmind/geoip-api-c)
 - `libressl`: [libressl](https://github.com/libressl-portable)
