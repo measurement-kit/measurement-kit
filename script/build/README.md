@@ -48,6 +48,7 @@ In addition to Unix essential commands, you'll need:
 - git
 - libtool
 - wget
+- gpg
 
 ## Cross compile for iOS
 
@@ -89,10 +90,13 @@ We assume that:
 1. you have installed Visual Studio 2017 Community
 
 2. you have installed CMake and opted to have `cmake.exe` inside your path
-   during the install process (important!)
+   during the install process (important, as that is not the default
+   choice)
 
 3. you have installed Ubuntu and `ubuntu.exe` is available from your
-   path (that should be the case)
+   path (that should be the case), and you have installed into Ubuntu
+   on Windows all the Linux packages mentioned above when discussing
+   building for Linux or macOS
 
 4. you are typing inside the x32 or x64 Developer Command prompt
 
