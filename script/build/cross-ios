@@ -20,7 +20,7 @@ if [ "$PLATFORM" = "iphoneos" ]; then
     EXTRA_CONFIG="--host=arm-apple-darwin --target=arm-apple-darwin"
     MINVERSION="-miphoneos-version-min=$MINIOSVERSION"
     if [ "$ARCH" = "armv7" -o "$ARCH" = "armv7s" ]; then
-        CPPFLAGS="-DMK_NO_THREAD_LOCAL"
+        CPPFLAGS="-DMK_NO_THREAD_LOCAL" # See #1404
     fi
 elif [ "$ARCH" = "i386" ]; then
     EXTRA_CONFIG="--host=i386-apple-darwin --target=i386-apple-darwin"
