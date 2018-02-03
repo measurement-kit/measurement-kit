@@ -6,6 +6,8 @@ pkg_topdir=$(cd $(dirname $0)/../../ && pwd -P)
 [ "${pkg_os}" = "" ] && pkg_os=`uname -s | tr -s 'A-Z' 'a-z'`
 [ "${pkg_arch}" = "" ] && pkg_arch=`uname -m`
 
+# Cloning libressl from github is hella slow because the portable repo will
+# clone the full history of the openbsd repo. So just download the tgz.
 pkg_name=libressl
 pkg_pgp_key=${pkg_topdir}/script/build/libressl.asc
 pkg_version=2.5.5
