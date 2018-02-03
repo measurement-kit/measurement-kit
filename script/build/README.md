@@ -8,7 +8,7 @@ the following are the _packages_ that you can compile:
 - `libressl`: [libressl](https://github.com/libressl-portable)
 - `libevent`: [libevent](https://github.com/libevent/libevent)
 - `c-ares`: [c-ares](https://github.com/c-ares/c-ares)
-- `mk`: [Mk](https://github.com/measurement-kit/measurement-kit) itself
+- `mk`: [MK](https://github.com/measurement-kit/measurement-kit) itself
 
 If needed, the build system will fetch the required sources and possibly
 apply patches. In such case, sources will live in
