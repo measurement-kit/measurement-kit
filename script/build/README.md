@@ -17,13 +17,13 @@ apply patches. In such case, sources will live in
 ./MK_BUILD/<os>/<arch>/<package>/<package-sources-dir>/
 ```
 
-Artifacts are in
+Artifacts (i.e. libraries and headers) are in
 
 ```
 ./MK_DIST/<os>/<arch>/<package>/
 ```
 
-(Paths are relative to the top level directory of MK sources.)
+Paths are relative to the top level directory of MK sources.
 
 If a package needs another package, you need to compile that other package
 first (or to populate appropriately `./MK_DIST/<os>/<arch>/<package>/` using
