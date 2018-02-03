@@ -11,5 +11,4 @@ if [%1] NEQ [] (
     mkdir ..\..\..\..\..\..\MK_DIST\windows\%1\geoip\include
     copy GeoIP.h ..\..\..\..\..\..\MK_DIST\windows\%1\geoip\include
     copy GeoIPCity.h ..\..\..\..\..\..\MK_DIST\windows\%1\geoip\include
-
 )
