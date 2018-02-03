@@ -29,8 +29,7 @@ mkdir -p ${pkg_build_dir}
     current_head=$(git rev-parse HEAD)
 
     if [ "${current_head}" != "${pkg_expected_head}" ]; then
-        # Mainly because this allows us to know which commit was the
-        # tip of the branch when we compiled a dependency
+        # "Leonidism" to make sure the HEAD is exactly what we expect
         echo "FATAL: unexpected HEAD commit SHA-1" 1>&2
         exit 1
     fi
