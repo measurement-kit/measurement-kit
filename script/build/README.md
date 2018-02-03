@@ -11,13 +11,13 @@ the following are the _packages_ that you can compile:
 - `mk`: [MK](https://github.com/measurement-kit/measurement-kit) itself
 
 If needed, the build system will fetch the required sources and possibly
-apply patches. In such case, sources will live in
+apply patches. In such case, sources will be downloaded in
 
 ```
 ./MK_BUILD/<os>/<arch>/<package>/<package-sources-dir>/
 ```
 
-Artifacts (i.e. libraries and headers) are in
+Artifacts (i.e. libraries and headers) will be installed in
 
 ```
 ./MK_DIST/<os>/<arch>/<package>/
