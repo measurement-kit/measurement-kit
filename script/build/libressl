@@ -47,7 +47,7 @@ gpg --import ${pkg_pgp_key}
     fi
 
     # Required because `autoreconf -i` was probably run on Linux and so when
-    # building for Android there is an attempt to run `ldconfig`.
+    # building for Android on macOS there is an attempt to run `ldconfig`.
     autoreconf -i
 
     ./configure --prefix=${pkg_dist_dir} --disable-shared ${pkg_configure_flags}
