@@ -41,6 +41,7 @@ mkdir -p ${pkg_build_dir}
         make V=0 -j4 install
     )
 
+    # No `.la` files around because they will confuse other `./configure`.
     rm -rf ${pkg_dist_dir}/lib/libGeoIP.la
 )
 
