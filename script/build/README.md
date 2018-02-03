@@ -63,8 +63,8 @@ To see available `<os>` and `<arch>` values, run `cross-ios` without arguments.
 
 ## Cross compile for Android
 
-We assume that you have the NDK installed. The simplest and recommended way to
-get the NDK is to install it along with Android Studio.
+We assume that you have the Native Development Kit (NDK) installed. The simplest
+and recommended way to get the NDK is to install it along with Android Studio.
 
 Create a standalone Android toolchain using the `android-toolchain` script:
 
