@@ -12,17 +12,20 @@
 
 // The numbers [0-31] are reserved for verbosity levels.
 
+/// `MK_LOG_QUIET` indicates that no log should be emitted.
+#define MK_LOG_QUIET 0
+
 /// `MK_LOG_WARNING` indicates the `WARNING` log severity level.
-#define MK_LOG_WARNING 0
+#define MK_LOG_WARNING 1
 
 /// `MK_LOG_INFO` indicates the `INFO` log severity level.
-#define MK_LOG_INFO 1
+#define MK_LOG_INFO 2
 
 /// `MK_LOG_DEBUG` indicates the `DEBUG` log severity level.
-#define MK_LOG_DEBUG 2
+#define MK_LOG_DEBUG 3
 
 /// `MK_LOG_DEBUG2` indicates the `DEBUG2` log severity level.
-#define MK_LOG_DEBUG2 3
+#define MK_LOG_DEBUG2 4
 
 /// \brief `MK_LOG_VERBOSITY_MASK` is a bitmask indicating which bits
 /// are being used to specify the severity level. Bits above such mask
