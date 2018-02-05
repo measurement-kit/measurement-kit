@@ -3,6 +3,7 @@ set -e
 
 pkg_topdir=$(cd $(dirname $0)/../../ && pwd -P)
 
+[ "${pkg_make_flags}" = "" ] && pkg_make_flags="V=0 -j4"
 [ "${pkg_os}" = "" ] && pkg_os=`uname -s | tr -s 'A-Z' 'a-z'`
 [ "${pkg_arch}" = "" ] && pkg_arch=`uname -m`
 
@@ -38,11 +39,11 @@ mkdir -p ${pkg_build_dir}
     (
         set -e
         cd libGeoIP
-        make V=0 -j4 install
+        make ${pkg_make_flags} install
     )
 
     # No `.la` files around because they will confuse other `./configure`.
-    rm -rf ${pkg_dist_dir}/lib/libGeoIP.la
+    [ "${pkg_dist_dir}" != "" ] && rm -rf ${pkg_dist_dir}/lib/libGeoIP.la
 )
 
 if [ "${pkg_os}" = "windows" ]; then

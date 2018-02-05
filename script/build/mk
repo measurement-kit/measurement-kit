@@ -3,6 +3,7 @@ set -e
 
 pkg_topdir=$(cd $(dirname $0)/../../ && pwd -P)
 
+[ "${pkg_make_flags}" = "" ] && pkg_make_flags="V=0 -j4"
 [ "${pkg_os}" = "" ] && pkg_os=`uname -s | tr -s 'A-Z' 'a-z'`
 [ "${pkg_arch}" = "" ] && pkg_arch=`uname -m`
 
@@ -18,6 +19,8 @@ mkdir -p ${pkg_build_dir}
 
 (
     set -e
+
+    cd ${pkg_topdir}
 
     ./autogen.sh # Must run in the toplevel directory
 
@@ -36,8 +39,8 @@ mkdir -p ${pkg_build_dir}
         --with-openssl=${pkg_dist_dir}/../libressl                            \
         ${pkg_configure_flags}
 
-    make V=0 -j4 install
+    make ${pkg_make_flags} install
 
     # No `.la` files around because they will confuse other `./configure`.
-    rm -rf ${pkg_dist_dir}/lib/*.la
+    [ "${pkg_dist_dir}" != "" ] && rm -rf ${pkg_dist_dir}/lib/*.la
 )
