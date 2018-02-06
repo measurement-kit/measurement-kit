@@ -12,8 +12,6 @@
  * See example/engine/ndt_ffi.cpp for example usage.
  */
 
-#include <measurement_kit/engine.h>
-
 /** MK_FFI_NOEXCEPT declares that a function does not throw. */
 #if defined(__cplusplus) && __cplusplus >= 201103L
 #define MK_FFI_NOEXCEPT noexcept

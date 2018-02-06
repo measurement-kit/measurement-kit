@@ -5,17 +5,22 @@
 #define MK_ENGINE_INTERNALS
 #include <measurement_kit/engine.h>
 
+#include <assert.h>
 #include <stdint.h>
 
+#include <algorithm>
 #include <atomic>
 #include <condition_variable>
 #include <deque>
+#include <exception>
 #include <future>
 #include <memory>
 #include <mutex>
 #include <set>
 #include <string>
 #include <thread>
+#include <tuple>
+#include <type_traits>
 
 #include <measurement_kit/common/error.hpp>
 #include <measurement_kit/common/logger.hpp>

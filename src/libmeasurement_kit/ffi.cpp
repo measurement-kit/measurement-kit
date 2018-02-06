@@ -18,7 +18,7 @@ struct mk_event_ : public std::string {
 };
 
 static mk_event_t *mk_event_create(const nlohmann::json &json) noexcept {
-    return new (std::nothrow) mk_event_t{json.dump()};
+    return new (std::nothrow) mk_event_t{json.dump().data()};
 }
 
 const char *mk_event_serialize(mk_event_t *event) noexcept {
