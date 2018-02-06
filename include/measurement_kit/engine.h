@@ -4,6 +4,12 @@
 #ifndef MEASUREMENT_KIT_ENGINE_H
 #define MEASUREMENT_KIT_ENGINE_H
 
+/*
+ * Low level engine for running Measurement Kit tests.
+ *
+ * See example/engine/ndt.cpp for example usage.
+ */
+
 #ifdef __cplusplus
 #ifdef MK_ENGINE_INTERNALS
 
