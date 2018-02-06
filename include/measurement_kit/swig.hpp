@@ -38,6 +38,17 @@ namespace swig {
        something that makes life more complicate for bindings. (We may still
        fail and abort() in case of bad error conditions, but a parse error
        is clearly an avoidable error.
+
+    Example minimal SWIG interface file:
+
+    ```
+    %module measurement_kit
+    %include "std_string.i"
+    %{
+    #include <measurement_kit/swig.hpp>
+    %}
+    %include <measurement_kit/swig.hpp>
+    ```
 */
 
 /// Task wraps mk::engine::Task for SWIG consumption.
