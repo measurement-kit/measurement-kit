@@ -12,15 +12,13 @@
  * See example/swig/ndt.cpp for example.
  */
 
+#include <measurement_kit/ffi.h>
+
 #include <memory>
+#include <stdexcept>
 #include <string>
 
 namespace mk {
-
-namespace engine {
-class Task; // forward decl.
-} // namespace engine
-
 namespace swig {
 
 /*
@@ -39,6 +37,9 @@ namespace swig {
        fail and abort() in case of bad error conditions, but a parse error
        is clearly an avoidable error.
 
+    4. This class is implemented in terms of the FFI API by design choice, so
+       in specific cases MK can export just the ANSI-C API.
+
     Example minimal SWIG interface file:
 
     ```
@@ -51,40 +52,84 @@ namespace swig {
     ```
 */
 
-/// Task wraps mk::engine::Task for SWIG consumption.
+/// Task is something that Measurement Kit can do.
 class Task {
   public:
+#ifndef SWIG
+    class TaskDeleter {
+      public:
+        void operator()(mk_task_t *p) {
+            if (p != nullptr) {
+                mk_task_destroy(p);
+            }
+        }
+    };
+    class EventDeleter {
+      public:
+        void operator()(mk_event_t *p) {
+            if (p != nullptr) {
+                mk_event_destroy(p);
+            }
+        }
+    };
+#endif
+
     /// Task() creates an empty task.
-    Task();
+    Task() {}
 
     /// initialize() initializes a Task with @p settings. @param settings is
     /// a serialized JSON containing the settings. @return true if the JSON is
-    /// valid, false on parse error. @return false if called more than once:
-    /// this class is not designed for being initialized more than once. @see
-    /// mk::engine::Task for more information on the structure of the JSON
-    /// that can be passed as the @p settings parameter. @remark This method
-    /// is not thread safe, meaning that multiple threads should not try to
-    /// initialize this class concurrently.
-    bool initialize(const std::string &settings);
+    /// valid. @return false on parse error. @return false if called more
+    /// than once: this is not expected usage. @remark This method isn't thread
+    /// safe, meaning that multiple threads should not try to initialize
+    /// this class concurrently; that will probably end up badly.
+    bool initialize(const std::string &settings) {
+        if (pimpl_ != nullptr) {
+            return false;
+        }
+        // TODO(bassosimone): it would be useful to return to the client the
+        // error that occurred while parsing the JSON file.
+        pimpl_.reset(mk_task_start(settings.data()));
+        return pimpl_ != nullptr;
+    }
 
     /// wait_for_next_event() waits for next event. @return next event as a
     /// serialized JSON. When the task is done, the returned JSON is a `null`
-    /// JSON (serialized as "null"). @see mk::engine::Task for more information
-    /// about the structure of the JSON returned by each event. @remark using
-    /// multiple threads for reading events using this method will not crash
-    /// the code but will also not make any sense.
-    std::string wait_for_next_event();
+    /// JSON (serialized as "null"). @remark Thread safe, but it would not
+    /// make much sense to have multiple reader threads.
+    std::string wait_for_next_event() {
+        std::unique_ptr<mk_event_t, EventDeleter> evp;
+        evp.reset(mk_task_wait_for_next_event(pimpl_.get())); // handles null
+        if (evp == nullptr) {
+            throw std::runtime_error("null_pointer");
+        }
+        const char *str = mk_event_serialize(evp.get());
+        if (str == nullptr) {
+            throw std::runtime_error("null_pointer");
+        }
+        // Performance consideration: this implementation is that we make two
+        // copies of strings. While this may be bad in general, we are dealing
+        // with generally small, not-so-frequent strings. We probably should
+        // not optimize, therefore. But, if we ever want to do so, we can have
+        // a function in the FFI API that takes as second argument a std::string
+        // pointer and moves the internal serialization to such pointer. We can
+        // not return a std::string in a C API, but it seems that we can get
+        // away with pointers to expose some more speed to C++.
+        return std::string{str};
+    }
 
     /// interrupt() interrupts the task ASAP. @remark this method is not
     /// blocking and will just inform the task that it should stop. @remark
     /// this method is thread safe and idempotent.
-    void interrupt();
+    void interrupt() {
+        mk_task_interrupt(pimpl_.get()); // handles null
+    }
 
     /// ~Task() waits for the task to terminate and then reclaims resources.
-    ~Task();
+    ~Task() {}
 
   private:
-    std::unique_ptr<engine::Task> pimpl_;
+    std::unique_ptr<mk_task_t, TaskDeleter> pimpl_;
 };
 
 } // namespace swig
