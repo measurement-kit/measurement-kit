@@ -9,7 +9,7 @@
  *
  * See include/measurement_kit/engine.h for more documentation.
  *
- * See example/engine/ndt_ffi.cpp for example usage.
+ * See example/ffi/ndt.cpp for example usage.
  */
 
 /** MK_FFI_NOEXCEPT declares that a function does not throw. */
