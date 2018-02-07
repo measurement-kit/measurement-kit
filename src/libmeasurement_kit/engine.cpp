@@ -184,6 +184,12 @@ static bool is_event_valid(const std::string &str) {
     return rv;
 }
 
+static void fill_with_all_events(std::set<std::string> &set) {
+#define ADD(value) set.insert(#value);
+    MK_ENUM_EVENT(ADD)
+#undef ADD
+}
+
 static std::unique_ptr<nettests::Runnable> make_runnable(const std::string &s) {
     std::unique_ptr<nettests::Runnable> runnable;
 #define ATOP(value)                                                            \
@@ -281,22 +287,44 @@ static void task_run(TaskImpl *pimpl, const nlohmann::json &settings) {
     // extract 'enabled_events'
     std::set<std::string> enabled_events;
     if (settings.count("enabled_events") != 0) {
-        if (!settings.at("enabled_events").is_array()) {
-            emit_settings_failure(pimpl, "invalid type: enabled_events");
-            return;
-        }
-        for (auto &entry : settings.at("enabled_events")) {
-            if (!entry.is_string()) {
-                emit_settings_failure(pimpl, "invalid type for event");
+        do {
+            // if you set enabled_events equal to `null`, it is an explicit
+            // way to state that you don't want any event to be returned.
+            if (settings.at("enabled_events").is_null()) {
+                break;
+            }
+            // if you set enabled_events equal to `"ALL"`, you are saying that
+            // you want to receive back all the events that occur.
+            if (settings.at("enabled_events").is_string()) {
+                const auto &entry = settings.at("enabled_events");
+                const auto &s = entry.get<std::string>();
+                if (s != "ALL") {
+                    emit_settings_failure(pimpl, "Invalid string value for the "
+                        "enabled events key. The only valid value is ALL.");
+                    return;
+                }
+                fill_with_all_events(enabled_events);
+                break;
+            }
+            // otherwise, it must be an array that contains the names of the
+            // events that you explicitly want to enable
+            if (!settings.at("enabled_events").is_array()) {
+                emit_settings_failure(pimpl, "invalid type: enabled_events");
                 return;
             }
-            std::string s = entry.get<std::string>();
-            if (!is_event_valid(s)) {
-                emit_settings_failure(pimpl, "unknown event");
-                return;
+            for (auto &entry : settings.at("enabled_events")) {
+                if (!entry.is_string()) {
+                    emit_settings_failure(pimpl, "invalid type for event");
+                    return;
+                }
+                std::string s = entry.get<std::string>();
+                if (!is_event_valid(s)) {
+                    emit_settings_failure(pimpl, "unknown event");
+                    return;
+                }
+                enabled_events.insert(s);
             }
-            enabled_events.insert(s);
-        }
+        } while (0);
     }
 
     // see whether 'PERFORMANCE' is enabled
