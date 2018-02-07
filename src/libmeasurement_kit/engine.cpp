@@ -230,6 +230,34 @@ static void task_run(TaskImpl *pimpl, const nlohmann::json &settings) {
     }
     runnable->reactor = pimpl->reactor; // default is nullptr, we must set it
 
+    // extract and process `options`
+    if (settings.count("options") != 0) {
+        if (!settings.at("options").is_object()) {
+            emit_settings_failure(pimpl, "invalid key type: options");
+            return;
+        }
+        auto &options = settings.at("options");
+        for (auto it : nlohmann::json::iterator_wrapper(options)) {
+            const auto &key = it.key();
+            auto &value = it.value();
+            if (value.is_string()) {
+                const auto &v = value.get<std::string>();
+                // Using emplace() as a workaround for bug #1550.
+                runnable->options.emplace(key, v);
+            } else if (value.is_number_integer()) {
+                auto v = value.get<int64_t>();
+                runnable->options[key] = v;
+            } else if (value.is_number_float()) {
+                auto v = value.get<double>();
+                runnable->options[key] = v;
+            } else {
+                // XXX: we should improve the error strings a great deal
+                emit_settings_failure(pimpl, "invalid option type");
+                return;
+            }
+        }
+    }
+
     // extract and process `verbosity`
     {
         uint32_t verbosity = MK_LOG_QUIET;
