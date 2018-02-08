@@ -35,7 +35,7 @@ namespace swig {
        specific method for initializing, given that throwing in general is
        something that makes life more complicate for bindings. (We may still
        fail and abort() in case of bad error conditions, but a parse error
-       is clearly an avoidable error.
+       is clearly an avoidable error.)
 
     4. This class is implemented in terms of the FFI API by design choice, so
        in specific cases MK can export just the ANSI-C API.
