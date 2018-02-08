@@ -164,7 +164,7 @@ void dpi_fragment(Settings options, Callback<SharedPtr<report::Entry>> callback,
         logger->info("starting dpi_fragment");
         SharedPtr<Entry> entry(new Entry);
 
-        std::string hostname = "example.com";
+        std::string hostname = options.get("url", std::string{"example.com"});
 
         // copied from getaddrinfo_async.hpp
         addrinfo *rp = nullptr;

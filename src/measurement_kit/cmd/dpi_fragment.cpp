@@ -12,8 +12,11 @@ namespace dpi_fragment {
 int main(std::list<Callback<BaseTest &>> &initializers, int argc, char **argv) {
     mk::nettests::DpiFragmentTest test;
     int ch;
-    while ((ch = getopt(argc, argv, "B:f:")) != -1) {
+    while ((ch = getopt(argc, argv, "B:u:")) != -1) {
         switch (ch) {
+        case 'u':
+            test.set_option("url", optarg);
+            break;
         default:
             fprintf(stderr, "%s\n", USAGE);
             exit(1);
