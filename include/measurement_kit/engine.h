@@ -5,7 +5,11 @@
 #define MEASUREMENT_KIT_ENGINE_H
 
 /*
- * Low level engine for running Measurement Kit tests.
+ * Low level engine for running Measurement Kit tests. It's not exposed by
+ * default because it depends on the nlohmann/json.hpp used to compile
+ * Measurement Kit, which may change from release to release. If you want
+ * to depend on this API, you can, just define MK_ENGINE_INTERNALS, and be
+ * prepared to deal with ABI changes when we upgrade nlohmann/json.hpp.
  *
  * See example/engine/ndt.cpp for example usage.
  */
@@ -31,11 +35,11 @@ class TaskImpl;
 /// construct more than one Task at a time, Measurement Kit will make sure that
 /// tasks run sequentially in the order in which they were created.
 ///
-/// If you enabled task events (see MK_ENUM_EVENT), a Task will emit
-/// events while running. You can retrieve events using wait_for_next_event(),
-/// which will block until the next event occurs. Regardless of whether you
-/// did enable any event, wait_for_next_event() will return a `null` JSON
-/// event when the task has terminated.
+/// A Task will emits events while running, which you can retrieve using the
+/// wait_for_next_event() call, which blocks until next event occurs. You can
+/// configure a Task to disable some or all events. Regardless of whether there
+/// are enabled events, wait_for_next_event() will return the `null` JSON
+/// when the task has terminated.
 ///
 /// You can also interrupt a running task using interrupt().
 ///
@@ -45,7 +49,8 @@ class TaskImpl;
 /// See example/engine/ndt.cpp for an example of usage.
 class Task {
   public:
-    /// Task() creates and starts a Task configured according to @p settings.
+    /// Task() creates and starts a Task configured according settings. See
+    /// the MK_ENUM_SETTINGS macro for more information.
     explicit Task(nlohmann::json &&settings);
 
     /// wait_for_next_event() blocks until the next event occurs.
@@ -105,15 +110,13 @@ class Task {
     XX(DEBUG2)
 
 /**
- * MK_ENUM_EVENT enumerates all possible event types. To specify the
- * events you want to receive from a task, you should pass the desired event
- * types as strings (e.g. "LOG") when you configure the task's enabled events.
- * For example, the minimal JSON to run NDT with the "LOG" and "PERFORMANCE"
- * events enabled is:
+ * MK_ENUM_EVENT enumerates all possible event types. By default all events
+ * are enabled, but you can disable specific events using the "disabled_events"
+ * key of the settings object. For example, to disable "LOG", use:
  *
  * ```JSON
  * {
- *   "enabled_events": ["LOG", "PERFORMANCE"],
+ *   "disabled_events": ["LOG"],
  *   "type": "Ndt"
  * }
  * ```
