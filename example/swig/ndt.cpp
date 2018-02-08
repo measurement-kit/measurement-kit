@@ -12,9 +12,9 @@ int main() {
         "verbosity": "INFO"
     })";
     mk::swig::Task task;
-    bool okay = task.initialize(settings);
-    if (!okay) {
-        std::clog << "cannot parse json" << std::endl;
+    auto rv = task.initialize_ex(settings);
+    if (!rv.result) {
+        std::clog << "ERROR: " << rv.reason << std::endl;
         exit(1);
     }
     while (true) {

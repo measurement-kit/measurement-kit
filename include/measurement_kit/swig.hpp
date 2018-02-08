@@ -52,6 +52,15 @@ namespace swig {
     ```
 */
 
+/// InitializeExResult is the result returned by Task::initialize_ex().
+class InitializeExResult {
+  public:
+    /// reason is the error that occurred.
+    std::string reason;
+    /// result tells you whether the call succeeded.
+    bool result = false;
+};
+
 /// Task is something that Measurement Kit can do.
 class Task {
   public:
@@ -84,13 +93,26 @@ class Task {
     /// safe, meaning that multiple threads should not try to initialize
     /// this class concurrently; that will probably end up badly.
     bool initialize(const std::string &settings) {
+        return initialize_ex(settings).result;
+    }
+
+    /// initialize_ex() is like initialize() but returns a more structured
+    /// result that allows to see the error that occurred.
+    InitializeExResult initialize_ex(const std::string &settings) {
+        InitializeExResult rv;
         if (pimpl_ != nullptr) {
-            return false;
+            rv.reason = "already initialized";
+            return rv;
         }
-        // TODO(bassosimone): it would be useful to return to the client the
-        // error that occurred while parsing the JSON file.
-        pimpl_.reset(mk_task_start(settings.data()));
-        return pimpl_ != nullptr;
+        char errorbuf[256];
+        pimpl_.reset(
+                mk_task_start_ex(settings.data(), errorbuf, sizeof(errorbuf)));
+        if (!pimpl_) {
+            rv.reason = errorbuf;
+            return rv;
+        }
+        rv.result = true;
+        return rv;
     }
 
     /// wait_for_next_event() waits for next event. @return next event as a
