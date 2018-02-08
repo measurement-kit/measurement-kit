@@ -64,6 +64,8 @@ class InitializeExResult {
 /// Task is something that Measurement Kit can do.
 class Task {
   public:
+
+// Prevent SWIG from attempting to generate wrappers for these.
 #ifndef SWIG
     class TaskDeleter {
       public:
