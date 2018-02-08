@@ -107,7 +107,7 @@ Task::Task(nlohmann::json &&settings) {
         semaphore.wait(); // block until a previous task has finished running
         task_run(pimpl_.get(), settings);
         pimpl_->running = false;
-        pimpl_->cond.notify_one(); // tell the reader we're done
+        pimpl_->cond.notify_all(); // tell the readers we're done
         semaphore.signal();        // allow another task to run
     });
     started.wait(); // guarantee Task() completes when the thread is running
