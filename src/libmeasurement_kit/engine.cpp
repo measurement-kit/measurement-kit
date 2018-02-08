@@ -201,6 +201,14 @@ static bool is_event_valid(const std::string &str) {
     return rv;
 }
 
+static nlohmann::json known_events() {
+    nlohmann::json json;
+#define ADD(name) json.push_back(#name);
+    MK_ENUM_EVENT(ADD)
+#undef ADD
+    return json;
+}
+
 static std::string known_tasks() {
     nlohmann::json json;
 #define ADD(name) json.push_back(#name);
@@ -296,8 +304,11 @@ static void task_run(TaskImpl *pimpl, nlohmann::json &settings) {
 
     // make sure that `settings` is an object
     if (!settings.is_object()) {
-        emit_settings_failure(pimpl, "invalid settings type: the settings "
-            "JSON object that you pass me should be a JSON object");
+        std::stringstream ss;
+        ss << "invalid `settings` type: the `settings` JSON that you pass me "
+            << "should be a JSON object (i.e. '{\"type\": \"Ndt\"}') but "
+            << "instead you passed me this: '" << settings.dump() << "'";
+        emit_settings_failure(pimpl, ss.str().data());
         return;
     }
 
@@ -343,7 +354,7 @@ static void task_run(TaskImpl *pimpl, nlohmann::json &settings) {
             } else {
                 std::stringstream ss;
                 ss << "Found option '" << key << "' to have an invalid type"
-                    << "(fyi: valid option types are: int, double, string)";
+                    << " (fyi: valid option types are: int, double, string)";
                 emit_settings_failure(pimpl, ss.str().data());
                 return;
             }
@@ -370,31 +381,40 @@ static void task_run(TaskImpl *pimpl, nlohmann::json &settings) {
         runnable->logger->set_verbosity(verbosity);
     }
 
-    // TODO(bassosimone): modify the code so that events can be disabled
-    // and all events are enabled by default.
-
-    // extract 'enabled_events'
-    std::set<std::string> enabled_events;
-    if (settings.count("enabled_events") != 0) {
-        if (!settings.at("enabled_events").is_array()) {
-            emit_settings_failure(pimpl, "invalid type: enabled_events");
-            return;
-        }
-        for (auto &entry : settings.at("enabled_events")) {
+    // Mask out events that are user-disabled.
+    std::set<std::string> enabled_events = known_events();
+    if (settings.count("disabled_events") != 0) {
+        for (auto &entry : settings.at("disabled_events")) {
             if (!entry.is_string()) {
-                emit_settings_failure(pimpl, "invalid type for event");
+                std::stringstream ss;
+                ss << "Found invalid entry inside of disabled_events that "
+                  << "has value equal to <" << entry.dump() << "> (fyi: all "
+                  << "the entries in disabled_events must be strings";
+                emit_settings_failure(pimpl, ss.str().data());
                 return;
             }
             std::string s = entry.get<std::string>();
             if (!is_event_valid(s)) {
-                emit_settings_failure(pimpl, "unknown event");
-                return;
+                std::stringstream ss;
+                ss << "Found unknown event inside of disabled_events with "
+                   << "name '" << s << "' (fyi: all valid events are: "
+                   << known_events().dump() << "). Measurement Kit is going "
+                   << "to ignore this invalid event and continue";
+                emit_settings_warning(pimpl, ss.str().data());
+                continue;
             }
-            enabled_events.insert(s);
+            enabled_events.erase(s);
         }
     }
 
+    // TODO(bassosimone): add code for processing more event types.
+
     // see whether 'PERFORMANCE' is enabled
+    // TODO(bassosimone): adapt this event according to spec when @hellais will
+    // have finalized the events specification.
+    //
+    // TODO(bassosimone): currently events are emitted using the logger and as
+    // such they're subject to the verosity, which is really a bummer.
     if (enabled_events.count("PERFORMANCE") != 0) {
         runnable->logger->on_event([pimpl](const char *line) {
             nlohmann::json event;
@@ -421,6 +441,8 @@ static void task_run(TaskImpl *pimpl, nlohmann::json &settings) {
     }
 
     // see whether 'LOG' is enabled
+    // TODO(bassosimone): adapt this event according to spec when @hellais will
+    // have finalized the events specification.
     if (enabled_events.count("LOG") != 0) {
         runnable->logger->on_log([pimpl](uint32_t verbosity, const char *line) {
             if ((verbosity & ~MK_LOG_VERBOSITY_MASK) != 0) {
@@ -428,6 +450,13 @@ static void task_run(TaskImpl *pimpl, nlohmann::json &settings) {
             }
             emit(pimpl, make_log_event(verbosity, line));
         });
+    } else {
+        // Here we should silence the logger but we cannot do that since events
+        // and logs are deeply related. So our second best is to just set up
+        // a dummy logger that prevents output from going on stderr.
+        //
+        // TODO(bassosimone): decouple logging and events.
+        runnable->logger->on_log([](uint32_t, const char *) { /* NOTHING */ });
     }
 
     // start the task (reactor and interrupted are MT safe)
