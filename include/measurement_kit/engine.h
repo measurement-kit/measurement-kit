@@ -67,6 +67,23 @@ class Task {
 #endif /* __cplusplus */
 
 /**
+ * MK_ENUM_SETTINGS enumerates the possible keys that the settings object
+ * passed to a task should have. The XX macro takes three arguments: the
+ * name of the setting, the type that the key should have, and whether the
+ * specified setting must be present in the JSON object.
+ */
+#define MK_ENUM_SETTINGS(XX)                                                   \
+    XX(annotations, object, false)                                             \
+    XX(disabled_events, array, false)                                          \
+    XX(inputs, array, false)                                                   \
+    XX(input_files, array, false)                                              \
+    XX(log_file, string, false)                                                \
+    XX(options, object, false)                                                 \
+    XX(output_file, string, false)                                             \
+    XX(verbosity, string, false)                                               \
+    XX(type, string, true)
+
+/**
  * MK_ENUM_VERBOSITY enumerates all the possible verbosity values. To
  * specify the verbosity level of a task, you should pass one of this values as
  * string (e.g.  "INFO") when you configure the task verbosity. For example, the
@@ -81,6 +98,7 @@ class Task {
  */
 #define MK_ENUM_VERBOSITY(XX)                                                  \
     XX(QUIET)                                                                  \
+    XX(ERR)                                                                    \
     XX(WARNING)                                                                \
     XX(INFO)                                                                   \
     XX(DEBUG)                                                                  \

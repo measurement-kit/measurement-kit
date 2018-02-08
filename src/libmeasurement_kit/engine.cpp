@@ -18,6 +18,7 @@
 #include <mutex>
 #include <set>
 #include <string>
+#include <sstream>
 #include <thread>
 #include <tuple>
 #include <type_traits>
@@ -74,7 +75,7 @@ class TaskImpl {
     std::thread thread;
 };
 
-static void task_run(TaskImpl *pimpl, const nlohmann::json &settings);
+static void task_run(TaskImpl *pimpl, nlohmann::json &settings);
 static bool is_event_valid(const std::string &);
 
 static void emit(TaskImpl *pimpl, nlohmann::json &&event) {
@@ -98,7 +99,8 @@ Task::Task(nlohmann::json &&settings) {
     std::promise<void> barrier;
     std::future<void> started = barrier.get_future();
     pimpl_->thread = std::thread([this, &barrier,
-                                         settings = std::move(settings)]() {
+                                         settings = std::move(
+                                                 settings)]() mutable {
         pimpl_->running = true;
         barrier.set_value();
         static Semaphore semaphore;
@@ -119,8 +121,11 @@ void Task::interrupt() {
 
 nlohmann::json Task::wait_for_next_event() {
     std::unique_lock<std::mutex> lock{pimpl_->mutex};
-    pimpl_->cond.wait(lock,
-            [this]() { return !pimpl_->running || !pimpl_->deque.empty(); });
+    // purpose: block here until we stop running or we have events to read
+    pimpl_->cond.wait(lock, [this]() { //
+        return !pimpl_->running || !pimpl_->deque.empty();
+    });
+    // must be first so we drain the queue before emitting the final null
     if (!pimpl_->deque.empty()) {
         auto rv = std::move(pimpl_->deque.front());
         pimpl_->deque.pop_front();
@@ -158,6 +163,18 @@ static std::tuple<std::string, bool> verbosity_itoa(int n) {
     return std::make_tuple(std::string{}, false);
 }
 
+// TODO(hellais): specify the format of the events according to the following
+// guidelines that we agreed upon:
+//
+// 1. events should be nested like {"type": "string", "value": {...}} since
+// that simplifies their processing, especially in golang
+//
+// 2. the event key should be such that one can "switch" using the key and no
+// other comparison in theory should be needed to understand the event type
+//
+// Currently emitted events do not follow the above guidelines because we've
+// not finished specifying the events format.
+
 static nlohmann::json make_log_event(uint32_t verbosity, const char *message) {
     auto verbosity_tuple = verbosity_itoa(verbosity);
     assert(std::get<1>(verbosity_tuple));
@@ -184,6 +201,22 @@ static bool is_event_valid(const std::string &str) {
     return rv;
 }
 
+static std::string known_tasks() {
+    nlohmann::json json;
+#define ADD(name) json.push_back(#name);
+    MK_ENUM_TASK(ADD)
+#undef ADD
+    return json.dump();
+}
+
+static std::string known_verbosity_levels() {
+    nlohmann::json json;
+#define ADD(name) json.push_back(#name);
+    MK_ENUM_VERBOSITY(ADD)
+#undef ADD
+    return json.dump();
+}
+
 static std::unique_ptr<nettests::Runnable> make_runnable(const std::string &s) {
     std::unique_ptr<nettests::Runnable> runnable;
 #define ATOP(value)                                                            \
@@ -196,47 +229,104 @@ static std::unique_ptr<nettests::Runnable> make_runnable(const std::string &s) {
 }
 
 static void emit_settings_failure(TaskImpl *pimpl, const char *reason) {
-    emit(pimpl, make_log_event(MK_LOG_WARNING, reason));
+    emit(pimpl, make_log_event(MK_LOG_ERR, reason));
     emit(pimpl, make_failure_event(ValueError()));
+}
+
+static void emit_settings_warning(TaskImpl *pimpl, const char *reason) {
+    emit(pimpl, make_log_event(MK_LOG_WARNING, reason));
+}
+
+static bool validate_known_settings_shallow(
+        TaskImpl *pimpl, const nlohmann::json &settings) {
+    auto rv = true;
+
+#define VALIDATE(name, type, mandatory)                                        \
+                                                                               \
+    /* Make sure that mandatory settings are present */                        \
+    if (!settings.count(#name) && mandatory) {                                 \
+        std::stringstream ss;                                                  \
+        ss << "missing required setting '" << #name << "' (fyi: '" << #name    \
+           << "' should be a " << #type << ")";                                \
+        emit_settings_warning(pimpl, ss.str().data());                         \
+        rv = false;                                                            \
+    }                                                                          \
+                                                                               \
+    /* Make sure that existing settings have the correct type. */              \
+    if (settings.count(#name) && !settings.at(#name).is_##type()) {            \
+        std::stringstream ss;                                                  \
+        ss << "found setting '" << #name << "' with invalid type (fyi: '"      \
+           << #name << "' should be a " << #type << ")";                       \
+        emit_settings_warning(pimpl, ss.str().data());                         \
+        rv = false;                                                            \
+    }
+
+    MK_ENUM_SETTINGS(VALIDATE)
+#undef VALIDATE
+
+    return rv;
+}
+
+// TODO(bassosimone): decide whether this should instead stop processing.
+static void remove_unknown_settings_and_warn(
+        TaskImpl *pimpl, nlohmann::json &settings) {
+    std::set<std::string> expected;
+    std::set<std::string> unexpected;
+#define FILL(name, type, mandatory) expected.insert(#name);
+    MK_ENUM_SETTINGS(FILL)
+#undef FILL
+    for (auto it : nlohmann::json::iterator_wrapper(settings)) {
+        const auto &key = it.key();
+        if (expected.count(key) <= 0) {
+            std::stringstream ss;
+            ss << "found unknown setting key " << key << " which will be "
+               << "ignored by Measurement Kit";
+            unexpected.insert(key);
+            emit_settings_warning(pimpl, ss.str().data());
+        }
+    }
+    for (auto &s : unexpected) {
+        settings.erase(s);
+    }
 }
 
 // # Run task
 
-static void task_run(TaskImpl *pimpl, const nlohmann::json &settings) {
+static void task_run(TaskImpl *pimpl, nlohmann::json &settings) {
 
     // make sure that `settings` is an object
     if (!settings.is_object()) {
-        emit_settings_failure(pimpl, "invalid settings type");
+        emit_settings_failure(pimpl, "invalid settings type: the settings "
+            "JSON object that you pass me should be a JSON object");
         return;
     }
 
-    // extract and process `type`
-    std::unique_ptr<nettests::Runnable> runnable;
-    {
-        if (settings.count("type") == 0) {
-            emit_settings_failure(pimpl, "missing key: type");
-            return;
-        }
-        if (!settings.at("type").is_string()) {
-            emit_settings_failure(pimpl, "invalid key type: type");
-            return;
-        }
-        std::string type = settings.at("type").get<std::string>();
-        runnable = make_runnable(type);
+    // Make sure that the toplevel settings are okay, remove unknown ones, so
+    // there cannot be code below attempting to access settings that are not
+    // specified also inside of the <engine.h> header file.
+    if (!validate_known_settings_shallow(pimpl, settings)) {
+        emit_settings_failure(pimpl, "failed to validate settings");
+        return;
     }
+    remove_unknown_settings_and_warn(pimpl, settings);
+
+    // extract and process `type`
+    auto runnable = make_runnable(settings.at("type").get<std::string>());
     if (!runnable) {
-        emit_settings_failure(pimpl, "unknown task type");
+        std::stringstream ss;
+        ss << "unknown task type '" << settings.at("type").get<std::string>()
+            << "' (fyi: known tasks are: " << known_tasks() << ")";
+        emit_settings_failure(pimpl, ss.str().data());
         return;
     }
     runnable->reactor = pimpl->reactor; // default is nullptr, we must set it
 
     // extract and process `options`
     if (settings.count("options") != 0) {
-        if (!settings.at("options").is_object()) {
-            emit_settings_failure(pimpl, "invalid key type: options");
-            return;
-        }
         auto &options = settings.at("options");
+        // TODO(bassosimone): enumerate all possible options. Make sure we
+        // check their type, warn about unknown options (but don't remove them
+        // for now, as it will take time to map all of them).
         for (auto it : nlohmann::json::iterator_wrapper(options)) {
             const auto &key = it.key();
             auto &value = it.value();
@@ -251,8 +341,10 @@ static void task_run(TaskImpl *pimpl, const nlohmann::json &settings) {
                 auto v = value.get<double>();
                 runnable->options[key] = v;
             } else {
-                // XXX: we should improve the error strings a great deal
-                emit_settings_failure(pimpl, "invalid option type");
+                std::stringstream ss;
+                ss << "Found option '" << key << "' to have an invalid type"
+                    << "(fyi: valid option types are: int, double, string)";
+                emit_settings_failure(pimpl, ss.str().data());
                 return;
             }
         }
@@ -262,21 +354,24 @@ static void task_run(TaskImpl *pimpl, const nlohmann::json &settings) {
     {
         uint32_t verbosity = MK_LOG_QUIET;
         if (settings.count("verbosity") != 0) {
-            if (!settings.at("verbosity").is_string()) {
-                emit_settings_failure(pimpl, "invalid type: verbosity");
-                return;
-            }
             auto verbosity_string = settings.at("verbosity").get<std::string>();
             auto verbosity_tuple = verbosity_atoi(verbosity_string);
             bool okay = std::get<1>(verbosity_tuple);
             if (!okay) {
-                emit_settings_failure(pimpl, "unknown verbosity level");
+                std::stringstream ss;
+                ss << "Unknown verbosity level '" << verbosity_string << "' "
+                    << "(fyi: known verbosity levels are: " <<
+                    known_verbosity_levels() << ")";
+                emit_settings_failure(pimpl, ss.str().data());
                 return;
             }
             verbosity = std::get<0>(verbosity_tuple);
         }
         runnable->logger->set_verbosity(verbosity);
     }
+
+    // TODO(bassosimone): modify the code so that events can be disabled
+    // and all events are enabled by default.
 
     // extract 'enabled_events'
     std::set<std::string> enabled_events;

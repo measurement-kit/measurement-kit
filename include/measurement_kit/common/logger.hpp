@@ -15,17 +15,20 @@
 /// `MK_LOG_QUIET` indicates that no log should be emitted.
 #define MK_LOG_QUIET 0
 
+/// `MK_LOG_ERR` indicates the `ERR` log severity level.
+#define MK_LOG_ERR 1
+
 /// `MK_LOG_WARNING` indicates the `WARNING` log severity level.
-#define MK_LOG_WARNING 1
+#define MK_LOG_WARNING 2
 
 /// `MK_LOG_INFO` indicates the `INFO` log severity level.
-#define MK_LOG_INFO 2
+#define MK_LOG_INFO 3
 
 /// `MK_LOG_DEBUG` indicates the `DEBUG` log severity level.
-#define MK_LOG_DEBUG 3
+#define MK_LOG_DEBUG 4
 
 /// `MK_LOG_DEBUG2` indicates the `DEBUG2` log severity level.
-#define MK_LOG_DEBUG2 4
+#define MK_LOG_DEBUG2 5
 
 /// \brief `MK_LOG_VERBOSITY_MASK` is a bitmask indicating which bits
 /// are being used to specify the severity level. Bits above such mask
@@ -123,6 +126,10 @@ class Logger {
     virtual void log(uint32_t, const char *, ...)
         __attribute__((format(printf, 3, 4))) = 0;
 
+    /// `err()` calls logv() with MK_LOG_ERR.
+    virtual void err(const char *fmt, ...)
+        __attribute__((format(printf, 2, 3))) = 0;
+
     /// `warn()` calls logv() with MK_LOG_WARNING.
     virtual void warn(const char *fmt, ...)
         __attribute__((format(printf, 2, 3))) = 0;
@@ -205,6 +212,9 @@ class Logger {
 
 /// `log()` call the Logger::log() method of the global logger.
 void log(uint32_t, const char *, ...) __attribute__((format(printf, 2, 3)));
+
+/// `err()` call the Logger::err() method of the global logger.
+void err(const char *, ...) __attribute__((format(printf, 1, 2)));
 
 /// `warn()` call the Logger::warn() method of the global logger.
 void warn(const char *, ...) __attribute__((format(printf, 1, 2)));
