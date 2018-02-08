@@ -6,8 +6,6 @@
 
 #include <iostream>
 
-#include <measurement_kit/common/nlohmann/json.hpp>
-
 int main() {
     std::string settings = R"({
         "type": "Ndt",
