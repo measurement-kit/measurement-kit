@@ -79,7 +79,7 @@ class Task {
  * }
  * ```
  */
-#define MK_ENUM_VERBOSITY(XX)                                           \
+#define MK_ENUM_VERBOSITY(XX)                                                  \
     XX(QUIET)                                                                  \
     XX(WARNING)                                                                \
     XX(INFO)                                                                   \
@@ -100,7 +100,7 @@ class Task {
  * }
  * ```
  */
-#define MK_ENUM_EVENT(XX)                                               \
+#define MK_ENUM_EVENT(XX)                                                      \
     XX(LOG)                                                                    \
     XX(PROGRESS)                                                               \
     XX(FAILURE)                                                                \
@@ -116,7 +116,7 @@ class Task {
  *   {"type": "Ndt"}
  * ```
  */
-#define MK_ENUM_TASK(XX)                                                \
+#define MK_ENUM_TASK(XX)                                                       \
     XX(Dash)                                                                   \
     XX(CaptivePortal)                                                          \
     XX(DnsInjection)                                                           \
