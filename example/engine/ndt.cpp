@@ -9,7 +9,6 @@
 
 int main() {
     nlohmann::json settings{
-        {"enabled_events", {"LOG", "PERFORMANCE"}},
         {"type", "Ndt"},
         {"verbosity", "INFO"},
     };

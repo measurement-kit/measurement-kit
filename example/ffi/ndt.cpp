@@ -14,7 +14,6 @@
 int main() {
     mk_task_t *task = mk_task_start(
             "{\n"
-            "    \"enabled_events\": [\"LOG\", \"PERFORMANCE\"],\n"
             "    \"type\": \"Ndt\",\n"
             "    \"verbosity\": \"INFO\"\n"
             "}\n");

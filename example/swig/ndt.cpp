@@ -10,7 +10,6 @@
 
 int main() {
     std::string settings = R"({
-        "enabled_events": ["LOG", "PERFORMANCE"],
         "type": "Ndt",
         "verbosity": "INFO"
     })";
