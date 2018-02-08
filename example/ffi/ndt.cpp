@@ -12,13 +12,14 @@
  * statically with its own version of libc++.
  */
 int main() {
-    mk_task_t *task = mk_task_start(
-            "{\n"
-            "    \"type\": \"Ndt\",\n"
-            "    \"verbosity\": \"INFO\"\n"
-            "}\n");
+    char buff[128];
+    mk_task_t *task = mk_task_start_ex("{\n"
+                                       "    \"type\": \"Ndt\",\n"
+                                       "    \"verbosity\": \"INFO\"\n"
+                                       "}\n",
+            buff, sizeof(buff));
     if (task == NULL) {
-        fprintf(stderr, "ERROR: cannot create/start task\n");
+        fprintf(stderr, "ERROR: cannot create/start task: %s\n", buff);
         exit(1);
     }
 

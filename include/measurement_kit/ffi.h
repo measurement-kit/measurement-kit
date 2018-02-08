@@ -12,6 +12,8 @@
  * See example/ffi/ndt.cpp for example usage.
  */
 
+#include <stddef.h>
+
 /** MK_FFI_NOEXCEPT declares that a function does not throw. */
 #if defined(__cplusplus) && __cplusplus >= 201103L
 #define MK_FFI_NOEXCEPT noexcept
@@ -39,6 +41,13 @@ typedef struct mk_task_ mk_task_t;
 
 /** mk_task_start() starts a task with the specified JSON settings. */
 mk_task_t *mk_task_start(const char *settings) MK_FFI_NOEXCEPT;
+
+/** mk_task_start_ex() starts a task with the specified JSON settings. It will
+ * write any start error into the provided buffer (if not NULL and length is
+ * positive, of course). The error buffer will be always zero terminated if its
+ * length is at least equal to one character and the buffer is not NULL. */
+mk_task_t *mk_task_start_ex(
+        const char *settings, char *errbuf, size_t errbuf_size) MK_FFI_NOEXCEPT;
 
 /** mk_task_wait_for_next_event() blocks until the next event. */
 mk_event_t *mk_task_wait_for_next_event(mk_task_t *task) MK_FFI_NOEXCEPT;
