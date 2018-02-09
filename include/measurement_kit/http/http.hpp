@@ -173,6 +173,14 @@ void request(Settings, Headers, std::string, Callback<Error, SharedPtr<Response>
              SharedPtr<Reactor> = Reactor::global(), SharedPtr<Logger> = Logger::global(),
              SharedPtr<Response> previous = {}, int nredirects = 0);
 
+// TODO(bassosimone): I am wondering whether having an API where one creates
+// a request and receives back a response would be bad. The current API is
+// influenced by my state of mind when I thought that I could have C++11 work
+// like Node, but it seems it is not exactly the case :^).
+
+std::tuple<Error, Response> request_sync(Settings settings, Headers headers,
+        std::string body, SharedPtr<Logger> logger);
+
 inline void get(std::string url, Callback<Error, SharedPtr<Response>> cb,
                 Headers headers = {}, Settings settings = {},
                 SharedPtr<Reactor> reactor = Reactor::global(),

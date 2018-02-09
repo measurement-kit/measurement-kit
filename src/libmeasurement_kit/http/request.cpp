@@ -330,44 +330,44 @@ void request(Settings settings, Headers headers, std::string body,
             request_sendrecv(
                 txp, settings, headers, body,
                 [=](Error error, SharedPtr<Response> response) {
-                    txp->close([=]() {
-                        if (error) {
-                            callback(error, response);
+                    // XXX explain...
+                    txp->close([=]() {});
+                    if (error) {
+                        callback(error, response);
+                        return;
+                    }
+                    response->previous = previous;
+                    if (response->status_code / 100 == 3 and
+                        *max_redirects > 0) {
+                        logger->debug("following redirect...");
+                        std::string loc = response->headers["Location"];
+                        if (loc == "") {
+                            callback(EmptyLocationError(), response);
                             return;
                         }
-                        response->previous = previous;
-                        if (response->status_code / 100 == 3 and
-                            *max_redirects > 0) {
-                            logger->debug("following redirect...");
-                            std::string loc = response->headers["Location"];
-                            if (loc == "") {
-                                callback(EmptyLocationError(), response);
-                                return;
-                            }
-                            ErrorOr<Url> url = redirect(
-                                response->request->url,
-                                loc
-                            );
-                            if (!url) {
-                                callback(InvalidRedirectUrlError(
-                                         url.as_error()), response);
-                                return;
-                            }
-                            Settings new_settings = settings;
-                            new_settings["http/url"] = url->str();
-                            logger->debug("redir url: %s", url->str().c_str());
-                            if (num_redirs >= *max_redirects) {
-                                callback(TooManyRedirectsError(), response);
-                                return;
-                            }
-                            reactor->call_soon([=]() {
-                                request(new_settings, headers, body, callback,
-                                    reactor, logger, response, num_redirs + 1);
-                            });
+                        ErrorOr<Url> url = redirect(
+                            response->request->url,
+                            loc
+                        );
+                        if (!url) {
+                            callback(InvalidRedirectUrlError(
+                                     url.as_error()), response);
                             return;
                         }
-                        callback(NoError(), response);
-                    });
+                        Settings new_settings = settings;
+                        new_settings["http/url"] = url->str();
+                        logger->debug("redir url: %s", url->str().c_str());
+                        if (num_redirs >= *max_redirects) {
+                            callback(TooManyRedirectsError(), response);
+                            return;
+                        }
+                        reactor->call_soon([=]() {
+                            request(new_settings, headers, body, callback,
+                                reactor, logger, response, num_redirs + 1);
+                        });
+                        return;
+                    }
+                    callback(NoError(), response);
                 },
                 reactor, logger);
         },
@@ -403,6 +403,27 @@ void request_json_object(
       Settings settings, SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
     request_json_string(method, url, jdata.dump(), headers, cb, settings,
                         reactor, logger);
+}
+
+std::tuple<Error, Response> request_sync(Settings settings, Headers headers,
+        std::string body, SharedPtr<Logger> logger) {
+    // Implementation concept: the code should be such that the reactor has
+    // something to do as long as the request-response transaction is pending,
+    // so it should not return until that point. If it ever returns before
+    // the callback, because it's out of events, we return NotInitializedError.
+    auto reactor = Reactor::make();
+    Error error = NotInitializedError{};
+    auto response = Response{};
+    reactor->run_with_initial_event([&settings, &headers, &body, &reactor,
+                                            &logger, &error, &response]() {
+        request(settings, headers, body,
+                [&error, &response, &logger](Error err, SharedPtr<Response> rp) {
+                    std::swap(error, err);
+                    std::swap(response, *rp);
+                },
+                reactor, logger);
+    });
+    return std::make_tuple(error, response);
 }
 
 } // namespace http
