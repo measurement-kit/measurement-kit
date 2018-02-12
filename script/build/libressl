@@ -10,10 +10,9 @@ pkg_topdir=$(cd $(dirname $0)/../../ && pwd -P)
 # Cloning libressl from github is hella slow because the portable repo will
 # clone the full history of the openbsd repo. So just download the tgz.
 pkg_name=libressl
-pkg_pgp_key=${pkg_topdir}/script/build/libressl.asc
+pkg_sha256sum="e57f5e3d5842a81fe9351b6e817fcaf0a749ca4ef35a91465edba9e071dce7c4"
 pkg_version=2.5.5
 pkg_tarball_url=https://ftp.openbsd.org/pub/OpenBSD/LibreSSL/libressl-${pkg_version}.tar.gz
-pkg_signature_url=${pkg_tarball_url}.asc
 
 pkg_dist_dir=${pkg_topdir}/MK_DIST/${pkg_os}/${pkg_arch}/${pkg_name}
 rm -rf ${pkg_dist_dir}
@@ -23,16 +22,18 @@ pkg_build_dir=${pkg_topdir}/MK_BUILD/${pkg_os}/${pkg_arch}/${pkg_name}
 rm -rf ${pkg_build_dir}
 mkdir -p ${pkg_build_dir}
 
-gpg --import ${pkg_pgp_key}
-
 (
     set -e
 
     cd ${pkg_build_dir}
-    wget ${pkg_signature_url} ${pkg_tarball_url}
-    signature=$(basename ${pkg_signature_url})
+    wget ${pkg_tarball_url}
     tarball=$(basename ${pkg_tarball_url})
-    gpg --verify ${signature}
+    tarball_sha256sum=$(sha256sum ${tarball} | awk '{print $1}')
+    if [ "${tarball_sha256sum}" != "${pkg_sha256sum}" ]; then
+        echo "FATAL: invalid SHA256 sum" 1>&2
+        exit 1
+    fi
+    echo "- verified package sha256sum"
     tar -xf ${tarball}
     srcdir=$(echo ${tarball} | sed 's/\.tar.gz//g')
     cd ${srcdir}
