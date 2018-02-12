@@ -55,6 +55,7 @@ AC_DEFUN([MK_AM_CHECK_LIBC_FUNCS], [
     strcasecmp \
     strtonum \
   ])
+  AC_CHECK_DECLS([optreset], [], [], [#include <getopt.h>])
 ])
 
 AC_DEFUN([MK_AM_LIBEVENT], [
