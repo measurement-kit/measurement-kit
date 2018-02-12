@@ -142,6 +142,12 @@ class Task {
         return std::string{str};
     }
 
+    /// is_running() returns true if the task is running. @remark This method
+    /// is thread safe.
+    bool is_running() const {
+        return mk_task_is_running(pimpl_.get()); // handles null
+    }
+
     /// interrupt() interrupts the task ASAP. @remark this method is not
     /// blocking and will just inform the task that it should stop. @remark
     /// this method is thread safe and idempotent.

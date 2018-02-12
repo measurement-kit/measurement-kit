@@ -23,8 +23,7 @@ int main() {
         exit(1);
     }
 
-    int done = 0;
-    do {
+    while (mk_task_is_running(task)) {
         mk_event_t *event = mk_task_wait_for_next_event(task);
         if (event == NULL) {
             fprintf(stderr, "ERROR: cannot wait for next event\n");
@@ -35,11 +34,9 @@ int main() {
             fprintf(stderr, "ERROR: cannot serialize event\n");
             exit(1);
         }
-        // A bit ugly but this is `null` as a serialized JSON
-        done = (strcmp(serio, "null") == 0);
         printf("%s\n", serio);
         mk_event_destroy(event);
-    } while (!done);
+    }
 
     mk_task_destroy(task);
     return 0;

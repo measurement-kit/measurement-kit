@@ -58,6 +58,9 @@ mk_task_t *mk_task_start_ex(
  * returned event pointer and must mk_event_destroy() it when done. */
 mk_event_t *mk_task_wait_for_next_event(mk_task_t *task) MK_FFI_NOEXCEPT;
 
+/** mk_task_is_running() returns nonzero if the task is running, 0 otherwise. */
+int mk_task_is_running(mk_task_t *task) MK_FFI_NOEXCEPT;
+
 /** mk_task_interrupt() interrupts a task. */
 void mk_task_interrupt(mk_task_t *task) MK_FFI_NOEXCEPT;
 

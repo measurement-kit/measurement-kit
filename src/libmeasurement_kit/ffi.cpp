@@ -84,6 +84,10 @@ mk_event_t *mk_task_wait_for_next_event(mk_task_t *task) noexcept {
     return (task) ? mk_event_create(task->wait_for_next_event()) : nullptr;
 }
 
+int mk_task_is_running(mk_task_t *task) noexcept {
+    return (task) ? task->is_running() : 0;
+}
+
 void mk_task_interrupt(mk_task_t *task) noexcept {
     if (task != nullptr) {
         task->interrupt();

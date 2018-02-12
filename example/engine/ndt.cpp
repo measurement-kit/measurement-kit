@@ -14,11 +14,8 @@ int main() {
     };
     std::clog << settings.dump() << "\n";
     mk::engine::Task task{std::move(settings)};
-    while (true) {
+    while (task.is_running()) {
         auto event = task.wait_for_next_event();
-        if (event == nullptr) {
-            break;
-        }
         std::clog << event << "\n";
     }
 }

@@ -17,11 +17,8 @@ int main() {
         std::clog << "ERROR: " << rv.reason << std::endl;
         exit(1);
     }
-    while (true) {
+    while (task.is_running()) {
         std::string event = task.wait_for_next_event();
-        if (event == "null") {
-            break; // we have got the `null` JSON object, we're done
-        }
         std::clog << event << "\n";
     }
 }

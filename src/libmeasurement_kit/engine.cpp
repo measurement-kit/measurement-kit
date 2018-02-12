@@ -113,6 +113,10 @@ Task::Task(nlohmann::json &&settings) {
     started.wait(); // guarantee Task() completes when the thread is running
 }
 
+bool Task::is_running() const {
+    return pimpl_->running; // is an atomic var
+}
+
 void Task::interrupt() {
     // both variables are safe to use in a MT context
     pimpl_->reactor->stop();
