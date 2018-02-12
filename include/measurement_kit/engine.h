@@ -67,6 +67,13 @@ class Task {
     /// ~Task() waits for the task to finish and deallocates resources.
     ~Task();
 
+    // Implementation note: this class is _explicitly_ non copyable and non
+    // movable so we don't have to worry about pimpl's validity.
+    Task(const Task &) noexcept = delete;
+    Task &operator=(const Task &) noexcept = delete;
+    Task(Task &&) noexcept = delete;
+    Task &operator=(Task &&) noexcept = delete;
+
   private:
     std::unique_ptr<TaskImpl> pimpl_;
 };
