@@ -76,7 +76,8 @@ To see available `<os>` and `<arch>` values, run `cross-ios` without arguments.
 ## Cross compile for Android
 
 We assume that you have the Native Development Kit (NDK) installed. The simplest
-and recommended way to get the NDK is to install it along with Android Studio.
+and recommended way to get the NDK is to [install it along with Android studio](
+https://developer.android.com/ndk/guides/index.html#download-ndk)
 
 Create a standalone Android toolchain using the `android-toolchain` script:
 
@@ -96,6 +97,12 @@ Then cross compile using:
 ```
 ./script/build/cross-android <arch> ./script/build/<package>
 ```
+
+Note that, while it is possible in theory to build Measurement Kit using
+this procedure (by using the `<mk>` script), we usually use [a specific
+repository](https://github.com/measurement-kit/android-libs) for compiling
+Measurement Kit for Android. The procedure described here is typically
+only used to build Measurement Kit dependencies.
 
 ## Compile for Windows
 
