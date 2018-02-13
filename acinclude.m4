@@ -80,7 +80,7 @@ AC_DEFUN([MK_AM_LIBEVENT], [
     AC_MSG_WARN([Failed to find dependency: libevent])
     echo "    - to install on Debian: sudo apt-get install libevent-dev"
     echo "    - to install on OSX: brew install libevent"
-    echo "    - to compile from sources: ./build/dependency libevent"
+    echo "    - to compile from sources: ./script/build/libevent"
     AC_MSG_ERROR([Please, install libevent and run configure again])
   fi
 ])
@@ -105,7 +105,7 @@ AC_DEFUN([MK_AM_GEOIP], [
     AC_MSG_WARN([Failed to find dependency: geoip])
     echo "    - to install on Debian: sudo apt-get install libgeoip-dev"
     echo "    - to install on OSX: brew install libgeoip"
-    echo "    - to compile from sources: ./build/dependency geoip"
+    echo "    - to compile from sources: ./script/build/geoip"
     AC_MSG_ERROR([Please, install geoip and run configure again])
   fi
 ])
@@ -201,7 +201,7 @@ AC_DEFUN([MK_AM_OPENSSL], [
     AC_MSG_WARN([Failed to find dependency: openssl])
     echo "    - to install on Debian: sudo apt-get install libssl-dev"
     echo "    - to install on OSX: brew install openssl"
-    echo "    - to compile from sources: ./build/dependency libressl"
+    echo "    - to compile from sources: ./script/build/libressl"
     AC_MSG_ERROR([Please, install openssl and run configure again])
   fi
 ])
