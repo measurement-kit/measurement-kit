@@ -8,6 +8,7 @@ fi
 
 ROOTDIR=$(cd $(dirname $0)/../.. && pwd -P)
 BUILDDIR=$ROOTDIR/build
+NEWSCRIPTDIR=$ROOTDIR/script/build
 ANDROIDDIR=$BUILDDIR/android
 
 NDK_DIR=$1
@@ -21,11 +22,6 @@ ALL_ARCHS="armeabi armeabi-v7a arm64 mips mips64 x86 x86_64"
 for ARCH in $ALL_ARCHS; do
     echo ""
     echo "Cross compiling $SPEC for arch ${ARCH}"
-    rm -rf $ANDROIDDIR/toolchain/${ARCH}
-    $ANDROIDDIR/make-toolchain ${NDK_DIR} ${ARCH}
-    $ANDROIDDIR/cross ${ARCH} $BUILDDIR/dependency $SPEC
+    $NEWSCRIPTDIR/android-toolchain ${NDK_DIR} ${ARCH}
+    $NEWSCRIPTDIR/cross-android ${ARCH} $NEWSCRIPTDIR/$SPEC
 done
-
-# Install spec so we know what version was used to build the archive
-install -d $ANDROIDDIR/jni/spec
-install -m644 $BUILDDIR/spec/$SPEC $ANDROIDDIR/jni/spec/$SPEC
