@@ -1,5 +1,0 @@
-# This directory is used to temporarily host the sources of the
-# dependencies that we do not fully vendor (e.hg. http-parser) for
-# which we basically only extract some files and then we throw
-# the repository away.
-*
