@@ -11,40 +11,15 @@ Dependencies are built using the `./build/dependency` script whose
 wrappers for Android and iOS are, respectively,
 `./build/android/dependency` and `./build/ios/dependency`.
 
-The `dependency` script reads the proper package build specifications
-from `./build/spec`, possibly downloads the sources (see below),
-possibly applies patches, and builds the dependency. The wrapper scripts
-set environment variables such that the build dependency can be integrated
-into the iOS or Android build process.
+In turn `./build/dependency` is nowadays mostly a wrapper around
+specific build scripts located at `./script/build/<dependency>`, as
+you will notice the first time you run `./build/dependency`, since
+it warns you about this. In going forward, the objective is to remove
+`./build/dependency` and the related scripts, but this cannot be
+done in a single step. Better to proceed piecemeal.
 
-Some dependencies are vendored at `src/third_party`. The `dependency`
-script recognizes them and do not attempt to dowload their sources.
-
-## Updating vendored dependencies
-
-The workflow is the following:
-
-1. update `./build/spec/foo` when there is a new release
-
-2. run `./build/vendor/import foo` to download a pristine version
-   of the new release under `./src/third_party`, and commits
-   the reults on the current branch.
-
-3. run `./build/vendor/patch` to re-apply local patches. You may
-   need to iterate over this step to forward port the old patches.
-   When patches will apply cleanly, a commit will be created in
-   the current branch. Make sure any additional change you make is
-   saved in patches at `./build/patch/vendor`. (This is a relic
-   of how the build system worked in the past and we may want to
-   change some aspects of this step in the future.)
-
-4. Make sure you can successfully build and cross build the new
-   dependency. If necessary, apply more patches :-).
-
-Note that currently you will need to have OpenBSD signify installed
-on your system to verify the libressl tarball. You can easily get
-it for macOS (`signify-osx` on Homebrew) and Debian (`signify-openbsd`
-available from the standard repositories).
+The wrapper scripts set specific environment variables such that the
+dependency build can be integrated into the iOS or Android build process.
 
 ## Cross-compiling dependencies
 
@@ -57,8 +32,8 @@ use this command:
 
 Where `/path/to/ndk` is the path where the NDK has been installed,
 `$HOME/Library/Android/sdk/ndk-bundle` on macOS if you have installed
-the NDK using Android studio. See [Android specific documentation](android.md)
-for more information.
+the NDK using Android studio. See [Android specific documentation](
+../../script/build#cross-compile-for-android) for more information.
 
 The result would be a tarball in the repository toplevel directory
 for each Android architecture of interest.
@@ -88,8 +63,8 @@ and for Android:
 ./build/android/dependency /path/to/ndk mk
 ```
 
-This may not necessarily be the best way to cross compile MK for the Android
-platform, and we may drop suppot for that in the future.
+(This may not necessarily be the best way to cross compile MK for the Android
+platform, and we may drop suppot for that in the future.)
 
 ## Submitting and fetching dependencies
 
