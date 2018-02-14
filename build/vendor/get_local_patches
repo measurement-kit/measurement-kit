@@ -1,0 +1,27 @@
+#!/bin/sh
+set -e
+rootdir=$(cd $(dirname $0) && pwd -P)/../..
+if [ $# -ne 1 ]; then
+    echo "Usage: $0 dependency" 1>&2
+    echo "Writes the local patches applied to a dependency." 1>&2
+    exit 1
+fi
+if [ ! -f $rootdir/build/spec/$1 ]; then
+    echo "FATAL: no spec for '$1' in $rootdir/build/spec" 1>&2
+    exit 1
+fi
+if [ ! -d $rootdir/src/third_party/$1 ]; then
+    echo "FATAL: no dir for '$1' in $rootdir/src/third_party" 1>&2
+    exit 1
+fi
+commit_info=`git log --oneline $rootdir/src/third_party/$1 | grep "$1: import pristine" | head -n1`
+commit_id=`echo $commit_info | awk '{print $1}'`
+if [ "$commit_id" = "" ]; then
+    echo "FATAL: cannot find pristine import of '$1'" 1>&2
+    exit 1
+fi
+echo "Last pristine import of the '$1' spec was: $commit_id"
+echo "Generating patches applied since:"
+echo "- git format-patch $commit_id...HEAD -- $rootdir/src/third_party/$1"
+git format-patch $commit_id...HEAD -- $rootdir/src/third_party/$1
+echo "Success. Patches are in '`pwd`'"
