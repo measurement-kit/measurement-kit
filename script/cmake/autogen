@@ -187,7 +187,7 @@ for EXAMPLE_FILEPATH in `find example -type f -name \*.cpp|sort`; do
     echo '        OUTPUT_NAME'
     echo "        $(basename $EXAMPLE_BIN)"
     echo '        RUNTIME_OUTPUT_DIRECTORY'
-    echo "        \${MK_ROOT}/$EXAMPLE_DIRNAME"
+    echo "        \${CMAKE_BINARY_DIR}/$EXAMPLE_DIRNAME"
     echo '    )'
     echo ''
 
@@ -233,7 +233,7 @@ for TEST_FILEPATH in `find test -type f -name \*.cpp|sort`; do
     echo '        OUTPUT_NAME'
     echo "        $(basename $TEST_BIN)"
     echo '        RUNTIME_OUTPUT_DIRECTORY'
-    echo "        \${MK_ROOT}/$TEST_DIRNAME"
+    echo "        \${CMAKE_BINARY_DIR}/$TEST_DIRNAME"
     echo '    )'
     echo ''
 
@@ -248,7 +248,7 @@ for TEST_FILEPATH in `find test -type f -name \*.cpp|sort`; do
     # We may perhaps want to add Valgrind support in the future
     echo '    add_test('
     echo "        $TEST_NAME"
-    echo "        \${MK_ROOT}/$TEST_BIN"
+    echo "        \${CMAKE_BINARY_DIR}/$TEST_BIN"
     echo '    )'
     echo ''
 
