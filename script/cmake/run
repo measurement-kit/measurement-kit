@@ -1,6 +1,6 @@
 #!/bin/sh
 set -e
-rootdir=$(cd $(dirname $(dirname $0)) && pwd -P)
+rootdir=$(cd $(dirname $0)/../../ && pwd -P)
 
 cmake_options=""
 
