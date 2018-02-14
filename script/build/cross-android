@@ -33,8 +33,7 @@ export SYSROOT=${ANDROID_TOOLCHAIN}/sysroot
 #
 # TOOLCHAIN_NAME: name of the toolchain to use.
 # DESTDIR_NAME: name of the directory where to install headers and libs.
-# CFLAGS: flags to be passed to C compiler.
-# CXXFLAGS: flags to be passed to C++ compiler.
+# ANDROID_ARCH_FLAGS: specific flags to be passed to C/C++ compiler.
 # LIB_SUFFIX: unset unless toolchain has lib64 libs directory.
 # CONFIG_EXTRA: optional extra flags to be passed to configure script.
 #
@@ -62,16 +61,14 @@ elif [ "$ARCH" = "armeabi" ]; then
     # non working libevent binaries as documented in #1051. Also
     # `-fno-integrated-as` is needed to avoid another segfault.
     #
-    CFLAGS="-target armv5te-none-linux-androideabi -march=armv5te -mtune=xscale -msoft-float -mthumb -fno-integrated-as"
-    CXXFLAGS=$CFLAGS
+    ANDROID_ARCH_FLAGS="-target armv5te-none-linux-androideabi -march=armv5te -mtune=xscale -msoft-float -mthumb -fno-integrated-as"
 elif [ "$ARCH" = "armeabi-v7a" ]; then
     TOOLCHAIN_NAME=arm-linux-androideabi
     DESTDIR_NAME=$ARCH
     #
     # <Bandwagon>See above.</>
     #
-    CFLAGS="-target armv7-none-linux-androideabi -march=armv7-a -mfloat-abi=softfp -mfpu=vfpv3-d16 -mthumb"
-    CXXFLAGS="$CFLAGS"
+    ANDROID_ARCH_FLAGS="-target armv7-none-linux-androideabi -march=armv7-a -mfloat-abi=softfp -mfpu=vfpv3-d16 -mthumb"
 elif [ "$ARCH" = "mips" ]; then
     # Note: mips is actually mipsel (i.e. little endian)
     TOOLCHAIN_NAME=mipsel-linux-android
@@ -107,14 +104,14 @@ export RANLIB=${TOOL_PREFIX}-ranlib
 export STRIP=${TOOL_PREFIX}-strip
 
 # Teach the preprocessor to find toolchain includes
-export CPPFLAGS="${CPPFLAGS} --sysroot=${SYSROOT} -I${SYSROOT}/usr/include -I${ANDROID_TOOLCHAIN}/include"
+export CPPFLAGS="--sysroot=${SYSROOT} -I${SYSROOT}/usr/include -I${ANDROID_TOOLCHAIN}/include ${CPPFLAGS}"
 
 # Pass specific flags to the C and/or CXX compiler
-export CFLAGS="${CFLAGS}"
-export CXXFLAGS="${CXXFLAGS}"
+export CFLAGS="${ANDROID_ARCH_FLAGS} ${CFLAGS}"
+export CXXFLAGS="${ANDROID_ARCH_FLAGS} ${CXXFLAGS}"
 
 # Teach the linker to find toolchain libraries
-export LDFLAGS="${LDFLAGS} -L${SYSROOT}/usr/lib${LIB_SUFFIX} -L${ANDROID_TOOLCHAIN}/lib"
+export LDFLAGS="-L${SYSROOT}/usr/lib${LIB_SUFFIX} -L${ANDROID_TOOLCHAIN}/lib ${LDFLAGS}"
 
 # Extra libraries to link with. Should not be needed.
 #export LIBS="-lm"
