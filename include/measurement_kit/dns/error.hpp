@@ -46,7 +46,8 @@ MK_DEFINE_ERR(MK_ERR_DNS(27), NotSupportedServnameError,
               "dns_unsupported_servname")
 MK_DEFINE_ERR(MK_ERR_DNS(28), NotSupportedAISocktypeError,
               "dns_unsupported_socktype")
-MK_DEFINE_ERR(MK_ERR_DNS(29), InetNtopFailureError, "dns_inet_ntop_failure")
+//Was: MK_DEFINE_ERR(MK_ERR_DNS(29), InetNtopFailureError,
+//                   "dns_inet_ntop_failure")
 
 } // namespace dns
 } // namespace mk

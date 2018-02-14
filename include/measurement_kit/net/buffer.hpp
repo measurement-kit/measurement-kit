@@ -87,7 +87,7 @@ class Buffer {
     }
 
     void write(const char *in) {
-        if (in == nullptr) throw std::runtime_error("in is nullptr");
+        if (in == nullptr) throw std::runtime_error("null pointer");
         write(in, strlen(in));
     }
 

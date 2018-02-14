@@ -14,7 +14,8 @@ TEST_CASE("We are NOT using the default random seed") {
 }
 
 TEST_CASE("random_within_charset() works with zero length string") {
-    REQUIRE_THROWS_AS(mk::random_within_charset("", 16), mk::Error);
+    REQUIRE_THROWS_AS(mk::random_within_charset("", 16),
+                      const std::runtime_error &);
 }
 
 TEST_CASE("random_within_charset() uses all the available charset") {
@@ -395,8 +396,8 @@ TEST_CASE("random_choice isn't obviously wrong") {
 }
 
 TEST_CASE("randomly_capitalize isn't obviously wrong") {
-    auto lower_string = "abcdefghij";
-    auto upper_string = "ABCDEFGHIJ";
+    auto lower_string = "abcdefghijklmnopqrstuvz";
+    auto upper_string = "ABCDEFGHIJKLMNOPQRSTUVZ";
     auto rc_lower_string = mk::randomly_capitalize(lower_string);
     REQUIRE(rc_lower_string != lower_string);
     auto rc_upper_string = mk::randomly_capitalize(upper_string);

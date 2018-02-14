@@ -61,8 +61,10 @@ TEST_CASE("The defined-error constructor with string works") {
 
 TEST_CASE("The add_child_error() method works") {
     Error err;
-    err.add_child_error(MockedError("antani"));
-    err.add_child_error(MockedError());
+    ExampleError ex{"antani"};
+    MockedError merr;
+    err.add_child_error(std::move(ex));
+    err.add_child_error(std::move(merr));
     REQUIRE((err.child_errors.size() == 2));
     REQUIRE((err.child_errors[0] == MockedError()));
     REQUIRE((err.child_errors[0].reason == "mocked_error: antani"));

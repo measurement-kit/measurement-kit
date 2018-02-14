@@ -145,6 +145,11 @@ Having Xcode command line tools installed, run:
 ./build/ios/library
 ```
 
+We currently do not build dependencies and MK with bitcode enabled, but this
+has been reported to work. See [
+https://github.com/measurement-kit/measurement-kit/issues/658](issue #658)
+for more info on the process.
+
 See the [iOS tutorial](doc/tutorial/ios.md) for more info.
 
 ### How to add Measurement Kit to an Xcode project.
