@@ -1,0 +1,12 @@
+#!/bin/sh
+set -e
+
+export pkg_os=windows
+export pkg_arch=$1
+shift
+
+if [ $# -gt 0 ]; then
+    $@
+else
+    env
+fi

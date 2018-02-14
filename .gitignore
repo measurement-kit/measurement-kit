@@ -32,6 +32,8 @@
 /CTestTestfile.cmake
 /GeoIP.dat
 /GeoIPASNum.dat
+/MK_BUILD/
+/MK_DIST/
 /build/android/jni/conf
 /build/android/jni/spec
 /citizenlab-test-lists.*.csv

@@ -1,0 +1,70 @@
+#!/bin/sh
+set -e
+
+pkg_topdir=$(cd $(dirname $0)/../../ && pwd -P)
+
+[ "${pkg_os}" = "" ] && pkg_os=`uname -s | tr -s 'A-Z' 'a-z'`
+[ "${pkg_arch}" = "" ] && pkg_arch=`uname -m`
+
+pkg_name=libevent
+pkg_repository=https://github.com/libevent/libevent
+pkg_branch=patches-2.1
+pkg_expected_head=e7ff4ef2b4fc950a765008c18e74281cdb5e7668
+
+pkg_dist_dir=${pkg_topdir}/MK_DIST/${pkg_os}/${pkg_arch}/${pkg_name}
+rm -rf ${pkg_dist_dir}
+mkdir -p ${pkg_dist_dir}
+
+pkg_build_dir=${pkg_topdir}/MK_BUILD/${pkg_os}/${pkg_arch}/${pkg_name}
+rm -rf ${pkg_build_dir}
+mkdir -p ${pkg_build_dir}
+
+(
+    set -e
+
+    cd ${pkg_build_dir}
+    git clone -b ${pkg_branch} --single-branch --depth 3 ${pkg_repository}
+
+    cd ${pkg_name}
+    current_head=$(git rev-parse HEAD)
+
+    if [ "${current_head}" != "${pkg_expected_head}" ]; then
+        # "Leonidism" to make sure the HEAD is exactly what we expect
+        echo "FATAL: unexpected HEAD commit SHA-1" 1>&2
+        exit 1
+    fi
+
+    git apply ${pkg_topdir}/script/build/libevent-000.patch
+
+    if [ "$pkg_os" = "windows" ]; then
+        dist_dir="..\\..\\..\\..\\..\\MK_DIST"
+        install_prefix="${dist_dir}\\${pkg_os}\\${pkg_arch}\\${pkg_name}"
+        libressl_prefix="${dist_dir}\\${pkg_os}\\${pkg_arch}\\libressl"
+        cmake.exe -G "NMake Makefiles"                                         \
+          -DCMAKE_INSTALL_PREFIX="${install_prefix}"                           \
+          -DOPENSSL_INCLUDE_DIR="${libressl_prefix}\\include"                  \
+          -DLIB_EAY_DEBUG="${libressl_prefix}\\lib\\crypto-41.lib"             \
+          -DSSL_EAY_DEBUG="${libressl_prefix}\\lib\\ssl-43.lib"                \
+          -DEVENT__DISABLE_BENCHMARK=ON                                        \
+          -DEVENT__DISABLE_TESTS=ON                                            \
+          -DEVENT__DISABLE_REGRESS=ON                                          \
+          -DEVENT__DISABLE_SAMPLES=ON                                          \
+          -DEVENT__BUILD_SHARED_LIBRARIES=ON
+        nmake.exe /f Makefile install
+	exit 0
+    fi
+
+    ./autogen.sh
+
+    export CPPFLAGS="${CPPFLAGS} -I${pkg_dist_dir}/../libressl/include"
+    export LDFLAGS="${LDFLAGS} -L${pkg_dist_dir}/../libressl/lib"
+
+    ./configure --prefix=${pkg_dist_dir} --disable-shared  --disable-samples   \
+            --disable-libevent-regress --disable-clock-gettime                 \
+            ${pkg_configure_flags}
+
+    make install
+
+    # No `.la` files around because they will confuse other `./configure`.
+    [ "${pkg_dist_dir}" != "" ] && rm -rf ${pkg_dist_dir}/lib/*.la
+)
