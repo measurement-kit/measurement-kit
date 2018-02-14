@@ -1,13 +1,13 @@
-// Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software under the BSD license. See AUTHORS
+// Part of Measurement Kit <https://measurement-kit.github.io/>.
+// Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
 #include <measurement_kit/ooni.hpp>
 
 #include <event2/dns.h>
 
-#include "private/net/emitter.hpp"
-#include "private/ooni/utils.hpp"
+#include "src/libmeasurement_kit/net/emitter.hpp"
+#include "src/libmeasurement_kit/ooni/utils.hpp"
 
 namespace mk {
 namespace ooni {
@@ -101,7 +101,7 @@ void http_request(SharedPtr<Entry> entry, Settings settings, http::Headers heade
     (*entry)["socksproxy"] = nullptr;
 
     // Include the name of the agent, like ooni-probe does
-    ErrorOr<int> max_redirects = settings.get("http/max_redirects", 0);
+    ErrorOr<int> max_redirects = settings.get_noexcept("http/max_redirects", 0);
     if (!!max_redirects && *max_redirects > 0) {
         (*entry)["agent"] = "redirect";
     }

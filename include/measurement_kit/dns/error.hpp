@@ -1,5 +1,5 @@
-// Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software under the BSD license. See AUTHORS
+// Part of Measurement Kit <https://measurement-kit.github.io/>.
+// Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 #ifndef MEASUREMENT_KIT_DNS_ERROR_HPP
 #define MEASUREMENT_KIT_DNS_ERROR_HPP
@@ -46,7 +46,8 @@ MK_DEFINE_ERR(MK_ERR_DNS(27), NotSupportedServnameError,
               "dns_unsupported_servname")
 MK_DEFINE_ERR(MK_ERR_DNS(28), NotSupportedAISocktypeError,
               "dns_unsupported_socktype")
-MK_DEFINE_ERR(MK_ERR_DNS(29), InetNtopFailureError, "dns_inet_ntop_failure")
+//Was: MK_DEFINE_ERR(MK_ERR_DNS(29), InetNtopFailureError,
+//                   "dns_inet_ntop_failure")
 
 } // namespace dns
 } // namespace mk

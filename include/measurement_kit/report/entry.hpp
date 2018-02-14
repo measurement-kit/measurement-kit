@@ -1,5 +1,5 @@
-// Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software under the BSD license. See AUTHORS
+// Part of Measurement Kit <https://measurement-kit.github.io/>.
+// Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 #ifndef MEASUREMENT_KIT_REPORT_ENTRY_HPP
 #define MEASUREMENT_KIT_REPORT_ENTRY_HPP
@@ -45,9 +45,9 @@ class Entry : public Json {
 
     template <typename T> operator ErrorOr<T>() {
         try {
-            return Json::operator T();
+            return {NoError(), Json::operator T()};
         } catch (const std::domain_error &) {
-            return JsonDomainError();
+            return {JsonDomainError(), {}};
         }
     }
 

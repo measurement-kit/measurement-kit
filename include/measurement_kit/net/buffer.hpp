@@ -1,5 +1,5 @@
-// Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software under the BSD license. See AUTHORS
+// Part of Measurement Kit <https://measurement-kit.github.io/>.
+// Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 #ifndef MEASUREMENT_KIT_NET_BUFFER_HPP
 #define MEASUREMENT_KIT_NET_BUFFER_HPP
@@ -87,7 +87,7 @@ class Buffer {
     }
 
     void write(const char *in) {
-        if (in == nullptr) throw std::runtime_error("in is nullptr");
+        if (in == nullptr) throw std::runtime_error("null pointer");
         write(in, strlen(in));
     }
 

@@ -1,11 +1,11 @@
-// Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software under the BSD license. See AUTHORS
+// Part of Measurement Kit <https://measurement-kit.github.io/>.
+// Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
-#include "private/common/fmap.hpp"
-#include "private/common/parallel.hpp"
+#include "src/libmeasurement_kit/common/fmap.hpp"
+#include "src/libmeasurement_kit/common/parallel.hpp"
 
-#include "private/common/utils.hpp"
+#include "src/libmeasurement_kit/common/utils.hpp"
 
 #include <measurement_kit/report.hpp>
 

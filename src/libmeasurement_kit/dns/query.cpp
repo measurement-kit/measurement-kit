@@ -1,9 +1,9 @@
-// Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software under the BSD license. See AUTHORS
+// Part of Measurement Kit <https://measurement-kit.github.io/>.
+// Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
-#include "private/libevent/dns.hpp"
-#include "private/dns/system_resolver.hpp"
+#include "src/libmeasurement_kit/dns/libevent_query.hpp"
+#include "src/libmeasurement_kit/dns/system_resolver.hpp"
 
 namespace mk {
 namespace dns {
@@ -18,7 +18,7 @@ void query(QueryClass dns_class, QueryType dns_type, std::string name,
         std::string engine = settings.get("dns/engine", std::string("system"));
         logger->debug2("dns: engine: %s", engine.c_str());
         if (engine == "libevent") {
-            libevent::query(
+            libevent_query(
                     dns_class, dns_type, name, cb, settings, reactor, logger);
         } else if (engine == "system") {
             system_resolver(

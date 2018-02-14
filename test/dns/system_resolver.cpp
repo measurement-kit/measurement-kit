@@ -1,11 +1,11 @@
-// Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software under the BSD license. See AUTHORS
+// Part of Measurement Kit <https://measurement-kit.github.io/>.
+// Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
 #define CATCH_CONFIG_MAIN
-#include "private/ext/catch.hpp"
+#include "src/libmeasurement_kit/ext/catch.hpp"
 
-#include "private/dns/system_resolver.hpp"
+#include "src/libmeasurement_kit/dns/system_resolver.hpp"
 
 using namespace mk;
 using namespace mk::dns;
@@ -47,8 +47,10 @@ TEST_CASE("the system resolver can handle a getaddrinfo error") {
 
 TEST_CASE("the system resolver can handle a inet_ntop error") {
     run_system_resolver<getaddrinfo, fail_inet_ntop>(
-        "IN", "A", "neubot.org",
-        [](Error e, SharedPtr<Message>) { REQUIRE(e == InetNtopFailureError()); });
+            "IN", "A", "neubot.org", [](Error e, SharedPtr<Message>) {
+                REQUIRE(e == GenericError());
+                REQUIRE(e.reason == "generic_error: inet_ntop_failed");
+            });
 }
 
 #endif

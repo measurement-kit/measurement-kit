@@ -1,12 +1,12 @@
-// Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software under the BSD license. See AUTHORS
+// Part of Measurement Kit <https://measurement-kit.github.io/>.
+// Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
-#include "private/ooni/constants.hpp"
-#include "private/ooni/whatsapp.hpp"
-#include "private/common/fcompose.hpp"
-#include "private/common/parallel.hpp"
-#include "private/common/utils.hpp"
+#include "src/libmeasurement_kit/ooni/constants.hpp"
+#include "src/libmeasurement_kit/ooni/whatsapp.hpp"
+#include "src/libmeasurement_kit/common/fcompose.hpp"
+#include "src/libmeasurement_kit/common/parallel.hpp"
+#include "src/libmeasurement_kit/common/utils.hpp"
 #include <cassert>
 #include <measurement_kit/net/utils.hpp>
 #include <measurement_kit/ooni.hpp>
@@ -156,7 +156,7 @@ std::vector<uint8_t> ip_to_bytes(std::string ip) {
 ErrorOr<bool> same_pre(
         std::vector<uint8_t> ip1, std::vector<uint8_t> ip2, int pre_bits) {
     if (ip1.size() != ip2.size()) {
-        return GenericError();
+        return {GenericError(), {}};
     }
     // TODO: check pre_bits is sane
     // full prefix bytes
@@ -164,20 +164,20 @@ ErrorOr<bool> same_pre(
     for (; i < (pre_bits / 8); i++) {
         assert(i >= 0 && (size_t)i < ip1.size() && (size_t)i < ip2.size());
         if (ip1[i] != ip2[i]) {
-            return false;
+            return {NoError(), false};
         }
     }
 
     int rem_bits = pre_bits % 8;
     if (rem_bits == 0) {
-        return true;
+        return {NoError(), true};
     }
 
     assert(i >= 0 && (size_t)i < ip1.size() && (size_t)i < ip2.size());
     if ((ip1[i] >> (8 - rem_bits)) != (ip2[i] >> (8 - rem_bits))) {
-        return false;
+        return {NoError(), false};
     }
-    return true;
+    return {NoError(), true};
 }
 
 ErrorOr<bool> ip_in_net(std::string ip1, std::string ip_w_mask) {

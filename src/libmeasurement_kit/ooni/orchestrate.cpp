@@ -1,11 +1,11 @@
-// Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software under the BSD license. See AUTHORS
+// Part of Measurement Kit <https://measurement-kit.github.io/>.
+// Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
 #include <measurement_kit/ooni.hpp>
 
-#include "private/ooni/orchestrate_impl.hpp"
-#include "private/common/worker.hpp"
+#include "src/libmeasurement_kit/ooni/orchestrate_impl.hpp"
+#include "src/libmeasurement_kit/common/worker.hpp"
 
 namespace mk {
 namespace ooni {

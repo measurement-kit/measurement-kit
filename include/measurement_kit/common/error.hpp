@@ -1,5 +1,5 @@
-// Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software under the BSD license. See AUTHORS
+// Part of Measurement Kit <https://measurement-kit.github.io/>.
+// Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 #ifndef MEASUREMENT_KIT_COMMON_ERROR_HPP
 #define MEASUREMENT_KIT_COMMON_ERROR_HPP
@@ -45,13 +45,12 @@ namespace mk {
 /// as part of measurement-kit v0.8.0 as part of a refactoring of common.
 class Error : public std::exception {
   public:
-
     /// \brief The default constructor initializes the error code to zero.
     Error() : Error(0, "") {}
 
     /// \brief The constructor with error initializes the error code to the
     /// specified error code.
-    Error(int e) : Error(e, "") {}
+    explicit Error(int e) : Error(e, "") {}
 
     /// \brief The constructor with error and reason string initializes both.
     Error(int e, std::string r) : code{e}, reason{r} {
@@ -87,8 +86,8 @@ class Error : public std::exception {
     const char *what() const noexcept override { return reason.c_str(); }
 
     /// `add_child_error` allows you tou append additional child errors.
-    void add_child_error(const Error &err) {
-        child_errors.push_back(err);
+    void add_child_error(Error &&err) {
+        child_errors.push_back(std::move(err));
     }
 
     /// `child_errors` contains all the child errors.

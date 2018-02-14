@@ -4,6 +4,7 @@
 /connect
 /emitter
 /evbuffer
+/libevent_emitter
 /libssl
 /socks5
 /transport

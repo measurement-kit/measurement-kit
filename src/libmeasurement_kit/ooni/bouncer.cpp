@@ -1,8 +1,8 @@
-// Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software under the BSD license. See AUTHORS
+// Part of Measurement Kit <https://measurement-kit.github.io/>.
+// Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
-#include "private/ooni/bouncer_impl.hpp"
+#include "src/libmeasurement_kit/ooni/bouncer_impl.hpp"
 
 namespace mk {
 namespace ooni {
@@ -19,11 +19,11 @@ Json BouncerReply::get_base() {
 
 ErrorOr<std::string> BouncerReply::get_collector() {
     try {
-        return get_base()["collector"].get<std::string>();
+        return {NoError(), get_base()["collector"].get<std::string>()};
     } catch (const std::exception &) {
         /* FALLTHROUGH */;
     }
-    return BouncerValueNotFoundError();
+    return {BouncerValueNotFoundError(), std::string{}};
 }
 
 ErrorOr<std::string> BouncerReply::get_collector_alternate(std::string type) {
@@ -31,31 +31,31 @@ ErrorOr<std::string> BouncerReply::get_collector_alternate(std::string type) {
         auto collectors = get_base()["collector-alternate"];
         for (auto collector : collectors) {
             if (collector["type"] == type) {
-                return collector["address"].get<std::string>();
+                return {NoError(), collector["address"].get<std::string>()};
             }
         }
     } catch (const std::exception &) {
         /* FALLTHROUGH */;
     }
-    return BouncerValueNotFoundError();
+    return {BouncerValueNotFoundError(), std::string{}};
 }
 
 ErrorOr<std::string> BouncerReply::get_name() {
     try {
-        return get_base()["name"].get<std::string>();
+        return {NoError(), get_base()["name"].get<std::string>()};
     } catch (const std::exception &) {
         /* FALLTHROUGH */;
     }
-    return BouncerValueNotFoundError();
+    return {BouncerValueNotFoundError(), std::string{}};
 }
 
 ErrorOr<std::string> BouncerReply::get_test_helper(std::string name) {
     try {
-        return get_base()["test-helpers"][name].get<std::string>();
+        return {NoError(), get_base()["test-helpers"][name].get<std::string>()};
     } catch (const std::exception &) {
         /* FALLTHROUGH */;
     }
-    return BouncerValueNotFoundError();
+    return {BouncerValueNotFoundError(), std::string{}};
 }
 
 ErrorOr<std::string> BouncerReply::get_test_helper_alternate(std::string name,
@@ -64,22 +64,22 @@ ErrorOr<std::string> BouncerReply::get_test_helper_alternate(std::string name,
         auto collectors = get_base()["test-helpers-alternate"][name];
         for (auto collector : collectors) {
             if (collector["type"] == type) {
-                return collector["address"].get<std::string>();
+                return {NoError(), collector["address"].get<std::string>()};
             }
         }
     } catch (const std::exception &) {
         /* FALLTHROUGH */;
     }
-    return BouncerValueNotFoundError();
+    return {BouncerValueNotFoundError(), std::string{}};
 }
 
 ErrorOr<std::string> BouncerReply::get_version() {
     try {
-        return get_base()["version"].get<std::string>();
+        return {NoError(), get_base()["version"].get<std::string>()};
     } catch (const std::exception &) {
         /* FALLTHROUGH */;
     }
-    return BouncerValueNotFoundError();
+    return {BouncerValueNotFoundError(), std::string{}};
 }
 
 namespace bouncer {

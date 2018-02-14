@@ -1,5 +1,5 @@
-// Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software under the BSD license. See AUTHORS
+// Part of Measurement Kit <https://measurement-kit.github.io/>.
+// Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 #ifndef MEASUREMENT_KIT_NET_TRANSPORT_HPP
 #define MEASUREMENT_KIT_NET_TRANSPORT_HPP
@@ -70,7 +70,7 @@ class TransportPollable {
     virtual void clear_timeout() = 0;
 
     // `get_bufferevent` returns the bufferevent associated with this
-    // transport, or throws an exception if this transport is not
+    // transport, or raises a runtime exception if this transport is not
     // attached to a bufferevent, either because it is just an emitter
     // or because we're not using libevent as out backend.
     virtual bufferevent *get_bufferevent() = 0;
@@ -81,7 +81,7 @@ class TransportPollable {
     // you're stacking one bufferevent on top of the other). In the event
     // in which this transport is not attached to a bufferevent, either
     // because this is just an emitter or libevent is not the backend that
-    // we're using, an exception will be thrown.
+    // we're using, a runtime exception will be raised.
     virtual void set_bufferevent(bufferevent *bev) = 0;
 
     /*

@@ -8,6 +8,7 @@ debian_deps="$debian_deps autoconf"
 debian_deps="$debian_deps automake"
 debian_deps="$debian_deps g++"
 debian_deps="$debian_deps git"
+debian_deps="$debian_deps libc-ares-dev"
 debian_deps="$debian_deps libevent-dev"
 debian_deps="$debian_deps libgeoip-dev"
 debian_deps="$debian_deps libssl-dev"
@@ -24,7 +25,6 @@ subr_finalize() {
                                --gcov-options '\-lp'                       \
                                --build-root .                              \
                                --exclude include/measurement_kit/ext       \
-                               --exclude include/private/ext               \
                                --exclude src/libmeasurement_kit/ext        \
                                --exclude src/libmeasurement_kit/portable   \
                                --exclude src/measurement_kit               \

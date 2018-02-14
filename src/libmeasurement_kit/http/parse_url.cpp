@@ -1,8 +1,8 @@
-// Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software under the BSD license. See AUTHORS
+// Part of Measurement Kit <https://measurement-kit.github.io/>.
+// Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
-#include "private/ext/http_parser.h"
+#include "src/libmeasurement_kit/ext/http_parser.h"
 
 #include <measurement_kit/http.hpp>
 
@@ -50,9 +50,9 @@ Url parse_url(std::string url) {
 
 ErrorOr<Url> parse_url_noexcept(std::string url) {
     try {
-        return parse_url(url);
+        return {NoError(), parse_url(url)};
     } catch (Error &error) {
-        return error;
+        return {error, {}};
     }
 }
 
