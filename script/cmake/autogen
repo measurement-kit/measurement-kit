@@ -175,7 +175,7 @@ for EXAMPLE_FILEPATH in `find example -type f -name \*.cpp|sort`; do
     # Examples also depend on getopt. Ugh.
     echo '    add_executable('
     echo "        $EXAMPLE_NAME"
-    echo "        \${MK_ROOT}/src/measurement_kit/portable/getopt_long.c"
+#   echo "        \${MK_ROOT}/src/measurement_kit/portable/getopt_long.c" # not yet!
     echo "        \${MK_ROOT}/$EXAMPLE_FILEPATH"
     echo '    )'
     echo ''
@@ -184,7 +184,9 @@ for EXAMPLE_FILEPATH in `find example -type f -name \*.cpp|sort`; do
     echo '    set_target_properties('
     echo "        $EXAMPLE_NAME"
     echo '        PROPERTIES'
-    echo '        EXECUTABLE_OUTPUT_DIRECTORY'
+    echo '        OUTPUT_NAME'
+    echo "        $(basename $EXAMPLE_BIN)"
+    echo '        RUNTIME_OUTPUT_DIRECTORY'
     echo "        \${MK_ROOT}/$EXAMPLE_DIRNAME"
     echo '    )'
     echo ''
@@ -228,7 +230,9 @@ for TEST_FILEPATH in `find test -type f -name \*.cpp|sort`; do
     echo '    set_target_properties('
     echo "        $TEST_NAME"
     echo '        PROPERTIES'
-    echo '        EXECUTABLE_OUTPUT_DIRECTORY'
+    echo '        OUTPUT_NAME'
+    echo "        $(basename $TEST_BIN)"
+    echo '        RUNTIME_OUTPUT_DIRECTORY'
     echo "        \${MK_ROOT}/$TEST_DIRNAME"
     echo '    )'
     echo ''
