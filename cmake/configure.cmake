@@ -4,32 +4,9 @@ if (NOT MK_ROOT)
     set (MK_ROOT ${CMAKE_SOURCE_DIR})
 endif (NOT MK_ROOT)
 
-# In the Windows case, the user is expected to either build or unpack prebuilt
-# dependencies in `build/win${BITS}`. Optimize for this use case.
-if(WIN32)
-    if("${CMAKE_GENERATOR}" MATCHES "(Win64|IA64)")
-        set(MK__WINDIR "${MK_ROOT}/build/win64")
-    else()
-        set(MK__WINDIR "${MK_ROOT}/build/win32")
-    endif()
-    if("${MK_GEOIP}" STREQUAL "")
-        set(MK_GEOIP "${MK__WINDIR}")
-    endif()
-    if("${MK_LIBEVENT}" STREQUAL "")
-        set(MK_LIBEVENT "${MK__WINDIR}")
-    endif()
-    if("${MK_OPENSSL}" STREQUAL "")
-        set(MK_OPENSSL "${MK__WINDIR}")
-    endif()
-    set(MK__INSTALL_PREFIX "${MK__WINDIR}")
-    add_definitions(-DHAVE_BUFFEREVENT_OPENSSL_SET_ALLOW_DIRTY_SHUTDOWN)
-else()
-    set(MK__INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
-endif()
-
 set(CMAKE_BUILD_TYPE Debug CACHE STRING "Set the build type" FORCE)
 
-set(CMAKE_INSTALL_PREFIX "${MK__INSTALL_PREFIX}" CACHE PATH
+set(CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}" CACHE PATH
     "Where to install MK" FORCE)
 
 set(MK_CA_BUNDLE "${MK_CA_BUNDLE}" CACHE PATH
