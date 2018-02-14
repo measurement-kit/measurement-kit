@@ -296,7 +296,7 @@ Error disable_nagle(socket_t sockfd) {
     static const int disable = 1;
     if (setsockopt(sockfd, IPPROTO_TCP, TCP_NODELAY, (char *)&disable,
                    sizeof (disable)) != 0) {
-        return NetworkError();
+        return SocketError();
     }
     return NoError();
 }
