@@ -26,15 +26,17 @@ The workflow is the following:
 
 1. update `./build/spec/foo` when there is a new release
 
-2. generate the diff between the current status of a dependency
-   and the previous pristine import and save it.
+2. run `./build/vendor/import foo` to download a pristine version
+   of the new release under `./src/third_party`, and commits
+   the reults on the current branch.
 
-3. run `./build/vendor/import foo` to download a pristine version
-   of the new release under `./src/third_party`, and commit
-   the results on the current branch.
-
-3. apply the previously saved diff and fix conflicts. Commit the
-   changes when all conflicts are fixed.
+3. run `./build/vendor/patch` to re-apply local patches. You may
+   need to iterate over this step to forward port the old patches.
+   When patches will apply cleanly, a commit will be created in
+   the current branch. Make sure any additional change you make is
+   saved in patches at `./build/patch/vendor`. (This is a relic
+   of how the build system worked in the past and we may want to
+   change some aspects of this step in the future.)
 
 4. Make sure you can successfully build and cross build the new
    dependency. If necessary, apply more patches :-).

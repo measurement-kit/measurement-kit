@@ -35,7 +35,7 @@ void mk_bufferevent_on_event(bufferevent *bev, short what, void *ptr) {
     if ((what & BEV_EVENT_CONNECTED) != 0) {
         (*cb)(mk::NoError(), bev);
     } else if ((what & BEV_EVENT_TIMEOUT) != 0) {
-        (*cb)(mk::TimeoutError(), bev);
+        (*cb)(mk::net::TimeoutError(), bev);
     } else {
         mk::Error err;
         /*
@@ -47,7 +47,7 @@ void mk_bufferevent_on_event(bufferevent *bev, short what, void *ptr) {
             err = mk::net::map_errno(errno);
         } else {
             long ssl_err = bufferevent_get_openssl_error(bev);
-            const char *s = ERR_error_string(ssl_err, nullptr);
+            std::string s = ERR_error_string(ssl_err, nullptr);
             err = mk::net::SslError(s);
         }
         (*cb)(err, bev);

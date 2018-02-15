@@ -4,21 +4,6 @@ include(CheckLibraryExists)
 include(CheckIncludeFiles)
 include(CheckTypeSize)
 
-# MK: the following settings are to tweak the build for our needs. For now
-# we mainly have in mind the Win32/Win64 use case.
-if(WIN32)
-	set(CMAKE_BUILD_TYPE Release CACHE STRING "Set the build type" FORCE)
-	if("${CMAKE_GENERATOR}" MATCHES "(Win64|IA64)")
-		set(CMAKE_INSTALL_PREFIX
-		    "${CMAKE_CURRENT_SOURCE_DIR}/../../../build/win64"
-		    CACHE STRING "Set install prefix" FORCE)
-	else()
-		set(CMAKE_INSTALL_PREFIX
-		    "${CMAKE_CURRENT_SOURCE_DIR}/../../../build/win32"
-		    CACHE STRING "Set install prefix" FORCE)
-	endif()
-endif()
-
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}" ${CMAKE_MODULE_PATH})
 include(cmake_export_symbol)
 include(GNUInstallDirs)
@@ -314,11 +299,10 @@ if(SIZEOF_TIME_T STREQUAL "4")
 endif()
 add_definitions(-DSIZEOF_TIME_T=${SIZEOF_TIME_T})
 
-# MK: skip the directories that we don't need.
 add_subdirectory(crypto)
 add_subdirectory(ssl)
-#add_subdirectory(apps)
-#add_subdirectory(tls)
+add_subdirectory(apps)
+add_subdirectory(tls)
 add_subdirectory(include)
 if(NOT MSVC)
 	add_subdirectory(man)

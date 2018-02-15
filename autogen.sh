@@ -94,6 +94,9 @@ fi
 if [ $cmake -eq 0 ]; then
     echo "* Running 'autoreconf -i'"
     autoreconf -i
+else
+    echo "* Generating './cmake/make.cmake'"
+    ./script/cmake/autogen > ./cmake/make.cmake
 fi
 
 echo ""
@@ -115,7 +118,7 @@ if [ $cmake -eq 0 ]; then
     echo "shall stop and tell you how you could install it."
 else
     echo "MeasurementKit is now ready to be compiled. To proceed you shall run"
-    echo "either 'cmake' directly or our friendly './build/cmake/cmake' wrapper"
+    echo "either 'cmake' directly or our friendly './script/cmake/run' wrapper"
     echo "script. The latter attempts to apply smart settings in case you are"
     echo "running 'cmake' on macOS and have brew installed."
 fi

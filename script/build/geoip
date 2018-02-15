@@ -1,0 +1,50 @@
+#!/bin/sh
+set -e
+
+pkg_topdir=$(cd $(dirname $0)/../../ && pwd -P)
+
+[ "${pkg_os}" = "" ] && pkg_os=`uname -s | tr -s 'A-Z' 'a-z'`
+[ "${pkg_arch}" = "" ] && pkg_arch=`uname -m`
+
+pkg_name=geoip
+pkg_repository=https://github.com/maxmind/geoip-api-c.git
+pkg_branch=v1.6.11
+
+pkg_dist_dir=${pkg_topdir}/MK_DIST/${pkg_os}/${pkg_arch}/${pkg_name}
+rm -rf ${pkg_dist_dir}
+mkdir -p ${pkg_dist_dir}
+
+pkg_build_dir=${pkg_topdir}/MK_BUILD/${pkg_os}/${pkg_arch}/${pkg_name}
+rm -rf ${pkg_build_dir}
+mkdir -p ${pkg_build_dir}
+
+(
+    set -e
+
+    cd ${pkg_build_dir}
+    git clone -b ${pkg_branch} --single-branch --depth 3 ${pkg_repository}
+
+    if [ "${pkg_os}" = "windows" ]; then
+        exit 0  # Exit subshell
+    fi
+
+    # Both required by GeoIP `./configure`; see issue #518
+    export ac_cv_func_malloc_0_nonnull=yes
+    export ac_cv_func_realloc_0_nonnull=yes
+
+    cd geoip-api-c
+    ./bootstrap
+    ./configure --prefix=${pkg_dist_dir} --disable-shared ${pkg_configure_flags}
+    (
+        set -e
+        cd libGeoIP
+        make install
+    )
+
+    # No `.la` files around because they will confuse other `./configure`.
+    [ "${pkg_dist_dir}" != "" ] && rm -rf ${pkg_dist_dir}/lib/libGeoIP.la
+)
+
+if [ "${pkg_os}" = "windows" ]; then
+    cmd.exe /c geoip_nmake.bat "${pkg_arch}"
+fi
