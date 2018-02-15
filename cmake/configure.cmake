@@ -161,8 +161,6 @@ elseif(WIN32)
   # On Windows we expect a specific version of libressl. We can possibly make
   # this tunable in the future, to allow for more customizations.
   list(APPEND MK_LIBS crypto-41 ssl-43)
-  # On Windows we currently build and include in our precompiled dependencies
-  # only the "legacy" `event.{dll,lib}` library.
   list(APPEND MK_LIBS event)
 endif()
 
