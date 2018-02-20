@@ -8,9 +8,9 @@
 
 #include <functional>
 #include <string>
+#include <type_traits>
 
 #include <measurement_kit/common/data_usage.hpp>
-#include <measurement_kit/common/lexical_cast.hpp>
 #include <measurement_kit/common/shared_ptr.hpp>
 
 namespace mk {
@@ -43,11 +43,10 @@ class BaseTest {
 
     BaseTest &increase_verbosity();
 
-    template <typename T,
-              typename = typename std::enable_if<
-                    !std::is_same<std::string, T>::value>::type>
+    template <typename T, typename = typename std::enable_if<
+                    std::is_arithmetic<T>::value>::type>
     BaseTest &set_option(std::string key, T value) {
-        return set_option(key, mk::lexical_cast<std::string>(value));
+        return set_option(key, std::to_string(value));
     }
 
     BaseTest &set_option(std::string key, std::string value);
