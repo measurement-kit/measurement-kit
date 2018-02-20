@@ -8,10 +8,12 @@
 // See <https://github.com/ndt-project/ndt/wiki/NDTProtocol>
 
 #include "src/libmeasurement_kit/common/utils.hpp"
-#include "measure_speed.hpp"
+#include "src/libmeasurement_kit/ndt/error.hpp"
+#include "src/libmeasurement_kit/ndt/run.hpp"
+#include "src/libmeasurement_kit/ndt/measure_speed.hpp"
 
-#include <measurement_kit/ndt.hpp>
 #include <measurement_kit/net.hpp>
+#include <measurement_kit/ndt/defs.hpp>
 
 /*
  ____        __ _       _ _   _
