@@ -4,7 +4,7 @@
 
 #include "src/libmeasurement_kit/nettests/runnable.hpp"
 #include <measurement_kit/nettests.hpp>
-#include <measurement_kit/neubot.hpp>
+#include "src/libmeasurement_kit/neubot/dash.hpp"
 
 namespace mk {
 namespace nettests {

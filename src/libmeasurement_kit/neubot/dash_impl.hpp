@@ -52,6 +52,8 @@
  *    seems anyway to be a reasonable starting point.)
  */
 
+#include "src/libmeasurement_kit/neubot/dash.hpp"
+
 #include "src/libmeasurement_kit/common/mock.hpp"
 #include "src/libmeasurement_kit/common/utils.hpp"
 #include "src/libmeasurement_kit/ext/sole.hpp"
@@ -59,7 +61,6 @@
 
 #include <measurement_kit/common/json.hpp>
 #include <measurement_kit/http.hpp>
-#include <measurement_kit/neubot.hpp>
 
 #define DASH_INITIAL_RATE 3000
 #define DASH_MAX_ITERATIONS 15
