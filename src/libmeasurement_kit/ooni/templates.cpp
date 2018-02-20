@@ -68,14 +68,18 @@ void dns_query(SharedPtr<Entry> entry, dns::QueryType query_type,
                    }
                    if (!error) {
                        for (auto answer : message->answers) {
+                           nlohmann::json ttl; // = `null`
+                           if (not_system_engine) {
+                               ttl = answer.ttl;
+                           }
                            if (answer.type == dns::MK_DNS_TYPE_A) {
                                (*query_entry)["answers"].push_back(
-                                   {{"ttl", answer.ttl},
+                                   {{"ttl", ttl},
                                     {"ipv4", answer.ipv4},
                                     {"answer_type", "A"}});
                            } else if (answer.type == dns::MK_DNS_TYPE_CNAME) {
                                (*query_entry)["answers"].push_back(
-                                   {{"ttl", answer.ttl},
+                                   {{"ttl", ttl},
                                     {"hostname", answer.hostname},
                                     {"answer_type", "CNAME"}});
                            }

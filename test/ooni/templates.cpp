@@ -46,7 +46,7 @@ TEST_CASE("dns query template works as expected") {
                         REQUIRE(answers.is_array());
                         REQUIRE((answers[0]["ttl"].is_number()));
                         REQUIRE((answers[0]["ipv4"] == "130.192.16.172"));
-                        REQUIRE((answers[0]["answer_type"] >= "A"));
+                        REQUIRE((answers[0]["answer_type"] == "A"));
                         /* Second query and response (should be error) */
                         query = queries[1];
                         REQUIRE((query["resolver_hostname"] == "8.8.8.1"));
@@ -62,6 +62,44 @@ TEST_CASE("dns query template works as expected") {
                     {{"dns/timeout", 0.3}, {"dns/attempts", 1},
                      {"dns/engine", "libevent"}}, reactor);
             }, {{"dns/engine", "libevent"}}, reactor);
+    });
+}
+
+TEST_CASE("dns query template works as expected with system engine") {
+    SharedPtr<Reactor> reactor = Reactor::make();
+    reactor->run_with_initial_event([=]() {
+        SharedPtr<Entry> entry(new Entry);
+        templates::dns_query(entry, "A", "IN", "nexa.polito.it", "",
+                [=](Error err, SharedPtr<dns::Message>) {
+                    REQUIRE(!err);
+                    Json answers;
+                    Json root;
+                    Json query;
+                    int resolver_port;
+                    root = Json::parse(entry->dump());
+                    REQUIRE(root.is_object());
+                    Json queries = root["queries"];
+                    REQUIRE(queries.is_array());
+                    REQUIRE(queries.size() == 1);
+                    /* First query and response (should be ok) */
+                    query = queries[0];
+                    REQUIRE((query["resolver_hostname"].is_null()));
+                    REQUIRE((query["resolver_port"].is_null()));
+                    REQUIRE((query["failure"] == nullptr));
+                    REQUIRE((query["query_type"] == "A"));
+                    REQUIRE((query["hostname"] == "nexa.polito.it"));
+                    answers = query["answers"];
+                    REQUIRE(answers.is_array());
+                    REQUIRE(answers.size() == 2);
+                    REQUIRE((answers[0]["ttl"].is_null()));
+                    REQUIRE((answers[0]["hostname"] == "server-nexa.polito.it"));
+                    REQUIRE((answers[0]["answer_type"] == "CNAME"));
+                    REQUIRE((answers[1]["ttl"].is_null()));
+                    REQUIRE((answers[1]["ipv4"] == "130.192.16.172"));
+                    REQUIRE((answers[1]["answer_type"] == "A"));
+                    reactor->stop();
+                },
+                {{"dns/engine", "system"}}, reactor);
     });
 }
 
