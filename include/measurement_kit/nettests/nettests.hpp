@@ -44,15 +44,6 @@ class BaseTest {
     template <typename T,
               typename = typename std::enable_if<
                     !std::is_same<std::string, T>::value>::type>
-    [[deprecated]] BaseTest &set_options(std::string key, T value) {
-        return set_option(key, mk::lexical_cast<std::string>(value));
-    }
-
-    [[deprecated]] BaseTest &set_options(std::string key, std::string value);
-
-    template <typename T,
-              typename = typename std::enable_if<
-                    !std::is_same<std::string, T>::value>::type>
     BaseTest &set_option(std::string key, T value) {
         return set_option(key, mk::lexical_cast<std::string>(value));
     }

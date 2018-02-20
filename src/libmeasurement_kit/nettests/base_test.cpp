@@ -69,11 +69,6 @@ BaseTest &BaseTest::set_error_filepath(std::string s) {
     return *this;
 }
 
-BaseTest &BaseTest::set_options(std::string key, std::string value) {
-    runnable->options[key] = value;
-    return *this;
-}
-
 BaseTest &BaseTest::add_annotation(std::string key, std::string value) {
     runnable->annotations[key] = value;
     return *this;
