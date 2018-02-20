@@ -50,9 +50,9 @@ class BaseTest {
         return set_option(key, mk::lexical_cast<std::string>(value));
     }
 
-    BaseTest &add_annotation(std::string key, std::string value);
-
     BaseTest &set_option(std::string key, std::string value);
+
+    BaseTest &add_annotation(std::string key, std::string value);
 
     BaseTest &on_entry(std::function<void(std::string)> &&);
 
