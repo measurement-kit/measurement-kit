@@ -5,7 +5,7 @@
 // Derivative work of r-lyeh/sole@c61c49f10d.
 // See NOTICE for original license.
 
-#include <measurement_kit/ext/sole.hpp>
+#include "src/libmeasurement_kit/ext/sole.hpp"
 
 #include <iomanip>
 #include <random>
