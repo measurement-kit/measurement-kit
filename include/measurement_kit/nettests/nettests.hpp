@@ -4,12 +4,14 @@
 #ifndef MEASUREMENT_KIT_NETTESTS_NETTESTS_HPP
 #define MEASUREMENT_KIT_NETTESTS_NETTESTS_HPP
 
-#include <cstdint>
+#include <stdint.h>
+
 #include <functional>
+#include <string>
+
 #include <measurement_kit/common/data_usage.hpp>
 #include <measurement_kit/common/lexical_cast.hpp>
 #include <measurement_kit/common/shared_ptr.hpp>
-#include <string>
 
 namespace mk {
 namespace nettests {
