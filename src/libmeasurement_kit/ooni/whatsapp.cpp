@@ -7,8 +7,10 @@
 #include "src/libmeasurement_kit/common/fcompose.hpp"
 #include "src/libmeasurement_kit/common/parallel.hpp"
 #include "src/libmeasurement_kit/common/utils.hpp"
+#include "src/libmeasurement_kit/ooni/templates.hpp"
 #include <cassert>
 #include <measurement_kit/net/utils.hpp>
+#include <measurement_kit/report.hpp>
 #include <measurement_kit/ooni.hpp>
 
 namespace mk {

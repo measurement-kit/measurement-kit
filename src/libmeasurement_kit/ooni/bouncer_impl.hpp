@@ -4,10 +4,12 @@
 #ifndef SRC_LIBMEASUREMENT_KIT_OONI_BOUNCER_IMPL_HPP
 #define SRC_LIBMEASUREMENT_KIT_OONI_BOUNCER_IMPL_HPP
 
+#include <measurement_kit/http.hpp>
+#include <measurement_kit/ooni/error.hpp>
 #include <measurement_kit/common/json.hpp>
-#include "src/libmeasurement_kit/common/mock.hpp"
 
-#include <measurement_kit/ooni.hpp>
+#include "src/libmeasurement_kit/common/mock.hpp"
+#include "src/libmeasurement_kit/ooni/bouncer.hpp"
 
 namespace mk {
 namespace ooni {

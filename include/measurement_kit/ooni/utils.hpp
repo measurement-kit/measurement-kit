@@ -4,20 +4,14 @@
 #ifndef MEASUREMENT_KIT_OONI_UTILS_HPP
 #define MEASUREMENT_KIT_OONI_UTILS_HPP
 
-#include <measurement_kit/report.hpp>
+#include <measurement_kit/common/callback.hpp>
+#include <measurement_kit/common/error.hpp>
+#include <measurement_kit/common/logger.hpp>
+#include <measurement_kit/common/settings.hpp>
+#include <measurement_kit/common/shared_ptr.hpp>
 
 namespace mk {
 namespace ooni {
-
-void ip_lookup(Callback<Error, std::string> callback, Settings settings = {},
-               SharedPtr<Reactor> reactor = Reactor::global(),
-               SharedPtr<Logger> logger = Logger::global());
-
-void resolver_lookup(Callback<Error, std::string> callback, Settings = {},
-                     SharedPtr<Reactor> reactor = Reactor::global(),
-                     SharedPtr<Logger> logger = Logger::global());
-
-report::Entry represent_string(const std::string &s);
 
 // `find_location` returns the client location. Internally, it calls the
 // namesake method of orchestrate::Client. This function is here for

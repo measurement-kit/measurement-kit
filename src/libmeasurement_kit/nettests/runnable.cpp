@@ -8,6 +8,7 @@
 #include "src/libmeasurement_kit/nettests/runnable.hpp"
 
 #include "src/libmeasurement_kit/common/utils.hpp"
+#include "src/libmeasurement_kit/ooni/bouncer.hpp"
 #include "src/libmeasurement_kit/ooni/utils.hpp"
 #include "src/libmeasurement_kit/nettests/utils.hpp"
 #include "src/libmeasurement_kit/ext/sole.hpp"

@@ -3,6 +3,7 @@
 // and LICENSE for more information on the copying conditions.
 
 #include "src/libmeasurement_kit/ooni/constants.hpp"
+#include "src/libmeasurement_kit/ooni/templates.hpp"
 #include "src/libmeasurement_kit/ooni/utils.hpp"
 #include "src/libmeasurement_kit/common/locked.hpp"
 #include "src/libmeasurement_kit/common/parallel.hpp"

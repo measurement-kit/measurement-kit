@@ -7,6 +7,7 @@
 #include "src/libmeasurement_kit/common/mock.hpp"
 #include "src/libmeasurement_kit/common/parallel.hpp"
 #include "src/libmeasurement_kit/common/utils.hpp"
+#include "src/libmeasurement_kit/ooni/resources.hpp"
 
 #include <fstream>
 #include <regex>

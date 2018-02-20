@@ -4,7 +4,9 @@
 
 #include "src/libmeasurement_kit/common/utils.hpp"
 #include "src/libmeasurement_kit/ooni/constants.hpp"
+#include "src/libmeasurement_kit/ooni/templates.hpp"
 #include <measurement_kit/ooni.hpp>
+#include <measurement_kit/report.hpp>
 
 namespace mk {
 namespace ooni {

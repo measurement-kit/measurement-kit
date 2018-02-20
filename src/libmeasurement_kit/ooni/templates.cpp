@@ -2,7 +2,14 @@
 // Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
+#include <measurement_kit/ooni.hpp>
+
+#include <event2/dns.h>
+
 #include "src/libmeasurement_kit/ooni/templates_impl.hpp"
+#include "src/libmeasurement_kit/net/emitter.hpp"
+#include "src/libmeasurement_kit/ooni/utils.hpp"
+#include "src/libmeasurement_kit/ooni/templates.hpp"
 
 namespace mk {
 namespace ooni {
