@@ -25,8 +25,6 @@ class BaseTest {
 
     BaseTest &add_input_filepath(std::string);
 
-    [[deprecated]] BaseTest &set_input_filepath(std::string);
-
     BaseTest &set_output_filepath(std::string);
 
     BaseTest &set_error_filepath(std::string);

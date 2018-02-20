@@ -59,11 +59,6 @@ BaseTest &BaseTest::add_input_filepath(std::string s) {
     return *this;
 }
 
-BaseTest &BaseTest::set_input_filepath(std::string s) {
-    runnable->input_filepaths.clear();
-    return add_input_filepath(s);
-}
-
 BaseTest &BaseTest::set_output_filepath(std::string s) {
     runnable->output_filepath = s;
     return *this;
