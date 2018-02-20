@@ -83,25 +83,28 @@ class BaseTest {
     SharedPtr<Runnable> runnable;
 };
 
+#define MK_ENUM_TEST(XX)                                                       \
+    XX(DashTest)                                                               \
+    XX(CaptivePortalTest)                                                      \
+    XX(DnsInjectionTest)                                                       \
+    XX(FacebookMessengerTest)                                                  \
+    XX(HttpHeaderFieldManipulationTest)                                        \
+    XX(HttpInvalidRequestLineTest)                                             \
+    XX(MeekFrontedRequestsTest)                                                \
+    XX(MultiNdtTest)                                                           \
+    XX(NdtTest)                                                                \
+    XX(TcpConnectTest)                                                         \
+    XX(TelegramTest)                                                           \
+    XX(WebConnectivityTest)                                                    \
+    XX(WhatsappTest)
+
 #define MK_DECLARE_TEST(_name_)                                                \
     class _name_ : public BaseTest {                                           \
       public:                                                                  \
         _name_();                                                              \
-    }
-
-MK_DECLARE_TEST(DashTest);
-MK_DECLARE_TEST(CaptivePortalTest);
-MK_DECLARE_TEST(DnsInjectionTest);
-MK_DECLARE_TEST(FacebookMessengerTest);
-MK_DECLARE_TEST(HttpHeaderFieldManipulationTest);
-MK_DECLARE_TEST(HttpInvalidRequestLineTest);
-MK_DECLARE_TEST(MeekFrontedRequestsTest);
-MK_DECLARE_TEST(MultiNdtTest);
-MK_DECLARE_TEST(NdtTest);
-MK_DECLARE_TEST(TcpConnectTest);
-MK_DECLARE_TEST(TelegramTest);
-MK_DECLARE_TEST(WebConnectivityTest);
-MK_DECLARE_TEST(WhatsappTest);
+    };
+MK_ENUM_TEST(MK_DECLARE_TEST)
+#undef MK_DECLARE_TEST
 
 } // namespace nettests
 } // namespace mk
