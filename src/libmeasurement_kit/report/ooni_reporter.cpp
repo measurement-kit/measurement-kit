@@ -3,8 +3,9 @@
 // and LICENSE for more information on the copying conditions.
 
 #include <measurement_kit/ooni.hpp>
-#include <measurement_kit/report.hpp>
 
+#include "src/libmeasurement_kit/report/ooni_reporter.hpp"
+#include "src/libmeasurement_kit/report/error.hpp"
 #include "src/libmeasurement_kit/ooni/collector_client.hpp"
 
 namespace mk {

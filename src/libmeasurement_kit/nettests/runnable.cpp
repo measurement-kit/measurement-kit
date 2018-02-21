@@ -13,6 +13,9 @@
 #include "src/libmeasurement_kit/nettests/utils.hpp"
 #include "src/libmeasurement_kit/ext/sole.hpp"
 
+#include "src/libmeasurement_kit/report/file_reporter.hpp"
+#include "src/libmeasurement_kit/report/ooni_reporter.hpp"
+
 #include <measurement_kit/nettests.hpp>
 
 namespace mk {

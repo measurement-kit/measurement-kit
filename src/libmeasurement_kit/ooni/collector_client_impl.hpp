@@ -12,8 +12,9 @@
 
 #include <measurement_kit/common/json.hpp>
 #include <measurement_kit/ooni.hpp>
-#include <measurement_kit/report.hpp>
 #include <measurement_kit/http.hpp>
+
+#include <fstream>
 
 namespace mk {
 namespace ooni {

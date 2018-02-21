@@ -7,7 +7,8 @@
 #include <measurement_kit/dns.hpp>
 #include <measurement_kit/http.hpp>
 #include <measurement_kit/net.hpp>
-#include <measurement_kit/report.hpp>
+
+#include "src/libmeasurement_kit/report/entry.hpp"
 
 namespace mk {
 namespace ooni {
