@@ -20,10 +20,10 @@
 #include <measurement_kit/common/non_copyable.hpp>
 #include <measurement_kit/common/non_movable.hpp>
 #include <measurement_kit/common/reactor.hpp>
-#include <measurement_kit/net/buffer.hpp>
-#include <measurement_kit/net/error.hpp>
-#include <measurement_kit/net/transport.hpp>
-#include <measurement_kit/net/utils.hpp>
+#include "src/libmeasurement_kit/net/buffer.hpp"
+#include "src/libmeasurement_kit/net/error.hpp"
+#include "src/libmeasurement_kit/net/transport.hpp"
+#include "src/libmeasurement_kit/net/utils.hpp"
 #include <measurement_kit/common/aaa_base.h>
 #include <new>
 #include <openssl/err.h>

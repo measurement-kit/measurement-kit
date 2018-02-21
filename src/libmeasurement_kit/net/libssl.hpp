@@ -24,7 +24,7 @@
 #include <measurement_kit/common/logger.hpp>
 #include <measurement_kit/common/non_copyable.hpp>
 #include <measurement_kit/common/non_movable.hpp>
-#include <measurement_kit/net/error.hpp>
+#include "src/libmeasurement_kit/net/error.hpp"
 #include <openssl/err.h>
 #include <openssl/ssl.h>
 #include <string>

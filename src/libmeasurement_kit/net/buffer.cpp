@@ -3,8 +3,8 @@
 // and LICENSE for more information on the copying conditions.
 
 #include "src/libmeasurement_kit/net/evbuffer.hpp"
-
-#include <measurement_kit/net.hpp>
+#include "src/libmeasurement_kit/net/error.hpp"
+#include "src/libmeasurement_kit/net/buffer.hpp"
 
 #include <event2/buffer.h>
 

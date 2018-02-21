@@ -4,6 +4,7 @@
 
 #include "src/libmeasurement_kit/http/request_impl.hpp"
 #include "src/libmeasurement_kit/common/utils.hpp"
+#include "src/libmeasurement_kit/net/error.hpp"
 
 namespace mk {
 namespace http {

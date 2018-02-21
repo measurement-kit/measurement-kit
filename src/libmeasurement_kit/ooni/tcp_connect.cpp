@@ -3,9 +3,9 @@
 // and LICENSE for more information on the copying conditions.
 
 #include <measurement_kit/ooni.hpp>
-#include <measurement_kit/net.hpp>
 
 #include "src/libmeasurement_kit/ooni/nettests.hpp"
+#include "src/libmeasurement_kit/net/transport.hpp"
 #include "src/libmeasurement_kit/report/entry.hpp"
 #include "src/libmeasurement_kit/ooni/templates.hpp"
 

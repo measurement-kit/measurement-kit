@@ -4,8 +4,8 @@
 #ifndef MEASUREMENT_KIT_NET_TRANSPORT_HPP
 #define MEASUREMENT_KIT_NET_TRANSPORT_HPP
 
-#include <measurement_kit/net/buffer.hpp>
-#include <measurement_kit/net/utils.hpp>
+#include "src/libmeasurement_kit/net/buffer.hpp"
+#include "src/libmeasurement_kit/net/utils.hpp"
 
 struct bufferevent; /* Forward declaration */
 

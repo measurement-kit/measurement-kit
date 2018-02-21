@@ -44,8 +44,7 @@ void mk_traceroute_android_unused() {}
 #include "src/libmeasurement_kit/traceroute/error.hpp"
 #include "src/libmeasurement_kit/net/utils.hpp"
 #include "src/libmeasurement_kit/common/utils.hpp"
-
-#include <measurement_kit/net.hpp>
+#include "src/libmeasurement_kit/net/error.hpp"
 
 #include <linux/errqueue.h>
 #include <sys/uio.h>

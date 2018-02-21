@@ -4,9 +4,7 @@
 #ifndef SRC_LIBMEASUREMENT_KIT_NET_SOCKS5_HPP
 #define SRC_LIBMEASUREMENT_KIT_NET_SOCKS5_HPP
 
-#include "../net/emitter.hpp"
-
-#include <measurement_kit/net.hpp>
+#include "src/libmeasurement_kit/net/emitter.hpp"
 
 namespace mk {
 namespace net {

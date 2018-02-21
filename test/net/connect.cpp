@@ -6,6 +6,7 @@
 #include "src/libmeasurement_kit/ext/catch.hpp"
 
 #include "src/libmeasurement_kit/net/connect_impl.hpp"
+#include "src/libmeasurement_kit/net/error.hpp"
 #include "src/libmeasurement_kit/net/emitter.hpp"
 
 #include <event2/bufferevent.h>

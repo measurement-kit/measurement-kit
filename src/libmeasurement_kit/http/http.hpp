@@ -6,7 +6,7 @@
 
 // Documentation: doc/api/http.md
 
-#include <measurement_kit/net.hpp>
+#include "src/libmeasurement_kit/net/transport.hpp"
 
 namespace mk {
 namespace http {
