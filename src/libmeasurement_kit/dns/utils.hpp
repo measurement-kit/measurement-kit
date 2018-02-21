@@ -5,7 +5,9 @@
 #define SRC_LIBMEASUREMENT_KIT_DNS_UTILS_HPP
 
 #include <measurement_kit/common/data_usage.hpp>
-#include <measurement_kit/dns.hpp>
+
+#include "src/libmeasurement_kit/dns/nameser.h"
+#include "src/libmeasurement_kit/dns/query.hpp"
 
 namespace mk {
 namespace dns {

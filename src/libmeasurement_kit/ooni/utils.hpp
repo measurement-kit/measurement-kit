@@ -6,6 +6,7 @@
 
 #include <measurement_kit/ooni.hpp>
 #include "src/libmeasurement_kit/report/entry.hpp"
+#include "src/libmeasurement_kit/dns/query.hpp"
 
 #include <GeoIP.h>
 #include <GeoIPCity.h>

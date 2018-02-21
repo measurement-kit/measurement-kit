@@ -4,7 +4,6 @@
 #ifndef MEASUREMENT_KIT_NET_CONNECT_HPP
 #define MEASUREMENT_KIT_NET_CONNECT_HPP
 
-#include <measurement_kit/dns.hpp>
 #include <measurement_kit/net/transport.hpp>
 
 struct bufferevent;

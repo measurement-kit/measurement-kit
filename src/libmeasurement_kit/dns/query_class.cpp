@@ -2,7 +2,7 @@
 // Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
-#include <measurement_kit/dns.hpp>
+#include "src/libmeasurement_kit/dns/query_class.hpp"
 
 namespace mk {
 namespace dns {

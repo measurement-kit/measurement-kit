@@ -4,6 +4,7 @@
 
 #include "src/libmeasurement_kit/dns/libevent_query.hpp"
 #include "src/libmeasurement_kit/dns/system_resolver.hpp"
+#include "src/libmeasurement_kit/dns/resolve_hostname.hpp"
 
 namespace mk {
 namespace dns {

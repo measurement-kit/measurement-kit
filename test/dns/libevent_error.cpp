@@ -5,9 +5,9 @@
 #define CATCH_CONFIG_MAIN
 #include "src/libmeasurement_kit/ext/catch.hpp"
 
-#include <measurement_kit/dns.hpp>
 #include <event2/dns.h>
 
+#include "src/libmeasurement_kit/dns/error.hpp"
 #include "src/libmeasurement_kit/dns/libevent_query.hpp"
 
 using namespace mk;

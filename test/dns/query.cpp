@@ -5,6 +5,7 @@
 #define CATCH_CONFIG_MAIN
 #include "src/libmeasurement_kit/ext/catch.hpp"
 
+#include "src/libmeasurement_kit/dns/resolve_hostname.hpp"
 #include "src/libmeasurement_kit/dns/libevent_query.hpp"
 
 using namespace mk;

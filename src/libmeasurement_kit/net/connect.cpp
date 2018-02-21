@@ -17,7 +17,8 @@
 #include "src/libmeasurement_kit/net/libevent_emitter.hpp"
 #include "src/libmeasurement_kit/net/libssl.hpp"
 
-#include <measurement_kit/dns.hpp>
+#include "src/libmeasurement_kit/dns/resolve_hostname.hpp"
+#include "src/libmeasurement_kit/dns/query.hpp"
 #include <measurement_kit/net.hpp>
 
 #include <event2/bufferevent_ssl.h>
