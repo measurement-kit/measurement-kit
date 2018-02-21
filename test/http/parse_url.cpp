@@ -5,7 +5,7 @@
 #define CATCH_CONFIG_MAIN
 #include "src/libmeasurement_kit/ext/catch.hpp"
 
-#include <measurement_kit/http.hpp>
+#include "src/libmeasurement_kit/http/http.hpp"
 
 using namespace mk;
 

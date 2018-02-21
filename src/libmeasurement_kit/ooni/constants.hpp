@@ -4,7 +4,7 @@
 #ifndef SRC_LIBMEASUREMENT_KIT_OONI_CONSTANTS_HPP
 #define SRC_LIBMEASUREMENT_KIT_OONI_CONSTANTS_HPP
 
-#include <measurement_kit/http.hpp>
+#include "src/libmeasurement_kit/http/http.hpp"
 
 #include <set>
 
