@@ -42,13 +42,13 @@ class Semaphore {
   public:
     Semaphore() = default;
 
-    void wait() {
+    void acquire() {
         std::unique_lock<std::mutex> lock{mutex_};
         cond_.wait(lock, [this]() { return !active_; });
         active_ = true;
     }
 
-    void signal() {
+    void release() {
         {
             std::unique_lock<std::mutex> _{mutex_};
             active_ = false;
@@ -104,11 +104,11 @@ Task::Task(nlohmann::json &&settings) {
         pimpl_->running = true;
         barrier.set_value();
         static Semaphore semaphore;
-        semaphore.wait(); // block until a previous task has finished running
+        semaphore.acquire(); // block until a previous task has finished running
         task_run(pimpl_.get(), settings);
         pimpl_->running = false;
         pimpl_->cond.notify_all(); // tell the readers we're done
-        semaphore.signal();        // allow another task to run
+        semaphore.relase();        // allow another task to run
     });
     started.wait(); // guarantee Task() completes when the thread is running
 }
