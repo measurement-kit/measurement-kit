@@ -125,6 +125,8 @@ class DefaultLogger : public Logger, public NonCopyable, public NonMovable {
 
     void log(uint32_t level, const char *fmt, ...) override { XX(this, level); }
 
+    void err(const char *fmt, ...) override { XX(this, MK_LOG_ERR); }
+
     void warn(const char *fmt, ...) override { XX(this, MK_LOG_WARNING); }
 
     void info(const char *fmt, ...) override { XX(this, MK_LOG_INFO); }
@@ -249,6 +251,8 @@ class DefaultLogger : public Logger, public NonCopyable, public NonMovable {
 Logger::~Logger() {}
 
 void log(uint32_t level, const char *fmt, ...) { XX(Logger::global(), level); }
+
+void err(const char *fmt, ...) { XX(Logger::global(), MK_LOG_ERR); }
 
 void warn(const char *fmt, ...) { XX(Logger::global(), MK_LOG_WARNING); }
 
