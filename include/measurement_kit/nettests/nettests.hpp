@@ -4,12 +4,14 @@
 #ifndef MEASUREMENT_KIT_NETTESTS_NETTESTS_HPP
 #define MEASUREMENT_KIT_NETTESTS_NETTESTS_HPP
 
-#include <cstdint>
+#include <stdint.h>
+
 #include <functional>
-#include <measurement_kit/common/data_usage.hpp>
-#include <measurement_kit/common/lexical_cast.hpp>
-#include <measurement_kit/common/shared_ptr.hpp>
 #include <string>
+#include <type_traits>
+
+#include <measurement_kit/common/data_usage.hpp>
+#include <measurement_kit/common/shared_ptr.hpp>
 
 namespace mk {
 namespace nettests {
@@ -24,8 +26,6 @@ class BaseTest {
     BaseTest &add_input(std::string);
 
     BaseTest &add_input_filepath(std::string);
-
-    [[deprecated]] BaseTest &set_input_filepath(std::string);
 
     BaseTest &set_output_filepath(std::string);
 
@@ -43,25 +43,15 @@ class BaseTest {
 
     BaseTest &increase_verbosity();
 
-    template <typename T,
-              typename = typename std::enable_if<
-                    !std::is_same<std::string, T>::value>::type>
-    [[deprecated]] BaseTest &set_options(std::string key, T value) {
-        return set_option(key, mk::lexical_cast<std::string>(value));
-    }
-
-    [[deprecated]] BaseTest &set_options(std::string key, std::string value);
-
-    template <typename T,
-              typename = typename std::enable_if<
-                    !std::is_same<std::string, T>::value>::type>
+    template <typename T, typename = typename std::enable_if<
+                    std::is_arithmetic<T>::value>::type>
     BaseTest &set_option(std::string key, T value) {
-        return set_option(key, mk::lexical_cast<std::string>(value));
+        return set_option(key, std::to_string(value));
     }
-
-    BaseTest &add_annotation(std::string key, std::string value);
 
     BaseTest &set_option(std::string key, std::string value);
+
+    BaseTest &add_annotation(std::string key, std::string value);
 
     BaseTest &on_entry(std::function<void(std::string)> &&);
 
@@ -83,25 +73,28 @@ class BaseTest {
     SharedPtr<Runnable> runnable;
 };
 
+#define MK_ENUM_TEST(XX)                                                       \
+    XX(DashTest)                                                               \
+    XX(CaptivePortalTest)                                                      \
+    XX(DnsInjectionTest)                                                       \
+    XX(FacebookMessengerTest)                                                  \
+    XX(HttpHeaderFieldManipulationTest)                                        \
+    XX(HttpInvalidRequestLineTest)                                             \
+    XX(MeekFrontedRequestsTest)                                                \
+    XX(MultiNdtTest)                                                           \
+    XX(NdtTest)                                                                \
+    XX(TcpConnectTest)                                                         \
+    XX(TelegramTest)                                                           \
+    XX(WebConnectivityTest)                                                    \
+    XX(WhatsappTest)
+
 #define MK_DECLARE_TEST(_name_)                                                \
     class _name_ : public BaseTest {                                           \
       public:                                                                  \
         _name_();                                                              \
-    }
-
-MK_DECLARE_TEST(DashTest);
-MK_DECLARE_TEST(CaptivePortalTest);
-MK_DECLARE_TEST(DnsInjectionTest);
-MK_DECLARE_TEST(FacebookMessengerTest);
-MK_DECLARE_TEST(HttpHeaderFieldManipulationTest);
-MK_DECLARE_TEST(HttpInvalidRequestLineTest);
-MK_DECLARE_TEST(MeekFrontedRequestsTest);
-MK_DECLARE_TEST(MultiNdtTest);
-MK_DECLARE_TEST(NdtTest);
-MK_DECLARE_TEST(TcpConnectTest);
-MK_DECLARE_TEST(TelegramTest);
-MK_DECLARE_TEST(WebConnectivityTest);
-MK_DECLARE_TEST(WhatsappTest);
+    };
+MK_ENUM_TEST(MK_DECLARE_TEST)
+#undef MK_DECLARE_TEST
 
 } // namespace nettests
 } // namespace mk
