@@ -50,9 +50,10 @@ mk_task_t *mk_task_start(const char *settings) MK_FFI_NOEXCEPT;
  * write any start error into the provided buffer (if not NULL and length is
  * positive, of course). The error buffer will be always zero terminated if its
  * length is at least equal to one character and the buffer is not NULL. You
- * own the returned task pointer and must mk_task_destroy() it when done. @bug
+ * own the returned task pointer and must mk_task_destroy() it when done. @note
  * if the error buffer is too short compared to the error string, it will be
- * silently truncated. */
+ * truncated. If the buffer is _at least_ seven characters, we will write
+ * "[...]" at the end of the buffer to hint that there was truncation. */
 mk_task_t *mk_task_start_ex(
         const char *settings, char *errbuf, size_t errbuf_size) MK_FFI_NOEXCEPT;
 

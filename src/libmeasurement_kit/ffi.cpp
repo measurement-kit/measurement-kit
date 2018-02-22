@@ -51,9 +51,17 @@ static void safe_copy(const char *reason, char *errbuf, size_t errbuf_siz) {
             memcpy(errbuf, reason, size);
             return;
         }
-        // deal with truncation
+        // deal with truncation, possibly hinting about that
         memcpy(errbuf, reason, errbuf_siz);
         errbuf[errbuf_siz - 1] = '\0'; // zero terminate
+        if (errbuf_siz > 6) {
+            errbuf[errbuf_siz - 2] = ']';
+            errbuf[errbuf_siz - 3] = '.';
+            errbuf[errbuf_siz - 4] = '.';
+            errbuf[errbuf_siz - 5] = '.';
+            errbuf[errbuf_siz - 6] = '[';
+            errbuf[errbuf_siz - 7] = ' ';
+        }
     }
 }
 
