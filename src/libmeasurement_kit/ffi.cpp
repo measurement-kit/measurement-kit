@@ -43,10 +43,13 @@ mk_task_t *mk_task_start(const char *settings) noexcept {
 
 mk_task_error_t mk_task_start_ex(
         mk_task_t **task, const char *settings) noexcept {
-    if (task == nullptr || settings == nullptr) {
+    if (task == nullptr) {
         return MK_TASK_EGENERIC;
     }
     *task = nullptr; // initialize
+    if (settings == nullptr) {
+        return MK_TASK_EGENERIC;
+    }
     nlohmann::json json;
     try {
         json = nlohmann::json::parse(settings);
