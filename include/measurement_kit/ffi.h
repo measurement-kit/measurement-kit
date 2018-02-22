@@ -43,19 +43,31 @@ void mk_event_destroy(mk_event_t *event) MK_FFI_NOEXCEPT;
 typedef struct mk_task_ mk_task_t;
 
 /** mk_task_start() starts a task with the specified JSON settings. You own
- * the returned task pointer and must mk_task_destroy() it when done. */
+ * the returned task pointer and must mk_task_destroy() it when done. NULL is
+ * returned in case we cannot parse the JSON settings (or in case of less
+ * likely errors; see mk_task_start_ex()). */
 mk_task_t *mk_task_start(const char *settings) MK_FFI_NOEXCEPT;
 
-/** mk_task_start_ex() starts a task with the specified JSON settings. It will
- * write any start error into the provided buffer (if not NULL and length is
- * positive, of course). The error buffer will be always zero terminated if its
- * length is at least equal to one character and the buffer is not NULL. You
- * own the returned task pointer and must mk_task_destroy() it when done. @note
- * if the error buffer is too short compared to the error string, it will be
- * truncated. If the buffer is _at least_ seven characters, we will write
- * "[...]" at the end of the buffer to hint that there was truncation. */
-mk_task_t *mk_task_start_ex(
-        const char *settings, char *errbuf, size_t errbuf_size) MK_FFI_NOEXCEPT;
+/** mk_task_error_t enumerates the possible error codes returned by
+ * the mk_task_start_ex() factory function. */
+enum mk_task_error_t {
+    /** MK_TASK_ENONE indicates that no error occurred. */
+    MK_TASK_ENONE = 0,
+    /** MK_TASK_EPARSE indicates that we could not parse the settings string
+     * provided in input as a valid JSON. */
+    MK_TASK_EPARSE,
+    /** MK_TASK_EGENERIC indicates any other error. */
+    MK_TASK_EGENERIC
+};
+
+/** mk_task_start_ex() starts a task with the specified JSON settings. @return
+ * MK_TASK_EGENERIC if either @p task or @p settings are `NULL`. @return
+ * MK_TASK_EPARSE if @p settings cannot be parsed. @return MK_TASK_EGENERIC
+ * in case of other, unlikely, errors. @return MK_TASK_ENONE on success. @note
+ * you should consider @p task to contain a valid pointer, that you own and
+ * must mk_task_destroy(), only in the MK_TASK_ENONE case. */
+enum mk_task_error_t mk_task_start_ex(
+        mk_task_t **task, const char *settings) MK_FFI_NOEXCEPT;
 
 /** mk_task_wait_for_next_event() blocks until the next event. You own the
  * returned event pointer and must mk_event_destroy() it when done. */
