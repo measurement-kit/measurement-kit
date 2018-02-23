@@ -132,6 +132,8 @@ class Task {
  * }
  * ```
  */
+/* TODO(bassosimone): s/measurement_result/measurement/ because in OONI a
+ * result has another meaning, so let's try to avoid confusion. */
 #define MK_ENUM_EVENT(XX)                                                      \
     XX("failure.measurement")                                                  \
     XX("failure.report_submission")                                            \

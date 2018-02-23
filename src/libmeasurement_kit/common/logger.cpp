@@ -214,6 +214,9 @@ class DefaultLogger : public Logger, public NonCopyable, public NonMovable {
             return;
         }
         nlohmann::json event{
+            // TODO(bassosimone): rename this `key` since `type` is
+            // a keyword in several programming languages and so that
+            // can lead to annoyances when processing the event.
             {"type", type},
             {"value", std::move(value)}
         };
