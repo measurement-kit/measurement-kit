@@ -49,7 +49,7 @@ TEST_CASE("compare_headers_response works") {
                                        response,
                                        entry,
                                        Logger::global());
-        REQUIRE((*entry)["tampering"]["total"] == false);
+        REQUIRE((*entry)["tampering"]["total"].get<bool>() == false);
         REQUIRE((*entry)["tampering"]["request_line_capitalization"] == true);
     }
     SECTION("For altered request line") {
@@ -58,7 +58,7 @@ TEST_CASE("compare_headers_response works") {
                                        response,
                                        entry,
                                        Logger::global());
-        REQUIRE((*entry)["tampering"]["total"] == false);
+        REQUIRE((*entry)["tampering"]["total"].get<bool>() == false);
         REQUIRE((*entry)["tampering"]["request_line_capitalization"] == true);
     }
     SECTION("For non-altered request line") {
@@ -67,8 +67,8 @@ TEST_CASE("compare_headers_response works") {
                                        response,
                                        entry,
                                        Logger::global());
-        REQUIRE((*entry)["tampering"]["total"] == false);
-        REQUIRE((*entry)["tampering"]["request_line_capitalization"] == false);
+        REQUIRE((*entry)["tampering"]["total"].get<bool>() == false);
+        REQUIRE((*entry)["tampering"]["request_line_capitalization"].get<bool>() == false);
     }
     SECTION("For extra header in response") {
         response->body = "{\"headers_dict\": {\"foo\": \"bar\", \
@@ -96,6 +96,6 @@ TEST_CASE("compare_headers_response works") {
                                        entry,
                                        Logger::global());
         REQUIRE((*entry)["tampering"]["header_name_diff"] == std::set<std::string>{});
-        REQUIRE((*entry)["tampering"]["header_field_name"] == false);
+        REQUIRE((*entry)["tampering"]["header_field_name"].get<bool>() == false);
     }
 }
