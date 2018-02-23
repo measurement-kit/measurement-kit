@@ -7,6 +7,7 @@
 #include <cstdint>
 #include <measurement_kit/common/aaa_base.h>
 #include <measurement_kit/common/callback.hpp>
+#include <measurement_kit/common/json.hpp>
 #include <measurement_kit/common/shared_ptr.hpp>
 #include <stdarg.h>
 
@@ -160,6 +161,10 @@ class Logger {
     /// `on_log` allows to set the log handler.
     virtual void on_log(Callback<uint32_t, const char *> &&fn) = 0;
 
+    // TODO(bassosimone): when this header will become private, we can then
+    // remove on_eof() and on_event() because they'll become unused. We will
+    // also be able to remove the progress handler.
+
     /// \brief `on_eof()` allows to set the EOF handler. You can set more
     /// than one handler. All the set handlers will be called when the
     /// logger is destroyed. This is used e.g. in Android to free resources.
@@ -168,12 +173,20 @@ class Logger {
     /// `on_event()` allows to set the MK_LOG_EVENT handler.
     virtual void on_event(Callback<const char *> &&fn) = 0;
 
+    /// `on_event_ex()` registers a handler for the specified event.
+    virtual void on_event_ex(const std::string &event,
+                             Callback<nlohmann::json &&> &&cb) = 0;
+
     /// \brief `on_progress()` allows to set the progress handler. Progress
     /// is emitted when the test proceeeds.
     virtual void on_progress(Callback<double, const char *> &&fn) = 0;
 
     /// `set_logfile()` sets the file where to write logs.
     virtual void set_logfile(std::string fpath) = 0;
+
+    /// `emit_event_ex()` emits an event as a JSON.
+    virtual void emit_event_ex(const std::string &type,
+                               nlohmann::json &&value) = 0;
 
     /// \brief `progress()` emits a progress event. \param percent is the
     /// percentage of completion of the current test. \param message is the

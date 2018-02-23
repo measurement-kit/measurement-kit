@@ -163,6 +163,13 @@ void create_report_impl(SharedPtr<Transport> transport, Entry entry,
                            callback(JsonKeyError(), "");
                            return;
                        }
+                       // TODO(bassosimone): the code for setting up the
+                       // report needs improvements, still it's nice to see
+                       // how it's easy to pass it to our controller :^).
+                       logger->emit_event_ex("status.report_created",
+                           nlohmann::json::object({
+                               {"report_id", report_id}
+                           }));
                        callback(NoError(), report_id);
                    },
                    settings, reactor, logger);

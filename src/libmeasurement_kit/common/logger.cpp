@@ -2,6 +2,7 @@
 // Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
+#include <assert.h>
 #include <cstdint>
 #include <fstream>
 #include <list>
@@ -167,6 +168,12 @@ class DefaultLogger : public Logger, public NonCopyable, public NonMovable {
         event_handler_ = std::move(f);
     }
 
+    void on_event_ex(const std::string &event,
+            Callback<nlohmann::json &&> &&cb) override {
+        std::unique_lock<std::recursive_mutex> _{mutex_};
+        handlers_[event] = std::move(cb);
+    }
+
     void on_progress(Callback<double, const char *> &&fn) override {
         std::unique_lock<std::recursive_mutex> _{mutex_};
         progress_handler_ = fn;
@@ -188,6 +195,34 @@ class DefaultLogger : public Logger, public NonCopyable, public NonMovable {
                 /* Suppress */;
             }
         }
+        assert(!!s);
+        // Note that the mutex is recursive
+        // TODO(bassosimone): improve the API to allow emitting more context
+        emit_event_ex("status.progress", {
+            {"percentage", prog},
+            {"message", s},
+        });
+    }
+
+    void emit_event_ex(
+            const std::string &type, nlohmann::json &&value) override {
+        if (!value.is_object()) {
+            warn("wrong value for type: %s", type.c_str());
+            assert(false);
+        }
+        if (handlers_.count(type) <= 0) {
+            return;
+        }
+        nlohmann::json event{
+            {"type", type},
+            {"value", std::move(value)}
+        };
+        std::unique_lock<std::recursive_mutex> _{mutex_};
+        // TODO(bassosimone): other logging functions filter all the
+        // exceptions. We cannot change this behavior until that is part
+        // of our public API. But here we deliberately choose not to do
+        // any exception handling. The callee must behave.
+        handlers_.at(type)(std::move(event));
     }
 
     void progress_relative(double prog, const char *s) override {
@@ -231,6 +266,7 @@ class DefaultLogger : public Logger, public NonCopyable, public NonMovable {
     SharedPtr<std::ofstream> ofile_;
     std::list<Delegate<>> eof_handlers_;
     Delegate<const char *> event_handler_;
+    std::map<std::string, Delegate<nlohmann::json &&>> handlers_;
     Delegate<double, const char *> progress_handler_;
     double progress_offset_ = 0.0;
     double progress_scale_ = 1.0;

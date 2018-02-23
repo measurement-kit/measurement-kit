@@ -75,7 +75,8 @@ class TaskImpl {
     std::thread thread;
 };
 
-static void task_run(TaskImpl *pimpl, nlohmann::json &settings);
+static void task_run(TaskImpl *pimpl, nlohmann::json &settings,
+                     std::function<void()> &&);
 static bool is_event_valid(const std::string &);
 
 static void emit(TaskImpl *pimpl, nlohmann::json &&event) {
@@ -106,8 +107,9 @@ Task::Task(nlohmann::json &&settings) {
         pimpl_->running = true;
         barrier.set_value();
         static Semaphore semaphore;
-        semaphore.acquire(); // block until a previous task has finished running
-        task_run(pimpl_.get(), settings);
+        task_run(pimpl_.get(), settings, [&]() {
+            semaphore.acquire(); // block until a previous task has finished
+        });
         pimpl_->running = false;
         pimpl_->cond.notify_all(); // tell the readers we're done
         semaphore.release();       // allow another task to run
@@ -135,7 +137,7 @@ nlohmann::json Task::wait_for_next_event() {
     if (!pimpl_->deque.empty()) {
         auto rv = std::move(pimpl_->deque.front());
         pimpl_->deque.pop_front();
-        return nlohmann::json{std::move(rv)};
+        return rv;
     }
     assert(!pimpl_->running);
     return nlohmann::json(); // this is a `null` JSON object
@@ -169,35 +171,29 @@ static std::tuple<std::string, bool> verbosity_itoa(int n) {
     return std::make_tuple(std::string{}, false);
 }
 
-// TODO(hellais): specify the format of the events according to the following
-// guidelines that we agreed upon:
-//
-// 1. events should be nested like {"type": "string", "value": {...}} since
-// that simplifies their processing, especially in golang
-//
-// 2. the event key should be such that one can "switch" using the key and no
-// other comparison in theory should be needed to understand the event type
-//
-// Currently emitted events do not follow the above guidelines because we've
-// not finished specifying the events format.
-
 static nlohmann::json make_log_event(uint32_t verbosity, const char *message) {
     auto verbosity_tuple = verbosity_itoa(verbosity);
     assert(std::get<1>(verbosity_tuple));
     const std::string &vs = std::get<0>(verbosity_tuple);
-    return nlohmann::json{
-            {"type", "LOG"}, {"verbosity", vs}, {"message", message}};
+    nlohmann::json object;
+    object["type"] = "log";
+    object["value"]["verbosity"] = vs;
+    object["value"]["message"] = message;
+    return object;
 }
 
 static nlohmann::json make_failure_event(const Error &error) {
-    return nlohmann::json{{"type", "FAILURE"}, {"failure", error.reason}};
+    nlohmann::json object;
+    object["type"] = "failure.startup";
+    object["value"]["failure"] = error.reason;
+    return object;
 }
 
 static bool is_event_valid(const std::string &str) {
     bool rv = false;
     do {
 #define CHECK(value)                                                           \
-    if (#value == str) {                                                       \
+    if (value == str) {                                                        \
         rv = true;                                                             \
         break;                                                                 \
     }
@@ -209,7 +205,7 @@ static bool is_event_valid(const std::string &str) {
 
 static nlohmann::json known_events() {
     nlohmann::json json;
-#define ADD(name) json.push_back(#name);
+#define ADD(name) json.push_back(name);
     MK_ENUM_EVENT(ADD)
 #undef ADD
     return json;
@@ -306,7 +302,8 @@ static void remove_unknown_settings_and_warn(
 
 // # Run task
 
-static void task_run(TaskImpl *pimpl, nlohmann::json &settings) {
+static void task_run(TaskImpl *pimpl, nlohmann::json &settings,
+                     std::function<void()> &&wait_func) {
 
     // make sure that `settings` is an object
     if (!settings.is_object()) {
@@ -369,7 +366,7 @@ static void task_run(TaskImpl *pimpl, nlohmann::json &settings) {
 
     // extract and process `verbosity`
     {
-        uint32_t verbosity = MK_LOG_QUIET;
+        uint32_t verbosity = MK_LOG_WARNING;
         if (settings.count("verbosity") != 0) {
             auto verbosity_string = settings.at("verbosity").get<std::string>();
             auto verbosity_tuple = verbosity_atoi(verbosity_string);
@@ -413,68 +410,59 @@ static void task_run(TaskImpl *pimpl, nlohmann::json &settings) {
         }
     }
 
-    // TODO(bassosimone): add code for processing more event types.
-
-    // see whether 'PERFORMANCE' is enabled
-    // TODO(bassosimone): adapt this event according to spec when @hellais will
-    // have finalized the events specification.
-    //
-    // TODO(bassosimone): currently events are emitted using the logger and as
-    // such they're subject to the verosity, which is really a bummer.
-    if (enabled_events.count("PERFORMANCE") != 0) {
-        runnable->logger->on_event([pimpl](const char *line) {
-            nlohmann::json event;
-            try {
-                auto inner = nlohmann::json::parse(line);
-                if (inner.at("type") == "download-speed") {
-                    event["direction"] = "download";
-                } else if (inner.at("type") == "upload-speed") {
-                    event["direction"] = "upload";
-                } else {
-                    assert(false);
-                    return; // Not an event we wanted to filter
-                }
-                event["type"] = "PERFORMANCE";
-                event["elapsed_seconds"] = inner["elapsed"][0];
-                event["num_streams"] = inner["num_streams"];
-                event["speed_kbit_s"] = inner["speed"][0];
-            } catch (const std::exception &) {
-                assert(false);
-                return; // Perhaps not the right event format
-            }
-            emit(pimpl, std::move(event));
-        });
-    }
-
-    // see whether 'LOG' is enabled
-    // TODO(bassosimone): adapt this event according to spec when @hellais will
-    // have finalized the events specification.
-    if (enabled_events.count("LOG") != 0) {
+    // see whether 'log' is enabled
+    if (enabled_events.count("log") != 0) {
         runnable->logger->on_log([pimpl](uint32_t verbosity, const char *line) {
             if ((verbosity & ~MK_LOG_VERBOSITY_MASK) != 0) {
                 return; // mask out non-logging events
             }
             emit(pimpl, make_log_event(verbosity, line));
         });
+        enabled_events.erase("log"); // we have consumed this event type
     } else {
-        // Here we should silence the logger but we cannot do that since events
-        // and logs are deeply related. So our second best is to just set up
-        // a dummy logger that prevents output from going on stderr.
-        //
-        // TODO(bassosimone): decouple logging and events.
-        runnable->logger->on_log([](uint32_t, const char *) { /* NOTHING */ });
+        runnable->logger->on_log(nullptr);
     }
 
+    // intercept and route all the other possible events
+    for (auto &event : enabled_events) {
+        runnable->logger->on_event_ex(event, [pimpl](nlohmann::json &&event) {
+            emit(pimpl, std::move(event));
+        });
+    }
+
+    // Emit the queued event, then possibly block waiting in queue. Done now
+    // rather than before, because there's no point in keeping in queue tasks
+    // with a wrong configuration. Also, events related to configuration errors
+    // are always emitted unconditionally, because the user needs to know when
+    // he/she configured a Measurement Kit task incorrectly.
+    runnable->logger->emit_event_ex("status.queued", nlohmann::json::object());
+    wait_func();
+    runnable->logger->emit_event_ex("status.started", nlohmann::json::object());
+
     // start the task (reactor and interrupted are MT safe)
+    Error error = GenericError();
     pimpl->reactor->run_with_initial_event([&]() {
         if (pimpl->interrupted) {
             return; // allow for early interruption
         }
-        runnable->begin([&](Error) {
-            runnable->end([&](Error) {
-                // NOTHING
+        runnable->begin([&](Error err) {
+            error = err;
+            runnable->end([&](Error err) {
+                if (error != NoError()) {
+                    error = err;
+                }
             });
         });
+    });
+
+    DataUsage du;
+    runnable->reactor->with_current_data_usage([&](DataUsage &x) {
+        du = x;
+    });
+    runnable->logger->emit_event_ex("status.end", {
+        {"downloaded_kb", du.down / 1024.0},
+        {"failure", error.reason},
+        {"uploaded_kb", du.up / 1024.0},
     });
 }
 

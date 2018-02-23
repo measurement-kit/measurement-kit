@@ -132,6 +132,11 @@ void Runnable::run_next_measurement(size_t thread_id, Callback<Error> cb,
                 /* FALLTHROUGH */
             }
         }
+        // TODO(bassosimone): make sure that this entry contains the report ID
+        // which probably is currently not the case.
+        logger->emit_event_ex("measurement_result", nlohmann::json::object({
+            {"serialized_entry", entry.dump()},
+        }));
         report.write_entry(entry, [=](Error error) {
             if (error) {
                 logger->warn("cannot write entry");
@@ -139,6 +144,10 @@ void Runnable::run_next_measurement(size_t thread_id, Callback<Error> cb,
                     cb(error);
                     return;
                 }
+                logger->emit_event_ex("failure.measurement_submission", {
+                    {"serialized_entry", entry.dump()},
+                    {"failure", error.reason},
+                });
             } else {
                 logger->debug("net_test: written entry");
             }
@@ -235,6 +244,12 @@ void Runnable::geoip_lookup(Callback<> cb) {
             } else if (asn_path == "") {
                 logger->warn("geoip_asn_path is not set");
             }
+
+            logger->emit_event_ex("status.geoip_lookup", {
+                {"probe_asn", probe_asn},
+                {"probe_cc", probe_cc},
+                {"probe_ip", ip}
+            });
 
             cb();
         },

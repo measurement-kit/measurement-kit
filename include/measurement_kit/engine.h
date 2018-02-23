@@ -114,7 +114,6 @@ class Task {
  * ```
  */
 #define MK_ENUM_VERBOSITY(XX)                                                  \
-    XX(QUIET)                                                                  \
     XX(ERR)                                                                    \
     XX(WARNING)                                                                \
     XX(INFO)                                                                   \
@@ -124,21 +123,29 @@ class Task {
 /**
  * MK_ENUM_EVENT enumerates all possible event types. By default all events
  * are enabled, but you can disable specific events using the "disabled_events"
- * key of the settings object. For example, to disable "LOG", use:
+ * key of the settings object. For example, to disable "log", use:
  *
  * ```JSON
  * {
- *   "disabled_events": ["LOG"],
+ *   "disabled_events": ["log"],
  *   "type": "Ndt"
  * }
  * ```
  */
 #define MK_ENUM_EVENT(XX)                                                      \
-    XX(LOG)                                                                    \
-    XX(PROGRESS)                                                               \
-    XX(FAILURE)                                                                \
-    XX(PERFORMANCE)                                                            \
-    XX(RESULT)
+    XX("failure.measurement")                                                  \
+    XX("failure.report_submission")                                            \
+    XX("failure.startup")                                                      \
+    XX("log")                                                                  \
+    XX("measurement_result")                                                   \
+    XX("status.end")                                                           \
+    XX("status.geoip_lookup")                                                  \
+    XX("status.progress")                                                      \
+    XX("status.queued")                                                        \
+    XX("status.report_created")                                                \
+    XX("status.started")                                                       \
+    XX("status.update.performance")                                            \
+    XX("status.update.websites")
 
 /**
  * MK_ENUM_TASK enumerates the task that Measurement Kit can run. When

@@ -274,12 +274,20 @@ inline void log_speed(SharedPtr<Logger> logger, std::string type, int num_stream
            << speed << " kbit/s " << "(num_streams " << num_streams << ")";
         logger->progress_relative(0.025, ss.str().c_str());
     }
+    // TODO(bassosimone): this mechanims of emitting events needs to be removed
+    // soon from MK in favour of emit_event_ex()
     logger->log(MK_LOG_EVENT | MK_LOG_INFO, R"xx({
             "type": "%s",
             "elapsed": [%lf, "s"],
             "num_streams": %d,
             "speed": [%lf, "kbit/s"]
         })xx", type.c_str(), elapsed, num_streams, speed);
+    logger->emit_event_ex("status.update.performance", {
+        {"direction", (type == "download-speed") ? "download" : "upload"},
+        {"elapsed", elapsed},
+        {"num_streams", num_streams},
+        {"speed_kbps", speed}
+    });
 }
 
 } // namespace mk
