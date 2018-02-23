@@ -2,6 +2,8 @@
 // Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
+#include "config.h"
+
 #include "../measurement_kit/cmdline.hpp"
 #include "src/libmeasurement_kit/common/utils.hpp"
 
@@ -152,11 +154,10 @@ int main(int argc, char **argv) {
      * Non portable. Assume it's either GNU or BSD. We can do better in
      * configure checking for the proper way to reset options.
      */
-#ifdef __GLIBC__
-    optind = 0;
-#elif (defined __APPLE__ || defined __FreeBSD__ || defined __OpenBSD__ ||      \
-       defined __NetBSD__ || defined __DragonFly__)
+#if HAVE_DECL_OPTRESET
     optreset = 1, optind = 1;
+#elif defined __GLIBC__
+    optind = 0;
 #else
 #error "Don't know how to reset getopt() on your system"
 #endif
