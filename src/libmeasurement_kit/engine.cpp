@@ -85,6 +85,8 @@ static void emit(TaskImpl *pimpl, nlohmann::json &&event) {
     assert(event.count("type") != 0);
     assert(event.at("type").is_string());
     assert(is_event_valid(event.at("type").get<std::string>()));
+    assert(event.count("value") != 0);
+    assert(event.at("value").is_object());
 
     // Actually emit the event.
     {
