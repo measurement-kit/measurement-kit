@@ -106,14 +106,21 @@ class Task {
             rv.reason = "already initialized";
             return rv;
         }
-        char errorbuf[256];
-        pimpl_.reset(
-                mk_task_start_ex(settings.data(), errorbuf, sizeof(errorbuf)));
-        if (!pimpl_) {
-            rv.reason = errorbuf;
-            return rv;
+        mk_task_t *task = nullptr;
+        mk_task_error_t err = mk_task_start_ex(&task, settings.c_str());
+        pimpl_.reset(task);
+        switch (err) {
+        case MK_TASK_ENONE:
+            rv.result = true;
+            break;
+        case MK_TASK_EPARSE:
+            rv.reason = "parse error";
+            break;
+        case MK_TASK_EGENERIC:
+        default:
+            rv.reason = "generic error";
+            break;
         }
-        rv.result = true;
         return rv;
     }
 
