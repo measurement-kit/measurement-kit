@@ -10,13 +10,13 @@ If you want to run this tutorial in a Vagrant, take advantage of the
 system. Then enter into the directory containing the Vagrantfile and run:
 
 ```
-vagrant up yakkety
+vagrant up artful
 ```
 
-To spin up an Ubuntu 16.10 machine. Then run:
+To spin up an Ubuntu artful machine. Then run:
 
 ```
-vagrant ssh yakkety
+vagrant ssh artful
 ```
 
 At this point you are inside the Vagrant.
