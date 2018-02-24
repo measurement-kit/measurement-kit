@@ -41,7 +41,9 @@ class TaskImpl;
 /// are enabled events, wait_for_next_event() will return the `null` JSON
 /// when the task has terminated.
 ///
-/// To know whether a task is running, use is_running().
+/// To know whether a task has finished running, use is_done(). The method will
+/// return true when the task thread has exited and there are no unread events
+/// in the queue drained by wait_for_next_event().
 ///
 /// You can also interrupt a running task using interrupt().
 ///
@@ -58,8 +60,9 @@ class Task {
     /// wait_for_next_event() blocks until the next event occurs.
     nlohmann::json wait_for_next_event();
 
-    /// is_running() returns true iff the task is running.
-    bool is_running() const;
+    /// is_done() returns true when the task has finished running and there
+    /// are no unread events in wait_for_next_event()'s queue.
+    bool is_done() const;
 
     /// interrupt() forces the Task to stop running ASAP.
     void interrupt();

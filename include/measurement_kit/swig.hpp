@@ -149,10 +149,11 @@ class Task {
         return std::string{str};
     }
 
-    /// is_running() returns true if the task is running. @remark This method
-    /// is thread safe.
-    bool is_running() const {
-        return mk_task_is_running(pimpl_.get()); // handles null
+    /// is_done() returns true if the task is done. A task is done when its
+    /// thread is done and there are no unread events in the events queue
+    /// drained by wait_for_next_event(). @remark This method is thread safe.
+    bool is_done() const {
+        return mk_task_is_done(pimpl_.get()); // handles null
     }
 
     /// interrupt() interrupts the task ASAP. @remark this method is not

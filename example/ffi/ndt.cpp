@@ -23,7 +23,7 @@ int main() {
         exit(1);
     }
 
-    while (mk_task_is_running(task)) {
+    while (!mk_task_is_done(task)) {
         mk_event_t *event = mk_task_wait_for_next_event(task);
         if (event == NULL) {
             fprintf(stderr, "ERROR: cannot wait for next event\n");

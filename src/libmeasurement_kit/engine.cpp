@@ -117,8 +117,12 @@ Task::Task(nlohmann::json &&settings) {
     started.wait(); // guarantee Task() completes when the thread is running
 }
 
-bool Task::is_running() const {
-    return pimpl_->running; // is an atomic var
+bool Task::is_done() const {
+    std::unique_lock<std::mutex> lock{pimpl_->mutex};
+    // Rationale: when the task thread terminates, there may be some
+    // unread events in queue. We do not consider the task as done until
+    // such events have been read and processed by our controller.
+    return pimpl_->running == false && pimpl_->deque.empty();
 }
 
 void Task::interrupt() {

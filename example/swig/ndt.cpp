@@ -17,7 +17,7 @@ int main() {
         std::clog << "ERROR: " << rv.reason << std::endl;
         exit(1);
     }
-    while (task.is_running()) {
+    while (!task.is_done()) {
         std::string event = task.wait_for_next_event();
         std::clog << event << "\n";
     }
