@@ -134,7 +134,7 @@ void Runnable::run_next_measurement(size_t thread_id, Callback<Error> cb,
         }
         // TODO(bassosimone): make sure that this entry contains the report ID
         // which probably is currently not the case.
-        logger->emit_event_ex("measurement_result", nlohmann::json::object({
+        logger->emit_event_ex("measurement_entry", nlohmann::json::object({
             {"serialized_entry", entry.dump()},
         }));
         report.write_entry(entry, [=](Error error) {
