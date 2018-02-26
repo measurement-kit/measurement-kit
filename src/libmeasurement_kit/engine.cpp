@@ -369,11 +369,81 @@ static void task_run(TaskImpl *pimpl, nlohmann::json &settings,
             } else {
                 std::stringstream ss;
                 ss << "Found option '" << key << "' to have an invalid type"
-                    << " (fyi: valid option types are: int, double, string)";
+                    << " (fyi: valid types are: int, double, string)";
                 emit_settings_failure(pimpl, ss.str().data());
                 return;
             }
         }
+    }
+
+    // extract and process `annotations`
+    if (settings.count("annotations") != 0) {
+        auto &annotations = settings.at("annotations");
+        for (auto it : nlohmann::json::iterator_wrapper(annotations)) {
+            const auto &key = it.key();
+            auto &value = it.value();
+            // TODO(bassosimone): make sure that we preserve the _type_ of
+            // the annotation in the final report rather than converting such
+            // type into a string, which is currently what we do.
+            if (value.is_string()) {
+                runnable->annotations[key] = value.get<std::string>();
+            } else if (value.is_number_integer()) {
+                int64_t intvalue = value.get<int64_t>();
+                runnable->annotations[key] = std::to_string(intvalue);
+            } else if (value.is_number_float()) {
+                double doublevalue = value.get<double>();
+                runnable->annotations[key] = std::to_string(doublevalue);
+            } else {
+                std::stringstream ss;
+                ss << "Found annotation '" << key << "' to have an invalid type"
+                    << " (fyi: valid types are: int, double, string)";
+                emit_settings_failure(pimpl, ss.str().data());
+                return;
+            }
+        }
+    }
+
+    // extract and process `inputs`
+    if (settings.count("inputs") != 0) {
+        for (auto &value : settings.at("inputs")) {
+            if (value.is_string()) {
+                runnable->inputs.push_back(value.get<std::string>());
+            } else {
+                std::stringstream ss;
+                ss << "Found input '" << value << "' to have an invalid type"
+                    << " (fyi: values inside 'inputs' must be strings)";
+                emit_settings_failure(pimpl, ss.str().data());
+                return;
+            }
+        }
+    }
+
+    // extract and process `input_filepaths`
+    if (settings.count("input_filepaths") != 0) {
+        for (auto &value : settings.at("input_filepaths")) {
+            if (value.is_string()) {
+                runnable->input_filepaths.push_back(value.get<std::string>());
+            } else {
+                std::stringstream ss;
+                ss << "Found input_filepath '" << value << "' to have an "
+                   << "invalid type (fyi: values inside 'input_filepaths' "
+                   << "must be strings)";
+                emit_settings_failure(pimpl, ss.str().data());
+                return;
+            }
+        }
+    }
+
+    // extract and process `log_filepath`
+    if (settings.count("log_filepath") != 0) {
+        auto &value = settings.at("log_filepath");
+        runnable->logger->set_logfile(value.get<std::string>());
+    }
+
+    // extract and process `output_filepath`
+    if (settings.count("output_filepath") != 0) {
+        auto &value = settings.at("output_filepath");
+        runnable->output_filepath = value.get<std::string>();
     }
 
     // extract and process `verbosity`

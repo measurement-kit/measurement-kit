@@ -96,12 +96,12 @@ class Task {
     XX(annotations, object, false)                                             \
     XX(disabled_events, array, false)                                          \
     XX(inputs, array, false)                                                   \
-    XX(input_files, array, false)                                              \
-    XX(log_file, string, false)                                                \
+    XX(input_filepaths, array, false)                                          \
+    XX(log_filepath, string, false)                                            \
+    XX(name, string, true)                                                     \
     XX(options, object, false)                                                 \
-    XX(output_file, string, false)                                             \
-    XX(verbosity, string, false)                                               \
-    XX(name, string, true)
+    XX(output_filepath, string, false)                                         \
+    XX(verbosity, string, false)
 
 /**
  * MK_ENUM_VERBOSITY enumerates all the possible verbosity values. To
