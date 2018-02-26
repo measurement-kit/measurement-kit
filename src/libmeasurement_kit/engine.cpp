@@ -77,18 +77,11 @@ class TaskImpl {
 
 static void task_run(TaskImpl *pimpl, nlohmann::json &settings,
                      std::function<void()> &&);
-static bool is_event_valid(const std::string &);
+static nlohmann::json possibly_validate_event(nlohmann::json &&);
 
 static void emit(TaskImpl *pimpl, nlohmann::json &&event) {
-
-    // In debug mode, make sure that we're emitting an event that we know
-    assert(event.is_object());
-    assert(event.count("key") != 0);
-    assert(event.at("key").is_string());
-    assert(is_event_valid(event.at("key").get<std::string>()));
-    assert(event.count("value") != 0);
-    assert(event.at("value").is_object());
-
+    // Perform validation of the event (debug mode only)
+    event = possibly_validate_event(std::move(event));
     // Actually emit the event.
     {
         std::unique_lock<std::mutex> _{pimpl->mutex};
@@ -144,7 +137,13 @@ nlohmann::json Task::wait_for_next_event() {
         return rv;
     }
     assert(!pimpl_->running);
-    return nlohmann::json(); // this is a `null` JSON object
+    // Rationale: we used to return `null` when done. But then I figured that
+    // this could break people code. So, to ease integrator's life, we now
+    // return a dummy event structured exactly like other events.
+    return possibly_validate_event(nlohmann::json{
+        {"key", "task_terminated"},
+        {"value", nlohmann::json::object()},
+    });
 }
 
 Task::~Task() {
@@ -205,6 +204,17 @@ static bool is_event_valid(const std::string &str) {
 #undef CHECK
     } while (0);
     return rv;
+}
+
+static nlohmann::json possibly_validate_event(nlohmann::json &&event) {
+    // In debug mode, make sure that we're emitting an event that we know
+    assert(event.is_object());
+    assert(event.count("key") != 0);
+    assert(event.at("key").is_string());
+    assert(is_event_valid(event.at("key").get<std::string>()));
+    assert(event.count("value") != 0);
+    assert(event.at("value").is_object());
+    return event;
 }
 
 static nlohmann::json known_events() {
