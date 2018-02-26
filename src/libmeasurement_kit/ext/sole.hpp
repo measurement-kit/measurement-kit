@@ -4,9 +4,8 @@
 // =============================================================
 // Derivative work of r-lyeh/sole@c61c49f10d.
 // See NOTICE for original license.
-
-#ifndef MEASUREMENT_KIT_EXT_SOLE_HPP
-#define MEASUREMENT_KIT_EXT_SOLE_HPP
+#ifndef SRC_LIBMEASUREMENT_KIT_EXT_SOLE_HPP
+#define SRC_LIBMEASUREMENT_KIT_EXT_SOLE_HPP
 
 #include <string>
 

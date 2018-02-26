@@ -10,9 +10,9 @@
 #include "src/libmeasurement_kit/common/utils.hpp"
 #include "src/libmeasurement_kit/ooni/utils.hpp"
 #include "src/libmeasurement_kit/nettests/utils.hpp"
+#include "src/libmeasurement_kit/ext/sole.hpp"
 
 #include <measurement_kit/nettests.hpp>
-#include <measurement_kit/ext/sole.hpp>
 
 namespace mk {
 namespace nettests {
