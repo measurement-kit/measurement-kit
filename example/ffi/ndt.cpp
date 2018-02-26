@@ -15,7 +15,7 @@ int main() {
     mk_task_t *task = nullptr;
     mk_task_error_t err =
             mk_task_start_ex(&task, "{\n"
-                                    "    \"type\": \"Ndt\",\n"
+                                    "    \"name\": \"Ndt\",\n"
                                     "    \"verbosity\": \"INFO\"\n"
                                     "}\n");
     if (err != MK_TASK_ENONE) {

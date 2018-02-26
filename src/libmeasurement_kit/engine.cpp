@@ -83,9 +83,9 @@ static void emit(TaskImpl *pimpl, nlohmann::json &&event) {
 
     // In debug mode, make sure that we're emitting an event that we know
     assert(event.is_object());
-    assert(event.count("type") != 0);
-    assert(event.at("type").is_string());
-    assert(is_event_valid(event.at("type").get<std::string>()));
+    assert(event.count("key") != 0);
+    assert(event.at("key").is_string());
+    assert(is_event_valid(event.at("key").get<std::string>()));
     assert(event.count("value") != 0);
     assert(event.at("value").is_object());
 
@@ -180,7 +180,7 @@ static nlohmann::json make_log_event(uint32_t verbosity, const char *message) {
     assert(std::get<1>(verbosity_tuple));
     const std::string &vs = std::get<0>(verbosity_tuple);
     nlohmann::json object;
-    object["type"] = "log";
+    object["key"] = "log";
     object["value"]["verbosity"] = vs;
     object["value"]["message"] = message;
     return object;
@@ -188,7 +188,7 @@ static nlohmann::json make_log_event(uint32_t verbosity, const char *message) {
 
 static nlohmann::json make_failure_event(const Error &error) {
     nlohmann::json object;
-    object["type"] = "failure.startup";
+    object["key"] = "failure.startup";
     object["value"]["failure"] = error.reason;
     return object;
 }
@@ -328,11 +328,11 @@ static void task_run(TaskImpl *pimpl, nlohmann::json &settings,
     }
     remove_unknown_settings_and_warn(pimpl, settings);
 
-    // extract and process `type`
-    auto runnable = make_runnable(settings.at("type").get<std::string>());
+    // extract and process `name`
+    auto runnable = make_runnable(settings.at("name").get<std::string>());
     if (!runnable) {
         std::stringstream ss;
-        ss << "unknown task type '" << settings.at("type").get<std::string>()
+        ss << "unknown task name '" << settings.at("name").get<std::string>()
             << "' (fyi: known tasks are: " << known_tasks() << ")";
         emit_settings_failure(pimpl, ss.str().data());
         return;
@@ -430,7 +430,7 @@ static void task_run(TaskImpl *pimpl, nlohmann::json &settings,
             }
             emit(pimpl, make_log_event(verbosity, line));
         });
-        enabled_events.erase("log"); // we have consumed this event type
+        enabled_events.erase("log"); // we have consumed this event key
     } else {
         runnable->logger->on_log(nullptr);
     }

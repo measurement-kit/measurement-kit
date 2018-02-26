@@ -8,7 +8,7 @@
 
 int main() {
     std::string settings = R"({
-        "type": "Ndt",
+        "name": "Ndt",
         "verbosity": "INFO"
     })";
     mk::swig::Task task;

@@ -9,7 +9,7 @@
 
 int main() {
     nlohmann::json settings{
-        {"type", "Ndt"},
+        {"name", "Ndt"},
         {"verbosity", "INFO"},
     };
     std::clog << settings.dump() << "\n";

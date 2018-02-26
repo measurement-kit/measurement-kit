@@ -205,19 +205,16 @@ class DefaultLogger : public Logger, public NonCopyable, public NonMovable {
     }
 
     void emit_event_ex(
-            const std::string &type, nlohmann::json &&value) override {
+            const std::string &key, nlohmann::json &&value) override {
         if (!value.is_object()) {
-            warn("wrong value for type: %s", type.c_str());
+            warn("wrong value for key: %s", key.c_str());
             assert(false);
         }
-        if (handlers_.count(type) <= 0) {
+        if (handlers_.count(key) <= 0) {
             return;
         }
         nlohmann::json event{
-            // TODO(bassosimone): rename this `key` since `type` is
-            // a keyword in several programming languages and so that
-            // can lead to annoyances when processing the event.
-            {"type", type},
+            {"key", key},
             {"value", std::move(value)}
         };
         std::unique_lock<std::recursive_mutex> _{mutex_};
@@ -225,7 +222,7 @@ class DefaultLogger : public Logger, public NonCopyable, public NonMovable {
         // exceptions. We cannot change this behavior until that is part
         // of our public API. But here we deliberately choose not to do
         // any exception handling. The callee must behave.
-        handlers_.at(type)(std::move(event));
+        handlers_.at(key)(std::move(event));
     }
 
     void progress_relative(double prog, const char *s) override {

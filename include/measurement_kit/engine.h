@@ -29,7 +29,7 @@ class TaskImpl;
 
 /// Task is a task that Measurement Kit can run. You create a task with Task()
 /// by passing it the desired settings as a nlohmann::json. The minimal settings
-/// JSON must include the task type (see MK_ENUM_TASK for all types).
+/// JSON must include the task name (see MK_ENUM_TASK for all names).
 ///
 /// Creating a Task also creates the thread that will run it. Altough you can
 /// construct more than one Task at a time, Measurement Kit will make sure that
@@ -101,7 +101,7 @@ class Task {
     XX(options, object, false)                                                 \
     XX(output_file, string, false)                                             \
     XX(verbosity, string, false)                                               \
-    XX(type, string, true)
+    XX(name, string, true)
 
 /**
  * MK_ENUM_VERBOSITY enumerates all the possible verbosity values. To
@@ -111,7 +111,7 @@ class Task {
  *
  * ```JSON
  * {
- * "type": "Ndt",
+ * "name": "Ndt",
  * "verbosity": "INFO"
  * }
  * ```
@@ -124,14 +124,14 @@ class Task {
     XX(DEBUG2)
 
 /**
- * MK_ENUM_EVENT enumerates all possible event types. By default all events
+ * MK_ENUM_EVENT enumerates all possible event keys. By default all events
  * are enabled, but you can disable specific events using the "disabled_events"
  * key of the settings object. For example, to disable "log", use:
  *
  * ```JSON
  * {
  *   "disabled_events": ["log"],
- *   "type": "Ndt"
+ *   "name": "Ndt"
  * }
  * ```
  */
@@ -152,11 +152,11 @@ class Task {
 
 /**
  * MK_ENUM_TASK enumerates the task that Measurement Kit can run. When
- * you want to run a task, you must specify the task type as a string. For
+ * you want to run a task, you must specify the task name as a string. For
  * example, the minimal JSON to run NDT is:
  *
  * ```JSON
- *   {"type": "Ndt"}
+ *   {"name": "Ndt"}
  * ```
  */
 #define MK_ENUM_TASK(XX)                                                       \
