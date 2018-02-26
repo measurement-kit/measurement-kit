@@ -5,7 +5,6 @@
 #define MEASUREMENT_KIT_OONI_RESOURCES_HPP
 
 #include <measurement_kit/common.hpp>
-#include <measurement_kit/ext.hpp>
 
 namespace mk {
 namespace ooni {
