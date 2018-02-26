@@ -350,6 +350,14 @@ static void task_run(TaskImpl *pimpl, nlohmann::json &settings,
             auto &value = it.value();
             if (value.is_string()) {
                 const auto &v = value.get<std::string>();
+                if (v == "") {
+                    // TODO(bassosimone): modify the Scalar class so that it
+                    // does not break if we set the value as an empty string and
+                    // we then attempt to extract a string. This is currently a
+                    // nasty bug that, without this workaround, makes the life
+                    // of people integrating MK quite annoying.
+                    continue;
+                }
                 // Using emplace() as a workaround for bug #1550.
                 runnable->options.emplace(key, v);
             } else if (value.is_number_integer()) {
