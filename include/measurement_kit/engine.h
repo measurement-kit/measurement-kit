@@ -153,7 +153,7 @@ class Task {
     XX("failure.report_submission")                                            \
     XX("failure.startup")                                                      \
     XX("log")                                                                  \
-    XX("measurement_entry")                                                    \
+    XX("measurement")                                                          \
     XX("status.end")                                                           \
     XX("status.geoip_lookup")                                                  \
     XX("status.progress")                                                      \

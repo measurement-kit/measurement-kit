@@ -552,9 +552,9 @@ static void task_run(TaskImpl *pimpl, nlohmann::json &settings,
         du = x;
     });
     runnable->logger->emit_event_ex("status.end", {
-        {"downloaded_kibyte", du.down / 1024.0},
+        {"downloaded_kb", du.down / 1024.0},
         {"failure", error.reason},
-        {"uploaded_kibyte", du.up / 1024.0},
+        {"uploaded_kb", du.up / 1024.0},
     });
 }
 
