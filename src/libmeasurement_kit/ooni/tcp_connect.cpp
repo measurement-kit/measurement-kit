@@ -6,6 +6,7 @@
 #include <measurement_kit/report.hpp>
 #include <measurement_kit/net.hpp>
 
+#include "src/libmeasurement_kit/ooni/nettests.hpp"
 #include "src/libmeasurement_kit/ooni/templates.hpp"
 
 namespace mk {
