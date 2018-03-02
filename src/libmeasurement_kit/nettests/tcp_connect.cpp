@@ -12,9 +12,12 @@ namespace nettests {
 
 TcpConnectTest::TcpConnectTest() : BaseTest() {
     runnable.reset(new TcpConnectRunnable);
-    runnable->test_name = "tcp_connect";
-    runnable->test_version = "0.1.0";
-    runnable->needs_input = true;
+}
+
+TcpConnectRunnable::TcpConnectRunnable() noexcept {
+    test_name = "tcp_connect";
+    test_version = "0.1.0";
+    needs_input = true;
 }
 
 void TcpConnectRunnable::main(std::string input, Settings options,

@@ -12,8 +12,11 @@ namespace nettests {
 
 CaptivePortalTest::CaptivePortalTest() : BaseTest() {
     runnable.reset(new CaptivePortalRunnable);
-    runnable->test_name = "captiveportal";
-    runnable->test_version = "0.4.0";
+}
+
+CaptivePortalRunnable::CaptivePortalRunnable() noexcept {
+    test_name = "captiveportal";
+    test_version = "0.4.0";
 }
 
 void CaptivePortalRunnable::main(std::string input, Settings options,

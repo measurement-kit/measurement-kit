@@ -12,9 +12,12 @@ namespace nettests {
 
 DnsInjectionTest::DnsInjectionTest() : BaseTest() {
     runnable.reset(new DnsInjectionRunnable);
-    runnable->test_name = "dns_injection";
-    runnable->test_version = "0.0.1";
-    runnable->needs_input = true;
+}
+
+DnsInjectionRunnable::DnsInjectionRunnable() noexcept {
+    test_name = "dns_injection";
+    test_version = "0.0.1";
+    needs_input = true;
 }
 
 void DnsInjectionRunnable::main(std::string input, Settings options,

@@ -12,9 +12,12 @@ namespace nettests {
 
 TelegramTest::TelegramTest() : BaseTest() {
     runnable.reset(new TelegramRunnable);
-    runnable->test_name = "telegram";
-    runnable->test_version = "0.0.2";
-    runnable->needs_input = false;
+}
+
+TelegramRunnable::TelegramRunnable() noexcept {
+    test_name = "telegram";
+    test_version = "0.0.2";
+    needs_input = false;
 }
 
 void TelegramRunnable::main(std::string /*input*/, Settings options,
