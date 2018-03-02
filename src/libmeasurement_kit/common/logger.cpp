@@ -235,6 +235,13 @@ class DefaultLogger : public Logger, public NonCopyable, public NonMovable {
                 /* Suppress */;
             }
         }
+        assert(!!s);
+        // Note that the mutex is recursive
+        // TODO(bassosimone): improve the API to allow emitting more context
+        emit_event_ex("status.progress", {
+            {"percentage", progress_offset_ + progress_relative_},
+            {"message", s},
+        });
     }
 
     void set_progress_offset(double offset) override {
