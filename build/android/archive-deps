@@ -6,21 +6,11 @@ set -e
 ROOTDIR=$(cd $(dirname $0)/../.. && pwd -P)
 cd $ROOTDIR/MK_DIST
 
-# New build script uses the system name (Android) but we actually need JNI as
-# this is what the android-libs repository uses.
-cp -R android jni
+# Trim down the archive by removing everything that is not a static library
+# (i.e. *.a) and is not a plain C header file (i.e. *.h).
+find android -type f -not -name \*.a -a -not -name \*.h -exec rm {} \;
+find android -depth -type d -empty -print -exec rmdir {} \;
 
-# Do not ship *.la files that would break the build and, while there, also
-# remove directories that we don't need for cross compiling MK
-find jni -type f -name \*.la -exec rm {} \;
-find jni -type f -name \*.pc -exec rm {} \;
-find jni -type d -depth -name share -exec rm -rf {} \;
-find jni -type d -depth -name bin -exec rm -rf {} \;
-find jni -type d -depth -name pkgconfig -exec rm -rf {} \;
-
-now=`date +%Y%m%dT%H%M%SZ`
-tar -czf android-dependencies-$now.tgz jni
-$ROOTDIR/build/sign android-dependencies-$now.tgz
-
-# Cleanup
-rm -rf jni
+archive=mk-android-deps-`date +%Y%m%dT%H%M%SZ`.tar.bz2
+tar -cjf $archive android
+$ROOTDIR/build/sign $archive
