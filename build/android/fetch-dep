@@ -1,9 +1,17 @@
 #!/bin/sh
+set -e
 
 # TODO(bassosimone): rename this file `./script/build/android-fetch-deps`.
-# TODO(bassosimone): simplify and avoid using Node.js.
 
-set -e
-ROOTDIR=$(cd $(dirname $0) && pwd -P)
-export pkg_prefix=$ROOTDIR
-$ROOTDIR/../fetch-dep "$@"
+GITHUB_BASE=https://github.com/measurement-kit/dependencies/releases/download/
+RELEASE=2018-03-03
+ARCHIVE_NAME=mk-android-deps-20180303T172113Z.tar.bz2
+
+ROOTDIR=$(cd $(dirname $0)/../.. && pwd -P)
+test -d $ROOTDIR/MK_DIST || mkdir $ROOTDIR/MK_DIST
+cd $ROOTDIR/MK_DIST
+rm -rf android
+wget $GITHUB_BASE/$RELEASE/$ARCHIVE_NAME.asc
+wget $GITHUB_BASE/$RELEASE/$ARCHIVE_NAME
+gpg --verify $ARCHIVE_NAME.asc
+tar -xjf $ARCHIVE_NAME
