@@ -27,7 +27,15 @@ mkdir -p ${pkg_build_dir}
     cd ${pkg_build_dir}
     wget ${pkg_tarball_url}
     tarball=$(basename ${pkg_tarball_url})
-    tarball_sha256sum=$(sha256sum ${tarball} | awk '{print $1}')
+    build_os=`uname`
+    if [ "${build_os}" = "Linux" ]; then
+        tarball_sha256sum=$(sha256sum ${tarball} | awk '{print $1}')
+    elif [ "${build_os}" = "Darwin" ]; then
+        tarball_sha256sum=$(shasum -a 256 ${tarball} | awk '{print $1}')
+    else
+        echo "FATAL: don't know how to compute sha256sum" 1>&2
+        exit 1
+    fi
     if [ "${tarball_sha256sum}" != "${pkg_sha256sum}" ]; then
         echo "FATAL: invalid SHA256 sum" 1>&2
         exit 1
