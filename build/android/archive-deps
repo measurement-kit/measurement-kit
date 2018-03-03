@@ -1,4 +1,7 @@
 #!/bin/sh
+
+# TODO(bassosimone): rename this file `./script/build/android-archive-deps`
+
 set -e
 ROOTDIR=$(cd $(dirname $0)/../.. && pwd -P)
 cd $ROOTDIR/MK_DIST

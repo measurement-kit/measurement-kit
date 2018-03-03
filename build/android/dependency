@@ -1,4 +1,7 @@
 #!/bin/sh
+
+# TODO(bassosimone): rename this file `./script/build/android`
+
 set -e
 
 if [ $# -lt 2 ]; then

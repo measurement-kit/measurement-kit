@@ -1,4 +1,8 @@
 #!/bin/sh
+
+# TODO(bassosimone): rename this file `./script/build/android-fetch-deps`.
+# TODO(bassosimone): simplify and avoid using Node.js.
+
 set -e
 ROOTDIR=$(cd $(dirname $0) && pwd -P)
 export pkg_prefix=$ROOTDIR
