@@ -1,0 +1,6 @@
+#!/bin/sh
+set -e
+pkg_topdir=$(cd $(dirname $0)/../../ && pwd -P)
+${pkg_topdir}/script/build/geoip
+${pkg_topdir}/script/build/libressl
+${pkg_topdir}/script/build/libevent
