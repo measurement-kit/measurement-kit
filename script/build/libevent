@@ -33,7 +33,7 @@ mkdir -p ${pkg_build_dir}
         exit 1
     fi
 
-    git apply ${pkg_topdir}/script/build/libevent-000.patch
+    patch -Np1 -i ${pkg_topdir}/script/build/libevent-000.patch
 
     if [ "$pkg_os" = "windows" ]; then
         git apply ${pkg_topdir}/script/build/libevent-001.patch
