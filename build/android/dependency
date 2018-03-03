@@ -17,7 +17,7 @@ SPEC=$2
 echo ""
 echo "Cross-compiling $SPEC for all archs"
 
-ALL_ARCHS="armeabi armeabi-v7a arm64 mips mips64 x86 x86_64"
+ALL_ARCHS="armeabi-v7a arm64 x86 x86_64"
 
 for ARCH in $ALL_ARCHS; do
     echo ""

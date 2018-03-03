@@ -9,7 +9,7 @@ if [ $# -ne 2 -a $# -ne 3 ]; then
     echo "Usage: $0 NDK_DIR ARCH [API]" 1>&2
     echo "" 1>&2
     echo "  NDK_DIR: path where NDK is installed" 1>&2
-    echo "  ARCH: armeabi, armeabi-v7a, arm64, mips, mips64, x86, x86_64" 1>&2
+    echo "  ARCH: armeabi-v7a, arm64, x86, x86_64" 1>&2
     echo "  API: 1 ... 25" 1>&2
     echo "" 1>&2
     echo "If API is omitted, the minimum possible API for the " 1>&2
@@ -28,19 +28,24 @@ ARCH=$2
 API=$3
 BASEDIR=$ROOTDIR/MK_BUILD/android/toolchain
 
+if [ "$ARCH" = "armeabi" -o "$ARCH" = "mips" -o "$ARCH" = "mips64" ]; then
+    # See https://web.archive.org/web/20171229010740/https://developer.android.com/ndk/guides/abis.html
+    echo "FATAL: architecture "${ARCH}" no longer supported" 1>&2
+    exit 1
+fi
+
 # Directory where to install the toolchain. This must be done _before_
 # mapping the input architecture to a real toolchain architecture.
 INSTALL_DIR=$BASEDIR/${ARCH}
 
-# Map input architecture to toolchain architecture (armeabi and
-# armeabi-v7a both use the arm toolchain)
-if [ "$ARCH" = "armeabi" -o "$ARCH" = "armeabi-v7a" ]; then
+# Explanation: armeabi-v7a uses the arm toolchain
+if [ "$ARCH" = "armeabi-v7a" ]; then
     ARCH="arm"
 fi
 
 if [ "$API" = "" ]; then
     # See https://github.com/measurement-kit/measurement-kit/pull/1554#discussion_r167493143
-    if [ "$ARCH" = "arm64" -o "$ARCH" = "mips64" -o "$ARCH" = "x86_64" ]; then
+    if [ "$ARCH" = "arm64" -o "$ARCH" = "x86_64" ]; then
         API=21
     else
         API=14
