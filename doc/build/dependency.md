@@ -74,25 +74,17 @@ repository. Use the latest release for that (depending on the maturity
 stage such release may either be considered stable or unstable).
 
 Then, you can download such dependencies using the `./build/fetch-dep` script
-and, in particular, its iOS and Android wrappers.
+and, in particular, its iOS wrapper.
 
 For example, the following command
-
-```
-./build/android/fetch-dep -ps jni
-```
-
-will download all Android related files (i.e. files containing the string `jni`
-into their name) from the latest release, verify their digital signature and
-install them locally just like they have been compiled now.
-
-Similarly, you should use this command for iOS
 
 ```
 ./build/ios/fetch-dep -ps iphone
 ```
 
-that downloads only files containing `iphone` in their name.
+will download all Android related files (i.e. files containing the string
+`iphone` into their name) from the latest release, verify their digital
+signature and install them locally just like they have been compiled now.
 
 Some dependencies, such as libevent, require that you either have compiled
 other dependencies (such as libressl) or that you have fetched them just when
@@ -105,15 +97,18 @@ by the MK build process), just download all the platform related already
 compiled and published dependencies, e.g.
 
 ```
-./build/android/fetch-dep -ps jni
+./build/ios/fetch-dep -ps iphone
 ```
 
 Then create a single archive containing all the compiled artifacts:
 
 ```
-./build/android/archive-deps
+./build/ios/archive-deps
 ```
 
 This will create an archive and it signature, and you should upload both to the
 [measurement-kit/dependencies](https://github.com/measurement-kit/dependencies)
 repository, in the latest release.
+
+(TODO(bassosimone): document more thoroughly the simplified process of
+releasing for Android and soon for iOS.)
