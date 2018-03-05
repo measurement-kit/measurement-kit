@@ -1,8 +1,6 @@
 #!/bin/sh
 set -e
 
-# TODO(bassosimone): rename this file `./script/build/android-fetch-deps`.
-
 GITHUB_BASE=https://github.com/measurement-kit/dependencies/releases/download/
 RELEASE=2018-03-03
 ARCHIVE_NAME=mk-android-deps-20180303T172113Z.tar.bz2
