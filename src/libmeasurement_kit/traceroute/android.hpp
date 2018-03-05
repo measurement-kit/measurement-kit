@@ -31,15 +31,15 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef MEASUREMENT_KIT_TRACEROUTE_ANDROID_HPP
-#define MEASUREMENT_KIT_TRACEROUTE_ANDROID_HPP
+#ifndef SRC_LIBMEASUREMENT_KIT_TRACEROUTE_ANDROID_HPP
+#define SRC_LIBMEASUREMENT_KIT_TRACEROUTE_ANDROID_HPP
 
 /// Android implementation of traceroute interface
 
 // This is meant to run on Android but can run on all Linux systems
 #ifdef __linux__
 
-#include <measurement_kit/traceroute/interface.hpp>
+#include "src/libmeasurement_kit/traceroute/interface.hpp"
 #include "src/libmeasurement_kit/common/delegate.hpp"
 
 struct sock_extended_err;

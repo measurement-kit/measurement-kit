@@ -4,11 +4,12 @@
 #ifndef SRC_LIBMEASUREMENT_KIT_MLABNS_MLABNS_IMPL_HPP
 #define SRC_LIBMEASUREMENT_KIT_MLABNS_MLABNS_IMPL_HPP
 
+#include "src/libmeasurement_kit/mlabns/mlabns.hpp"
+
 #include <measurement_kit/common/json.hpp>
 #include "src/libmeasurement_kit/common/mock.hpp"
 
 #include <measurement_kit/http.hpp>
-#include <measurement_kit/mlabns.hpp>
 #include <regex>
 
 namespace mk {
