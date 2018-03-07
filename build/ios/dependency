@@ -1,25 +1,22 @@
 #!/bin/sh
 set -e
 
+# TODO(bassosimone): rename this file `./script/build/ios`
+
 if [ "$1" = "" ]; then
     echo "usage: $0 spec" 1>&2
     exit 1
 fi
 
 ROOTDIR=$(cd $(dirname $0)/../.. && pwd -P)
-BUILDDIR=$ROOTDIR/build
-IOSDIR=$BUILDDIR/ios
+NEWSCRIPTDIR=$ROOTDIR/script/build
 
 echo ""
 echo "Cross-compiling $1 for all platforms and archs"
 
-$IOSDIR/cross iphonesimulator i386 $BUILDDIR/dependency $1
-$IOSDIR/cross iphonesimulator x86_64 $BUILDDIR/dependency $1
+$NEWSCRIPTDIR/cross-ios iphonesimulator i386 $NEWSCRIPTDIR/$1
+$NEWSCRIPTDIR/cross-ios iphonesimulator x86_64 $NEWSCRIPTDIR/$1
 
-$IOSDIR/cross iphoneos armv7 $BUILDDIR/dependency $1
-$IOSDIR/cross iphoneos armv7s $BUILDDIR/dependency $1
-$IOSDIR/cross iphoneos arm64 $BUILDDIR/dependency $1
-
-# Install spec so we know what version was used to build the archive
-install -d $IOSDIR/tmp/spec
-install -m644 $BUILDDIR/spec/$1 $IOSDIR/tmp/spec/$1
+$NEWSCRIPTDIR/cross-ios iphoneos armv7 $NEWSCRIPTDIR/$1
+$NEWSCRIPTDIR/cross-ios iphoneos armv7s $NEWSCRIPTDIR/$1
+$NEWSCRIPTDIR/cross-ios iphoneos arm64 $NEWSCRIPTDIR/$1
