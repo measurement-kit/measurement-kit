@@ -17,6 +17,5 @@ echo "Cross-compiling $1 for all platforms and archs"
 $NEWSCRIPTDIR/cross-ios iphonesimulator i386 $NEWSCRIPTDIR/$1
 $NEWSCRIPTDIR/cross-ios iphonesimulator x86_64 $NEWSCRIPTDIR/$1
 
-$NEWSCRIPTDIR/cross-ios iphoneos armv7 $NEWSCRIPTDIR/$1
 $NEWSCRIPTDIR/cross-ios iphoneos armv7s $NEWSCRIPTDIR/$1
 $NEWSCRIPTDIR/cross-ios iphoneos arm64 $NEWSCRIPTDIR/$1
