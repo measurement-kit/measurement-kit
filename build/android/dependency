@@ -10,9 +10,7 @@ if [ $# -lt 2 ]; then
 fi
 
 ROOTDIR=$(cd $(dirname $0)/../.. && pwd -P)
-BUILDDIR=$ROOTDIR/build
 NEWSCRIPTDIR=$ROOTDIR/script/build
-ANDROIDDIR=$BUILDDIR/android
 
 NDK_DIR=$1
 SPEC=$2
