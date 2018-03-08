@@ -162,7 +162,7 @@ static std::tuple<int, bool> verbosity_atoi(const std::string &str) {
     if (str == #value) {                                                       \
         return std::make_tuple(MK_LOG_##value, true);                          \
     }
-    MK_ENUM_VERBOSITY(ATOI)
+    MK_ENUM_LOG_LEVEL(ATOI)
 #undef ATOI
     return std::make_tuple(0, false);
 }
@@ -172,7 +172,7 @@ static std::tuple<std::string, bool> verbosity_itoa(int n) {
     if (n == MK_LOG_##value) {                                                 \
         return std::make_tuple(std::string{#value}, true);                     \
     }
-    MK_ENUM_VERBOSITY(ITOA)
+    MK_ENUM_LOG_LEVEL(ITOA)
 #undef ITOA
     return std::make_tuple(std::string{}, false);
 }
@@ -183,7 +183,7 @@ static nlohmann::json make_log_event(uint32_t verbosity, const char *message) {
     const std::string &vs = std::get<0>(verbosity_tuple);
     nlohmann::json object;
     object["key"] = "log";
-    object["value"]["verbosity"] = vs;
+    object["value"]["log_level"] = vs;
     object["value"]["message"] = message;
     return object;
 }
@@ -239,7 +239,7 @@ static std::string known_tasks() {
 static std::string known_verbosity_levels() {
     nlohmann::json json;
 #define ADD(name) json.push_back(#name);
-    MK_ENUM_VERBOSITY(ADD)
+    MK_ENUM_LOG_LEVEL(ADD)
 #undef ADD
     return json.dump();
 }
@@ -462,8 +462,8 @@ static void task_run(TaskImpl *pimpl, nlohmann::json &settings,
     // extract and process `verbosity`
     {
         uint32_t verbosity = MK_LOG_WARNING;
-        if (settings.count("verbosity") != 0) {
-            auto verbosity_string = settings.at("verbosity").get<std::string>();
+        if (settings.count("log_level") != 0) {
+            auto verbosity_string = settings.at("log_level").get<std::string>();
             auto verbosity_tuple = verbosity_atoi(verbosity_string);
             bool okay = std::get<1>(verbosity_tuple);
             if (!okay) {

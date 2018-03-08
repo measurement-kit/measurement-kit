@@ -9,7 +9,7 @@
 int main() {
     std::string settings = R"({
         "name": "Ndt",
-        "verbosity": "INFO"
+        "log_level": "INFO"
     })";
     mk::swig::Task task;
     auto rv = task.initialize_ex(settings);

@@ -14,7 +14,7 @@ int main() {
             "https://ooni.torproject.org/",
         }},
         {"name", "WebConnectivity"},
-        {"verbosity", "INFO"},
+        {"log_level", "INFO"},
     };
     std::clog << settings.dump() << "\n";
     mk::engine::Task task{std::move(settings)};

@@ -103,7 +103,7 @@ class Task {
     XX(verbosity, string, false)
 
 /**
- * MK_ENUM_VERBOSITY enumerates all the possible verbosity values. To
+ * MK_ENUM_LOG_LEVEL enumerates all the possible verbosity values. To
  * specify the verbosity level of a task, you should pass one of this values as
  * string (e.g.  "INFO") when you configure the task verbosity. For example, the
  * minimal JSON to run NDT with verbosity level equal to INFO is:
@@ -111,11 +111,11 @@ class Task {
  * ```JSON
  * {
  * "name": "Ndt",
- * "verbosity": "INFO"
+ * "log_level": "INFO"
  * }
  * ```
  */
-#define MK_ENUM_VERBOSITY(XX)                                                  \
+#define MK_ENUM_LOG_LEVEL(XX)                                                  \
     XX(ERR)                                                                    \
     XX(WARNING)                                                                \
     XX(INFO)                                                                   \

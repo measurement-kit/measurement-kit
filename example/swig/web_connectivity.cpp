@@ -13,7 +13,7 @@ int main() {
             "http://www.microsoft.com"
         ],
         "name": "WebConnectivity",
-        "verbosity": "INFO"
+        "log_level": "INFO"
     })";
     mk::swig::Task task;
     auto rv = task.initialize_ex(settings);

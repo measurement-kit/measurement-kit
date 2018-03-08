@@ -10,7 +10,7 @@
 int main() {
     nlohmann::json settings{
         {"name", "Ndt"},
-        {"verbosity", "INFO"},
+        {"log_level", "INFO"},
     };
     std::clog << settings.dump() << "\n";
     mk::engine::Task task{std::move(settings)};
