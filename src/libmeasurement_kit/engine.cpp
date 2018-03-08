@@ -42,25 +42,18 @@ class Semaphore {
   public:
     Semaphore() = default;
 
-    void acquire() {
-        std::unique_lock<std::mutex> lock{mutex_};
-        cond_.wait(lock, [this]() { return !active_; });
-        active_ = true;
-    }
+    void acquire() { mutex_.lock(); }
 
-    void release() {
-        {
-            std::unique_lock<std::mutex> _{mutex_};
-            active_ = false;
-        }
-        cond_.notify_one();
-    }
+    void release() { mutex_.unlock(); }
+
+    Semaphore(const Semaphore &) = delete;
+    Semaphore &operator=(const Semaphore &) = delete;
+    Semaphore(Semaphore &&) = delete;
+    Semaphore &operator=(Semaphore &&) = delete;
 
     ~Semaphore() = default;
 
   private:
-    bool active_ = false;
-    std::condition_variable cond_;
     std::mutex mutex_;
 };
 
