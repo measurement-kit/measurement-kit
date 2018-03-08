@@ -85,6 +85,8 @@ static void emit(TaskImpl *pimpl, nlohmann::json &&event) {
 
 Task::Task(nlohmann::json &&settings) {
     pimpl_ = std::make_unique<TaskImpl>();
+    // The purpose of `barrier` is to wait in the constructor until the
+    // thread for running the test is up and running.
     std::promise<void> barrier;
     std::future<void> started = barrier.get_future();
     pimpl_->thread = std::thread([this, &barrier,
@@ -94,7 +96,15 @@ Task::Task(nlohmann::json &&settings) {
         barrier.set_value();
         static Semaphore semaphore;
         task_run(pimpl_.get(), settings, [&]() {
-            semaphore.acquire(); // block until a previous task has finished
+            // The purpose of `semaphore` is to make sure that tests do not run
+            // concurrently, because that will possibly invalidate results. In
+            // theory, the app should guarantee that, but this is an extra layer
+            // of robustness to prevent this event from happening. The reason
+            // why the semaphore is acquired later is that we want tests having
+            // invalid parameters to fail immediately. The reason why this is
+            // done in a lambda rather than inside `task_run()` is to have all
+            // the potentially tricky thread code within the same ~50 lines.
+            semaphore.acquire();
         });
         pimpl_->running = false;
         pimpl_->cond.notify_all(); // tell the readers we're done
