@@ -1,9 +1,6 @@
 #!/bin/sh
 set -e
 
-export pkg_configure_flags="$pkg_configure_flags --enable-coverage"
-export pkg_make_check_rule="check"
-
 debian_deps="$debian_deps autoconf"
 debian_deps="$debian_deps automake"
 debian_deps="$debian_deps g++"
@@ -19,12 +16,16 @@ debian_deps="$debian_deps python-pip"
 debian_deps="$debian_deps wget"
 pip_deps="$pip_deps cpp-coveralls"
 
+subr_build() {
+    ./autogen.sh
+    ./configure --enable-coverage
+    make check
+}
+
 subr_finalize() {
-    cd ./MK_BUILD/linux/x86_64/measurement-kit/
     if [ "$COVERALLS_REPO_TOKEN" != "" ]; then
         $HOME/.local/bin/coveralls                                         \
                 --gcov-options '\-lp'                                      \
-                --root ../../../../                                        \
                 --build-root .                                             \
                 --exclude include/measurement_kit/ext                      \
                 --exclude src/libmeasurement_kit/ext                       \
