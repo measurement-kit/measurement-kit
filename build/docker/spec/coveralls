@@ -20,6 +20,8 @@ debian_deps="$debian_deps wget"
 pip_deps="$pip_deps cpp-coveralls"
 
 subr_finalize() {
+    pwd
+    find . -type f
     if [ "$COVERALLS_REPO_TOKEN" != "" ]; then
         $HOME/.local/bin/coveralls                                         \
                                --gcov-options '\-lp'                       \
