@@ -20,19 +20,17 @@ debian_deps="$debian_deps wget"
 pip_deps="$pip_deps cpp-coveralls"
 
 subr_finalize() {
-    pwd
-    find . -type f
     if [ "$COVERALLS_REPO_TOKEN" != "" ]; then
         $HOME/.local/bin/coveralls                                         \
-                               --gcov-options '\-lp'                       \
-                               --build-root .                              \
-                               --exclude include/measurement_kit/ext       \
-                               --exclude src/libmeasurement_kit/ext        \
-                               --exclude src/libmeasurement_kit/portable   \
-                               --exclude src/measurement_kit               \
-                               --exclude example                           \
-                               --exclude third_party                       \
-                               --exclude builtin                           \
+                --gcov-options '\-lp'                                      \
+                --build-root ./MK_BUILD/linux/x86_64/measurement-kit/      \
+                --exclude include/measurement_kit/ext                      \
+                --exclude src/libmeasurement_kit/ext                       \
+                --exclude src/libmeasurement_kit/portable                  \
+                --exclude src/measurement_kit                              \
+                --exclude example                                          \
+                --exclude third_party                                      \
+                --exclude builtin                                          \
             > /dev/null;
     fi
 }
