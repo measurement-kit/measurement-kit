@@ -138,6 +138,27 @@ TEST_CASE("http::request works as expected") {
     });
 }
 
+TEST_CASE("http::request_sync works as expected") {
+    auto logger = Logger::make();
+    logger->set_verbosity(MK_LOG_DEBUG2);
+    auto tpl = request_sync(
+            {
+                    {"http/url", "http://a.http.th.ooni.io/"},
+                    {"http/method", "GET"},
+                    {"http/http_version", "HTTP/1.1"},
+            },
+            {
+                    {"Accept", "*/*"},
+            },
+            "", logger);
+    auto error = std::get<0>(tpl);
+    std::clog << error << std::endl;
+    auto response = std::get<1>(tpl);
+    REQUIRE(!error);
+    REQUIRE(response.status_code == 200);
+    REQUIRE(md5(response.body) == "5d2182cb241b5a9aefad8ce584831666");
+}
+
 TEST_CASE("http::request() works using HTTPS") {
     SharedPtr<Reactor> reactor = Reactor::make();
     reactor->run_with_initial_event([=]() {
