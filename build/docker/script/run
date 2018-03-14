@@ -28,7 +28,7 @@ subr_start_over() {
 subr_build() {
     ./autogen.sh
     ./configure $CONFIGURE_FLAGS
-    make V=0 -j$(nproc) $MAKE_CHECK_TARGET || {
+    make V=0 $MAKE_CHECK_TARGET || {
         if [ -f ./test-suite.log ]; then
             cat ./test-suite.log
         fi
