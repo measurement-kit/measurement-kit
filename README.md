@@ -12,8 +12,7 @@
 | stable | [![Travis Build Status](https://img.shields.io/travis/measurement-kit/measurement-kit/stable.svg)](https://travis-ci.org/measurement-kit/measurement-kit?branch=stable) | [![Coverage Status](https://img.shields.io/coveralls/measurement-kit/measurement-kit/stable.svg)](https://coveralls.io/github/measurement-kit/measurement-kit?branch=stable) |
 
 Measurement Kit is a library that implements open network measurement methodologies
-(performance, censorship, etc.) and targets mobile platforms (Android and iOS) as
-well as desktop platforms (Windows, macOS, Linux).
+(performance, censorship, etc.) and targets mobile platforms (Android and iOS).
 
 It is meant to be embedded by third party applications with specific network measurement
 needs and/or to be used by researchers as a basis to implement novel tools.

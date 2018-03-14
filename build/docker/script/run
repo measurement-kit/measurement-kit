@@ -26,7 +26,14 @@ subr_start_over() {
 }
 
 subr_build() {
-    ./build/dependency mk
+    ./autogen.sh
+    ./configure $CONFIGURE_FLAGS
+    make V=0 -j$(nproc) $MAKE_CHECK_TARGET || {
+        if [ -f ./test-suite.log ]; then
+            cat ./test-suite.log
+        fi
+        exit 1
+    }
 }
 
 subr_finalize() {
