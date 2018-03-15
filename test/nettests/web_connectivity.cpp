@@ -16,6 +16,11 @@ TEST_CASE("Synchronous web connectivity test") {
                                                    test::nettests::run_test);
 }
 
+// This test is now disabled because whatismyipaddress.com has blacklisted
+// github and so this test is currently failing.
+//
+// See https://travis-ci.org/measurement-kit/measurement-kit/jobs/353745818
+#if 0
 TEST_CASE("Make sure that IP address scrubbing works") {
     auto test = [](std::function<BaseTest(BaseTest &)> f,
                    Callback<std::string /*ip*/, std::string /*entry*/> g) {
@@ -95,6 +100,7 @@ TEST_CASE("Make sure that IP address scrubbing works") {
             });
     }
 }
+#endif
 
 #else
 int main() {}
