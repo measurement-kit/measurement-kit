@@ -49,6 +49,8 @@ TEST_CASE("Make sure that IP address scrubbing works") {
         bool redacted_check = false;
         test([](BaseTest test) { return test; },
              [&](std::string ip, std::string entry) {
+                 mk::warn("%s", ip.c_str());
+                 mk::warn("%s", entry.c_str());
                  ip_check = (entry.find(ip) == std::string::npos);
                  redacted_check =
                      (entry.find("[REDACTED]") != std::string::npos);
