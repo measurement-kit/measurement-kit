@@ -41,7 +41,7 @@ TEST_CASE("Make sure that IP address scrubbing works") {
               }))
             .run();
         });
-        REQUIRE(called == 1);
+        REQUIRE(called == 2);
     };
 
     SECTION("By default IP is redacted") {
