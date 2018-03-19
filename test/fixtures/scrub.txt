@@ -1,1 +1,1 @@
-http://geoip.ubuntu.com
+http://geoip.ubuntu.com/lookup
