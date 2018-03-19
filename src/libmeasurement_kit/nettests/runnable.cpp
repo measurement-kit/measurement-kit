@@ -158,6 +158,9 @@ void Runnable::run_next_measurement(size_t thread_id, Callback<Error> cb,
                 }
             } else {
                 logger->debug("net_test: written entry");
+                logger->emit_event_ex("status.measurement_uploaded", {
+                    {"idx", saved_current_entry}
+                });
             }
             logger->emit_event_ex("status.measurement_done", {
                 {"idx", saved_current_entry}
