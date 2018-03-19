@@ -86,7 +86,7 @@ void Runnable::run_next_measurement(size_t thread_id, Callback<Error> cb,
 
     logger->debug("net_test: running with input %s", next_input.c_str());
     logger->emit_event_ex("status.measurement_started", nlohmann::json::object({
-        {"current_entry_index", saved_current_entry},
+        {"idx", saved_current_entry},
         {"input", next_input},
     }));
 
@@ -141,7 +141,7 @@ void Runnable::run_next_measurement(size_t thread_id, Callback<Error> cb,
         // TODO(bassosimone): make sure that this entry contains the report ID
         // which probably is currently not the case.
         logger->emit_event_ex("measurement", nlohmann::json::object({
-            {"current_entry_index", saved_current_entry},
+            {"idx", saved_current_entry},
             {"json_str", entry.dump()},
         }));
         report.write_entry(entry, [=](Error error) {
@@ -152,7 +152,7 @@ void Runnable::run_next_measurement(size_t thread_id, Callback<Error> cb,
                     return;
                 }
                 logger->emit_event_ex("failure.measurement_submission", {
-                    {"current_entry_index", saved_current_entry},
+                    {"idx", saved_current_entry},
                     {"json_str", entry.dump()},
                     {"failure", error.reason},
                 });
@@ -160,7 +160,7 @@ void Runnable::run_next_measurement(size_t thread_id, Callback<Error> cb,
                 logger->debug("net_test: written entry");
             }
             logger->emit_event_ex("status.measurement_done", {
-                {"current_entry_index", saved_current_entry}
+                {"idx", saved_current_entry}
             });
             reactor->call_soon([=]() {
                 run_next_measurement(thread_id, cb, num_entries, current_entry);
