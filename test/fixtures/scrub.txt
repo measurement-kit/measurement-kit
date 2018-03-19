@@ -1,2 +1,1 @@
 http://geoip.ubuntu.com/lookup
-https://ip-info.ff.avast.com/v1/info
