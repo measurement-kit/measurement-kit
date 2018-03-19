@@ -150,7 +150,7 @@ class Task {
  */
 #define MK_ENUM_EVENT(XX)                                                      \
     XX("failure.measurement")                                                  \
-    XX("failure.report_submission")                                            \
+    XX("failure.measurement_submission")                                            \
     XX("failure.startup")                                                      \
     XX("log")                                                                  \
     XX("measurement")                                                          \

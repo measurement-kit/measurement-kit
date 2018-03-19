@@ -151,7 +151,7 @@ void Runnable::run_next_measurement(size_t thread_id, Callback<Error> cb,
                     cb(error);
                     return;
                 }
-                logger->emit_event_ex("failure.report_submission", {
+                logger->emit_event_ex("failure.measurement_submission", {
                     {"current_entry_index", saved_current_entry},
                     {"json_str", entry.dump()},
                     {"failure", error.reason},
