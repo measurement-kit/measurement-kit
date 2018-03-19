@@ -158,6 +158,7 @@ class Task {
     XX("status.geoip_lookup")                                                  \
     XX("status.progress")                                                      \
     XX("status.queued")                                                        \
+    XX("status.measurement_started")                                           \
     XX("status.report_created")                                                \
     XX("status.started")                                                       \
     XX("status.update.performance")                                            \
