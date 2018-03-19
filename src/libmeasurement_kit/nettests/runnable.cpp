@@ -147,15 +147,15 @@ void Runnable::run_next_measurement(size_t thread_id, Callback<Error> cb,
         report.write_entry(entry, [=](Error error) {
             if (error) {
                 logger->warn("cannot write entry");
-                if (not options.get("ignore_write_entry_error", true)) {
-                    cb(error);
-                    return;
-                }
                 logger->emit_event_ex("failure.measurement_submission", {
                     {"idx", saved_current_entry},
                     {"json_str", entry.dump()},
                     {"failure", error.reason},
                 });
+                if (not options.get("ignore_write_entry_error", true)) {
+                    cb(error);
+                    return;
+                }
             } else {
                 logger->debug("net_test: written entry");
             }
