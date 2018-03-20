@@ -159,6 +159,8 @@ class Task {
     XX("status.progress")                                                      \
     XX("status.queued")                                                        \
     XX("status.measurement_started")                                           \
+    XX("status.measurement_uploaded")                                          \
+    XX("status.measurement_done")                                              \
     XX("status.report_created")                                                \
     XX("status.started")                                                       \
     XX("status.update.performance")                                            \
