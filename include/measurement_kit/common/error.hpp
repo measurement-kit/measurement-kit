@@ -4,8 +4,6 @@
 #ifndef MEASUREMENT_KIT_COMMON_ERROR_HPP
 #define MEASUREMENT_KIT_COMMON_ERROR_HPP
 
-#include <measurement_kit/common/api.h>
-
 #include <string>
 #include <vector>
 

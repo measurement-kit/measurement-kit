@@ -2,6 +2,8 @@
 // Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
+#include "config.h"
+
 #include "../measurement_kit/cmdline.hpp"
 #include "src/libmeasurement_kit/common/utils.hpp"
 
@@ -149,16 +151,15 @@ int main(int argc, char **argv) {
     /*
      * Allow to call getopt() again.
      *
-     * Non portable. Assume it's either GNU or BSD. We can do better in
-     * configure checking for the proper way to reset options.
-     *
-     * Note: the WIN32 implementation is actually the BSD implementation.
+     * Non portable. Verify using configure that we have `optreset` (which
+     * we also have on Windows where we embed a getopt() implementation
+     * that features such flag). Otherwise check whether we're in the GNU
+     * C library, which is a different behaviour. Otherwise bail.
      */
-#ifdef __GLIBC__
-    optind = 0;
-#elif (defined __APPLE__ || defined __FreeBSD__ || defined __OpenBSD__ ||      \
-       defined __NetBSD__ || defined __DragonFly__ || defined _WIN32)
+#if HAVE_DECL_OPTRESET || defined __WIN32__
     optreset = 1, optind = 1;
+#elif defined __GLIBC__
+    optind = 0;
 #else
 #error "Don't know how to reset getopt() on your system"
 #endif

@@ -22,10 +22,10 @@ mkdir -p ${pkg_build_dir}
     cd ${pkg_topdir}
 
     if [ "$pkg_os" = "windows" ]; then
-        pkg_autogen_sh_args="--cmake"
+        autogen_sh_flags="--cmake"
     fi
 
-    ./autogen.sh ${pkg_autogen_sh_args} # Must run in the toplevel directory
+    ./autogen.sh $autogen_sh_flags # Must run in the toplevel directory
 
     cd ${pkg_build_dir}
 

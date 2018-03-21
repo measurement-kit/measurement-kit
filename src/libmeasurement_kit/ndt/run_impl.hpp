@@ -5,9 +5,8 @@
 #define SRC_LIBMEASUREMENT_KIT_NDT_RUN_IMPL_HPP
 
 #include "src/libmeasurement_kit/common/mock.hpp"
-
-#include "../ndt/internal.hpp"
-#include <measurement_kit/mlabns.hpp>
+#include "src/libmeasurement_kit/ndt/internal.hpp"
+#include "src/libmeasurement_kit/mlabns/mlabns.hpp"
 
 namespace mk {
 namespace ndt {
