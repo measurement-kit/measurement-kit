@@ -10,7 +10,6 @@
 #include "src/libmeasurement_kit/common/utils.hpp"
 #include "measure_speed.hpp"
 
-#include <measurement_kit/ext.hpp>
 #include <measurement_kit/ndt.hpp>
 #include <measurement_kit/net.hpp>
 

@@ -4,7 +4,7 @@
 #ifndef MEASUREMENT_KIT_COMMON_DATA_USAGE_HPP
 #define MEASUREMENT_KIT_COMMON_DATA_USAGE_HPP
 
-#include <cstdint>
+#include <stdint.h>
 
 namespace mk {
 

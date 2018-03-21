@@ -10,7 +10,6 @@
 #include <measurement_kit/common/json.hpp>
 #include "src/libmeasurement_kit/common/mock.hpp"
 
-#include <measurement_kit/ext.hpp>
 #include <measurement_kit/ooni.hpp>
 #include <measurement_kit/http.hpp>
 

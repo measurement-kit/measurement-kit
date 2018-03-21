@@ -54,14 +54,14 @@ BaseTest &BaseTest::add_input(std::string s) {
     return *this;
 }
 
-BaseTest &BaseTest::add_input_filepath(std::string s) {
-    runnable->input_filepaths.push_back(s);
-    return *this;
-}
-
 BaseTest &BaseTest::set_input_filepath(std::string s) {
     runnable->input_filepaths.clear();
     return add_input_filepath(s);
+}
+
+BaseTest &BaseTest::add_input_filepath(std::string s) {
+    runnable->input_filepaths.push_back(s);
+    return *this;
 }
 
 BaseTest &BaseTest::set_output_filepath(std::string s) {
@@ -71,11 +71,6 @@ BaseTest &BaseTest::set_output_filepath(std::string s) {
 
 BaseTest &BaseTest::set_error_filepath(std::string s) {
     runnable->logger->set_logfile(s);
-    return *this;
-}
-
-BaseTest &BaseTest::set_options(std::string key, std::string value) {
-    runnable->options[key] = value;
     return *this;
 }
 

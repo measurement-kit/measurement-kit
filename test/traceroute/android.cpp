@@ -12,7 +12,8 @@
 #define CATCH_CONFIG_MAIN
 #include "src/libmeasurement_kit/ext/catch.hpp"
 
-#include <measurement_kit/traceroute.hpp>
+#include "src/libmeasurement_kit/traceroute/error.hpp"
+#include "src/libmeasurement_kit/traceroute/android.hpp"
 
 #include <iostream>
 

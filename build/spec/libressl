@@ -1,5 +1,0 @@
-pkg_name=libressl
-pkg_vendor_dir=$pkg_rootdir/src/third_party/$pkg_name
-pkg_signify_key=$pkg_rootdir/build/pubkey/libressl.pub
-pkg_checksum_url=https://ftp.openbsd.org/pub/OpenBSD/LibreSSL/SHA256.sig
-pkg_tarball_url=https://ftp.openbsd.org/pub/OpenBSD/LibreSSL/libressl-2.5.5.tar.gz

@@ -1,4 +1,0 @@
-pkg_name=c-ares
-pkg_vendor_dir=$pkg_rootdir/src/third_party/$pkg_name
-pkg_repository=https://github.com/c-ares/c-ares
-pkg_branch_or_tag=cares-1_13_0

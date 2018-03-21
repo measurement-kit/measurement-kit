@@ -54,10 +54,11 @@
 
 #include "src/libmeasurement_kit/common/mock.hpp"
 #include "src/libmeasurement_kit/common/utils.hpp"
+#include "src/libmeasurement_kit/ext/sole.hpp"
+#include "src/libmeasurement_kit/mlabns/mlabns.hpp"
+
 #include <measurement_kit/common/json.hpp>
-#include <measurement_kit/ext/sole.hpp>
 #include <measurement_kit/http.hpp>
-#include <measurement_kit/mlabns.hpp>
 #include <measurement_kit/neubot.hpp>
 
 #define DASH_INITIAL_RATE 3000
