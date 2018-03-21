@@ -12,4 +12,4 @@ if "%VSCMD_ARG_HOST_ARCH%" == "" (
     exit 1
 )
 
-for %%I in (%*) do ubuntu.exe run ./cross-windows %ARCH_NAME% ./%%I
+for %%I in (%*) do bash.exe ./cross-windows %ARCH_NAME% ./%%I

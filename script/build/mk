@@ -36,6 +36,7 @@ mkdir -p ${pkg_build_dir}
         libevent_prefix="${dist_dir}\\${pkg_os}\\${pkg_arch}\\libevent"
         geoip_prefix="${dist_dir}\\${pkg_os}\\${pkg_arch}\\geoip"
         cmake.exe -G "NMake Makefiles"                                         \
+          -DCMAKE_WINDOWS_EXPORT_ALL_SYMBOLS=ON                                \
           -DCMAKE_INSTALL_PREFIX="${install_prefix}"                           \
           -DMK_CA_BUNDLE="cert.pem"                                            \
           -DMK_OPENSSL="${libressl_prefix}"                                    \

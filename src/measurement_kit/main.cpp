@@ -2,7 +2,9 @@
 // Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #include "../measurement_kit/cmdline.hpp"
 #include "src/libmeasurement_kit/common/utils.hpp"
@@ -156,7 +158,7 @@ int main(int argc, char **argv) {
      * that features such flag). Otherwise check whether we're in the GNU
      * C library, which is a different behaviour. Otherwise bail.
      */
-#if HAVE_DECL_OPTRESET || defined __WIN32__
+#if HAVE_DECL_OPTRESET || defined _WIN32
     optreset = 1, optind = 1;
 #elif defined __GLIBC__
     optind = 0;
