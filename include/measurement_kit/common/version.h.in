@@ -54,37 +54,37 @@ extern "C" {
 #endif
 
 // mk_version() returns MK_VERSION.
-MK_API const char *mk_version(void);
+const char *mk_version(void);
 
 // mk_version_full() returns MK_VERSION_FULL.
-MK_API const char *mk_version_full(void);
+const char *mk_version_full(void);
 
 // mk_version_major() returns MK_VERSION_MAJOR.
-MK_API uint64_t mk_version_major(void);
+uint64_t mk_version_major(void);
 
 // mk_version_minor() returns MK_VERSION_MINOR.
-MK_API uint64_t mk_version_minor(void);
+uint64_t mk_version_minor(void);
 
 // mk_version_patch() returns MK_VERSION_PATCH.
-MK_API uint64_t mk_version_patch(void);
+uint64_t mk_version_patch(void);
 
 // mk_version_stable() returns MK_VERSION_STABLE.
-MK_API uint64_t mk_version_stable(void);
+uint64_t mk_version_stable(void);
 
 // mk_version_numeric() returns MK_VERSION_NUMERIC.
-MK_API uint64_t mk_version_numeric(void);
+uint64_t mk_version_numeric(void);
 
 // mk_version_openssl() returns the OpenSSL version we link with.
-MK_API const char *mk_version_openssl(void);
+const char *mk_version_openssl(void);
 
 // mk_openssl_version() is an alias for mk_version_openssl().
-MK_API const char *mk_openssl_version(void);
+const char *mk_openssl_version(void);
 
 // mk_libevent_version() returns the libevent version we link with.
-MK_API const char *mk_libevent_version(void);
+const char *mk_libevent_version(void);
 
 // mk_version_libevent() is an alias for mk_libevent_version().
-MK_API const char *mk_version_libevent(void);
+const char *mk_version_libevent(void);
 
 #ifdef __cplusplus
 } // namespace mk
