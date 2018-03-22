@@ -1,0 +1,19 @@
+Compile geoip in debug mode. So we can free strings returned by
+it without triggering a crash in our code.
+
+Note: the proper fix would be to have a GeoIP_free function that
+we can call to dispose of the strings it returns.
+
+diff --git a/libGeoIP/Makefile.vc b/libGeoIP/Makefile.vc
+index 157e014..024d562 100644
+--- a/libGeoIP/Makefile.vc
++++ b/libGeoIP/Makefile.vc
+@@ -4,7 +4,7 @@
+  
+ COMPILER=cl 
+  
+-CFLAGS=-DWIN32 -DGEOIP_EXPORTS -MD -nologo 
++CFLAGS=-DWIN32 -DGEOIP_EXPORTS -MDd -nologo 
+  
+ GEOIPINC = -I..\libGeoIP 
+  

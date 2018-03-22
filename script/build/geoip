@@ -25,6 +25,8 @@ mkdir -p ${pkg_build_dir}
     git clone -b ${pkg_branch} --single-branch --depth 3 ${pkg_repository}
 
     if [ "${pkg_os}" = "windows" ]; then
+        cd geoip-api-c
+        git apply ${pkg_topdir}/script/build/geoip-000.patch # XXX
         exit 0  # Exit subshell
     fi
 
