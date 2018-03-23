@@ -60,7 +60,7 @@ export CXXFLAGS="${CXXFLAGS}"
 export LDFLAGS="-L${SYSROOT}/lib ${LDFLAGS}"
 
 # Extra libraries to link with. Should not be needed.
-#export LIBS="-lm"
+#export LIBS="-lssl ${LIBS}"
 
 #
 # Flags for ./script/build/<package> (cross-)build system

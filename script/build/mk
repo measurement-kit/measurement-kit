@@ -32,7 +32,6 @@ mkdir -p ${pkg_build_dir}
 
     ../../../../configure --prefix=${pkg_dist_dir} --disable-shared           \
         --disable-examples                                                    \
-        --disable-binaries                                                    \
         --with-geoip=${pkg_dist_dir}/../geoip                                 \
         --with-libevent=${pkg_dist_dir}/../libevent                           \
         --with-openssl=${pkg_dist_dir}/../libressl                            \
