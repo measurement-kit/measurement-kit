@@ -70,7 +70,6 @@ AC_DEFUN([MK_AM_LIBEVENT], [
   AC_CHECK_HEADERS(event2/event.h, [], [mk_not_found=1])
   AC_CHECK_LIB(event, event_new, [], [mk_not_found=1])
   AC_CHECK_HEADERS(event2/thread.h, [], [mk_not_found=1])
-  AC_CHECK_LIB(event_pthreads, evthread_use_pthreads, [], [mk_not_found=1])
   AC_CHECK_LIB(event_openssl, bufferevent_openssl_filter_new, [],
                [mk_not_found=1])
 
