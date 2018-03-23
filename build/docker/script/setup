@@ -10,8 +10,6 @@ fi
 shift
 
 docker run                                                                 \
-    -e "pkg_configure_flags=$pkg_configure_flags"                          \
-    -e "pkg_make_flags=$pkg_make_flags"                                    \
     -e "CPPFLAGS=$CPPFLAGS"                                                \
     -e "CFLAGS=$CFLAGS"                                                    \
     -e "CXXFLAGS=$CXXFLAGS"                                                \
