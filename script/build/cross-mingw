@@ -1,6 +1,7 @@
 #!/bin/sh
 
 # Adapted from build/android/cross
+# This assumes you have mingw 5.0.3_3 from homebrew running on macOS
 
 set -e
 
@@ -69,7 +70,7 @@ export LDFLAGS="-L${SYSROOT}/lib ${LDFLAGS}"
 export pkg_configure_flags="--host=${TOOLCHAIN_NAME} $CONFIG_EXTRA"
 
 # Tell ./script/build/<package> that we are cross compiling
-export pkg_os="android"
+export pkg_os="mingw"
 
 # Tell ./script/build/<package> the name of the cross architecture
 export pkg_arch="${DESTDIR_NAME}"
