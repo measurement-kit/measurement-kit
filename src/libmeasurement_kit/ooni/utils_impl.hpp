@@ -7,6 +7,9 @@
 #include "src/libmeasurement_kit/common/encoding.hpp"
 #include "src/libmeasurement_kit/common/mock.hpp"
 #include "../ooni/utils.hpp"
+
+#include <measurement_kit/http.hpp>
+
 #include <regex>
 
 namespace mk {

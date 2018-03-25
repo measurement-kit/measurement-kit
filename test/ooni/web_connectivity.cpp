@@ -5,7 +5,7 @@
 #define CATCH_CONFIG_MAIN
 #include "src/libmeasurement_kit/ext/catch.hpp"
 
-#include <measurement_kit/ooni/nettests.hpp>
+#include "src/libmeasurement_kit/ooni/nettests.hpp"
 
 using namespace mk;
 

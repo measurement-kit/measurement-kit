@@ -5,6 +5,7 @@
 #define SRC_LIBMEASUREMENT_KIT_OONI_UTILS_HPP
 
 #include <measurement_kit/ooni.hpp>
+#include <measurement_kit/report.hpp>
 
 #include <GeoIP.h>
 #include <GeoIPCity.h>
@@ -103,6 +104,16 @@ std::string scrub(
         std::string orig,
         std::string real_probe_ip
 );
+
+void ip_lookup(Callback<Error, std::string> callback, Settings settings = {},
+               SharedPtr<Reactor> reactor = Reactor::global(),
+               SharedPtr<Logger> logger = Logger::global());
+
+void resolver_lookup(Callback<Error, std::string> callback, Settings = {},
+                     SharedPtr<Reactor> reactor = Reactor::global(),
+                     SharedPtr<Logger> logger = Logger::global());
+
+report::Entry represent_string(const std::string &s);
 
 } // namespace ooni
 } // namespace mk

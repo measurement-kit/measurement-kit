@@ -3,9 +3,12 @@
 // and LICENSE for more information on the copying conditions.
 
 #include "src/libmeasurement_kit/ooni/constants.hpp"
+#include "src/libmeasurement_kit/ooni/nettests.hpp"
 #include "src/libmeasurement_kit/ooni/utils.hpp"
 #include "src/libmeasurement_kit/common/fcompose.hpp"
 #include "src/libmeasurement_kit/common/utils.hpp"
+#include "src/libmeasurement_kit/ooni/templates.hpp"
+
 #include <measurement_kit/ooni.hpp>
 
 namespace mk {

@@ -6,6 +6,9 @@
 #include "src/libmeasurement_kit/ext/catch.hpp"
 
 #include <measurement_kit/ooni.hpp>
+#include <measurement_kit/report.hpp>
+
+#include "src/libmeasurement_kit/ooni/templates.hpp"
 
 #include "src/libmeasurement_kit/ooni/templates_impl.hpp"
 

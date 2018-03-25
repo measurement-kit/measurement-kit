@@ -4,7 +4,7 @@
 #ifndef MEASUREMENT_KIT_OONI_ERROR_HPP
 #define MEASUREMENT_KIT_OONI_ERROR_HPP
 
-#include <measurement_kit/common.hpp>
+#include <measurement_kit/common/error.hpp>
 
 namespace mk {
 namespace ooni {

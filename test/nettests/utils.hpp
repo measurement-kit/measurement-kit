@@ -6,6 +6,8 @@
 
 #include "src/libmeasurement_kit/nettests/runnable.hpp"
 #include "src/libmeasurement_kit/common/worker.hpp"
+#include "src/libmeasurement_kit/ooni/collector_client.hpp"
+#include "src/libmeasurement_kit/ooni/bouncer.hpp"
 
 #include <measurement_kit/nettests.hpp>
 #include <measurement_kit/ooni.hpp>
