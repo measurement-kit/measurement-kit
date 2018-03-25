@@ -5,6 +5,7 @@
 #define SRC_LIBMEASUREMENT_KIT_OONI_TEMPLATES_IMPL_HPP
 
 #include <measurement_kit/ooni.hpp>
+#include <measurement_kit/http.hpp>
 
 #include <event2/dns.h>
 
