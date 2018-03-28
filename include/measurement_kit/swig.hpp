@@ -3,6 +3,7 @@
 // and LICENSE for more information on the copying conditions.
 #ifndef MEASUREMENT_KIT_SWIG_HPP
 #define MEASUREMENT_KIT_SWIG_HPP
+#ifdef MK_EXPOSE_SWIG_API
 
 /*
  * Measurement Kit C++ interface for SWIG.
@@ -172,4 +173,5 @@ class Task {
 
 } // namespace swig
 } // namespace mk
+#endif // MK_EXPOSE_SWIG_API
 #endif // MEASUREMENT_KIT_SWIG_HPP

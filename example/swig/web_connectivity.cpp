@@ -1,5 +1,6 @@
 // Public domain 2017, Simone Basso <bassosimone@gmail.com.
 
+#define MK_EXPOSE_SWIG_API
 #include <measurement_kit/swig.hpp>
 
 #include <stdlib.h>
