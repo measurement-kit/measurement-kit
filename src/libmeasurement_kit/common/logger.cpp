@@ -19,6 +19,8 @@
 #include <stdarg.h>
 #include <stdio.h>
 
+#include <measurement_kit/engine.h>
+
 namespace mk {
 
 class DefaultLogger : public Logger, public NonCopyable, public NonMovable {
@@ -210,6 +212,24 @@ class DefaultLogger : public Logger, public NonCopyable, public NonMovable {
             warn("wrong value for key: %s", key.c_str());
             assert(false);
         }
+#ifndef NDEBUG
+        {
+            bool found = false;
+            do {
+#define CHECK(name_)                                                           \
+    if (key == name_) {                                                        \
+        found = true;                                                          \
+        break;                                                                 \
+    }
+                MK_ENUM_EVENT(CHECK)
+#undef CHECK
+            } while (0);
+            if (!found) {
+                fprintf(stderr, "PANIC: unknown event: %s\n", key.c_str());
+                abort();
+            }
+        }
+#endif
         if (handlers_.count(key) <= 0) {
             return;
         }
