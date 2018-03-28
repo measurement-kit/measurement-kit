@@ -5,6 +5,7 @@
 #define CATCH_CONFIG_MAIN
 #include "src/libmeasurement_kit/ext/catch.hpp"
 
+#define MK_EXPOSE_SWIG_API
 #include <measurement_kit/swig.hpp>
 
 TEST_CASE("initialize() works as expected") {
