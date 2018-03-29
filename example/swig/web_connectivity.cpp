@@ -9,7 +9,11 @@
 
 int main() {
     std::string settings = R"({
-        "name": "Ndt",
+        "inputs": [
+            "https://slashdot.org/",
+            "http://www.microsoft.com"
+        ],
+        "name": "WebConnectivity",
         "log_level": "INFO"
     })";
     mk::swig::Task task;

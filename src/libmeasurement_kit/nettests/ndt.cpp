@@ -14,8 +14,11 @@ namespace nettests {
 
 NdtTest::NdtTest() : BaseTest() {
     runnable.reset(new NdtRunnable);
-    runnable->test_name = "ndt";
-    runnable->test_version = "0.1.0";
+}
+
+NdtRunnable::NdtRunnable() noexcept {
+    test_name = "ndt";
+    test_version = "0.1.0";
 }
 
 void NdtRunnable::main(std::string, Settings settings,

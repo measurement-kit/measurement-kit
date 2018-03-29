@@ -15,7 +15,11 @@ int main() {
     mk_task_t *task = nullptr;
     mk_task_error_t err =
             mk_task_start_ex(&task, "{\n"
-                                    "    \"name\": \"Ndt\",\n"
+                                    "    \"inputs\": [\n"
+                                    "        \"https://www.google.com\","
+                                    "        \"https://www.x.org\""
+                                    "    ],\n"
+                                    "    \"name\": \"WebConnectivity\",\n"
                                     "    \"verbosity\": \"INFO\"\n"
                                     "}\n");
     if (err != MK_TASK_ENONE) {

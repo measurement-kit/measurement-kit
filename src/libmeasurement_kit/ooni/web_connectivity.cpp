@@ -332,6 +332,12 @@ static void compare_control_experiment(std::string input, SharedPtr<Entry> entry
         (*entry)["accessible"] = true;
         (*entry)["blocking"] = false;
     }
+
+    // TODO(bassosimone): I'm not sure it's either accessible or blocking
+    logger->emit_event_ex("status.update.websites", {
+        {"url", input},
+        {"status", (*entry)["accessible"] ? "accessible" : "blocking"},
+    });
 }
 
 static void control_request(http::Headers headers_to_pass_along,
@@ -541,6 +547,12 @@ static void experiment_dns_query(
 void web_connectivity(std::string input, Settings options,
                       Callback<SharedPtr<Entry>> callback, SharedPtr<Reactor> reactor,
                       SharedPtr<Logger> logger) {
+
+    logger->emit_event_ex("status.update.websites", {
+        {"url", input},
+        {"status", "measuring"},
+    });
+
     options["http/max_redirects"] = 20;
     SharedPtr<Entry> entry(new Entry);
     // This is set from ooni test

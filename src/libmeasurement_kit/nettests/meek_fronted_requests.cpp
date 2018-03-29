@@ -12,9 +12,12 @@ namespace nettests {
 
 MeekFrontedRequestsTest::MeekFrontedRequestsTest() : BaseTest() {
     runnable.reset(new MeekFrontedRequestsRunnable);
-    runnable->test_name = "meek_fronted_requests";
-    runnable->test_version = "0.0.1";
-    runnable->needs_input = true;
+}
+
+MeekFrontedRequestsRunnable::MeekFrontedRequestsRunnable() noexcept {
+    test_name = "meek_fronted_requests";
+    test_version = "0.0.1";
+    needs_input = true;
 }
 
 void MeekFrontedRequestsRunnable::main(std::string input, Settings options,

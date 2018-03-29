@@ -66,6 +66,7 @@ void Runnable::run_next_measurement(size_t thread_id, Callback<Error> cb,
     } else if (num_entries > 0) {
         prog = *current_entry / (double)num_entries;
     }
+    auto saved_current_entry = *current_entry; // used for emitting events
     *current_entry += 1;
     if (next_input != "") {
         std::string description;
@@ -84,6 +85,11 @@ void Runnable::run_next_measurement(size_t thread_id, Callback<Error> cb,
     setup(next_input);
 
     logger->debug("net_test: running with input %s", next_input.c_str());
+    logger->emit_event_ex("status.measurement_started", nlohmann::json::object({
+        {"idx", saved_current_entry},
+        {"input", next_input},
+    }));
+
     main(next_input, options, [=](SharedPtr<report::Entry> test_keys) {
         report::Entry entry;
         entry["input"] = next_input;
@@ -132,16 +138,33 @@ void Runnable::run_next_measurement(size_t thread_id, Callback<Error> cb,
                 /* FALLTHROUGH */
             }
         }
+        // TODO(bassosimone): make sure that this entry contains the report ID
+        // which probably is currently not the case.
+        logger->emit_event_ex("measurement", nlohmann::json::object({
+            {"idx", saved_current_entry},
+            {"json_str", entry.dump()},
+        }));
         report.write_entry(entry, [=](Error error) {
             if (error) {
                 logger->warn("cannot write entry");
+                logger->emit_event_ex("failure.measurement_submission", {
+                    {"idx", saved_current_entry},
+                    {"json_str", entry.dump()},
+                    {"failure", error.reason},
+                });
                 if (not options.get("ignore_write_entry_error", true)) {
                     cb(error);
                     return;
                 }
             } else {
                 logger->debug("net_test: written entry");
+                logger->emit_event_ex("status.measurement_uploaded", {
+                    {"idx", saved_current_entry}
+                });
             }
+            logger->emit_event_ex("status.measurement_done", {
+                {"idx", saved_current_entry}
+            });
             reactor->call_soon([=]() {
                 run_next_measurement(thread_id, cb, num_entries, current_entry);
             });
@@ -235,6 +258,12 @@ void Runnable::geoip_lookup(Callback<> cb) {
             } else if (asn_path == "") {
                 logger->warn("geoip_asn_path is not set");
             }
+
+            logger->emit_event_ex("status.geoip_lookup", {
+                {"probe_asn", probe_asn},
+                {"probe_cc", probe_cc},
+                {"probe_ip", ip}
+            });
 
             cb();
         },

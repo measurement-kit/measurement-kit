@@ -9,7 +9,11 @@
 
 int main() {
     nlohmann::json settings{
-        {"name", "Ndt"},
+        {"inputs", {
+            "https://www.google.com/",
+            "https://ooni.torproject.org/",
+        }},
+        {"name", "WebConnectivity"},
         {"log_level", "INFO"},
     };
     std::clog << settings.dump() << "\n";
