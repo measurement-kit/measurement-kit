@@ -47,5 +47,7 @@ mkdir -p ${pkg_build_dir}
 )
 
 if [ "${pkg_os}" = "windows" ]; then
+    install -d "${pkg_dist_dir}"/include
+    install -d "${pkg_dist_dir}"/lib
     cmd.exe /c geoip_nmake.bat "${pkg_arch}"
 fi

@@ -38,8 +38,8 @@ mkdir -p ${pkg_build_dir}
     if [ "$pkg_os" = "windows" ]; then
         git apply ${pkg_topdir}/script/build/libevent-001.patch
         dist_dir="..\\..\\..\\..\\..\\MK_DIST"
-        install_prefix="${dist_dir}\\${pkg_os}\\${pkg_arch}\\${pkg_name}"
-        libressl_prefix="${dist_dir}\\${pkg_os}\\${pkg_arch}\\libressl"
+        install_prefix="${dist_dir}\\${pkg_os}\\${pkg_arch}"
+        libressl_prefix="${install_prefix}"
         cmake.exe -G "NMake Makefiles"                                         \
           -DCMAKE_BUILD_TYPE=Release                                           \
           -DCMAKE_INSTALL_PREFIX="${install_prefix}"                           \
