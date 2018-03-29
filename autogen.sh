@@ -109,9 +109,6 @@ fi
 if [ $cmake -eq 0 ]; then
     echo "* Running 'autoreconf -i'"
     autoreconf -i
-else
-    echo "* Generating './cmake/make.cmake'"
-    ./script/cmake/autogen > ./cmake/make.cmake
 fi
 
 echo ""

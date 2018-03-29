@@ -30,14 +30,14 @@ mkdir -p ${pkg_build_dir}
 
     if [ "$pkg_os" = "windows" ]; then
         dist_dir="..\\..\\..\\..\\MK_DIST"
-        install_prefix="${dist_dir}\\${pkg_os}\\${pkg_arch}\\${pkg_name}"
-        libressl_prefix="${dist_dir}\\${pkg_os}\\${pkg_arch}\\libressl"
-        libevent_prefix="${dist_dir}\\${pkg_os}\\${pkg_arch}\\libevent"
-        geoip_prefix="${dist_dir}\\${pkg_os}\\${pkg_arch}\\geoip"
+        install_prefix="${dist_dir}\\${pkg_os}\\${pkg_arch}"
+        libressl_prefix="${install_prefix}"
+        libevent_prefix="${install_prefix}"
+        geoip_prefix="${install_prefix}"
         cmake.exe -G "NMake Makefiles"                                         \
           -DCMAKE_WINDOWS_EXPORT_ALL_SYMBOLS=ON                                \
           -DCMAKE_INSTALL_PREFIX="${install_prefix}"                           \
-          -DMK_CA_BUNDLE="cert.pem"                                            \
+          -DMK_CA_BUNDLE="\"\""                                                \
           -DMK_OPENSSL="${libressl_prefix}"                                    \
           -DMK_LIBEVENT="${libevent_prefix}"                                   \
           -DMK_GEOIP="${geoip_prefix}"                                         \
