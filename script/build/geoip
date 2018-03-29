@@ -10,9 +10,8 @@ pkg_name=geoip
 pkg_repository=https://github.com/maxmind/geoip-api-c.git
 pkg_branch=v1.6.11
 
-pkg_dist_dir=${pkg_topdir}/MK_DIST/${pkg_os}/${pkg_arch}/${pkg_name}
-rm -rf ${pkg_dist_dir}
-mkdir -p ${pkg_dist_dir}
+pkg_dist_dir=${pkg_topdir}/MK_DIST/${pkg_os}/${pkg_arch}
+install -d ${pkg_dist_dir}
 
 pkg_build_dir=${pkg_topdir}/MK_BUILD/${pkg_os}/${pkg_arch}/${pkg_name}
 rm -rf ${pkg_build_dir}

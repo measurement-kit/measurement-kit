@@ -10,9 +10,8 @@ pkg_name=c-ares
 pkg_repository=https://github.com/c-ares/c-ares
 pkg_branch=cares-1_13_0
 
-pkg_dist_dir=${pkg_topdir}/MK_DIST/${pkg_os}/${pkg_arch}/${pkg_name}
-rm -rf ${pkg_dist_dir}
-mkdir -p ${pkg_dist_dir}
+pkg_dist_dir=${pkg_topdir}/MK_DIST/${pkg_os}/${pkg_arch}
+install -d ${pkg_dist_dir}
 
 pkg_build_dir=${pkg_topdir}/MK_BUILD/${pkg_os}/${pkg_arch}/${pkg_name}
 rm -rf ${pkg_build_dir}

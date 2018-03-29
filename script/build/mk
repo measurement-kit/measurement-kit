@@ -8,9 +8,8 @@ pkg_topdir=$(cd $(dirname $0)/../../ && pwd -P)
 
 pkg_name=measurement-kit
 
-pkg_dist_dir=${pkg_topdir}/MK_DIST/${pkg_os}/${pkg_arch}/${pkg_name}
-rm -rf ${pkg_dist_dir}
-mkdir -p ${pkg_dist_dir}
+pkg_dist_dir=${pkg_topdir}/MK_DIST/${pkg_os}/${pkg_arch}
+install -d ${pkg_dist_dir}
 
 pkg_build_dir=${pkg_topdir}/MK_BUILD/${pkg_os}/${pkg_arch}/${pkg_name}
 rm -rf ${pkg_build_dir}
@@ -33,9 +32,9 @@ mkdir -p ${pkg_build_dir}
     ../../../../configure --prefix=${pkg_dist_dir} --disable-shared           \
         --disable-examples                                                    \
         --disable-binaries                                                    \
-        --with-geoip=${pkg_dist_dir}/../geoip                                 \
-        --with-libevent=${pkg_dist_dir}/../libevent                           \
-        --with-openssl=${pkg_dist_dir}/../libressl                            \
+        --with-geoip=${pkg_dist_dir}                                          \
+        --with-libevent=${pkg_dist_dir}                                       \
+        --with-openssl=${pkg_dist_dir}                                        \
         ${pkg_configure_flags}
 
     make install
