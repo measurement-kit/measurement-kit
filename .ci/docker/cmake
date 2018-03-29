@@ -27,9 +27,9 @@ apt-get install -y $debian_deps
 
 ip address show
 tc qdisc add dev eth0 root tbf rate 220kbit latency 50ms burst 1540
-exit 0
 
 ./autogen.sh --cmake
 ./build/cmake/cmake
 make V=0 -j$(nproc)
-ctest -j6 --output-on-failure
+./measurement_kit ndt
+#ctest -j6 --output-on-failure
