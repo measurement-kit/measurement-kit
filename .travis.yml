@@ -3,8 +3,7 @@ language: cpp
 matrix:
   include:
     - sudo: required
-      env: DOCKER_SPEC=valgrind-clang pkg_make_flags="V=0 -j3"
-           CXXFLAGS="-Werror" CFLAGS="-Werror"
+      env: CXXFLAGS="-Werror" CFLAGS="-Werror"
       services:
         - docker
       script:

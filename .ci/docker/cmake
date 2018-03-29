@@ -25,6 +25,8 @@ apt-get upgrade -y
 apt-get install -y $debian_deps
 
 ./autogen.sh --cmake
-cmake
+mkdir build
+cd build
+cmake .
 make V=0 -j$(nproc)
 ctest -j6
