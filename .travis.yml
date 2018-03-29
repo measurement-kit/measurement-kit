@@ -3,7 +3,7 @@ language: cpp
 matrix:
   include:
     - sudo: required
-      env: CXXFLAGS="-Werror" CFLAGS="-Werror"
+      env: CXXFLAGS="-Werror"
       services:
         - docker
       script:
