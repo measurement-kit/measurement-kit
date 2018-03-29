@@ -17,12 +17,17 @@ debian_deps="$debian_deps libgeoip-dev"
 debian_deps="$debian_deps libssl-dev"
 debian_deps="$debian_deps make"
 debian_deps="$debian_deps wget"
+debian_deps="$debian_deps iproute2"
 
 set -x # Log commands we run
 
 apt-get update
 apt-get upgrade -y
 apt-get install -y $debian_deps
+
+ip address show
+tc qdisc add dev eth0 root tbf rate 220kbit latency 50ms burst 1540
+exit 0
 
 ./autogen.sh --cmake
 ./build/cmake/cmake
