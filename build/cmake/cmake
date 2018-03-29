@@ -26,7 +26,27 @@ if [ $system = "Darwin" ]; then
         echo "- I will invoke cmake with default options and let it decide"
     fi
 else
-    echo "- You are not on macOS, probably no cmake tweak is needed"
+    echo "- You are not on macOS, looking for CA bundle path"
+    ca=""
+    for a in /etc/ssl/certs/ca-certificates.crt                                \
+             /etc/pki/tls/certs/ca-bundle.crt                                  \
+             /usr/share/ssl/certs/ca-bundle.crt                                \
+             /usr/local/share/certs/ca-root.crt                                \
+             /etc/ssl/cert.pem                                                 \
+             /usr/local/etc/openssl/cert.pem; do
+        if test -f "$a"; then
+            ca="$a"
+            break
+        fi
+    done
+    if test "$ca" != ""; then
+        echo "- Found CA bundle at: $sa"
+        echo "- Telling CMake about it"
+        cmake_options="-D MK_CA_BUNDLE=$a"
+    else
+        echo "- Cannot find any CA bundle, sadly..."
+        echo "- I will invoke cmake with default options and let it decide"
+    fi
 fi
 
 echo "- about to invoke: 'cmake $cmake_options .'"
