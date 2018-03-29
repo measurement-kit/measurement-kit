@@ -2,7 +2,9 @@
 // Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #include "../measurement_kit/cmdline.hpp"
 #include "src/libmeasurement_kit/common/utils.hpp"
