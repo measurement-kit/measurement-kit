@@ -40,7 +40,7 @@ else
         fi
     done
     if test "$ca" != ""; then
-        echo "- Found CA bundle at: $sa"
+        echo "- Found CA bundle at: $ca"
         echo "- Telling CMake about it"
         cmake_options="-D MK_CA_BUNDLE=$a"
     else
@@ -49,7 +49,7 @@ else
     fi
 fi
 
-echo "- about to invoke: 'cmake $cmake_options .'"
+echo "- about to invoke: \`cmake $cmake_options .'"
 echo ""
 echo "=== BEGIN CMAKE OUTPUT ==="
 echo ""
