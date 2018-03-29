@@ -1,0 +1,82 @@
+#!/bin/sh
+
+# Adapted from build/android/cross
+# This assumes you have mingw 5.0.3_3 from homebrew running on macOS
+
+set -e
+
+ROOTDIR=$(cd $(dirname $0)/../../ && pwd -P)
+
+if [ $# -lt 1 ]; then
+    echo "Usage: $0 ARCH [command [arguments...]]" 1>&2
+    echo "" 1>&2
+    echo "  ARCH: i686, x86_64" 1>&2
+    echo "" 1>&2
+    echo "Example usage:" 1>&2
+    echo " $0 i686" 1>&2
+    exit 1
+fi
+
+ARCH=$1
+shift 
+
+echo ""
+echo "Cross compiling for $ARCH"
+
+
+if [ "$ARCH" = "i686" ]; then
+    TOOLCHAIN_NAME=i686-w64-mingw32
+    DESTDIR_NAME=x86
+elif [ "$ARCH" = "x86_64" ]; then
+    TOOLCHAIN_NAME=x86_64-w64-mingw32
+    DESTDIR_NAME=x86_64
+else
+    echo "$0: invalid $ARCH" 1>&2
+    exit 1
+fi
+
+SYSROOT="/usr/local/Cellar/mingw-w64/5.0.3_3/toolchain-${ARCH}/${ARCH}-w64-mingw32"
+
+# Override makefile's defaults with toolchain's tools. We use clang.
+TOOL_PREFIX=/usr/local/bin/${TOOLCHAIN_NAME}
+export CPP=${TOOL_PREFIX}-cpp
+export AR=${TOOL_PREFIX}-ar
+export AS=${TOOL_PREFIX}-as
+export NM=${TOOL_PREFIX}-nm
+export CC=${TOOL_PREFIX}-gcc
+export CXX=${TOOL_PREFIX}-g++
+export LD=${TOOL_PREFIX}-ld
+export RANLIB=${TOOL_PREFIX}-ranlib
+export STRIP=${TOOL_PREFIX}-strip
+
+# Teach the preprocessor to find toolchain includes
+export CPPFLAGS="--sysroot=${SYSROOT} -I${SYSROOT}/include ${CPPFLAGS}"
+
+# Pass specific flags to the C and/or CXX compiler
+export CFLAGS="${CFLAGS}"
+export CXXFLAGS="${CXXFLAGS}"
+
+# Teach the linker to find toolchain libraries
+export LDFLAGS="-L${SYSROOT}/lib ${LDFLAGS}"
+
+# Extra libraries to link with. Should not be needed.
+export LIBS="-lws2_32"
+
+#
+# Flags for ./script/build/<package> (cross-)build system
+#
+
+# Tell configure to use the toolchain
+export pkg_configure_flags="--host=${TOOLCHAIN_NAME} $CONFIG_EXTRA"
+
+# Tell ./script/build/<package> that we are cross compiling
+export pkg_os="mingw"
+
+# Tell ./script/build/<package> the name of the cross architecture
+export pkg_arch="${DESTDIR_NAME}"
+
+if [ $# -gt 0 ]; then
+    $@
+else
+    env
+fi
