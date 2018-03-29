@@ -22,9 +22,9 @@ debian_deps="$debian_deps iproute2"
 
 set -x # Log commands we run
 
-apt-get update
-apt-get upgrade -y
-apt-get install -y $debian_deps
+#apt-get update
+#apt-get upgrade -y
+#apt-get install -y $debian_deps
 
 #ip address show
 #tc qdisc add dev eth0 root tbf rate 220kbit latency 50ms burst 1540
