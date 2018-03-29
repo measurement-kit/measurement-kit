@@ -36,19 +36,21 @@ mkdir -p ${pkg_build_dir}
     git apply ${pkg_topdir}/script/build/libevent-000.patch
 
     if [ "$pkg_os" = "windows" ]; then
+        git apply ${pkg_topdir}/script/build/libevent-001.patch
         dist_dir="..\\..\\..\\..\\..\\MK_DIST"
         install_prefix="${dist_dir}\\${pkg_os}\\${pkg_arch}\\${pkg_name}"
         libressl_prefix="${dist_dir}\\${pkg_os}\\${pkg_arch}\\libressl"
         cmake.exe -G "NMake Makefiles"                                         \
+          -DCMAKE_BUILD_TYPE=Release                                           \
           -DCMAKE_INSTALL_PREFIX="${install_prefix}"                           \
           -DOPENSSL_INCLUDE_DIR="${libressl_prefix}\\include"                  \
-          -DLIB_EAY_DEBUG="${libressl_prefix}\\lib\\crypto-41.lib"             \
-          -DSSL_EAY_DEBUG="${libressl_prefix}\\lib\\ssl-43.lib"                \
+          -DLIB_EAY_DEBUG="${libressl_prefix}\\lib\\crypto.lib"                \
+          -DSSL_EAY_DEBUG="${libressl_prefix}\\lib\\ssl.lib"                   \
           -DEVENT__DISABLE_BENCHMARK=ON                                        \
           -DEVENT__DISABLE_TESTS=ON                                            \
           -DEVENT__DISABLE_REGRESS=ON                                          \
           -DEVENT__DISABLE_SAMPLES=ON                                          \
-          -DEVENT__BUILD_SHARED_LIBRARIES=ON
+          -DEVENT__BUILD_SHARED_LIBRARIES=OFF
         nmake.exe /f Makefile install
 	exit 0
     fi
