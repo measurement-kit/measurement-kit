@@ -5,19 +5,22 @@
 #include "src/libmeasurement_kit/nettests/runnable.hpp"
 
 #include <measurement_kit/nettests.hpp>
-#include <measurement_kit/ndt.hpp>
 
 #include "src/libmeasurement_kit/ndt/utils.hpp"
+#include "src/libmeasurement_kit/ndt/run.hpp"
 
 namespace mk {
 namespace nettests {
 
 MultiNdtTest::MultiNdtTest() : BaseTest() {
     runnable.reset(new MultiNdtRunnable);
-    runnable->options["save_real_probe_ip"] = true;
-    runnable->options["dns/engine"] = "system";
-    runnable->test_name = "multi_ndt";
-    runnable->test_version = "0.1.0";  /* Forked from `ndt` v0.0.4 */
+}
+
+MultiNdtRunnable::MultiNdtRunnable() noexcept {
+    options["save_real_probe_ip"] = true;
+    options["dns/engine"] = "system";
+    test_name = "multi_ndt";
+    test_version = "0.1.0";  /* Forked from `ndt` v0.0.4 */
 }
 
 static void write_simple_stats(report::Entry &entry, SharedPtr<Logger> logger) {

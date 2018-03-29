@@ -3,18 +3,21 @@
 // and LICENSE for more information on the copying conditions.
 
 #include "src/libmeasurement_kit/nettests/runnable.hpp"
+#include "src/libmeasurement_kit/ooni/nettests.hpp"
 
 #include <measurement_kit/nettests.hpp>
-#include <measurement_kit/ooni.hpp>
 
 namespace mk {
 namespace nettests {
 
 TelegramTest::TelegramTest() : BaseTest() {
     runnable.reset(new TelegramRunnable);
-    runnable->test_name = "telegram";
-    runnable->test_version = "0.0.2";
-    runnable->needs_input = false;
+}
+
+TelegramRunnable::TelegramRunnable() noexcept {
+    test_name = "telegram";
+    test_version = "0.0.2";
+    needs_input = false;
 }
 
 void TelegramRunnable::main(std::string /*input*/, Settings options,

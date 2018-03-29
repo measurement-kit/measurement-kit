@@ -2,16 +2,21 @@
 // Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
-#ifdef ENABLE_INTEGRATION_TESTS
-
 #define CATCH_CONFIG_MAIN
 #include "src/libmeasurement_kit/ext/catch.hpp"
 
 #include <measurement_kit/ooni.hpp>
+#include <measurement_kit/report.hpp>
+
+#include "src/libmeasurement_kit/ooni/templates.hpp"
+
+#include "src/libmeasurement_kit/ooni/templates_impl.hpp"
 
 using namespace mk;
 using namespace mk::ooni;
 using namespace mk::report;
+
+#ifdef ENABLE_INTEGRATION_TESTS
 
 TEST_CASE("dns query template works as expected") {
     SharedPtr<Reactor> reactor = Reactor::make();
@@ -173,6 +178,73 @@ TEST_CASE("http requests template works as expected") {
     });
 }
 
-#else
-int main(){}
 #endif
+
+static void mocked_request(Settings settings, http::Headers,
+        std::string, Callback<Error, SharedPtr<http::Response>> cb,
+        SharedPtr<Reactor>, SharedPtr<Logger>,
+        SharedPtr<http::Response>, int) {
+    std::string probe_ip = settings.get("real_probe_ip_", std::string{});
+    REQUIRE(probe_ip != "");
+    SharedPtr<http::Response> response{new http::Response};
+    response->request.reset(new http::Request);
+    response->response_line = "HTTP/1.1 200 Ok";
+    response->http_major = 1;
+    response->http_minor = 1;
+    response->status_code = 200;
+    response->reason = "Ok";
+    response->headers["Content-Type"] = "text/html";
+    {
+      std::stringstream ss;
+      ss << "aaa " << probe_ip << " aaa";
+      response->headers["X-IP-Address"] = ss.str();
+    }
+    {
+      std::stringstream ss;
+      ss << "<HTML><BODY>" << probe_ip << "</BODY></HTML>";
+      response->body = ss.str();
+    }
+    cb(NoError(), std::move(response));
+}
+
+TEST_CASE("Http template scrubs IP addresses") {
+    const char *ip = "1.1.1.1";
+
+    auto test = [ip](Settings settings, Callback<SharedPtr<Entry>> &&cb) {
+        using namespace mk::ooni::templates;
+        SharedPtr<Entry> entry{new Entry};
+        settings["real_probe_ip_"] = ip;
+        http::Headers headers;
+        std::string body = "";
+        SharedPtr<Reactor> reactor = Reactor::make();
+        SharedPtr<Logger> logger = Logger::make();
+        http_request_impl<mocked_request>(entry, settings, headers,
+                body, [entry, ip, cb](Error error, SharedPtr<http::Response>) {
+                    REQUIRE(error == NoError());
+                    cb(entry);
+                }, reactor, logger);
+    };
+
+    SECTION("By default the probe IP is scrubbed") {
+        Settings settings;
+        test(settings, [ip](SharedPtr<Entry> entry) {
+            REQUIRE(entry->dump().find(ip) == std::string::npos);
+        });
+    }
+
+    SECTION("IP is redacted when its inclusion is NOT requested") {
+        Settings settings;
+        settings["save_real_probe_ip"] = false;
+        test(settings, [ip](SharedPtr<Entry> entry) {
+            REQUIRE(entry->dump().find(ip) == std::string::npos);
+        });
+    }
+
+    SECTION("IP is NOT redacted when its inclusion is requested") {
+        Settings settings;
+        settings["save_real_probe_ip"] = true;
+        test(settings, [ip](SharedPtr<Entry> entry) {
+            REQUIRE(entry->dump().find(ip) != std::string::npos);
+        });
+    }
+}

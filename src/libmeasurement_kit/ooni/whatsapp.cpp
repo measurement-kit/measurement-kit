@@ -3,12 +3,15 @@
 // and LICENSE for more information on the copying conditions.
 
 #include "src/libmeasurement_kit/ooni/constants.hpp"
+#include "src/libmeasurement_kit/ooni/nettests.hpp"
 #include "src/libmeasurement_kit/ooni/whatsapp.hpp"
 #include "src/libmeasurement_kit/common/fcompose.hpp"
 #include "src/libmeasurement_kit/common/parallel.hpp"
 #include "src/libmeasurement_kit/common/utils.hpp"
+#include "src/libmeasurement_kit/ooni/templates.hpp"
 #include <cassert>
 #include <measurement_kit/net/utils.hpp>
+#include <measurement_kit/report.hpp>
 #include <measurement_kit/ooni.hpp>
 
 namespace mk {

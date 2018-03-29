@@ -4,18 +4,22 @@
 
 #include "src/libmeasurement_kit/common/utils.hpp"
 #include "src/libmeasurement_kit/nettests/runnable.hpp"
+#include "src/libmeasurement_kit/ooni/nettests.hpp"
+
 #include <measurement_kit/nettests.hpp>
-#include <measurement_kit/ooni.hpp>
 
 namespace mk {
 namespace nettests {
 
 WebConnectivityTest::WebConnectivityTest() : BaseTest() {
     runnable.reset(new WebConnectivityRunnable);
-    runnable->test_name = "web_connectivity";
-    runnable->test_version = "0.0.1";
-    runnable->needs_input = true;
-    runnable->test_helpers_data = {{"web-connectivity", "backend"}};
+}
+
+WebConnectivityRunnable::WebConnectivityRunnable() noexcept {
+    test_name = "web_connectivity";
+    test_version = "0.0.1";
+    needs_input = true;
+    test_helpers_data = {{"web-connectivity", "backend"}};
 }
 
 void WebConnectivityRunnable::main(std::string input, Settings options,

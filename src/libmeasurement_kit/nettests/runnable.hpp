@@ -71,8 +71,10 @@ class Runnable : public NonCopyable, public NonMovable {
 #define MK_DECLARE_RUNNABLE(_name_)                                            \
     class _name_ : public Runnable {                                           \
       public:                                                                  \
+        _name_() noexcept;                                                     \
+                                                                               \
         void main(std::string, Settings,                                       \
-                  Callback<SharedPtr<report::Entry>>) override;                      \
+                  Callback<SharedPtr<report::Entry>>) override;                \
     }
 
 MK_DECLARE_RUNNABLE(DashRunnable);
@@ -91,7 +93,9 @@ MK_DECLARE_RUNNABLE(WhatsappRunnable);
 // Separate definition because it contains extra methods
 class WebConnectivityRunnable : public Runnable {
   public:
-    void main(std::string, Settings, Callback<SharedPtr<report::Entry>>) override;
+    WebConnectivityRunnable() noexcept;
+    void main(
+            std::string, Settings, Callback<SharedPtr<report::Entry>>) override;
     void fixup_entry(report::Entry &) override;
 };
 

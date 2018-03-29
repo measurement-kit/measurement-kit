@@ -15,7 +15,7 @@ int main() {
     mk_task_t *task = nullptr;
     mk_task_error_t err =
             mk_task_start_ex(&task, "{\n"
-                                    "    \"type\": \"Ndt\",\n"
+                                    "    \"name\": \"Ndt\",\n"
                                     "    \"verbosity\": \"INFO\"\n"
                                     "}\n");
     if (err != MK_TASK_ENONE) {
@@ -23,7 +23,7 @@ int main() {
         exit(1);
     }
 
-    while (mk_task_is_running(task)) {
+    while (!mk_task_is_done(task)) {
         mk_event_t *event = mk_task_wait_for_next_event(task);
         if (event == NULL) {
             fprintf(stderr, "ERROR: cannot wait for next event\n");

@@ -9,12 +9,12 @@
 
 int main() {
     nlohmann::json settings{
-        {"type", "Ndt"},
-        {"verbosity", "INFO"},
+        {"name", "Ndt"},
+        {"log_level", "INFO"},
     };
     std::clog << settings.dump() << "\n";
     mk::engine::Task task{std::move(settings)};
-    while (task.is_running()) {
+    while (!task.is_done()) {
         auto event = task.wait_for_next_event();
         std::clog << event << "\n";
     }

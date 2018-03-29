@@ -3,18 +3,21 @@
 // and LICENSE for more information on the copying conditions.
 
 #include "src/libmeasurement_kit/nettests/runnable.hpp"
+#include "src/libmeasurement_kit/ooni/nettests.hpp"
 
 #include <measurement_kit/nettests.hpp>
-#include <measurement_kit/ooni.hpp>
 
 namespace mk {
 namespace nettests {
 
 FacebookMessengerTest::FacebookMessengerTest() : BaseTest() {
     runnable.reset(new FacebookMessengerRunnable);
-    runnable->test_name = "facebook_messenger";
-    runnable->test_version = "0.0.2";
-    runnable->needs_input = false;
+}
+
+FacebookMessengerRunnable::FacebookMessengerRunnable() noexcept {
+    test_name = "facebook_messenger";
+    test_version = "0.0.2";
+    needs_input = false;
 }
 
 void FacebookMessengerRunnable::main(std::string /*input*/, Settings options,

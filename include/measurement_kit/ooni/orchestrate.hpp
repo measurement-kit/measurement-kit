@@ -6,7 +6,12 @@
 
 // Documentation: doc/api/ooni/orchestrate.md
 
-#include <measurement_kit/common.hpp>
+#include <measurement_kit/common/error.hpp>
+#include <measurement_kit/common/json.hpp>
+#include <measurement_kit/common/logger.hpp>
+#include <measurement_kit/common/settings.hpp>
+#include <measurement_kit/common/shared_ptr.hpp>
+#include <measurement_kit/common/version.h>
 
 namespace mk {
 namespace ooni {

@@ -2,6 +2,7 @@
 // Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
+#include <assert.h>
 #include <cstdint>
 #include <fstream>
 #include <list>
@@ -17,6 +18,8 @@
 #include <mutex>
 #include <stdarg.h>
 #include <stdio.h>
+
+#include <measurement_kit/engine.h>
 
 namespace mk {
 
@@ -167,6 +170,12 @@ class DefaultLogger : public Logger, public NonCopyable, public NonMovable {
         event_handler_ = std::move(f);
     }
 
+    void on_event_ex(const std::string &event,
+            Callback<nlohmann::json &&> &&cb) override {
+        std::unique_lock<std::recursive_mutex> _{mutex_};
+        handlers_[event] = std::move(cb);
+    }
+
     void on_progress(Callback<double, const char *> &&fn) override {
         std::unique_lock<std::recursive_mutex> _{mutex_};
         progress_handler_ = fn;
@@ -188,6 +197,52 @@ class DefaultLogger : public Logger, public NonCopyable, public NonMovable {
                 /* Suppress */;
             }
         }
+        assert(!!s);
+        // Note that the mutex is recursive
+        // TODO(bassosimone): improve the API to allow emitting more context
+        emit_event_ex("status.progress", {
+            {"percentage", prog},
+            {"message", s},
+        });
+    }
+
+    void emit_event_ex(
+            const std::string &key, nlohmann::json &&value) override {
+        if (!value.is_object()) {
+            warn("wrong value for key: %s", key.c_str());
+            assert(false);
+        }
+#ifndef NDEBUG
+        {
+            bool found = false;
+            do {
+#define CHECK(name_)                                                           \
+    if (key == name_) {                                                        \
+        found = true;                                                          \
+        break;                                                                 \
+    }
+                MK_ENUM_EVENT(CHECK)
+#undef CHECK
+            } while (0);
+            if (!found) {
+                fprintf(stderr, "PANIC: unknown event: %s\n", key.c_str());
+                abort();
+            }
+        }
+#endif
+        if (handlers_.count(key) <= 0) {
+            return;
+        }
+        nlohmann::json event{
+            {"key", key},
+            {"value", std::move(value)}
+        };
+        std::unique_lock<std::recursive_mutex> _{mutex_};
+        // TODO(bassosimone): other logging functions filter all the
+        // exceptions. We cannot change this behavior until that is part
+        // of our public API. But here we deliberately choose not to do
+        // any exception handling. The callee must behave.
+        handlers_.at(key)(std::move(event));
     }
 
     void progress_relative(double prog, const char *s) override {
@@ -200,6 +255,13 @@ class DefaultLogger : public Logger, public NonCopyable, public NonMovable {
                 /* Suppress */;
             }
         }
+        assert(!!s);
+        // Note that the mutex is recursive
+        // TODO(bassosimone): improve the API to allow emitting more context
+        emit_event_ex("status.progress", {
+            {"percentage", progress_offset_ + progress_relative_},
+            {"message", s},
+        });
     }
 
     void set_progress_offset(double offset) override {
@@ -231,6 +293,7 @@ class DefaultLogger : public Logger, public NonCopyable, public NonMovable {
     SharedPtr<std::ofstream> ofile_;
     std::list<Delegate<>> eof_handlers_;
     Delegate<const char *> event_handler_;
+    std::map<std::string, Delegate<nlohmann::json &&>> handlers_;
     Delegate<double, const char *> progress_handler_;
     double progress_offset_ = 0.0;
     double progress_scale_ = 1.0;

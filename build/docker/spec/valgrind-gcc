@@ -7,7 +7,7 @@ export CC="gcc"
 export CFLAGS="$CFLAGS -fstack-protector-strong -Wformat -Werror=format-security -O2"
 export CXX="g++"
 export CXXFLAGS="$CXXFLAGS -fstack-protector-strong -Wformat -Werror=format-security -O2"
-export pkg_make_check_rule="run-valgrind-docker"
+export MAKE_CHECK_TARGET="run-valgrind-docker"
 
 debian_deps="$debian_deps autoconf"
 debian_deps="$debian_deps automake"

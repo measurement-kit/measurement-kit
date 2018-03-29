@@ -3,18 +3,21 @@
 // and LICENSE for more information on the copying conditions.
 
 #include "src/libmeasurement_kit/nettests/runnable.hpp"
+#include "src/libmeasurement_kit/ooni/nettests.hpp"
 
 #include <measurement_kit/nettests.hpp>
-#include <measurement_kit/ooni.hpp>
 
 namespace mk {
 namespace nettests {
 
 TcpConnectTest::TcpConnectTest() : BaseTest() {
     runnable.reset(new TcpConnectRunnable);
-    runnable->test_name = "tcp_connect";
-    runnable->test_version = "0.1.0";
-    runnable->needs_input = true;
+}
+
+TcpConnectRunnable::TcpConnectRunnable() noexcept {
+    test_name = "tcp_connect";
+    test_version = "0.1.0";
+    needs_input = true;
 }
 
 void TcpConnectRunnable::main(std::string input, Settings options,

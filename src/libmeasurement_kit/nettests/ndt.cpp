@@ -5,17 +5,20 @@
 #include "src/libmeasurement_kit/nettests/runnable.hpp"
 
 #include <measurement_kit/nettests.hpp>
-#include <measurement_kit/ndt.hpp>
 
 #include "src/libmeasurement_kit/ndt/utils.hpp"
+#include "src/libmeasurement_kit/ndt/run.hpp"
 
 namespace mk {
 namespace nettests {
 
 NdtTest::NdtTest() : BaseTest() {
     runnable.reset(new NdtRunnable);
-    runnable->test_name = "ndt";
-    runnable->test_version = "0.1.0";
+}
+
+NdtRunnable::NdtRunnable() noexcept {
+    test_name = "ndt";
+    test_version = "0.1.0";
 }
 
 void NdtRunnable::main(std::string, Settings settings,

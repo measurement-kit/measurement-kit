@@ -5,6 +5,8 @@
 #include <measurement_kit/ooni.hpp>
 #include <measurement_kit/report.hpp>
 
+#include "src/libmeasurement_kit/ooni/collector_client.hpp"
+
 namespace mk {
 namespace report {
 

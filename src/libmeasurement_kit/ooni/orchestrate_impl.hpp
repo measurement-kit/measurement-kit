@@ -10,6 +10,7 @@
 #include "src/libmeasurement_kit/common/utils.hpp"
 
 #include <measurement_kit/ooni.hpp>
+#include <measurement_kit/http.hpp>
 
 #include "../ooni/utils.hpp"
 

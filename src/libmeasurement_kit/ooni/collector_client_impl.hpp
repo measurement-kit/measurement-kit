@@ -7,10 +7,12 @@
 // This file implements the OONI collector client protocol
 // See <https://github.com/TheTorProject/ooni-spec/blob/master/oonib.md>
 
-#include <measurement_kit/common/json.hpp>
 #include "src/libmeasurement_kit/common/mock.hpp"
+#include "src/libmeasurement_kit/ooni/collector_client.hpp"
 
+#include <measurement_kit/common/json.hpp>
 #include <measurement_kit/ooni.hpp>
+#include <measurement_kit/report.hpp>
 #include <measurement_kit/http.hpp>
 
 namespace mk {
@@ -161,6 +163,13 @@ void create_report_impl(SharedPtr<Transport> transport, Entry entry,
                            callback(JsonKeyError(), "");
                            return;
                        }
+                       // TODO(bassosimone): the code for setting up the
+                       // report needs improvements, still it's nice to see
+                       // how it's easy to pass it to our controller :^).
+                       logger->emit_event_ex("status.report_created",
+                           nlohmann::json::object({
+                               {"report_id", report_id}
+                           }));
                        callback(NoError(), report_id);
                    },
                    settings, reactor, logger);

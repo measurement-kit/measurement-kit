@@ -3,18 +3,21 @@
 // and LICENSE for more information on the copying conditions.
 
 #include "src/libmeasurement_kit/nettests/runnable.hpp"
+#include "src/libmeasurement_kit/ooni/nettests.hpp"
 
 #include <measurement_kit/nettests.hpp>
-#include <measurement_kit/ooni.hpp>
 
 namespace mk {
 namespace nettests {
 
 DnsInjectionTest::DnsInjectionTest() : BaseTest() {
     runnable.reset(new DnsInjectionRunnable);
-    runnable->test_name = "dns_injection";
-    runnable->test_version = "0.0.1";
-    runnable->needs_input = true;
+}
+
+DnsInjectionRunnable::DnsInjectionRunnable() noexcept {
+    test_name = "dns_injection";
+    test_version = "0.0.1";
+    needs_input = true;
 }
 
 void DnsInjectionRunnable::main(std::string input, Settings options,

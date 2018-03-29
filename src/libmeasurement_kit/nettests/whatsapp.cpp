@@ -3,17 +3,21 @@
 // and LICENSE for more information on the copying conditions.
 
 #include "src/libmeasurement_kit/nettests/runnable.hpp"
+#include "src/libmeasurement_kit/ooni/nettests.hpp"
+
 #include <measurement_kit/nettests.hpp>
-#include <measurement_kit/ooni.hpp>
 
 namespace mk {
 namespace nettests {
 
 WhatsappTest::WhatsappTest() : BaseTest() {
     runnable.reset(new WhatsappRunnable);
-    runnable->test_name = "whatsapp";
-    runnable->test_version = "0.6.1";
-    runnable->needs_input = false;
+}
+
+WhatsappRunnable::WhatsappRunnable() noexcept {
+    test_name = "whatsapp";
+    test_version = "0.6.1";
+    needs_input = false;
 }
 
 void WhatsappRunnable::main(std::string /*input*/, Settings options,
