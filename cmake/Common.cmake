@@ -111,6 +111,9 @@ if(UNIX)
   CHECK_FUNCTION_EXISTS(strtonum HAVE_STRTONUM)
 
   CHECK_SYMBOL_EXISTS(optreset "getopt.h" HAVE_DECL_OPTRESET)
+  if(${HAVE_DECL_OPTRESET})
+    add_definitions(-DHAVE_DECL_OPTRESET)
+  endif()
 
   # geoip
 
