@@ -11,9 +11,8 @@ pkg_repository=https://github.com/libevent/libevent
 pkg_branch=patches-2.1
 pkg_expected_head=e7ff4ef2b4fc950a765008c18e74281cdb5e7668
 
-pkg_dist_dir=${pkg_topdir}/MK_DIST/${pkg_os}/${pkg_arch}/${pkg_name}
-rm -rf ${pkg_dist_dir}
-mkdir -p ${pkg_dist_dir}
+pkg_dist_dir=${pkg_topdir}/MK_DIST/${pkg_os}/${pkg_arch}
+install -d ${pkg_dist_dir}
 
 pkg_build_dir=${pkg_topdir}/MK_BUILD/${pkg_os}/${pkg_arch}/${pkg_name}
 rm -rf ${pkg_build_dir}
@@ -56,8 +55,8 @@ mkdir -p ${pkg_build_dir}
 
     ./autogen.sh
 
-    export CPPFLAGS="${CPPFLAGS} -I${pkg_dist_dir}/../libressl/include"
-    export LDFLAGS="${LDFLAGS} -L${pkg_dist_dir}/../libressl/lib"
+    export CPPFLAGS="${CPPFLAGS} -I${pkg_dist_dir}/include"
+    export LDFLAGS="${LDFLAGS} -L${pkg_dist_dir}/lib"
 
     ./configure --prefix=${pkg_dist_dir} --disable-shared  --disable-samples   \
             --disable-libevent-regress --disable-clock-gettime                 \
