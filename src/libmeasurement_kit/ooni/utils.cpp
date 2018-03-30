@@ -61,7 +61,7 @@ ErrorOr<std::string> GeoipDatabase::with_open_database_do(
         std::function<ErrorOr<std::string>()> action,
         SharedPtr<Logger> logger) {
     if (!db) {
-        db.reset(GeoIP_open(path.c_str(), GEOIP_MEMORY_CACHE),
+        db.reset(GeoIP_open(path.c_str(), GEOIP_MEMORY_CACHE|GEOIP_SILENCE),
                  [](GeoIP *pointer) {
                     if (pointer) {
                         GeoIP_delete(pointer);
