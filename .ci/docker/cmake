@@ -11,6 +11,7 @@ cd $REPOROOT
 debian_deps="$debian_deps cmake"
 debian_deps="$debian_deps g++"
 debian_deps="$debian_deps git"
+debian_deps="$debian_deps iproute2"
 debian_deps="$debian_deps libc-ares-dev"
 debian_deps="$debian_deps libevent-dev"
 debian_deps="$debian_deps libgeoip-dev"
@@ -24,6 +25,7 @@ apt-get update
 apt-get upgrade -y
 apt-get install -y $debian_deps
 
+tc qdisc add dev eth0 root netem delay 200ms 10ms
 ./autogen.sh --cmake
 ./script/cmake/run
 make V=0 -j$(nproc)
