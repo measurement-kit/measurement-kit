@@ -1,0 +1,63 @@
+Adapt GeoIP to build static library on Windows
+
+We want a static library linked with the multithreaded static
+MSVC runtime (`-MT`). We need to make sure we're not using any
+dllimport/dllexport techniques that may alter symbol names.
+
+diff --git a/libGeoIP/Makefile.vc b/libGeoIP/Makefile.vc
+index 157e014..20a68c5 100644
+--- a/libGeoIP/Makefile.vc
++++ b/libGeoIP/Makefile.vc
+@@ -4,11 +4,11 @@
+  
+ COMPILER=cl 
+  
+-CFLAGS=-DWIN32 -DGEOIP_EXPORTS -MD -nologo 
++CFLAGS=-DWIN32 -MT -nologo 
+  
+ GEOIPINC = -I..\libGeoIP 
+  
+-CC1 = $(COMPILER) $(CFLAGS) $(GEOIPINC) -DGEOIPDATADIR=\"$(GEOIPDATADIR)\" -DPACKAGE_VERSION=\"1.6.3\"
++CC1 = $(COMPILER) $(CFLAGS) $(GEOIPINC) -DGEOIPDATADIR=\"$(GEOIPDATADIR)\" -DPACKAGE_VERSION=\"1.6.11\"
+ 
+ LINKER=link
+ 
+@@ -22,11 +22,11 @@ EXTRA_LIBS= ws2_32.lib
+  
+ AR=lib 
+  
+-#GeoIP.lib:  GeoIP.obj GeoIPCity.obj regionName.obj md5.obj timeZone.obj
+-#   $(AR) -nologo $(OBJS) $(EXTRA_LIBS) /OUT:GeoIP.lib 
++GeoIP.lib: $(OBJS)
++   $(AR) -nologo $(OBJS) $(EXTRA_LIBS) /OUT:GeoIP.lib 
+ 
+-GeoIP.dll GeoIP.lib: $(OBJS)
+-   $(LD1) $(OBJS) $(EXTRA_LIBS) /out:GeoIP.dll /implib:GeoIP.lib
++#GeoIP.dll GeoIP.lib: $(OBJS)
++#   $(LD1) $(OBJS) $(EXTRA_LIBS) /out:GeoIP.dll /implib:GeoIP.lib
+  
+ GeoIP.obj: GeoIP.c 
+    $(CC1) -c GeoIP.c $(GEOIPINC) 
+diff --git a/libGeoIP/GeoIP.h b/libGeoIP/GeoIP.h
+index 9da5250..8a016e0 100644
+--- a/libGeoIP/GeoIP.h
++++ b/libGeoIP/GeoIP.h
+@@ -158,18 +158,8 @@ typedef enum {
+     GEOIP_CORPORATE_SPEED = 3,
+ } GeoIPNetspeedValues;
+ 
+-#if defined(_WIN32) && !defined(__MINGW32__)
+-#ifdef GEOIP_EXPORTS
+-#define GEOIP_API __declspec(dllexport)
+-#define GEOIP_DATA __declspec(dllexport)
+-#else
+-#define GEOIP_DATA __declspec(dllimport)
+-#define GEOIP_API
+-#endif  /* GEOIP_EXPORTS */
+-#else
+ #define GEOIP_API
+ #define GEOIP_DATA
+-#endif
+ 
+ extern char **GeoIPDBFileName;
+ extern GEOIP_DATA const char * GeoIPDBDescription[NUM_DB_TYPES];

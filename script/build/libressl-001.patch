@@ -1,0 +1,27 @@
+Adjust libressl build process on Windows
+
+- Use the `/MT` runtime
+
+- Make sure we don't build shared libs
+
+--- a/CMakeLists.txt	2018-03-29 14:15:39.176970100 +0200
++++ b/CMakeLists.txt	2018-03-29 14:16:42.932397400 +0200
+@@ -138,6 +138,7 @@
+ 		${MSVC_DISABLED_WARNINGS_LIST})
+ 	string(REGEX REPLACE "[/-]W[1234][ ]?" "" CMAKE_C_FLAGS ${CMAKE_C_FLAGS})
+ 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -MP -W4 ${MSVC_DISABLED_WARNINGS_STR}")
++	string(REPLACE "/MD" "/MT" CMAKE_C_FLAGS_RELEASE ${CMAKE_C_FLAGS_RELEASE}) 
+ endif()
+ 
+ check_function_exists(asprintf HAVE_ASPRINTF)
+@@ -257,10 +258,6 @@
+ 	endif()
+ endif()
+ 
+-if(NOT (CMAKE_SYSTEM_NAME MATCHES "(Darwin|CYGWIN)"))
+-	set(BUILD_SHARED true)
+-endif()
+-
+ # USE_SHARED builds applications (e.g. openssl) using shared LibreSSL.
+ # By default, applications use LibreSSL static library to avoid dependencies.
+ # USE_SHARED isn't set by default; use -DUSE_SHARED=ON with CMake to enable.
