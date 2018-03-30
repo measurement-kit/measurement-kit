@@ -11,6 +11,7 @@ cd $REPOROOT
 debian_deps="$debian_deps cmake"
 debian_deps="$debian_deps g++"
 debian_deps="$debian_deps git"
+debian_deps="$debian_deps iproute2"
 debian_deps="$debian_deps libc-ares-dev"
 debian_deps="$debian_deps libevent-dev"
 debian_deps="$debian_deps libgeoip-dev"
