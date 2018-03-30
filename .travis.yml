@@ -7,7 +7,7 @@ matrix:
       services:
         - docker
       script:
-        - ./.ci/docker/setup bassosimone/mk-artful cmake
+        - ./.ci/docker/setup ubuntu:artful cmake
 
     - sudo: required
       env: DOCKER_SPEC=valgrind-clang pkg_make_flags="V=0 -j3"
