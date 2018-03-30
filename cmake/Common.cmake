@@ -4,7 +4,9 @@ if (NOT MK_ROOT)
     set (MK_ROOT ${CMAKE_SOURCE_DIR})
 endif (NOT MK_ROOT)
 
-set(CMAKE_BUILD_TYPE Debug CACHE STRING "Set the build type" FORCE)
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Debug CACHE STRING "Set the build type" FORCE)
+endif()
 
 set(CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}" CACHE PATH
     "Where to install MK" FORCE)
