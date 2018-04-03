@@ -12,7 +12,7 @@
 
 #include <measurement_kit/common/json.hpp>
 #include <measurement_kit/ooni.hpp>
-#include <measurement_kit/http.hpp>
+#include "src/libmeasurement_kit/http/http.hpp"
 
 #include <fstream>
 

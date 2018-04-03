@@ -1,8 +1,8 @@
 // Part of Measurement Kit <https://measurement-kit.github.io/>.
 // Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
-#ifndef MEASUREMENT_KIT_HTTP_HTTP_HPP
-#define MEASUREMENT_KIT_HTTP_HTTP_HPP
+#ifndef SRC_LIBMEASUREMENT_KIT_HTTP_HTTP_HPP
+#define SRC_LIBMEASUREMENT_KIT_HTTP_HTTP_HPP
 
 // Documentation: doc/api/http.md
 

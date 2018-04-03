@@ -5,9 +5,9 @@
 #define SRC_LIBMEASUREMENT_KIT_OONI_TEMPLATES_HPP
 
 #include <measurement_kit/dns.hpp>
-#include <measurement_kit/http.hpp>
 #include <measurement_kit/net.hpp>
 
+#include "src/libmeasurement_kit/http/http.hpp"
 #include "src/libmeasurement_kit/report/entry.hpp"
 
 namespace mk {

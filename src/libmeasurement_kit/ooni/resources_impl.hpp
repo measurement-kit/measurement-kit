@@ -12,7 +12,7 @@
 #include <fstream>
 #include <regex>
 
-#include <measurement_kit/http.hpp>
+#include "src/libmeasurement_kit/http/http.hpp"
 #include <measurement_kit/ooni.hpp>
 
 namespace mk {
