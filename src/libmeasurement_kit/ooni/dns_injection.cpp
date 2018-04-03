@@ -4,9 +4,9 @@
 
 #include "src/libmeasurement_kit/ooni/nettests.hpp"
 #include "src/libmeasurement_kit/ooni/templates.hpp"
+#include "src/libmeasurement_kit/report/entry.hpp"
 
 #include <measurement_kit/ooni.hpp>
-#include <measurement_kit/report.hpp>
 
 #include <event2/dns.h>
 

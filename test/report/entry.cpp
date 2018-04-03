@@ -5,7 +5,7 @@
 #define CATCH_CONFIG_MAIN
 #include "src/libmeasurement_kit/ext/catch.hpp"
 
-#include <measurement_kit/report.hpp>
+#include "src/libmeasurement_kit/report/entry.hpp"
 
 using namespace mk::report;
 using namespace mk;

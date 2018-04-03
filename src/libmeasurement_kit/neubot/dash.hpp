@@ -4,7 +4,7 @@
 #ifndef SRC_LIBMEASUREMENT_KIT_NEUBOT_DASH_HPP
 #define SRC_LIBMEASUREMENT_KIT_NEUBOT_DASH_HPP
 
-#include <measurement_kit/report.hpp>
+#include "src/libmeasurement_kit/report/entry.hpp"
 
 namespace mk {
 namespace neubot {
