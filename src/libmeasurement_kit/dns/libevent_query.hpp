@@ -5,6 +5,7 @@
 #define SRC_LIBMEASUREMENT_KIT_DNS_LIBEVENT_HPP
 
 #include "src/libmeasurement_kit/common/mock.hpp"
+#include "src/libmeasurement_kit/common/non_copyable.hpp"
 #include "src/libmeasurement_kit/common/utils.hpp"
 #include "src/libmeasurement_kit/dns/utils.hpp"
 #include "../net/utils.hpp"

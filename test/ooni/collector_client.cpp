@@ -7,6 +7,7 @@
 
 #include "src/libmeasurement_kit/net/emitter.hpp"
 #include "src/libmeasurement_kit/ooni/collector_client_impl.hpp"
+#include "src/libmeasurement_kit/common/non_copyable.hpp"
 
 #include <sstream>
 

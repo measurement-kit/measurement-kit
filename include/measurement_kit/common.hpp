@@ -8,7 +8,6 @@
 #include <measurement_kit/common/error_or.hpp>
 #include <measurement_kit/common/json.hpp>
 #include <measurement_kit/common/logger.hpp>
-#include <measurement_kit/common/non_copyable.hpp>
 #include <measurement_kit/common/non_movable.hpp>
 #include <measurement_kit/common/platform.h>
 #include <measurement_kit/common/reactor.hpp>
