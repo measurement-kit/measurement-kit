@@ -9,6 +9,7 @@
 
 #include "src/libmeasurement_kit/http/response_parser.hpp"
 #include "src/libmeasurement_kit/http/http.hpp"
+#include "src/libmeasurement_kit/net/connect.hpp"
 
 namespace mk {
 namespace http {

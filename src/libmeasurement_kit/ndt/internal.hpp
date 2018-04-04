@@ -11,8 +11,10 @@
 #include "src/libmeasurement_kit/ndt/error.hpp"
 #include "src/libmeasurement_kit/ndt/run.hpp"
 #include "src/libmeasurement_kit/ndt/measure_speed.hpp"
+#include "src/libmeasurement_kit/net/connect.hpp"
+#include "src/libmeasurement_kit/net/error.hpp"
+#include "src/libmeasurement_kit/net/transport.hpp"
 
-#include <measurement_kit/net.hpp>
 #include <measurement_kit/ndt/defs.hpp>
 
 /*

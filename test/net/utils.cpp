@@ -7,6 +7,7 @@
 #define CATCH_CONFIG_MAIN
 #include "src/libmeasurement_kit/ext/catch.hpp"
 
+#include "src/libmeasurement_kit/net/error.hpp"
 #include "src/libmeasurement_kit/net/utils.hpp"
 
 TEST_CASE("is_ipv4_addr works") {

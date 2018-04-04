@@ -6,8 +6,7 @@
 
 #include "src/libmeasurement_kit/common/delegate.hpp"
 #include "src/libmeasurement_kit/dns/resolve_hostname.hpp"
-
-#include <measurement_kit/net.hpp>
+#include "src/libmeasurement_kit/net/transport.hpp"
 
 namespace mk {
 namespace net {

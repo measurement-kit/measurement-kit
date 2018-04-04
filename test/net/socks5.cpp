@@ -6,6 +6,7 @@
 #include "src/libmeasurement_kit/ext/catch.hpp"
 
 #include "src/libmeasurement_kit/net/socks5.hpp"
+#include "src/libmeasurement_kit/net/error.hpp"
 
 using namespace mk;
 using namespace mk::net;

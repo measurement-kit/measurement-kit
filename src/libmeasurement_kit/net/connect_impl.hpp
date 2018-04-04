@@ -7,7 +7,7 @@
 #include "src/libmeasurement_kit/common/mock.hpp"
 #include "src/libmeasurement_kit/common/utils.hpp"
 
-#include <measurement_kit/net.hpp>
+#include "src/libmeasurement_kit/net/connect.hpp"
 
 #include <event2/bufferevent.h>
 

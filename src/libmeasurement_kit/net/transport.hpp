@@ -1,11 +1,11 @@
 // Part of Measurement Kit <https://measurement-kit.github.io/>.
 // Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
-#ifndef MEASUREMENT_KIT_NET_TRANSPORT_HPP
-#define MEASUREMENT_KIT_NET_TRANSPORT_HPP
+#ifndef SRC_LIBMEASUREMENT_KIT_NET_TRANSPORT_HPP
+#define SRC_LIBMEASUREMENT_KIT_NET_TRANSPORT_HPP
 
-#include <measurement_kit/net/buffer.hpp>
-#include <measurement_kit/net/utils.hpp>
+#include "src/libmeasurement_kit/net/buffer.hpp"
+#include "src/libmeasurement_kit/net/utils.hpp"
 
 struct bufferevent; /* Forward declaration */
 
