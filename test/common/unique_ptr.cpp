@@ -5,6 +5,7 @@
 #define CATCH_CONFIG_MAIN
 #include "src/libmeasurement_kit/ext/catch.hpp"
 
+#include "src/libmeasurement_kit/common/unique_ptr.hpp"
 #include <measurement_kit/common.hpp>
 
 using namespace mk;

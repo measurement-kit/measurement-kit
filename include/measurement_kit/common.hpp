@@ -12,6 +12,5 @@
 #include <measurement_kit/common/scalar.hpp>
 #include <measurement_kit/common/settings.hpp>
 #include <measurement_kit/common/shared_ptr.hpp>
-#include <measurement_kit/common/unique_ptr.hpp>
 #include <measurement_kit/common/version.h>
 #endif
