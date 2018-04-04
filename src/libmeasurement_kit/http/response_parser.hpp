@@ -8,6 +8,7 @@
 
 #include "src/libmeasurement_kit/common/delegate.hpp"
 #include "src/libmeasurement_kit/common/non_copyable.hpp"
+#include "src/libmeasurement_kit/common/non_movable.hpp"
 #include "src/libmeasurement_kit/http/http.hpp"
 
 #include <type_traits>

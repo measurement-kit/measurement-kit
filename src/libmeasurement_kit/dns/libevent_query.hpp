@@ -6,6 +6,7 @@
 
 #include "src/libmeasurement_kit/common/mock.hpp"
 #include "src/libmeasurement_kit/common/non_copyable.hpp"
+#include "src/libmeasurement_kit/common/non_movable.hpp"
 #include "src/libmeasurement_kit/common/utils.hpp"
 #include "src/libmeasurement_kit/dns/utils.hpp"
 #include "../net/utils.hpp"

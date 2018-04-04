@@ -6,6 +6,7 @@
 
 #include "src/libmeasurement_kit/common/delegate.hpp"
 #include "src/libmeasurement_kit/common/non_copyable.hpp"
+#include "src/libmeasurement_kit/common/non_movable.hpp"
 #include "src/libmeasurement_kit/report/entry.hpp"
 #include "src/libmeasurement_kit/report/report.hpp"
 
