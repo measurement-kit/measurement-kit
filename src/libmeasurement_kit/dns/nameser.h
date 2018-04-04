@@ -83,8 +83,8 @@
  *	$From: nameser.h,v 8.11 1996/10/08 04:51:02 vixie Exp $
  */
 
-#ifndef MEASUREMENT_KIT_DNS_NAMESER_H
-#define MEASUREMENT_KIT_DNS_NAMESER_H
+#ifndef SRC_LIBMEASUREMENT_KIT_DNS_NAMESER_H
+#define SRC_LIBMEASUREMENT_KIT_DNS_NAMESER_H
 
 #ifndef _WIN32
 #include <arpa/nameser.h>
@@ -106,4 +106,4 @@
 #define NS_IN6ADDRSZ	16		/* IPv6 T_AAAA */
 
 #endif /* !WIN32/WIN32 */
-#endif /* !MEASUREMENT_KIT_DNS_NAMESER_H */
+#endif /* !SRC_LIBMEASUREMENT_KIT_DNS_NAMESER_H */

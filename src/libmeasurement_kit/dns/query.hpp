@@ -1,11 +1,13 @@
 // Part of Measurement Kit <https://measurement-kit.github.io/>.
 // Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
-#ifndef MEASUREMENT_KIT_DNS_QUERY_HPP
-#define MEASUREMENT_KIT_DNS_QUERY_HPP
+#ifndef SRC_LIBMEASUREMENT_KIT_DNS_QUERY_HPP
+#define SRC_LIBMEASUREMENT_KIT_DNS_QUERY_HPP
 
-#include <measurement_kit/dns/query_class.hpp>
-#include <measurement_kit/dns/query_type.hpp>
+#include "src/libmeasurement_kit/dns/error.hpp"
+#include "src/libmeasurement_kit/dns/query_class.hpp"
+#include "src/libmeasurement_kit/dns/query_type.hpp"
+
 #include <measurement_kit/common.hpp>
 
 namespace mk {

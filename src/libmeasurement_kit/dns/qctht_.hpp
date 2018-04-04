@@ -1,8 +1,8 @@
 // Part of Measurement Kit <https://measurement-kit.github.io/>.
 // Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
-#ifndef MEASUREMENT_KIT_DNS_QCTHT__HPP
-#define MEASUREMENT_KIT_DNS_QCTHT__HPP
+#ifndef SRC_LIBMEASUREMENT_KIT_DNS_QCTHT__HPP
+#define SRC_LIBMEASUREMENT_KIT_DNS_QCTHT__HPP
 
 // QCTHT = query class and type helper template
 

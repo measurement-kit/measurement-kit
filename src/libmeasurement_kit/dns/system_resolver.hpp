@@ -5,9 +5,8 @@
 #define SRC_LIBMEASUREMENT_KIT_DNS_SYSTEM_RESOLVER_HPP
 
 #include "src/libmeasurement_kit/common/mock.hpp"
-#include <measurement_kit/dns.hpp>
-
-#include "../dns/getaddrinfo_async.hpp"
+#include "src/libmeasurement_kit/dns/query.hpp"
+#include "src/libmeasurement_kit/dns/getaddrinfo_async.hpp"
 
 namespace mk {
 namespace dns {
