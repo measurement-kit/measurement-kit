@@ -7,6 +7,8 @@
 
 #include <measurement_kit/common.hpp>
 
+#include "src/libmeasurement_kit/common/continuation.hpp"
+
 using namespace mk;
 
 static void coroutine(SharedPtr<Reactor> reactor, Callback<Error, Continuation<Error>> cb) {

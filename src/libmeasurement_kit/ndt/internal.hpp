@@ -7,6 +7,7 @@
 // This implementation targets v3.7.0 of the NDT protocol
 // See <https://github.com/ndt-project/ndt/wiki/NDTProtocol>
 
+#include "src/libmeasurement_kit/common/continuation.hpp"
 #include "src/libmeasurement_kit/common/utils.hpp"
 #include "src/libmeasurement_kit/ndt/error.hpp"
 #include "src/libmeasurement_kit/ndt/run.hpp"

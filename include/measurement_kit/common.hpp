@@ -3,7 +3,6 @@
 #define MEASUREMENT_KIT_COMMON_HPP
 #include <measurement_kit/common/aaa_base.h>
 #include <measurement_kit/common/callback.hpp>
-#include <measurement_kit/common/continuation.hpp>
 #include <measurement_kit/common/data_usage.hpp>
 #include <measurement_kit/common/enable_shared_from_this.hpp>
 #include <measurement_kit/common/error.hpp>
