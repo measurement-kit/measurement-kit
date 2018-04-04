@@ -8,6 +8,8 @@
 #include <ws2tcpip.h>
 #endif
 
+#include "src/libmeasurement_kit/common/socket.hpp"
+
 #include <measurement_kit/common.hpp>
 
 struct sockaddr_storage;
