@@ -7,7 +7,6 @@
 #include <measurement_kit/common/error.hpp>
 #include <measurement_kit/common/error_or.hpp>
 #include <measurement_kit/common/json.hpp>
-#include <measurement_kit/common/lexical_cast.hpp>
 #include <measurement_kit/common/logger.hpp>
 #include <measurement_kit/common/non_copyable.hpp>
 #include <measurement_kit/common/non_movable.hpp>
