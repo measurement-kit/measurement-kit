@@ -26,9 +26,9 @@
 #include <measurement_kit/common/error.hpp>
 #include <measurement_kit/common/logger.hpp>
 #include <measurement_kit/common/nlohmann/json.hpp>
-#include <measurement_kit/common/reactor.hpp>
 #include <measurement_kit/common/shared_ptr.hpp>
 
+#include "src/libmeasurement_kit/common/reactor.hpp"
 #include "src/libmeasurement_kit/nettests/runnable.hpp"
 
 namespace mk {

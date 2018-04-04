@@ -9,7 +9,6 @@
 #include <measurement_kit/common/json.hpp>
 #include <measurement_kit/common/logger.hpp>
 #include <measurement_kit/common/platform.h>
-#include <measurement_kit/common/reactor.hpp>
 #include <measurement_kit/common/scalar.hpp>
 #include <measurement_kit/common/settings.hpp>
 #include <measurement_kit/common/shared_ptr.hpp>

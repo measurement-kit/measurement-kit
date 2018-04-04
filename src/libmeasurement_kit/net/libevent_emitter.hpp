@@ -9,6 +9,7 @@
 #include "src/libmeasurement_kit/common/utils.hpp"
 #include "src/libmeasurement_kit/common/non_copyable.hpp"
 #include "src/libmeasurement_kit/common/non_movable.hpp"
+#include "src/libmeasurement_kit/common/reactor.hpp"
 #include <cassert>
 #include <cerrno>
 #include <event2/buffer.h>
@@ -19,7 +20,6 @@
 #include <measurement_kit/common/error.hpp>
 #include <measurement_kit/common/error_or.hpp>
 #include <measurement_kit/common/logger.hpp>
-#include <measurement_kit/common/reactor.hpp>
 #include "src/libmeasurement_kit/net/buffer.hpp"
 #include "src/libmeasurement_kit/net/error.hpp"
 #include "src/libmeasurement_kit/net/transport.hpp"

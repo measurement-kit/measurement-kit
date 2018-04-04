@@ -5,6 +5,7 @@
 #define SRC_LIBMEASUREMENT_KIT_OONI_OONI_REPORTER_HPP
 
 #include "src/libmeasurement_kit/report/base_reporter.hpp"
+#include "src/libmeasurement_kit/common/reactor.hpp"
 
 namespace mk {
 namespace report {

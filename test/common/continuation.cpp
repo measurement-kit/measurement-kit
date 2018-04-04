@@ -8,6 +8,7 @@
 #include <measurement_kit/common.hpp>
 
 #include "src/libmeasurement_kit/common/continuation.hpp"
+#include "src/libmeasurement_kit/common/reactor.hpp"
 
 using namespace mk;
 
