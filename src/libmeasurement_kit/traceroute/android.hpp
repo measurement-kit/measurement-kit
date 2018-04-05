@@ -39,8 +39,10 @@
 // This is meant to run on Android but can run on all Linux systems
 #ifdef __linux__
 
-#include "src/libmeasurement_kit/traceroute/interface.hpp"
+#include "src/libmeasurement_kit/common/non_copyable.hpp"
+#include "src/libmeasurement_kit/common/non_movable.hpp"
 #include "src/libmeasurement_kit/common/delegate.hpp"
+#include "src/libmeasurement_kit/traceroute/interface.hpp"
 
 struct sock_extended_err;
 struct sockaddr_in6;
