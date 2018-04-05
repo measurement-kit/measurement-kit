@@ -10,10 +10,10 @@
 #include <measurement_kit/common/callback.hpp>
 #include "src/libmeasurement_kit/common/delegate.hpp"
 #include "src/libmeasurement_kit/common/locked.hpp"
+#include "src/libmeasurement_kit/common/non_copyable.hpp"
+#include "src/libmeasurement_kit/common/non_movable.hpp"
 #include <measurement_kit/common/json.hpp>
 #include <measurement_kit/common/logger.hpp>
-#include <measurement_kit/common/non_copyable.hpp>
-#include <measurement_kit/common/non_movable.hpp>
 #include <measurement_kit/common/shared_ptr.hpp>
 #include <mutex>
 #include <stdarg.h>

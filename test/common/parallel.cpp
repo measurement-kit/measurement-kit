@@ -6,6 +6,7 @@
 #include "src/libmeasurement_kit/ext/catch.hpp"
 
 #include "src/libmeasurement_kit/common/parallel.hpp"
+#include "src/libmeasurement_kit/common/reactor.hpp"
 #include <measurement_kit/common.hpp>
 
 using namespace mk;

@@ -5,6 +5,7 @@
 #define CATCH_CONFIG_MAIN
 #include "src/libmeasurement_kit/ext/catch.hpp"
 
+#include "src/libmeasurement_kit/common/continuation.hpp"
 #include "src/libmeasurement_kit/common/fmap.hpp"
 
 #include <measurement_kit/common.hpp>

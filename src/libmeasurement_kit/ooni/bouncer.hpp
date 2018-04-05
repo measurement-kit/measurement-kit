@@ -4,6 +4,8 @@
 #ifndef SRC_LIBMEASUREMENT_KIT_OONI_BOUNCER_HPP
 #define SRC_LIBMEASUREMENT_KIT_OONI_BOUNCER_HPP
 
+#include "src/libmeasurement_kit/common/reactor.hpp"
+
 #include <list>
 #include <measurement_kit/common.hpp>
 

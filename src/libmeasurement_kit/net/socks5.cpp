@@ -6,6 +6,7 @@
 #include "src/libmeasurement_kit/net/connect_impl.hpp"
 
 #include "src/libmeasurement_kit/net/libevent_emitter.hpp"
+#include "src/libmeasurement_kit/common/lexical_cast.hpp"
 
 namespace mk {
 namespace net {

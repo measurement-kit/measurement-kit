@@ -6,8 +6,6 @@
 
 #include <measurement_kit/common/callback.hpp>
 #include <measurement_kit/common/logger.hpp>
-#include <measurement_kit/common/non_copyable.hpp>
-#include <measurement_kit/common/non_movable.hpp>
 #include <measurement_kit/common/shared_ptr.hpp>
 
 #include <cassert>
@@ -18,6 +16,9 @@
 #include <mutex>
 #include <thread>
 #include <utility>
+
+#include "src/libmeasurement_kit/common/non_copyable.hpp"
+#include "src/libmeasurement_kit/common/non_movable.hpp"
 
 namespace mk {
 

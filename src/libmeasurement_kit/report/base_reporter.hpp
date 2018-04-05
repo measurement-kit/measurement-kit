@@ -4,6 +4,9 @@
 #ifndef SRC_LIBMEASUREMENT_KIT_REPORT_BASE_REPORTER_HPP
 #define SRC_LIBMEASUREMENT_KIT_REPORT_BASE_REPORTER_HPP
 
+#include "src/libmeasurement_kit/common/continuation.hpp"
+#include "src/libmeasurement_kit/common/non_copyable.hpp"
+#include "src/libmeasurement_kit/common/non_movable.hpp"
 #include "src/libmeasurement_kit/report/report.hpp"
 #include "src/libmeasurement_kit/report/entry.hpp"
 

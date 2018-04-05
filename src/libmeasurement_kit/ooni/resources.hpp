@@ -4,6 +4,8 @@
 #ifndef SRC_LIBMEASUREMENT_KIT_OONI_RESOURCES_HPP
 #define SRC_LIBMEASUREMENT_KIT_OONI_RESOURCES_HPP
 
+#include "src/libmeasurement_kit/common/reactor.hpp"
+
 #include <measurement_kit/common.hpp>
 
 namespace mk {

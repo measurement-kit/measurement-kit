@@ -8,7 +8,12 @@
 
 #include "src/libmeasurement_kit/common/locked.hpp"               // for mk::locked_global
 #include "src/libmeasurement_kit/common/mock.hpp"                 // for MK_MOCK
+#include "src/libmeasurement_kit/common/non_copyable.hpp"         // for mk::NonCopyable
+#include "src/libmeasurement_kit/common/non_movable.hpp"          // for mk::NonMovable
+#include "src/libmeasurement_kit/common/reactor.hpp"              // for mk::Reactor
+#include "src/libmeasurement_kit/common/socket.hpp"               // for mk::socket_t
 #include "src/libmeasurement_kit/common/utils.hpp"                // for mk::timeval_init
+#include "src/libmeasurement_kit/common/unique_ptr.hpp"           // for mk::UniquePtr
 #include "src/libmeasurement_kit/common/worker.hpp"               // for mk::Worker
 #include <cassert>                                 // for assert
 #include <event2/event.h>                          // for event_base_*
@@ -18,11 +23,6 @@
 #include <measurement_kit/common/data_usage.hpp>   // for mk::DataUsage
 #include <measurement_kit/common/error.hpp>        // for mk::Error
 #include <measurement_kit/common/logger.hpp>       // for mk::warn
-#include <measurement_kit/common/non_copyable.hpp> // for mk::NonCopyable
-#include <measurement_kit/common/non_movable.hpp>  // for mk::NonMovable
-#include <measurement_kit/common/unique_ptr.hpp>   // for mk::UniquePtr
-#include <measurement_kit/common/reactor.hpp>      // for mk::Reactor
-#include <measurement_kit/common/socket.hpp>       // for mk::socket_t
 #include <mutex>                                   // for std::recursive_mutex
 #include <signal.h>                                // for sigaction
 #include <stdexcept>                               // for std::runtime_error

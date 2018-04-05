@@ -2,6 +2,7 @@
 // Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
+#include "src/libmeasurement_kit/common/reactor.hpp"
 #include "src/libmeasurement_kit/common/worker.hpp"
 #include "src/libmeasurement_kit/nettests/runnable.hpp"
 

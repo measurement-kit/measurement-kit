@@ -6,6 +6,8 @@
 #include "src/libmeasurement_kit/ext/catch.hpp"
 
 #include "src/libmeasurement_kit/common/fcompose.hpp"
+#include "src/libmeasurement_kit/common/reactor.hpp"
+#include "src/libmeasurement_kit/common/non_copyable.hpp"
 
 #include <measurement_kit/common.hpp>
 

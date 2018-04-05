@@ -6,8 +6,9 @@
 
 #include <functional>
 #include <measurement_kit/common/callback.hpp>
-#include <measurement_kit/common/reactor.hpp>
 #include <measurement_kit/common/shared_ptr.hpp>
+
+#include "src/libmeasurement_kit/common/reactor.hpp"
 
 namespace mk {
 

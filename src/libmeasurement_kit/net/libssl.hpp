@@ -16,14 +16,14 @@
 /// \brief Code related to libssl (openssl or libressl).
 
 #include "src/libmeasurement_kit/common/locked.hpp"
+#include "src/libmeasurement_kit/common/non_copyable.hpp"
+#include "src/libmeasurement_kit/common/non_movable.hpp"
 #include "src/libmeasurement_kit/common/mock.hpp"
 #include "src/libmeasurement_kit/ext/tls_internal.h"
 #include "src/libmeasurement_kit/net/builtin_ca_bundle.hpp"
 #include <cassert>
 #include <map>
 #include <measurement_kit/common/logger.hpp>
-#include <measurement_kit/common/non_copyable.hpp>
-#include <measurement_kit/common/non_movable.hpp>
 #include "src/libmeasurement_kit/net/error.hpp"
 #include <openssl/err.h>
 #include <openssl/ssl.h>

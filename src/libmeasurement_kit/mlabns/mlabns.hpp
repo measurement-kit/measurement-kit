@@ -6,6 +6,8 @@
 
 #include <measurement_kit/common.hpp>
 
+#include "src/libmeasurement_kit/common/reactor.hpp"
+
 namespace mk {
 namespace mlabns {
 

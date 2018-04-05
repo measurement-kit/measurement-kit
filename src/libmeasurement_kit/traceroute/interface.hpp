@@ -39,6 +39,8 @@
 // Disable for non Linux until we figure out how to build on iOS
 #ifdef __linux__
 
+#include "src/libmeasurement_kit/common/reactor.hpp"
+
 #include <measurement_kit/common.hpp>
 
 namespace mk {

@@ -4,6 +4,7 @@
 #ifndef SRC_LIBMEASUREMENT_KIT_NET_TRANSPORT_HPP
 #define SRC_LIBMEASUREMENT_KIT_NET_TRANSPORT_HPP
 
+#include "src/libmeasurement_kit/common/reactor.hpp"
 #include "src/libmeasurement_kit/net/buffer.hpp"
 #include "src/libmeasurement_kit/net/utils.hpp"
 
