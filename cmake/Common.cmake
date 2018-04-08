@@ -56,6 +56,9 @@ if (WIN32)
     add_definitions(
       -D_CRT_SECURE_NO_DEPRECATE) # https://stackoverflow.com/a/14387
 endif()
+if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+    add_definitions(-DENABLE_TRACEROUTE)
+endif()
 
 if("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
   set(CMAKE_CXX_FLAGS

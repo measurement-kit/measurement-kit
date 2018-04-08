@@ -7,9 +7,7 @@
 
 #include "src/libmeasurement_kit/dns/ping.hpp"
 
-#include "src/libmeasurement_kit/dns/ping.hpp"
-
-#include <measurement_kit/dns.hpp>
+#include "src/libmeasurement_kit/dns/query.hpp"
 
 #include <iostream>
 

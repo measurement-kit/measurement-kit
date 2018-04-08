@@ -5,7 +5,12 @@
 #define SRC_LIBMEASUREMENT_KIT_NETTESTS_RUNNABLE_HPP
 
 #include "src/libmeasurement_kit/common/delegate.hpp"
-#include <measurement_kit/report.hpp>
+#include "src/libmeasurement_kit/common/non_copyable.hpp"
+#include "src/libmeasurement_kit/common/non_movable.hpp"
+#include "src/libmeasurement_kit/common/reactor.hpp"
+
+#include "src/libmeasurement_kit/report/entry.hpp"
+#include "src/libmeasurement_kit/report/report.hpp"
 
 #include <ctime>
 #include <deque>

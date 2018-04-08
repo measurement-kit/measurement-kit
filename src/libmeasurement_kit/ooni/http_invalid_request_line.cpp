@@ -5,9 +5,10 @@
 #include "src/libmeasurement_kit/common/utils.hpp"
 #include "src/libmeasurement_kit/ooni/nettests.hpp"
 #include "src/libmeasurement_kit/ooni/templates.hpp"
-#include <measurement_kit/report.hpp>
+#include "src/libmeasurement_kit/report/entry.hpp"
+#include "src/libmeasurement_kit/net/transport.hpp"
+
 #include <measurement_kit/ooni.hpp>
-#include <measurement_kit/net.hpp>
 
 namespace mk {
 namespace ooni {

@@ -5,7 +5,8 @@
 #define SRC_LIBMEASUREMENT_KIT_OONI_UTILS_HPP
 
 #include <measurement_kit/ooni.hpp>
-#include <measurement_kit/report.hpp>
+#include "src/libmeasurement_kit/report/entry.hpp"
+#include "src/libmeasurement_kit/dns/query.hpp"
 
 #include <GeoIP.h>
 #include <GeoIPCity.h>

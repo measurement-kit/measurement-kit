@@ -7,9 +7,9 @@
 #include <measurement_kit/common/json.hpp>
 #include "src/libmeasurement_kit/common/mock.hpp"
 
-#include "../http/response_parser.hpp"
-
-#include <measurement_kit/http.hpp>
+#include "src/libmeasurement_kit/http/response_parser.hpp"
+#include "src/libmeasurement_kit/http/http.hpp"
+#include "src/libmeasurement_kit/net/connect.hpp"
 
 namespace mk {
 namespace http {

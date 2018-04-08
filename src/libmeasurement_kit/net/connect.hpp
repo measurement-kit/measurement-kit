@@ -5,9 +5,9 @@
 #define SRC_LIBMEASUREMENT_KIT_NET_CONNECT_HPP
 
 #include "src/libmeasurement_kit/common/utils.hpp"
-#include "../ext/tls_internal.h"
-
-#include <measurement_kit/net.hpp>
+#include "src/libmeasurement_kit/dns/resolve_hostname.hpp"
+#include "src/libmeasurement_kit/ext/tls_internal.h"
+#include "src/libmeasurement_kit/net/transport.hpp"
 
 #include <event2/bufferevent.h>
 
@@ -50,6 +50,8 @@ void connect_ssl(bufferevent *orig_bev, ssl_st *ssl, std::string hostname,
                  SharedPtr<Reactor> = Reactor::global(),
                  SharedPtr<Logger> = Logger::global());
 
+using ConnectManyCb = Callback<Error, std::vector<SharedPtr<Transport>>>;
+
 class ConnectManyCtx {
   public:
     int left = 0; // Signed to detect programmer errors
@@ -61,6 +63,17 @@ class ConnectManyCtx {
     SharedPtr<Reactor> reactor = Reactor::global();
     SharedPtr<Logger> logger = Logger::global();
 };
+
+void connect(std::string address, int port,
+             Callback<Error, SharedPtr<Transport>> callback,
+             Settings settings = {},
+             SharedPtr<Reactor> reactor = Reactor::global(),
+             SharedPtr<Logger> logger = Logger::global());
+
+void connect_many(std::string address, int port, int num,
+        ConnectManyCb callback, Settings settings = {},
+        SharedPtr<Reactor> reactor = Reactor::global(),
+        SharedPtr<Logger> logger = Logger::global());
 
 } // namespace mk
 } // namespace net

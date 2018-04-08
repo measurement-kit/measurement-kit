@@ -5,7 +5,7 @@
 #define CATCH_CONFIG_MAIN
 #include "src/libmeasurement_kit/ext/catch.hpp"
 
-#include <measurement_kit/dns.hpp>
+#include "src/libmeasurement_kit/dns/query_type.hpp"
 
 using namespace mk;
 using namespace mk::dns;

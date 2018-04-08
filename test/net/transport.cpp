@@ -5,7 +5,7 @@
 #define CATCH_CONFIG_MAIN
 #include "src/libmeasurement_kit/ext/catch.hpp"
 
-#include <measurement_kit/net.hpp>
+#include "src/libmeasurement_kit/net/transport.hpp"
 
 using namespace mk;
 using namespace mk::net;

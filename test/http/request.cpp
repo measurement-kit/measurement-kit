@@ -6,6 +6,7 @@
 #include "src/libmeasurement_kit/ext/catch.hpp"
 
 #include "src/libmeasurement_kit/http/request_impl.hpp"
+#include "src/libmeasurement_kit/net/error.hpp"
 
 #include <openssl/md5.h>
 

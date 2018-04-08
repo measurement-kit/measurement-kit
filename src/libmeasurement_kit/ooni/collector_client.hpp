@@ -4,8 +4,8 @@
 #ifndef SRC_LIBMEASUREMENT_KIT_OONI_COLLECTOR_CLIENT_HPP
 #define SRC_LIBMEASUREMENT_KIT_OONI_COLLECTOR_CLIENT_HPP
 
-#include <measurement_kit/http.hpp>
-#include <measurement_kit/report.hpp>
+#include "src/libmeasurement_kit/http/http.hpp"
+#include "src/libmeasurement_kit/report/entry.hpp"
 
 namespace mk {
 namespace ooni {

@@ -3,6 +3,7 @@
 // and LICENSE for more information on the copying conditions.
 
 #include "src/libmeasurement_kit/common/fcompose.hpp"
+#include "src/libmeasurement_kit/common/reactor.hpp"
 #include <measurement_kit/common.hpp>
 #include <iostream>
 

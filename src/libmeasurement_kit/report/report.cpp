@@ -7,7 +7,9 @@
 
 #include "src/libmeasurement_kit/common/utils.hpp"
 
-#include <measurement_kit/report.hpp>
+#include "src/libmeasurement_kit/report/base_reporter.hpp"
+#include "src/libmeasurement_kit/report/error.hpp"
+#include "src/libmeasurement_kit/report/report.hpp"
 
 namespace mk {
 namespace report {

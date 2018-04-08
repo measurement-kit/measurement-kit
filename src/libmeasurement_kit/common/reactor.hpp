@@ -1,15 +1,16 @@
 // Part of Measurement Kit <https://measurement-kit.github.io/>.
 // Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
-#ifndef MEASUREMENT_KIT_COMMON_REACTOR_HPP
-#define MEASUREMENT_KIT_COMMON_REACTOR_HPP
+#ifndef SRC_LIBMEASUREMENT_KIT_COMMON_REACTOR_HPP
+#define SRC_LIBMEASUREMENT_KIT_COMMON_REACTOR_HPP
+
+#include "src/libmeasurement_kit/common/socket.hpp"
 
 #include <measurement_kit/common/callback.hpp>
 #include <measurement_kit/common/data_usage.hpp>
 #include <measurement_kit/common/error.hpp>
 #include <measurement_kit/common/logger.hpp>
 #include <measurement_kit/common/shared_ptr.hpp>
-#include <measurement_kit/common/socket.hpp>
 
 struct event_base;
 

@@ -3,8 +3,7 @@
 // and LICENSE for more information on the copying conditions.
 
 #include "src/libmeasurement_kit/ext/http_parser.h"
-
-#include <measurement_kit/http.hpp>
+#include "src/libmeasurement_kit/http/http.hpp"
 
 namespace mk {
 namespace http {

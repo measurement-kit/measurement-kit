@@ -3,7 +3,7 @@
 // and LICENSE for more information on the copying conditions.
 
 #include <cassert>
-#include <measurement_kit/net.hpp>
+#include "src/libmeasurement_kit/net/transport.hpp"
 #include "src/libmeasurement_kit/net/connect.hpp"
 #include "src/libmeasurement_kit/net/emitter.hpp"
 #include "src/libmeasurement_kit/net/socks5.hpp"

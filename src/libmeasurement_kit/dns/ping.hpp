@@ -7,7 +7,7 @@
 #include "src/libmeasurement_kit/common/every.hpp"
 #include "src/libmeasurement_kit/common/maybe.hpp"
 #include "src/libmeasurement_kit/common/utils.hpp"
-#include <measurement_kit/dns/query.hpp>
+#include "src/libmeasurement_kit/dns/query.hpp"
 
 namespace mk {
 namespace dns {

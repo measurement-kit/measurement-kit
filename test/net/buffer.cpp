@@ -6,8 +6,8 @@
 #include "src/libmeasurement_kit/ext/catch.hpp"
 
 #include "src/libmeasurement_kit/net/evbuffer.hpp"
-
-#include <measurement_kit/net.hpp>
+#include "src/libmeasurement_kit/net/error.hpp"
+#include "src/libmeasurement_kit/net/buffer.hpp"
 
 using namespace mk;
 using namespace mk::net;

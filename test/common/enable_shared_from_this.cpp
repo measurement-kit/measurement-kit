@@ -7,6 +7,8 @@
 
 #include <measurement_kit/common.hpp>
 
+#include "src/libmeasurement_kit/common/enable_shared_from_this.hpp"
+
 using namespace mk;
 
 class Foo : public EnableSharedFromThis<Foo> {

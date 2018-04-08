@@ -5,7 +5,7 @@
 #define SRC_LIBMEASUREMENT_KIT_DNS_GETADDRINFO_ASYNC_HPP
 
 #include "src/libmeasurement_kit/dns/utils.hpp"
-#include <measurement_kit/dns.hpp>
+#include "src/libmeasurement_kit/dns/query.hpp"
 
 #include <assert.h>
 

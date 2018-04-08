@@ -5,8 +5,8 @@
 #define SRC_LIBMEASUREMENT_KIT_NET_EMITTER_HPP
 
 #include "src/libmeasurement_kit/common/delegate.hpp"
-#include <measurement_kit/net.hpp>
-#include <measurement_kit/dns.hpp>
+#include "src/libmeasurement_kit/dns/resolve_hostname.hpp"
+#include "src/libmeasurement_kit/net/transport.hpp"
 
 namespace mk {
 namespace net {
