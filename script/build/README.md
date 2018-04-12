@@ -2,16 +2,13 @@
 
 This directory contains the simplified build system. You can use this to
 compile, and cross compile, Measurement Kit and its dependencies. Specifically
-the following are the _packages_ that you can compile (make sure you build
-them in order :-):
+the following are the _packages_ that you can compile:
 
 - `geoip`: [geoip](https://github.com/maxmind/geoip-api-c)
 - `libressl`: [libressl](https://github.com/libressl-portable)
-- `libevent`: [libevent](https://github.com/libevent/libevent) (depends
-  on `libressl`)
+- `libevent`: [libevent](https://github.com/libevent/libevent)
 - `c-ares`: [c-ares](https://github.com/c-ares/c-ares)
 - `mk`: [MK](https://github.com/measurement-kit/measurement-kit) itself
-  (depends on `geoip`, `libressl`, `libevent`, `c-ares`)
 
 If needed, the build system will fetch the required sources and possibly
 apply patches. In such case, sources will be downloaded in
@@ -106,15 +103,14 @@ We assume that:
 
 1. you have installed Visual Studio 2017 Community
 
-2. you have [installed CMake](https://cmake.org/) and opted to have
-   `cmake.exe` inside your path during the install process (important,
-   as that is not the default choice)
+2. you have installed CMake and opted to have `cmake.exe` inside your path
+   during the install process (important, as that is not the default
+   choice)
 
 3. you have installed Ubuntu and `ubuntu.exe` is available from your
-   path (that should be the case in Windows 10 Fall Creators Update),
-   and you have installed into Ubuntu on Windows all the Linux packages
-   mentioned above when discussing building for Linux or macOS (that
-   is, git, libtool, wget, etc.)
+   path (that should be the case), and you have installed into Ubuntu
+   on Windows all the Linux packages mentioned above when discussing
+   building for Linux or macOS
 
 4. you are typing inside the x32 or x64 Developer Command prompt
 
