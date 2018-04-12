@@ -1,3 +1,12 @@
+# MeasurementKit 0.8.2 [2018-04-12]
+
+- Backport country flag into stable branch (#1548)
+- Backport zesty EOL changes to stable branch (#1565)
+- fix(`measurement_kit`): better check for optreset (#1559)
+- Fix test checking for user IP scrubbing (#1585)
+- build: sync built archs with master (#1586)
+- Update dependencies (#1587)
+
 # MeasurementKit 0.8.1 [2017-12-12]
 
 - #1510: backport: IM test logic fixing (#1498)
