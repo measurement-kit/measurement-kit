@@ -20,18 +20,38 @@ mkdir -p ${pkg_build_dir}
 
     cd ${pkg_topdir}
 
-    ./autogen.sh # Must run in the toplevel directory
+    if [ "$pkg_os" = "windows" ]; then
+        autogen_sh_flags="--cmake"
+    fi
+
+    ./autogen.sh $autogen_sh_flags # Must run in the toplevel directory
 
     cd ${pkg_build_dir}
 
     if [ "$pkg_os" = "windows" ]; then
-        # XXX Not implemented
-	exit 1
+        dist_dir="..\\..\\..\\..\\MK_DIST"
+        install_prefix="${dist_dir}\\${pkg_os}\\${pkg_arch}"
+        libressl_prefix="${install_prefix}"
+        libevent_prefix="${install_prefix}"
+        geoip_prefix="${install_prefix}"
+        cmake.exe -G "NMake Makefiles"                                         \
+          -DCMAKE_WINDOWS_EXPORT_ALL_SYMBOLS=ON                                \
+          -DCMAKE_INSTALL_PREFIX="${install_prefix}"                           \
+          -DMK_CA_BUNDLE="\"\""                                                \
+          -DMK_OPENSSL="${libressl_prefix}"                                    \
+          -DMK_LIBEVENT="${libevent_prefix}"                                   \
+          -DMK_GEOIP="${geoip_prefix}"                                         \
+          -DMK_BUILD_EXAMPLES=OFF                                              \
+          -DMK_BUILD_TESTS=OFF                                                 \
+          -DMK_BUILD_INTEGRATION_TESTS=OFF                                     \
+          "..\\..\\..\\..\\"
+        nmake.exe /f Makefile install
+	exit 0
     fi
 
     ../../../../configure --prefix=${pkg_dist_dir} --disable-shared           \
+        --with-ca-bundle=certs.pem                                            \
         --disable-examples                                                    \
-        --disable-binaries                                                    \
         --with-geoip=${pkg_dist_dir}                                          \
         --with-libevent=${pkg_dist_dir}                                       \
         --with-openssl=${pkg_dist_dir}                                        \

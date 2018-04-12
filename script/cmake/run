@@ -1,6 +1,6 @@
 #!/bin/sh
 set -e
-rootdir=$(cd $(dirname $(dirname $0)) && pwd -P)
+rootdir=$(cd $(dirname $0)/../../ && pwd -P)
 
 cmake_options=""
 
@@ -49,13 +49,13 @@ else
     fi
 fi
 
-echo "- about to invoke: \`cmake $cmake_options "$@".'"
+echo "- about to invoke: \`cmake $cmake_options "$@" $rootdir'"
 echo ""
 echo "=== BEGIN CMAKE OUTPUT ==="
 echo ""
 
 cmake_failed=0
-if ! cmake $cmake_options "$@" .; then
+if ! cmake $cmake_options "$@" $rootdir; then
     cmake_failed=1
 fi
 

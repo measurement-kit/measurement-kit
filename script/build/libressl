@@ -32,8 +32,9 @@ mkdir -p ${pkg_build_dir}
     elif [ "${build_os}" = "Darwin" ]; then
         tarball_sha256sum=$(shasum -a 256 ${tarball} | awk '{print $1}')
     else
-        echo "FATAL: don't know how to compute sha256sum" 1>&2
-        exit 1
+        echo "WARNING: don't know how to compute sha256sum" 1>&2
+        echo "WARNING: will try to call sha256sum" 1>&2
+        tarball_sha256sum=$(sha256sum ${tarball} | awk '{print $1}')
     fi
     if [ "${tarball_sha256sum}" != "${pkg_sha256sum}" ]; then
         echo "FATAL: invalid SHA256 sum" 1>&2

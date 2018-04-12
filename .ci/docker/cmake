@@ -27,6 +27,6 @@ apt-get install -y $debian_deps
 
 tc qdisc add dev eth0 root netem delay 200ms 10ms
 ./autogen.sh --cmake
-./build/cmake/cmake
+./script/cmake/run
 make V=0 -j$(nproc)
 ctest -j6 --output-on-failure
