@@ -77,20 +77,33 @@ void http_request_impl(SharedPtr<Entry> entry, Settings settings,
                  * See <measurement-kit/measurement-kit#1169>.
                  */
                 if (!!response && !!response->request) {
-                    /*
-                     * Note: `probe_ip` comes from an external service, hence
-                     * we MUST call `represent_string` _after_ `redact()`.
-                     */
-                    for (auto pair : response->headers) {
-                        rr["response"]["headers"][pair.first] =
-                            represent_string(redact(pair.second));
+                    // TODO(bassosimone): we currently pass around a Response
+                    // encapsulating a Request. However, after #1604 there are
+                    // cases where there is a dummy Response encapsulating a
+                    // Request (e.g. when connection is refused). Here we are
+                    // using `response_line`: if that isn't set it mean we did
+                    // not even receive any response byte. In such case, we
+                    // format the output according to OONI specification. It
+                    // can be improved by using more flexible typing (e.g.
+                    // nhlomann::json to represent request and response).
+                    if (response->response_line != "") {
+                        /*
+                        * Note: `probe_ip` comes from an external service, hence
+                        * we MUST call `represent_string` _after_ `redact()`.
+                        */
+                        for (auto pair : response->headers) {
+                            rr["response"]["headers"][pair.first] =
+                                represent_string(redact(pair.second));
+                        }
+                        rr["response"]["body"] =
+                            represent_string(redact(response->body));
+                        rr["response"]["response_line"] =
+                            represent_string(redact(response->response_line));
+                        rr["response"]["code"] = response->status_code;
+                    } else {
+                        rr["response"]["body"] = nullptr;
+                        rr["response"]["headers"] = nlohmann::json::object();
                     }
-                    rr["response"]["body"] =
-                        represent_string(redact(response->body));
-                    rr["response"]["response_line"] =
-                        represent_string(redact(response->response_line));
-                    rr["response"]["code"] = response->status_code;
-
                     auto request = response->request;
                     // Note: we checked above that we can deref `request`
                     for (auto pair : request->headers) {
