@@ -177,10 +177,10 @@ TEST_CASE("ResponseParserNg stops after first message") {
     });
 
     body = "";
-    parser.on_body([&body](std::string) {
+    parser.on_body([](std::string) {
         REQUIRE(false); // Should not happen
     });
-    parser.on_end([&body]() {
+    parser.on_end([]() {
         REQUIRE(false); // Should not happen
     });
 

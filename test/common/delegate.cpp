@@ -23,8 +23,6 @@ class Helper {
 
 TEST_CASE("Delegate works as expected") {
     Helper helper;
-    helper.on([&helper]() {
-        helper.on([&helper]() {});
-    });
+    helper.on([&helper]() { helper.on([]() {}); });
     helper.emit();
 }

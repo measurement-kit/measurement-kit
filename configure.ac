@@ -44,7 +44,7 @@ elif test "$cross_compiling" != yes; then
   LDFLAGS="$LDFLAGS -L/usr/local/lib"
 fi
 
-if test "`uname -o`" = "Msys"; then
+if test "`uname -s`" = "MINGW64_NT-10.0"; then
   # Must link with ws2_32
   LIBS="$LIBS -lws2_32"
   # Required to expose inet_pton()

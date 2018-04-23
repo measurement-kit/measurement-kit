@@ -9,9 +9,10 @@
 /* Mingw provides an implementation of getopt(). */
 #if defined __MINGW32__
 #define _BSD_SOURCE /* For optreset */
+#endif
+
 #include <getopt.h>
 #include "../portable/_getopt.h"
-#endif
 
 #endif /* !_WIN32 || __MINGW32__ */
 

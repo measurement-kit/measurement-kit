@@ -98,7 +98,7 @@ if [ $cmake -eq 0 ]; then
     autoreconf -i
 fi
 
-if [ $cmake -eq 0 -a "`uname -o`" = "Msys" ]; then
+if [ $cmake -eq 0 -a "`uname -s`" = "MINGW64_NT-10.0" ]; then
     if [ "`uname -m`" = "x86_64" ]; then
         channel=testing
         binary=dependencies-2018_04_22-mingw-amd64.tar.gz

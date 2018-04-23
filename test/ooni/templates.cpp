@@ -221,7 +221,7 @@ TEST_CASE("Http template scrubs IP addresses") {
         SharedPtr<Reactor> reactor = Reactor::make();
         SharedPtr<Logger> logger = Logger::make();
         http_request_impl<mocked_request>(entry, settings, headers,
-                body, [entry, ip, cb](Error error, SharedPtr<http::Response>) {
+                body, [entry, cb](Error error, SharedPtr<http::Response>) {
                     REQUIRE(error == NoError());
                     cb(entry);
                 }, reactor, logger);

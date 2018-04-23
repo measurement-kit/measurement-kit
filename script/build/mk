@@ -29,7 +29,7 @@ mkdir -p ${pkg_build_dir}
 	exit 1
     fi
 
-    if [ "`uname -o`" = "Msys" ]; then
+    if [ "`uname -s`" = "MINGW64_NT-10.0" ]; then
         pkg_configure_flags="${pkg_configure_flags} --with-ca-bundle=certs.pem --enable-binaries --enable-examples"
     fi
 
