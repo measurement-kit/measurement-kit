@@ -64,7 +64,13 @@ TEST_CASE("dns query template works as expected") {
                         REQUIRE(answers.is_array());
                         reactor->stop();
                     },
-                    {{"dns/timeout", 0.3}, {"dns/attempts", 1},
+                    // Rationale: originally I assumed having an invalid DNS
+                    // would have been enough for this test to fail. But it
+                    // is a fact that many ISPs reply nonetheless. Among them
+                    // Vodafone, which is now my ISP. Hence I become much
+                    // more annoyed by this test being broken. Fix by using
+                    // an insanely low timeout so it should always fail.
+                    {{"dns/timeout", 0.0001}, {"dns/attempts", 1},
                      {"dns/engine", "libevent"}}, reactor);
             }, {{"dns/engine", "libevent"}}, reactor);
     });
@@ -222,7 +228,7 @@ TEST_CASE("Http template scrubs IP addresses") {
         SharedPtr<Reactor> reactor = Reactor::make();
         SharedPtr<Logger> logger = Logger::make();
         http_request_impl<mocked_request>(entry, settings, headers,
-                body, [entry, ip, cb](Error error, SharedPtr<http::Response>) {
+                body, [entry, cb](Error error, SharedPtr<http::Response>) {
                     REQUIRE(error == NoError());
                     cb(entry);
                 }, reactor, logger);
