@@ -1,3 +1,8 @@
+# MeasurementKit 0.8.3 [2018-04-23]
+
+- Remove iPhoneSimulator/i386
+- Backport #1605 to stable branch
+
 # MeasurementKit 0.8.2 [2018-04-12]
 
 - Backport country flag into stable branch (#1548)
