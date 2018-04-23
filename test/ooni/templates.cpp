@@ -172,6 +172,9 @@ TEST_CASE("http requests template works as expected") {
                         req = requests[1];
                         REQUIRE(req.is_object());
                         REQUIRE((req["failure"] != nullptr));
+                        REQUIRE((req["request"]["method"] != ""));
+                        REQUIRE((req["response"]["body"] == nullptr));
+                        REQUIRE((req["response"]["headers"].is_object()));
                         reactor->stop();
                     }, reactor);
             }, reactor);
