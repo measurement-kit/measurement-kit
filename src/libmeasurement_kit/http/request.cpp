@@ -277,7 +277,18 @@ void request(Settings settings, Headers headers, std::string body,
         settings,
         [=](Error err, SharedPtr<Transport> txp) {
             if (err) {
-                callback(err, nullptr);
+                // #1604: When we cannot connect, it's still useful to inform
+                // the caller about the request we would have sent.
+                SharedPtr<Response> response;
+                auto maybe_request = Request::make(settings, headers, body);
+                if (!!maybe_request) {
+                    response.reset(new Response);
+                    std::swap(response->request, maybe_request.as_value());
+                } else {
+                    logger->warn("http: cannot serialize request: %s",
+                                 maybe_request.as_error().what());
+                }
+                callback(err, std::move(response));
                 return;
             }
             request_sendrecv(

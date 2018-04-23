@@ -13,9 +13,7 @@ IOSDIR=$BUILDDIR/ios
 echo ""
 echo "Cross-compiling $1 for all platforms and archs"
 
-$IOSDIR/cross iphonesimulator i386 $BUILDDIR/dependency $1
 $IOSDIR/cross iphonesimulator x86_64 $BUILDDIR/dependency $1
-
 $IOSDIR/cross iphoneos armv7s $BUILDDIR/dependency $1
 $IOSDIR/cross iphoneos arm64 $BUILDDIR/dependency $1
 
