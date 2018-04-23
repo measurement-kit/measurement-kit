@@ -9,7 +9,10 @@
 namespace mk {
 
 #ifdef _WIN32
-using socket_t = uintptr_t;
+// Note that on Windows socket is signed (even though Windows itself
+// is using something compatible with `uintptr_t`) because that is
+// helping comparing with `-1`, which is common on Unix.
+using socket_t = intptr_t;
 #elif DOXYGEN
 /// `socket_t` is a type suitable to contain a system socket.
 using socket_t = platform_dependent;

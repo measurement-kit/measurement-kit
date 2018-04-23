@@ -4,6 +4,8 @@
 
 #ifdef ENABLE_INTEGRATION_TESTS
 
+#include "test/winsock.hpp"
+
 /// Tests Android traceroute prober
 
 // This is meant to run on Android but can run on all Linux systems

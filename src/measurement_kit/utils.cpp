@@ -18,8 +18,10 @@ BaseTest &common_init(std::list<Callback<BaseTest &>> il, BaseTest &test) {
             fflush(stdout);
         })
         .on_overall_data_usage([](DataUsage du) {
-            printf("Overall data usage (bytes): %" PRId64 " down - %"
-                    PRId64 " up\n", du.down, du.up);
+            // See s/l/n/messages.cpp
+            printf("Overall data usage (bytes): %s down - %s up\n",
+                   std::to_string(du.down).c_str(),
+                   std::to_string(du.up).c_str());
         })
         .on_log([](uint32_t level, const char *message) {
             if (level <= MK_LOG_WARNING) {

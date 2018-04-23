@@ -1,5 +1,7 @@
 // Public domain 2017, Simone Basso <bassosimone@gmail.com.
 
+#include "test/winsock.hpp"
+
 #define MK_ENGINE_INTERNALS
 #include <measurement_kit/engine.h>
 

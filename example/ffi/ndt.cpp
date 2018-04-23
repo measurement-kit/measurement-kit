@@ -1,5 +1,7 @@
 /* Public domain 2017, Simone Basso <bassosimone@gmail.com. */
 
+#include "test/winsock.hpp"
+
 #include <measurement_kit/ffi.h>
 
 #include <stdio.h>
@@ -35,6 +37,7 @@ int main() {
             exit(1);
         }
         printf("%s\n", serio);
+        fflush(stdout);
         mk_event_destroy(event);
     }
 

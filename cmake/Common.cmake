@@ -53,6 +53,7 @@ if (WIN32)
     add_definitions(-DNOMINMAX) # https://stackoverflow.com/a/11544154
     add_definitions(
       -D_CRT_SECURE_NO_DEPRECATE) # https://stackoverflow.com/a/14387
+    add_definitions(-D_WIN32_WINNT=0x0600) # for inet_ntop()
 endif()
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
     add_definitions(-DENABLE_TRACEROUTE)
