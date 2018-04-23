@@ -10,7 +10,7 @@ pkg_topdir=$(cd $(dirname $0)/../../ && pwd -P)
 # clone the full history of the openbsd repo. So just download the tgz.
 pkg_name=libressl
 pkg_sha256sum="e57f5e3d5842a81fe9351b6e817fcaf0a749ca4ef35a91465edba9e071dce7c4"
-pkg_version=2.5.5
+pkg_version=2.6.4
 pkg_tarball_url=https://ftp.openbsd.org/pub/OpenBSD/LibreSSL/libressl-${pkg_version}.tar.gz
 
 pkg_dist_dir=${pkg_topdir}/MK_DIST/${pkg_os}/${pkg_arch}

@@ -66,7 +66,13 @@ TEST_CASE("dns query template works as expected") {
                         REQUIRE(answers.is_array());
                         reactor->stop();
                     },
-                    {{"dns/timeout", 0.3}, {"dns/attempts", 1},
+                    // Rationale: originally I assumed having an invalid DNS
+                    // would have been enough for this test to fail. But it
+                    // is a fact that many ISPs reply nonetheless. Among them
+                    // Vodafone, which is now my ISP. Hence I become much
+                    // more annoyed by this test being broken. Fix by using
+                    // an insanely low timeout so it should always fail.
+                    {{"dns/timeout", 0.0001}, {"dns/attempts", 1},
                      {"dns/engine", "libevent"}}, reactor);
             }, {{"dns/engine", "libevent"}}, reactor);
     });
@@ -174,6 +180,9 @@ TEST_CASE("http requests template works as expected") {
                         req = requests[1];
                         REQUIRE(req.is_object());
                         REQUIRE((req["failure"] != nullptr));
+                        REQUIRE((req["request"]["method"] != ""));
+                        REQUIRE((req["response"]["body"] == nullptr));
+                        REQUIRE((req["response"]["headers"].is_object()));
                         reactor->stop();
                     }, reactor);
             }, reactor);

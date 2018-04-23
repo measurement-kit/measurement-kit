@@ -206,7 +206,7 @@ TEST_CASE("http::request correctly receives errors") {
             "",
             [=](Error error, SharedPtr<Response> response) {
                 REQUIRE(error);
-                REQUIRE(response == nullptr);
+                REQUIRE(response->response_line == "");
                 reactor->stop();
             }, reactor);
     });

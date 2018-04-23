@@ -8,7 +8,7 @@ pkg_topdir=$(cd $(dirname $0)/../../ && pwd -P)
 
 pkg_name=geoip
 pkg_repository=https://github.com/maxmind/geoip-api-c.git
-pkg_branch=v1.6.11
+pkg_branch=v1.6.12
 
 pkg_dist_dir=${pkg_topdir}/MK_DIST/${pkg_os}/${pkg_arch}
 install -d ${pkg_dist_dir}
