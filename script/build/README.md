@@ -99,6 +99,74 @@ Then cross compile using:
 
 ## Compile for Windows
 
+### MSYS2
+
+We assume that you have installed [MSYS2](https://www.msys2.org/) on a
+Windows system, that you have opened a `mingw-w64` shell and that you
+have installed all the required packages. This is what `pacman -Qte` tells
+me on my development MSYS2 system:
+
+```
+$ pacman -Qte|awk '{print $1}'
+autoconf
+automake-wrapper
+bash-completion
+bsdcpio
+bsdtar
+crypt
+file
+flex
+git
+inetutils
+libtool
+lndir
+make
+mingw-w64-i686-gcc
+mingw-w64-x86_64-cmake
+mingw-w64-x86_64-gcc
+mingw-w64-x86_64-gdb
+mingw-w64-x86_64-go
+msys2-launcher-git
+pactoys-git
+patch
+pax-git
+python3-pip
+rebase
+time
+ttyrec
+tzcode
+util-linux
+```
+
+To install these packages, you should run `pacman -Syu $packages` where
+`packages` contains the above names. (TODO(bassosimone): we can maybe
+trim down this list to avoid mentioning the packages that are installed
+by default or are not needed in this context.)
+
+It is important to make sure you're in the 64 bit development shell
+and not in the normal shell. MSYS2 provides you with three shells: normal,
+32 bit, and 64 bit development. If you're in the 64 bit shell, the
+`gcc` compiler reported by which should be like:
+
+```
+$ which gcc
+/mingw64/bin/gcc
+```
+
+where the important part is `/mingw64/bin` as opposed to `/bin`.
+
+If these preconditions are met, you can, for now, get the a static
+library by running:
+
+```
+./script/build/mk
+```
+
+TODO(bassosimone): provide instructions to compile without using a
+wrapper script, perhaps?
+
+### Visual Studio
+
 We assume that:
 
 1. you have installed Visual Studio 2017 Community
@@ -120,3 +188,6 @@ We assume that:
 cd script\build
 build.bat <package>
 ```
+
+This way of building MK is currently not working because there are
+parts of MK that do not work with Microsoft compiler.

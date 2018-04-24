@@ -9,6 +9,8 @@
 #error "MK_CA_BUNDLE is not set."
 #endif
 
+#include "src/libmeasurement_kit/ext/tls_internal.h"
+
 #include "src/libmeasurement_kit/net/connect_impl.hpp"
 #include "src/libmeasurement_kit/net/emitter.hpp"
 #include "src/libmeasurement_kit/net/socks5.hpp"

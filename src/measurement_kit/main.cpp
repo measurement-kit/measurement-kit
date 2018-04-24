@@ -49,6 +49,19 @@ static int usage(int retval, FILE *fp) {
 }
 
 int main(int argc, char **argv) {
+#ifdef _WIN32
+    // TODO(bassosimone): perhaps reuse test/winsock.hpp here and maybe
+    // make that an exposed extern-C API for maximum reuse?
+    {
+        WORD requested = MAKEWORD(2, 2);
+        WSADATA data;
+        if (::WSAStartup(requested, &data) != 0) {
+            std::clog << "fatal: WSAStartup() failed" << std::endl;
+            exit(EXIT_FAILURE);
+        }
+    }
+#endif
+
     std::list<Callback<BaseTest &>> initializers;
     std::vector<option> long_options = as_long_options(kv_specs);
     std::string stropt = as_getopt_string(kv_specs);
@@ -156,7 +169,7 @@ int main(int argc, char **argv) {
      * Non portable. Assume it's either GNU or BSD. We can do better in
      * configure checking for the proper way to reset options.
      */
-#if HAVE_DECL_OPTRESET
+#if HAVE_DECL_OPTRESET || defined __MINGW32__ /* Has optreset */
     optreset = 1, optind = 1;
 #elif defined __GLIBC__
     optind = 0;

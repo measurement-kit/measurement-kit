@@ -6,7 +6,6 @@
 
 #include "src/libmeasurement_kit/common/utils.hpp"
 #include "src/libmeasurement_kit/dns/resolve_hostname.hpp"
-#include "src/libmeasurement_kit/ext/tls_internal.h"
 #include "src/libmeasurement_kit/net/transport.hpp"
 
 #include <event2/bufferevent.h>

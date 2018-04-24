@@ -2,6 +2,8 @@
 // Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
+#include "test/winsock.hpp"
+
 #define CATCH_CONFIG_MAIN
 #include "src/libmeasurement_kit/ext/catch.hpp"
 
@@ -14,12 +16,23 @@ using namespace mk;
 extern "C" {
 
 static int evthread_use_pthreads_fail() { return -1; }
+
+#ifndef _WIN32
 static int sigaction_fail(int, const struct sigaction *, struct sigaction *) {
     return -1;
 }
+#endif
 
 } // extern "C"
 
+#ifdef _WIN32
+TEST_CASE("libevent_init_once") {
+    SECTION("We deal with evthread_use_pthreads() failure") {
+        REQUIRE_THROWS((LibeventReactor<>::libevent_init_once<
+                evthread_use_pthreads_fail>()));
+    }
+}
+#else
 TEST_CASE("libevent_init_once") {
     SECTION("We deal with evthread_use_pthreads() failure") {
         REQUIRE_THROWS((LibeventReactor<>::libevent_init_once<
@@ -32,6 +45,7 @@ TEST_CASE("libevent_init_once") {
                         sigaction_fail>()));
     }
 }
+#endif
 
 extern "C" {
 

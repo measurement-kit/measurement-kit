@@ -2,6 +2,8 @@
 // Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
+#include "test/winsock.hpp"
+
 #include <measurement_kit/ooni.hpp>
 
 #define CATCH_CONFIG_MAIN

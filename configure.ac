@@ -44,10 +44,18 @@ elif test "$cross_compiling" != yes; then
   LDFLAGS="$LDFLAGS -L/usr/local/lib"
 fi
 
+if test "`uname -s`" = "MINGW64_NT-10.0"; then
+  # Must link with ws2_32
+  LIBS="$LIBS -lws2_32"
+  # Required to expose inet_pton()
+  CPPFLAGS="$CPPFLAGS -D_WIN32_WINNT=0x0600"
+fi
+
 MK_AM_CHECK_LIBC_FUNCS
 MK_AM_OPENSSL
 MK_AM_LIBEVENT
 MK_AM_GEOIP
+MK_AM_RESOLV
 
 # checks for header files
 # checks for types

@@ -2,6 +2,14 @@
 // Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
+#include "test/winsock.hpp"
+
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
+#if !defined HAVE_CONFIG_H || (defined HAVE_RESOLV_H && defined HAVE_LIBRESOLV)
+
 #define CATCH_CONFIG_MAIN
 #include "src/libmeasurement_kit/ext/catch.hpp"
 
@@ -99,3 +107,7 @@ TEST_CASE("base64_encode() works as expected") {
         }
     }
 }
+
+#else
+int main() {}
+#endif

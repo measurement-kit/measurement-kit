@@ -2,6 +2,8 @@
 // Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
+#include "test/winsock.hpp"
+
 #define CATCH_CONFIG_MAIN
 #include "src/libmeasurement_kit/ext/catch.hpp"
 
@@ -11,7 +13,12 @@ using namespace mk;
 using namespace mk::dns;
 
 #ifdef ENABLE_INTEGRATION_TESTS
-static const char *fail_inet_ntop(int, const void *, char *, socklen_t) {
+#ifdef _WIN32
+static const char *fail_inet_ntop(int, void *, char *, size_t)
+#else
+static const char *fail_inet_ntop(int, const void *, char *, socklen_t)
+#endif
+{
     return nullptr;
 }
 #endif

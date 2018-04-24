@@ -2,6 +2,8 @@
 // Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
+#include "test/winsock.hpp"
+
 #define CATCH_CONFIG_MAIN
 #include "src/libmeasurement_kit/ext/catch.hpp"
 
@@ -15,14 +17,14 @@ struct Foobar {
 };
 
 TEST_CASE("The ErrorOr template works as expected when there is no error") {
-    ErrorOr<long> eo{NoError(), 0xdeadbeef};
+    ErrorOr<unsigned long> eo{NoError(), 0xdeadbeef};
     REQUIRE(static_cast<bool>(eo) == true);
     REQUIRE(eo.as_error() == NoError());
     REQUIRE(*eo == 0xdeadbeef);
 }
 
 TEST_CASE("The value enclosed by ErrorOr can be modified") {
-    ErrorOr<long> eo{NoError(), 0xdeadbeef};
+    ErrorOr<unsigned long> eo{NoError(), 0xdeadbeef};
     *eo = 0xabad1dea;
     REQUIRE(*eo == 0xabad1dea);
 }

@@ -8,6 +8,8 @@
 #include "src/libmeasurement_kit/dns/resolve_hostname.hpp"
 #include "src/libmeasurement_kit/net/transport.hpp"
 
+#include <sstream>
+
 namespace mk {
 namespace net {
 
@@ -36,8 +38,14 @@ class EmitterBase : public Transport {
     }
 
     void emit_data(Buffer data) override {
-        logger->debug2("emitter: emit 'data' event "
-                    "(num_bytes = %zu)", data.length());
+        if (logger->get_verbosity() >= MK_LOG_DEBUG2) {
+            // See s/l/ndt/messages.cpp
+            std::stringstream ss;
+            ss << "emitter: emit 'data' event (num_bytes =";
+            ss << data.length();
+            ss << ")";
+            logger->debug2("%s", ss.str().c_str());
+        }
         if (close_pending) {
             logger->debug2("emitter: already closed; ignoring");
             return;

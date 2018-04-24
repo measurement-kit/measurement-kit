@@ -90,16 +90,19 @@ bool Auth::is_valid(SharedPtr<Logger> logger) const noexcept {
         logger->warn("orchestrator: std::mktime() failed");
         return false;
     }
-    logger->debug("orchestrator: expiry_time_s: %llu",
-                  (unsigned long long)expiry_time_s);
+    // Using std::to_string() to workaround the issue with old C runtime
+    // libraries possible on Windows; see ndt/messages.cpp
+    logger->debug("orchestrator: expiry_time_s: %s",
+                  std::to_string(expiry_time_s).c_str());
 
     auto now_localtime = std::time(nullptr);
     if (now_localtime == (time_t)-1) {
         logger->warn("orchestrator: std::time() failed");
         return false;
     }
-    logger->debug("orchestrator: now_localtime: %llu",
-                  (unsigned long long)now_localtime);
+    // See above
+    logger->debug("orchestrator: now_localtime: %s",
+                  std::to_string(now_localtime).c_str());
     tm now_temp{};
     if (gmtime_r(&now_localtime, &now_temp) == nullptr) {
         logger->warn("orchestrator: std::gmtime_r() failed");
@@ -110,8 +113,9 @@ bool Auth::is_valid(SharedPtr<Logger> logger) const noexcept {
         logger->warn("orchestrator: std::mktime() failed");
         return false;
     }
-    logger->debug("orchestrator: now_utc: %llu",
-                  (unsigned long long)now_utc);
+    // See above
+    logger->debug("orchestrator: now_utc: %s",
+                  std::to_string(now_utc).c_str());
 
     auto diff = difftime(expiry_time_s, now_utc);
     if (diff < 0) {

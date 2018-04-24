@@ -308,7 +308,7 @@ std::string Runnable::generate_output_filepath() {
         filename.clear();
 
         char timestamp[100];
-        strftime(timestamp, sizeof(timestamp), "%FT%H%M%SZ", &test_start_time);
+        strftime(timestamp, sizeof(timestamp), "%Y-%m-%dT%H%M%SZ", &test_start_time);
         filename << "report-" << test_name << "-";
         filename << timestamp << "-" << idx << ".njson";
 
