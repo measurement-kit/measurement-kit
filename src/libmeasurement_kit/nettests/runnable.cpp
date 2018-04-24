@@ -234,11 +234,17 @@ void Runnable::geoip_lookup(Callback<> cb) {
             auto country_path = options.get("geoip_country_path",
                                             std::string{});
             if (save_cc and country_path != "") {
-                try {
-                    probe_cc = *GeoipCache::thread_local_instance()
-                       ->resolve_country_code(country_path, ip, logger);
-                } catch (const Error &err) {
-                    logger->warn("cannot lookup country code: %s", err.what());
+                auto inst = GeoipCache::thread_local_instance();
+                if (!!inst) {
+                    auto rv = inst->resolve_country_code(
+                            country_path, ip, logger);
+                    if (!!rv) {
+                        probe_cc = rv.as_value();
+                    } else {
+                        // Error message already printed
+                    }
+                } else {
+                    logger->warn("cannot access GeoIP instance");
                 }
                 if (probe_cc != "ZZ") {
                     logger->info("Your country: %s", probe_cc.c_str());
@@ -249,11 +255,16 @@ void Runnable::geoip_lookup(Callback<> cb) {
 
             auto asn_path = options.get("geoip_asn_path", std::string{});
             if (save_asn and asn_path != "") {
-                try {
-                    probe_asn = *GeoipCache::thread_local_instance()
-                        ->resolve_asn(asn_path, ip, logger);
-                } catch (const Error &err) {
-                    logger->warn("cannot lookup asn: %s", err.what());
+                auto inst = GeoipCache::thread_local_instance();
+                if (!!inst) {
+                    auto rv = inst->resolve_asn(asn_path, ip, logger);
+                    if (!!rv) {
+                        probe_asn = rv.as_value();
+                    } else {
+                        // Error message already printed
+                    }
+                } else {
+                    logger->warn("cannot access GeoIP instance");
                 }
                 if (probe_asn != "AS0") {
                     logger->info("Your ISP identifier: %s", probe_asn.c_str());
