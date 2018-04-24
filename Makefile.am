@@ -19,7 +19,9 @@ ALL_TESTS          = # Empty
 include include.am
 
 # We link with libresolv to have an oracle for our base64 implementation
-test_common_encoding_LDADD += -lresolv
+if HAVE_RESOLV
+    test_common_encoding_LDADD += -lresolv
+endif
 
 TESTS = $(ALL_TESTS)
 check_PROGRAMS = $(ALL_TESTS)

@@ -102,6 +102,35 @@ Then cross compile using:
 
 ## Compile for Windows
 
+### MSYS2
+
+We assume that you have installed [MSYS2](https://www.msys2.org/) on a
+Windows system (we generally use Windows 10).
+
+For the required packages and the exact commands to run, it is best
+that you refer to the build script that we use for appveyor (see
+[.ci/appveyor](../../.ci/appveyor)).
+
+A possible source of troubles is that MSYS2 provides you with three
+shells: normal, 32 bit, and 64 bit development. If you're in the 64 bit
+shell, the `gcc` compiler reported by which should be like:
+
+```
+$ which gcc
+/mingw64/bin/gcc
+```
+
+where the important part is `/mingw64/bin` as opposed to `/usr/bin`.
+
+If you're not in such shell, set your `PATH` properly (this is done by
+the script that we use for building on appveyor).
+
+For building dependencies, rather than MK, just install the required
+packages and then, inside the proper shell as mentioned above, run
+`./script/build/<package>` (i.e. like when you are on Unix).
+
+### Visual Studio
+
 We assume that:
 
 1. you have installed Visual Studio 2017 Community
@@ -124,3 +153,6 @@ We assume that:
 cd script\build
 build.bat <package>
 ```
+
+This way of building MK is currently not working because there are
+parts of MK that do not work with Microsoft compiler.

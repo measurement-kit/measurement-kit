@@ -49,6 +49,19 @@ static int usage(int retval, FILE *fp) {
 }
 
 int main(int argc, char **argv) {
+#ifdef _WIN32
+    // TODO(bassosimone): perhaps reuse test/winsock.hpp here and maybe
+    // make that an exposed extern-C API for maximum reuse?
+    {
+        WORD requested = MAKEWORD(2, 2);
+        WSADATA data;
+        if (::WSAStartup(requested, &data) != 0) {
+            std::clog << "fatal: WSAStartup() failed" << std::endl;
+            exit(EXIT_FAILURE);
+        }
+    }
+#endif
+
     std::list<Callback<BaseTest &>> initializers;
     std::vector<option> long_options = as_long_options(kv_specs);
     std::string stropt = as_getopt_string(kv_specs);
@@ -155,10 +168,11 @@ int main(int argc, char **argv) {
      *
      * Non portable. Verify using configure that we have `optreset` (which
      * we also have on Windows where we embed a getopt() implementation
-     * that features such flag). Otherwise check whether we're in the GNU
-     * C library, which is a different behaviour. Otherwise bail.
+     * that features such flag and on Mingw-w64, which does the same for
+     * us). Otherwise check whether we're in the GNU C library, which has
+     * a different (standard?) behaviour. Otherwise bail.
      */
-#if HAVE_DECL_OPTRESET || defined _WIN32
+#if HAVE_DECL_OPTRESET || defined __MINGW32__ || defined _WIN32
     optreset = 1, optind = 1;
 #elif defined __GLIBC__
     optind = 0;

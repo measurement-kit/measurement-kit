@@ -90,8 +90,12 @@ Error overwrite_file(std::string path, std::string content) {
     return NoError();
 }
 
-#ifdef _WIN32
+#if defined _WIN32
+#if defined __MINGW32__
+template <MK_MOCK_AS(mingw_gettimeofday, gettimeofday)>
+#else
 template <MK_MOCK_AS(evutil_gettimeofday, gettimeofday)>
+#endif
 #else
 template <MK_MOCK(gettimeofday)>
 #endif
@@ -104,23 +108,25 @@ void timeval_now(timeval *tv) {
 
 double time_now();
 
+// TODO(bassosimone): find a better solution, which most likely is
+// using the C++11 library to provide this functionality.
 #ifdef _WIN32
-// Replacement implemented in utils.cpp
-tm *gmtime_r(const time_t *timep, tm *result);
-#endif
-
-// XXX unclear why this fails on Windows (yeah, now I really repent that
-// I did not implement a single mocking interface).
-#ifndef _WIN32
-template <MK_MOCK(time), MK_MOCK(gmtime_r)>
+static inline void utc_time_now(struct tm *utc) {
+    time_t tv = {};
+    tv = time(nullptr);
+    // Note: on Windows gmtime() uses thread local storage.
+    auto rv = gmtime(&tv);
+    assert(rv != nullptr);
+    *utc = *rv;
+}
 #else
-static inline
-#endif
+template <MK_MOCK(time), MK_MOCK(gmtime_r)>
 void utc_time_now(struct tm *utc) {
     time_t tv = {};
     tv = time(nullptr);
     gmtime_r(&tv, utc);
 }
+#endif
 
 Error parse_iso8601_utc(std::string ts, std::tm *tmb);
 

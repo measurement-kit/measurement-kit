@@ -98,6 +98,24 @@ if [ $cmake -eq 0 ]; then
     autoreconf -i
 fi
 
+if [ $cmake -eq 0 -a "`uname -s`" = "MINGW64_NT-10.0" ]; then
+    if [ "`uname -m`" = "x86_64" ]; then
+        channel=testing
+        binary=dependencies-2018_04_22-mingw-amd64.tar.gz
+        wget https://github.com/measurement-kit/prebuilt/releases/download/$channel/$binary
+        checksum=`( shasum -a 256 $binary || sha256sum $binary ) | awk '{print $1}'`
+        if [ "$checksum" != "66fb7b9548de50634320e0af3c1733b138a4b12a5a9fbc0bb19298a79e4209d6" ]; then
+            echo "FATAL: wrong binary sha256sum" 1>&2
+            exit 1
+        fi
+        tar -xzf $binary
+        rm -rf $binary
+    else
+        echo "WARNING: no available precompiled dependencies" 1>&2
+        echo "WARNING: you will need to compile them yourself" 1>&2
+    fi
+fi
+
 echo ""
 echo "=== autogen.sh complete ==="
 echo ""

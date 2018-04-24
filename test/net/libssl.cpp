@@ -2,6 +2,8 @@
 // Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
+#include "test/winsock.hpp"
+
 #define CATCH_CONFIG_MAIN
 #include "src/libmeasurement_kit/ext/catch.hpp"
 
@@ -42,7 +44,7 @@ TEST_CASE("Context::make() works") {
         auto maybe_ctx = Context::make("", Logger::global());
 #if (defined LIBRESSL_VERSION_NUMBER && LIBRESSL_VERSION_NUMBER >= 0x2010400fL)
         REQUIRE(!!maybe_ctx);
-        REQUIRE(*maybe_ctx != nullptr);
+        REQUIRE(maybe_ctx->get() != nullptr);
 #else
         REQUIRE(!maybe_ctx);
         REQUIRE(maybe_ctx.as_error() == MissingCaBundlePathError());

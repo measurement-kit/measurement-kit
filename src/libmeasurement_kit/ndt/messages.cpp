@@ -4,6 +4,8 @@
 
 #include "src/libmeasurement_kit/ndt/messages_impl.hpp"
 
+#include <sstream>
+
 namespace mk {
 namespace ndt {
 namespace messages {
@@ -44,16 +46,34 @@ ErrorOr<Buffer> format_msg_waiting() {
 }
 
 void write(SharedPtr<Context> ctx, Buffer buff, Callback<Error> cb) {
-    std::string s = buff.peek();
-    ctx->logger->debug("> [%zu]: (%d) %s", s.length(), s.c_str()[0],
-                       s.substr(3).c_str());
+    // Need to use string stream because the original printf() is not
+    // guaranteed to work on old versions of Windows and with Mingw we
+    // link against MSVCRT.DLL (Visual Studio 6.0; 1998). Thus we may
+    // run on systems whose printf() doesn't understand `%zu`.
+    //
+    // TODO(bassosimone): find a better fix. Most likely that would be
+    // to use C++ style logging for the logger.
+    if (ctx->logger->get_verbosity() >= MK_LOG_DEBUG) {
+        std::string s = buff.peek();
+        std::stringstream ss;
+        ss << ">[" << s.length() << "]: (" << s.c_str()[0] << ") "
+           << s.substr(3).c_str();
+        // It sucks that we format the message twice but this is only
+        // for debugging, so it actually doesn't matter.
+        ctx->logger->debug("%s", ss.str().c_str());
+    }
     net::write(ctx->txp, buff, cb);
 }
 
 void write_noasync(SharedPtr<Context> ctx, Buffer buff) {
-    std::string s = buff.peek();
-    ctx->logger->debug("> [%zu]: (%d) %s", s.length(), s.c_str()[0],
-                       s.substr(3).c_str());
+    // See above. TODO(bassosimone): find a better fix.
+    if (ctx->logger->get_verbosity() >= MK_LOG_DEBUG) {
+        std::string s = buff.peek();
+        std::stringstream ss;
+        ss << ">[" << s.length() << "]: (" << s.c_str()[0] << ") "
+           << s.substr(3).c_str();
+        ctx->logger->debug("%s", ss.str().c_str());
+    }
     ctx->txp->write(buff);
 }
 

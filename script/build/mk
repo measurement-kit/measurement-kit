@@ -49,6 +49,10 @@ mkdir -p ${pkg_build_dir}
 	exit 0
     fi
 
+    if [ "`uname -s`" = "MINGW64_NT-10.0" ]; then
+        pkg_configure_flags="${pkg_configure_flags} --with-ca-bundle=certs.pem --enable-binaries --enable-examples"
+    fi
+
     ../../../../configure --prefix=${pkg_dist_dir} --disable-shared           \
         --disable-examples                                                    \
         --disable-binaries                                                    \
