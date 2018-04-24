@@ -102,68 +102,29 @@ Then cross compile using:
 ### MSYS2
 
 We assume that you have installed [MSYS2](https://www.msys2.org/) on a
-Windows system, that you have opened a `mingw-w64` shell and that you
-have installed all the required packages. This is what `pacman -Qte` tells
-me on my development MSYS2 system:
+Windows system (we generally use Windows 10).
 
-```
-$ pacman -Qte|awk '{print $1}'
-autoconf
-automake-wrapper
-bash-completion
-bsdcpio
-bsdtar
-crypt
-file
-flex
-git
-inetutils
-libtool
-lndir
-make
-mingw-w64-i686-gcc
-mingw-w64-x86_64-cmake
-mingw-w64-x86_64-gcc
-mingw-w64-x86_64-gdb
-mingw-w64-x86_64-go
-msys2-launcher-git
-pactoys-git
-patch
-pax-git
-python3-pip
-rebase
-time
-ttyrec
-tzcode
-util-linux
-```
+For the required packages and the exact commands to run, it is best
+that you refer to the build script that we use for appveyor (see
+[.ci/appveyor](../../.ci/appveyor)).
 
-To install these packages, you should run `pacman -Syu $packages` where
-`packages` contains the above names. (TODO(bassosimone): we can maybe
-trim down this list to avoid mentioning the packages that are installed
-by default or are not needed in this context.)
-
-It is important to make sure you're in the 64 bit development shell
-and not in the normal shell. MSYS2 provides you with three shells: normal,
-32 bit, and 64 bit development. If you're in the 64 bit shell, the
-`gcc` compiler reported by which should be like:
+A possible source of troubles is that MSYS2 provides you with three
+shells: normal, 32 bit, and 64 bit development. If you're in the 64 bit
+shell, the `gcc` compiler reported by which should be like:
 
 ```
 $ which gcc
 /mingw64/bin/gcc
 ```
 
-where the important part is `/mingw64/bin` as opposed to `/bin`.
+where the important part is `/mingw64/bin` as opposed to `/usr/bin`.
 
-If these preconditions are met, you can, for now, get the a static
-library by running:
+If you're not in such shell, set your `PATH` properly (this is done by
+the script that we use for building on appveyor).
 
-```
-./script/build/mk
-```
-
-TODO(bassosimone): provide instructions to compile without using a
-wrapper script, perhaps?
+For building dependencies, rather than MK, just install the required
+packages and then, inside the proper shell as mentioned above, run
+`./script/build/<package>` (i.e. like when you are on Unix).
 
 ### Visual Studio
 
