@@ -1,4 +1,4 @@
-rem Adapted from <https://github.com/mypaint/libmypaint/commit/553f1753>
+rem Adapted from: https://github.com/mypaint/libmypaint/commit/553f1753
 rem
 rem Matrix-driven Appveyor CI script for libmypaint
 rem Currently only does MSYS2 builds.
