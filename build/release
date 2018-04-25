@@ -12,7 +12,6 @@ for file in                                                                    \
         build/includes                                                         \
         build/ios/archive-library                                              \
         build/ios/library                                                      \
-        build/spec/mk                                                          \
         configure.ac                                                           \
         doc/api/common/version.md                                              \
         doc/index.md                                                           \
