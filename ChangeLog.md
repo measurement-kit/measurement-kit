@@ -1,3 +1,17 @@
+# MeasurementKit 0.9.0-alpha [2018-04-25]
+
+- Make Measurement Kit work on Windows64 with Msys2
+- Roll out a simpler API (see `ffi.h`)
+- Start simplifying the cross build system
+- Improve CMake build system and start using it in Travis
+- Add simple Windows AppVeyory build using Msys2
+- Make most header private, since now we have `ffi.h`
+- IM tests logic fixing (#1498)
+- http: include request on connection error (#1605)
+- Update to libressl v2.6.4
+- Update to GeoIP v1.6.12
+- More fixes and smaller enhancements
+
 # Measurement Kit 0.8.0-alpha [2017-09-19]
 
 - various small cleanups (#1286)
