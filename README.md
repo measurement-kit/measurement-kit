@@ -154,20 +154,9 @@ See the [iOS tutorial](doc/tutorial/ios.md) for more info.
 
 ### How to add Measurement Kit to an Xcode project.
 
-Make sure your [Podfile](https://guides.cocoapods.org/syntax/podfile.html)
-looks like this:
-
-```ruby
-target 'YourTargetNameHere' do
-    pod 'measurement_kit',
-      :git => 'https://github.com/measurement-kit/measurement-kit.git',
-      :branch => 'stable'
-end
-```
-
-Run `pod install` (or `pod update`) and remember to open the
-`.xcworkspace` rather than the `.xcodeproj`. See the [iOS tutorial](
-doc/tutorial/ios.md) for more info.
+To see how to integrate Measurement Kit into an iOS Xcode project, please
+refer to the [measurement-kit/ios-example](
+https://github.com/measurement-kit/ios-example) repository.
 
 ## How to use Measurement Kit
 
