@@ -17,7 +17,14 @@ Pod::Spec.new do |s|
     :tag => "v#{s.version}"
   }
   s.prepare_command = <<-CMD
-    ./build/ios/library
+    echo ""
+    echo "*** BUILD ERROR ***"
+    echo ""
+    echo "Please, from now one use https://github.com/measurement-kit/ios-libs"
+    echo "It should suffice to update the repository name in your Podfile"
+    echo ""
+    echo ""
+    exit 1
   CMD
   s.platform = :ios, "9.0"
   s.vendored_framework = "build/ios/Frameworks/*.framework"
