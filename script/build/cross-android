@@ -9,7 +9,7 @@ ROOTDIR=$(cd $(dirname $0)/../../ && pwd -P)
 if [ $# -lt 1 ]; then
     echo "Usage: $0 ARCH [command [arguments...]]" 1>&2
     echo "" 1>&2
-    echo "  ARCH: armeabi, armeabi-v7a, arm64, mips, mips64, x86, x86_64" 1>&2
+    echo "  ARCH: armeabi-v7a, arm64, x86, x86_64" 1>&2
     echo "" 1>&2
     echo "Example usage:" 1>&2
     echo " $0 arm64" 1>&2
@@ -41,44 +41,16 @@ if [ "$ARCH" = "arm64" ]; then
     # Note: arm64 is also known as aarch64 and as armv8
     TOOLCHAIN_NAME=aarch64-linux-android
     DESTDIR_NAME=arm64-v8a
-elif [ "$ARCH" = "armeabi" ]; then
+elif [ "$ARCH" = "armeabi-v7a" ]; then
     TOOLCHAIN_NAME=arm-linux-androideabi
     DESTDIR_NAME=$ARCH
     #
     # <Bandwagon>These flags have been copied from the flags used by
     # ndk-build when building measurement-kit as a C++ library</>.
     #
-    # According to Wikipedia [1], armv5te means v5 of the architecture,
-    # with thumbs and DSP extensions. Xscale is a processor built by third
-    # parties compatible with armv5te that doesn't have floating point,
-    # hence the -msoft-float flag. The -mthumb instructions forces emitting
-    # instructions using the thumb instruction set where common instructions
-    # are encoded using 16 bits rather than 32 bits.
-    #
-    # [1] https://en.wikipedia.org/wiki/ARM_architecture#Cores
-    #
-    # Note: `-Os` was originally part of the flags but this led to
-    # non working libevent binaries as documented in #1051. Also
-    # `-fno-integrated-as` is needed to avoid another segfault.
-    #
-    ANDROID_ARCH_FLAGS="-target armv5te-none-linux-androideabi -march=armv5te -mtune=xscale -msoft-float -mthumb -fno-integrated-as"
-elif [ "$ARCH" = "armeabi-v7a" ]; then
-    TOOLCHAIN_NAME=arm-linux-androideabi
-    DESTDIR_NAME=$ARCH
-    #
-    # <Bandwagon>See above.</>
+    # TODO(bassosimone): make sure that these flags are still current.
     #
     ANDROID_ARCH_FLAGS="-target armv7-none-linux-androideabi -march=armv7-a -mfloat-abi=softfp -mfpu=vfpv3-d16 -mthumb"
-elif [ "$ARCH" = "mips" ]; then
-    # Note: mips is actually mipsel (i.e. little endian)
-    TOOLCHAIN_NAME=mipsel-linux-android
-    DESTDIR_NAME=mips
-elif [ "$ARCH" = "mips64" ]; then
-    # Note: this is mips 64bit little endian
-    TOOLCHAIN_NAME=mips64el-linux-android
-    DESTDIR_NAME=mips64
-    LIB_SUFFIX=64
-    CONFIG_EXTRA="--disable-asm"  # See issue 653
 elif [ "$ARCH" = "x86" ]; then
     TOOLCHAIN_NAME=i686-linux-android
     DESTDIR_NAME=x86
