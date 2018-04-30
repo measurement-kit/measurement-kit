@@ -1,3 +1,9 @@
+# MeasurementKit 0.9.0-beta [XXXX-XX-XX]
+
+- Since this release, you cannot use anymore the podfile included in this
+  repository and you should use instead the podfile available at
+  [measurement-kit/ios-libs](https://github.com/measurement-kit/ios-libs).
+
 # MeasurementKit 0.9.0-alpha [2018-04-25]
 
 - Make Measurement Kit work on Windows64 with Msys2
