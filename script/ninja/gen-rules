@@ -1,0 +1,20 @@
+#!/bin/sh
+set -e
+if [ "$CC" = "" ]; then
+  CC=cc
+fi
+if [ "$CXX" = "" ]; then
+  CXX=c++
+fi
+if [ "$AR" = "" ]; then
+  AR=ar
+fi
+sed -e "s|@CPPFLAGS@|$CPPFLAGS|g"                                              \
+    -e "s|@CFLAGS@|$CFLAGS|g"                                                  \
+    -e "s|@CXXFLAGS@|$CXXFLAGS|g"                                              \
+    -e "s|@CC@|$CC|g"                                                          \
+    -e "s|@CXX@|$CXX|g"                                                        \
+    -e "s|@AR@|$AR|g"                                                          \
+    -e "s|@LDFLAGS@|$LDFLAGS|g"                                                \
+    -e "s|@LIBS@|$LIBS|g"                                                      \
+    script/ninja/rules.gcc.in > rules.ninja
