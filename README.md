@@ -31,7 +31,7 @@ documentation. You can find examples of usage of such API into the
 
 ## Generic Unix instructions
 
-You need to have install the autotools, a C++14 capable C++ compiler, a C++14
+You need to have the autotools, a C++14 capable C++ compiler, a C++14
 capable C++ library, a C11 capable C compiler, and all the dependencies
 installed. For current information, we encourage you to read the very simple
 build script that we use on Travis CI to setup a Unix environment, from
