@@ -50,7 +50,7 @@ sudo /sbin/ldconfig  # required only on Linux if you install
 ```
 
 The configure script will also provide advice if a dependency is missing. Also,
-`./configure --help` provides information on how to configure the build.
+`./configure --help` can be useful.
 
 ## Homebrew instructions
 
