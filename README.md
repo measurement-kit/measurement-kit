@@ -63,7 +63,7 @@ for Homebrew.
 For information on how to compile Measurement Kit using the [Mingw-w64](
 https://mingw-w64.org/doku.php) compiler distribution for Windows, please refer
 to the [measurement-kit/script-build-unix](
-https://github.com/measurement-kit/measurement-kit) repository.
+https://github.com/measurement-kit/script-build-unix) repository.
 
 To better understand how to compile using Mingw-w64, it is also useful to
 look into how we build Measurement Kit on AppVeyor. To this end, we encourage
