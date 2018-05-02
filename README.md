@@ -39,6 +39,8 @@ which you can gather up-to-date information regarding required packages on
 a Debian like system. To this end, please refer to the content of the
 [.ci/docker](.ci/docker) folder.
 
+With all the dependencies statisfied, build with:
+
 ```
 ./autogen.sh
 ./configure
