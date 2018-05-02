@@ -1,0 +1,22 @@
+commonflags = /O2 /W3 /nologo /MD /D_WIN32_WINNT=0x0600 /DNOMINMAX
+cppflags = /I. /Iinclude /IMK_DIST/windows/geoip-api-c/1.6.12-2-g204cc59-2/x86_64/include /IMK_DIST/windows/libevent/2.1.8-2/x86_64/include /IMK_DIST/windows/libressl/2.6.4-2/x86_64/include
+
+cflags = $commonflags
+cxxflags = $commonflags /std:c++14 /EHs
+
+rule cc
+  command = cl /c $cppflags $cflags /Fo:$out $in
+
+rule cxx
+  command = cl /c $cppflags $cxxflags /Fo:$out $in
+
+rule ar
+  command = lib /nologo /out:$out $in
+
+libs = MK_DIST/windows/libressl/2.6.4-2/x86_64/lib/crypto.lib MK_DIST/windows/geoip-api-c/1.6.12-2-g204cc59-2/x86_64/lib/GeoIP.lib MK_DIST/windows/libevent/2.1.8-2/x86_64/lib/event.lib MK_DIST/windows/libressl/2.6.4-2/x86_64/lib/ssl.lib ws2_32.lib advapi32.lib shell32.lib
+
+rule link
+  command = cl /nologo /Fe:$out $in $libs
+
+rule compile_and_link_cxx
+  command = cl $cppflags $cxxflags /Fe:$out $in $libs

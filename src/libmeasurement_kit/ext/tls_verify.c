@@ -29,6 +29,10 @@
 
 #include "src/libmeasurement_kit/ext/tls_internal.h"
 
+#if defined _WIN32 && !defined __MINGW__
+#define strcasecmp _stricmp
+#endif
+
 static int
 tls_match_name(const char *cert_name, const char *name)
 {

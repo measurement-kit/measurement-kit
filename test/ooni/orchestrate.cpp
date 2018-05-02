@@ -82,9 +82,17 @@ template <typename F> std::string make_time_(F &&f) {
         throw std::runtime_error("std::time() failed");
     }
     std::tm ttm{};
+#ifdef _MSC_VER
+#pragma warning(disable:4996)
+    auto tp = gmtime(&t); // thread safe on Windows
+    assert(!!tp);
+    ttm = *tp;
+#pragma warning(default:4996)
+#else
     if (gmtime_r(&t, &ttm) == nullptr) {
         throw std::runtime_error("gmtime_r() failed");
     }
+#endif
     std::stringstream ss;
     ss << std::put_time(&ttm, "%Y-%m-%dT%H:%M:%SZ");
     return ss.str();

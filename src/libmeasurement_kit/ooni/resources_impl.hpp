@@ -102,9 +102,7 @@ void get_manifest_as_json_impl(
     }, {}, settings, reactor, logger, nullptr, 0);
 }
 
-static inline bool ostream_bad(const std::ostream &s) {
-    return s.bad();
-}
+bool ostream_bad(const std::ostream &s);
 
 static inline std::string sanitize_path(const std::string &s) {
     return std::regex_replace(s, std::regex{R"xx([/\\]+)xx"}, ".");

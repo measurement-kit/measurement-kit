@@ -15,7 +15,9 @@
 
 #include "src/libmeasurement_kit/common/encoding.hpp"
 
+#ifndef _MSC_VER
 #include <resolv.h>
+#endif
 
 #include <event2/util.h>
 
@@ -80,6 +82,7 @@ TEST_CASE("base64_encode() works as expected") {
                 "YW55IGNhcm5hbCBwbGVhc3Vy");
     }
 
+#ifndef _MSC_VER
     SECTION("With random input") {
         for (int i = 0; i < 16; ++i) {
             uint16_t size = 0;
@@ -106,6 +109,7 @@ TEST_CASE("base64_encode() works as expected") {
             REQUIRE(result == expect);
         }
     }
+#endif
 }
 
 #else

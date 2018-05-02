@@ -13,6 +13,7 @@
 *.lo
 *.log
 *.o
+*.obj
 *.o-*
 *.out
 *.pyc

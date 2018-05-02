@@ -6,7 +6,7 @@
 #include "config.h" // For MK_CA_BUNDLE
 #endif
 #ifndef MK_CA_BUNDLE
-#error "MK_CA_BUNDLE is not set."
+#define MK_CA_BUNDLE "" // Empty
 #endif
 
 #include "src/libmeasurement_kit/ext/tls_internal.h"
