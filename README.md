@@ -49,8 +49,7 @@ sudo make install    # optional, if you want to install to `/usr/local`
 sudo /sbin/ldconfig  # required only on Linux if you install
 ```
 
-The `./autogen.sh` script should further provide you with pointers. The
-configure script will also provide advice if a dependency is missing. Also,
+The configure script will also provide advice if a dependency is missing. Also,
 `./configure --help` provides information on how to configure the build.
 
 ## Homebrew instructions
