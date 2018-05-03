@@ -130,7 +130,7 @@ void get_resources_for_country_impl(std::string latest, Json manifest,
      * Important: MUST be entry and not &entry because we need a copy!
      */
     for (auto entry : manifest["resources"]) {
-        input.push_back([=](Callback<Error> cb) {
+        input.push_back([=](Callback<Error> cb) mutable {
             if (!entry.is_object()) {
                 cb(JsonDomainError());
                 return;
@@ -154,7 +154,7 @@ void get_resources_for_country_impl(std::string latest, Json manifest,
             std::string path = sanitize_path(entry["path"]);
             url += path;
             http_get(url,
-                     [=](Error error, SharedPtr<Response> response) {
+                     [=](Error error, SharedPtr<Response> response) mutable {
                          if (error) {
                              cb(error);
                              return;

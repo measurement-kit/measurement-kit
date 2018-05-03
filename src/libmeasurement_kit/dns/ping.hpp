@@ -22,8 +22,8 @@ void ping_nameserver(QueryClass dns_class, QueryType dns_type, std::string name,
     }
     mk::every(
           interval, reactor, callback,
-          [=]() { return run_for && time_now() > *run_for; },
-          [=]() {
+          [=]() mutable { return run_for && time_now() > *run_for; },
+          [=]() mutable {
               query(dns_class, dns_type, name,
                     [=](Error err, SharedPtr<Message> msg) { collector(err, msg); },
                     settings, reactor, logger);
