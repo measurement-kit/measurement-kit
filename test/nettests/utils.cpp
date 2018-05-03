@@ -137,7 +137,7 @@ TEST_CASE("process_input_filepaths() works as expected") {
                 intercept_randomize>(inputs, true, {"./test/fixtures/urls.txt"}, "IT",
                                      {{"randomize_input", "1"}},
                                      mk::Logger::global(), nullptr, nullptr)),
-            mk::MockedError);
+            const mk::MockedError &);
     }
 
     SECTION("The randomize functionality is invoked by default") {
@@ -147,7 +147,7 @@ TEST_CASE("process_input_filepaths() works as expected") {
                               intercept_randomize>(inputs,
                               true, {"./test/fixtures/urls.txt"}, "IT", {},
                               mk::Logger::global(), nullptr, nullptr)),
-                          mk::MockedError);
+                          const mk::MockedError &);
     }
 
     SECTION("The randomize functionality is not invoked when not requested") {

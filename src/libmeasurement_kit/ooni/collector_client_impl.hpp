@@ -354,7 +354,7 @@ void submit_report_impl(std::string filepath, std::string collector_base_url,
     logger->info("connecting to collector %s...", collector_base_url.c_str());
     collector_connect(
         settings,
-        [=](Error err, SharedPtr<Transport> txp) {
+        [=](Error err, SharedPtr<Transport> txp) mutable {
             logger->info("connecting to collector %s... %d",
                          collector_base_url.c_str(), err.code);
             if (err) {
@@ -364,7 +364,7 @@ void submit_report_impl(std::string filepath, std::string collector_base_url,
             logger->info("creating report...");
             collector_create_report(
                 txp, *entry,
-                [=](Error err, std::string report_id) {
+                [=](Error err, std::string report_id) mutable {
                     logger->info("creating report... %d", err.code);
                     if (err) {
                         txp->close([=]() { callback(err); });
