@@ -6,7 +6,8 @@
 
 #ifndef _WIN32
 #include <unistd.h>
-#include "../portable/_getopt.h"
+#else
+#include "src/measurement_kit/portable/_getopt.h"
 #endif
 
 #endif

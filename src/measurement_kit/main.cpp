@@ -166,10 +166,13 @@ int main(int argc, char **argv) {
     /*
      * Allow to call getopt() again.
      *
-     * Non portable. Assume it's either GNU or BSD. We can do better in
-     * configure checking for the proper way to reset options.
+     * Non portable. Verify using configure that we have `optreset` (which
+     * we also have on Windows where we embed a getopt() implementation
+     * that features such flag and on Mingw-w64, which does the same for
+     * us). Otherwise check whether we're in the GNU C library, which has
+     * a different (standard?) behaviour. Otherwise bail.
      */
-#if HAVE_DECL_OPTRESET || defined __MINGW32__ /* Has optreset */
+#if HAVE_DECL_OPTRESET || defined __MINGW32__ || defined _WIN32
     optreset = 1, optind = 1;
 #elif defined __GLIBC__
     optind = 0;

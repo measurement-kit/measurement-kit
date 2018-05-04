@@ -12,8 +12,8 @@
 #endif
 
 #include <getopt.h>
-#include "../portable/_getopt.h"
-
-#endif /* !_WIN32 || __MINGW32__ */
+#else
+#include "src/measurement_kit/portable/_getopt.h"
+#endif /* !_WIN32 || __MINGW_32__ */
 
 #endif

@@ -4,11 +4,12 @@
 #ifndef MEASUREMENT_KIT_COMMON_LOGGER_HPP
 #define MEASUREMENT_KIT_COMMON_LOGGER_HPP
 
-#include <cstdint>
 #include <measurement_kit/common/aaa_base.h>
 #include <measurement_kit/common/callback.hpp>
 #include <measurement_kit/common/json.hpp>
 #include <measurement_kit/common/shared_ptr.hpp>
+
+#include <cstdint>
 #include <stdarg.h>
 
 // The numbers [0-31] are reserved for verbosity levels.

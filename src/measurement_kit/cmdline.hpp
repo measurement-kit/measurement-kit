@@ -8,16 +8,15 @@
 #include <measurement_kit/nettests.hpp>
 #include <measurement_kit/common.hpp>
 
-#include "portable/err.h"
-#include "portable/getopt.h"
-#include "portable/unistd.h"
+#include "src/measurement_kit/portable/getopt.h"
+#include "src/measurement_kit/portable/unistd.h"
 
 using namespace mk;
 using namespace mk::nettests;
 
 #define MK_CMDLINE_SUBCOMMANDS                                                 \
     XX(dash)                                                                   \
-    XX(captiveportal)                                                         \
+    XX(captiveportal)                                                          \
     XX(dns_injection)                                                          \
     XX(facebook_messenger)                                                     \
     XX(http_header_field_manipulation)                                         \
