@@ -217,7 +217,7 @@ void run_tests_impl(SharedPtr<Context> ctx, Callback<Error> callback) {
     }
 
     ctx->logger->debug("Run test with id %d ...", *num);
-    func(ctx, [=](Error err) {
+    func(ctx, [=](Error err) mutable {
         ctx->logger->debug("Run test with id %d ... complete (%s)", *num,
                            err.what());
         (*ctx->entry)["phase_result"][id_to_name(*num)] = err.reason;
