@@ -77,10 +77,14 @@ AC_DEFUN([MK_AM_LIBEVENT], [
   AC_CHECK_HEADERS(event2/event.h, [], [mk_not_found=1])
   AC_CHECK_LIB(event, event_new, [], [mk_not_found=1])
   AC_CHECK_HEADERS(event2/thread.h, [], [mk_not_found=1])
-  if test "`uname -s`" != "MINGW64_NT-10.0"; then
-    dnl Of course pthreads are not available under Windows.
-    AC_CHECK_LIB(event_pthreads, evthread_use_pthreads, [], [mk_not_found=1])
-  fi
+  case $host in
+    *-w64-mingw32)
+      # nothing
+    ;;
+    *)
+      AC_CHECK_LIB(event_pthreads, evthread_use_pthreads, [], [mk_not_found=1])
+    ;;
+  esac
   AC_CHECK_LIB(event_openssl, bufferevent_openssl_filter_new, [],
                [mk_not_found=1])
 
@@ -141,13 +145,7 @@ AC_DEFUN([MK_AM_OPENSSL], [
   mk_not_found=""
   AC_CHECK_HEADERS(openssl/ssl.h, [], [mk_not_found=1])
   AC_CHECK_LIB(crypto, RSA_new, [], [mk_not_found=1])
-  dnl TODO(bassosimone): understand why the following is required on
-  dnl the Msys system for the AC_CHECK_LIB check to actually work.
-  if test "`uname -s`" = "MINGW64_NT-10.0"; then
-    AC_CHECK_LIB(ssl, SSL_new, [], [mk_not_found=1], [-lcrypto])
-  else
-    AC_CHECK_LIB(ssl, SSL_new, [], [mk_not_found=1])
-  fi
+  AC_CHECK_LIB(ssl, SSL_new, [], [mk_not_found=1])
 
   dnl This test breaks the build with 12.04 on travis because the linker there
   dnl requires `LD_RUN_PATH` which sadly is not honoured by this test, still
