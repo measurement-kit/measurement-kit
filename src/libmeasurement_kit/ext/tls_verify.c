@@ -36,7 +36,7 @@
 
 #include "src/libmeasurement_kit/ext/tls_internal.h"
 
-#ifdef _WIN32
+#if defined _WIN32 && !defined __MINGW__
 #define strcasecmp _stricmp
 #endif
 

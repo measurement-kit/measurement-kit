@@ -8,11 +8,12 @@ namespace mk {
 namespace ooni {
 
 namespace bouncer {
-Error my_json_parse_process_and_filter_errors(
-        const std::string &data, Callback<Json &> &&callable) {
+Error
+my_json_parse_process_and_filter_errors(const std::string &data,
+                                        Callback<Json &> &&callable) {
     return json_process(data, std::move(callable));
 }
-}
+} // namespace bouncer
 
 ErrorOr<SharedPtr<BouncerReply>> BouncerReply::create(std::string data,
                                                 SharedPtr<Logger> logger) {

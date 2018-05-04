@@ -16,9 +16,6 @@
 namespace mk {
 namespace nettests {
 
-// Moved the implementation of the following functions inside of the CPP
-// file because MSVC did not like them being static inline.
-
 SharedPtr<std::istream> open_file_(const std::string &path);
 
 bool readline_(std::istream &input, std::string &line);

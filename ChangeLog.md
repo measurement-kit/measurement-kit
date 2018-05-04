@@ -1,4 +1,8 @@
-# MeasurementKit 0.9.0-beta [XXXX-XX-XX]
+# Measurement Kit 0.9.0-beta [XXXX-XX-XX]
+
+- We have fixed all the places where MK was not compiling with MSVC.
+
+# MeasurementKit 0.9.0-apha.1 [2018-05-04]
 
 - Since this release, you cannot use anymore the podfile included in this
   repository and you should use instead the podfile available at
@@ -7,6 +11,11 @@
 - Since this release, you cannot anymore (cross-)build dependencies or MK on
   the fly from this repository. Use [measurement-kit/script-build-unix](
   https://github.com/measurement-kit/script-build-unix) instead.
+
+- Documentation has been updated, old documentation removed.
+
+- We have update the build scripts to build with mingw-w64 with C++11
+  support from macOS when this toolchain is available.
 
 # MeasurementKit 0.9.0-alpha [2018-04-25]
 

@@ -102,10 +102,6 @@ void get_manifest_as_json_impl(
     }, {}, settings, reactor, logger, nullptr, 0);
 }
 
-// Moved to CPP file because Visual Studio cannot make templates that
-// depend on inline functions. As said also in other place, this issue
-// is a good example of why we should mock more interfaces rather
-// than mocking functions alone.
 bool ostream_bad(const std::ostream &s);
 
 static inline std::string sanitize_path(const std::string &s) {
