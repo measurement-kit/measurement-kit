@@ -1,4 +1,4 @@
-# MeasurementKit 0.9.0-beta [XXXX-XX-XX]
+# MeasurementKit 0.9.0-apha.1 [2018-05-04]
 
 - Since this release, you cannot use anymore the podfile included in this
   repository and you should use instead the podfile available at
