@@ -77,10 +77,14 @@ AC_DEFUN([MK_AM_LIBEVENT], [
   AC_CHECK_HEADERS(event2/event.h, [], [mk_not_found=1])
   AC_CHECK_LIB(event, event_new, [], [mk_not_found=1])
   AC_CHECK_HEADERS(event2/thread.h, [], [mk_not_found=1])
-  if test "`uname -s`" != "MINGW64_NT-10.0"; then
-    dnl Of course pthreads are not available under Windows.
-    AC_CHECK_LIB(event_pthreads, evthread_use_pthreads, [], [mk_not_found=1])
-  fi
+  case $host in
+    *-w64-mingw32)
+      # nothing
+    ;;
+    *)
+      AC_CHECK_LIB(event_pthreads, evthread_use_pthreads, [], [mk_not_found=1])
+    ;;
+  esac
   AC_CHECK_LIB(event_openssl, bufferevent_openssl_filter_new, [],
                [mk_not_found=1])
 
@@ -90,7 +94,6 @@ AC_DEFUN([MK_AM_LIBEVENT], [
     AC_MSG_WARN([Failed to find dependency: libevent])
     echo "    - to install on Debian: sudo apt-get install libevent-dev"
     echo "    - to install on OSX: brew install libevent"
-    echo "    - to compile from sources: ./build/dependency libevent"
     AC_MSG_ERROR([Please, install libevent and run configure again])
   fi
 ])
@@ -115,7 +118,6 @@ AC_DEFUN([MK_AM_GEOIP], [
     AC_MSG_WARN([Failed to find dependency: geoip])
     echo "    - to install on Debian: sudo apt-get install libgeoip-dev"
     echo "    - to install on OSX: brew install libgeoip"
-    echo "    - to compile from sources: ./build/dependency geoip"
     AC_MSG_ERROR([Please, install geoip and run configure again])
   fi
 ])
@@ -143,13 +145,7 @@ AC_DEFUN([MK_AM_OPENSSL], [
   mk_not_found=""
   AC_CHECK_HEADERS(openssl/ssl.h, [], [mk_not_found=1])
   AC_CHECK_LIB(crypto, RSA_new, [], [mk_not_found=1])
-  dnl TODO(bassosimone): understand why the following is required on
-  dnl the Msys system for the AC_CHECK_LIB check to actually work.
-  if test "`uname -s`" = "MINGW64_NT-10.0"; then
-    AC_CHECK_LIB(ssl, SSL_new, [], [mk_not_found=1], [-lcrypto])
-  else
-    AC_CHECK_LIB(ssl, SSL_new, [], [mk_not_found=1])
-  fi
+  AC_CHECK_LIB(ssl, SSL_new, [], [mk_not_found=1])
 
   dnl This test breaks the build with 12.04 on travis because the linker there
   dnl requires `LD_RUN_PATH` which sadly is not honoured by this test, still
@@ -217,7 +213,6 @@ AC_DEFUN([MK_AM_OPENSSL], [
     AC_MSG_WARN([Failed to find dependency: openssl])
     echo "    - to install on Debian: sudo apt-get install libssl-dev"
     echo "    - to install on OSX: brew install openssl"
-    echo "    - to compile from sources: ./build/dependency libressl"
     AC_MSG_ERROR([Please, install openssl and run configure again])
   fi
 ])

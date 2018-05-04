@@ -25,7 +25,7 @@ TEST_CASE("ResponseParserNg deals with an invalid message") {
     data += "\r\n";
     data += "1234567";
 
-    REQUIRE_THROWS_AS(parser.feed(data), ParserError);
+    REQUIRE_THROWS_AS(parser.feed(data), const ParserError &);
 }
 
 TEST_CASE("ResponseParserNg deals with an UPGRADE request") {
@@ -186,7 +186,7 @@ TEST_CASE("ResponseParserNg stops after first message") {
 
     REQUIRE(data.size() > 0);
     auto c = data.front();
-    REQUIRE_THROWS_AS(parser.feed(c), ParserError);
+    REQUIRE_THROWS_AS(parser.feed(c), const ParserError &);
 }
 
 TEST_CASE("ResponseParserNg eof() works as expected") {

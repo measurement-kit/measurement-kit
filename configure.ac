@@ -1,5 +1,5 @@
 # Autoconf requirements
-AC_INIT(measurement_kit, 0.9.0-dev, bassosimone@gmail.com)
+AC_INIT(measurement_kit, 0.9.0-alpha, bassosimone@gmail.com)
 
 # information on the package
 AC_CONFIG_SRCDIR([Makefile.am])
@@ -22,6 +22,28 @@ AM_CONDITIONAL([BUILD_TESTS], [test "yes" = "yes"])  # for now, build always
 AC_CANONICAL_HOST
 AC_PROG_INSTALL
 
+case "$host" in
+  *-apple-darwin*)
+    if test "$cross_compiling" != yes; then
+      # On my macOS, /usr/local is not added automatically
+      CPPFLAGS="$CPPFLAGS -I/usr/local/include"
+      LDFLAGS="$LDFLAGS -L/usr/local/lib"
+    fi
+  ;;
+  *-w64-mingw32)
+    # Must link with ws2_32
+    LIBS="$LIBS -lws2_32"
+    # Required to expose inet_pton()
+    CPPFLAGS="$CPPFLAGS -D_WIN32_WINNT=0x0600"
+  ;;
+  *)
+    # Must set -pthread before testing for -levent_pthreads
+    CFLAGS="$CFLAGS -pthread"
+    CXXFLAGS="$CXXFLAGS -pthread"
+    LDFLAGS="$LDFLAGS -pthread"
+  ;;
+esac
+
 # Must be before AC_PROG_CXX (see http://stackoverflow.com/questions/11703709)
 MK_AM_ENABLE_COVERAGE
 MK_AM_ADD_COVERAGE_FLAGS_IF_NEEDED
@@ -32,24 +54,6 @@ MK_AM_DISABLE_TRACEROUTE
 
 # See above comment
 AC_PROG_CXX
-
-if test "`uname`" != "Darwin"; then
-  # Must set -pthread before testing for -levent_pthreads
-  CFLAGS="$CFLAGS -pthread"
-  CXXFLAGS="$CXXFLAGS -pthread"
-  LDFLAGS="$LDFLAGS -pthread"
-elif test "$cross_compiling" != yes; then
-  # On my macOS, /usr/local is not added automatically
-  CPPFLAGS="$CPPFLAGS -I/usr/local/include"
-  LDFLAGS="$LDFLAGS -L/usr/local/lib"
-fi
-
-if test "`uname -s`" = "MINGW64_NT-10.0"; then
-  # Must link with ws2_32
-  LIBS="$LIBS -lws2_32"
-  # Required to expose inet_pton()
-  CPPFLAGS="$CPPFLAGS -D_WIN32_WINNT=0x0600"
-fi
 
 MK_AM_CHECK_LIBC_FUNCS
 MK_AM_OPENSSL
