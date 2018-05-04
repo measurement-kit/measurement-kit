@@ -32,7 +32,7 @@ void read_ll_impl(SharedPtr<Context> ctx,
                   SharedPtr<Reactor> reactor) {
 
     // Receive message type (1 byte) and length (2 bytes)
-    net_readn_first(ctx->txp, ctx->buff, 3, [=](Error err) {
+    net_readn_first(ctx->txp, ctx->buff, 3, [=](Error err) mutable {
         if (err) {
             callback(ReadingMessageTypeLengthError(std::move(err)), 0, "");
             return;
@@ -44,7 +44,7 @@ void read_ll_impl(SharedPtr<Context> ctx,
         // hence, if that's not the case, we'll see an exception
 
         // Now read the message payload (`*length` bytes in total)
-        net_readn_second(ctx->txp, ctx->buff, *length, [=](Error err) {
+        net_readn_second(ctx->txp, ctx->buff, *length, [=](Error err) mutable {
             if (err) {
                 callback(ReadingMessagePayloadError(std::move(err)), 0, "");
                 return;

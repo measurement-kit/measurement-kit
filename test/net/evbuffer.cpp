@@ -16,7 +16,7 @@ static evbuffer *fail() { return nullptr; }
 
 TEST_CASE("make_shared_evbuffer deals with evbuffer_new() failure") {
     REQUIRE_THROWS_AS([](){ make_shared_evbuffer<fail>(); }(),
-                      std::bad_alloc);
+                      const std::bad_alloc &);
 }
 
 static bool ctor_called = false;

@@ -238,7 +238,7 @@ void run_loop_(SharedPtr<DashLoopCtx> ctx) {
                 {"Authorization", ctx->auth_token},
                 {"Cache-Control", "no-cache, no-store, must-revalidate"},
           },
-          "", ctx->logger, [=](Error error, SharedPtr<http::Request> req) {
+          "", ctx->logger, [=](Error error, SharedPtr<http::Request> req) mutable {
               if (error) {
                   ctx->logger->warn("dash: request failed: %s", error.what());
                   ctx->cb(error);
@@ -247,7 +247,7 @@ void run_loop_(SharedPtr<DashLoopCtx> ctx) {
               assert(!!req);
               http_request_recv_response(
                     ctx->txp,
-                    [=](Error error, SharedPtr<http::Response> res) {
+                    [=](Error error, SharedPtr<http::Response> res) mutable {
                         if (error) {
                             ctx->logger->warn(
                                   "dash: cannot receive response: %s",

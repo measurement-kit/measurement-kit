@@ -22,14 +22,14 @@ TEST_CASE("The settings class throw an exception when the conversions fails, "
           "due to an empty string") {
     Settings settings;
     settings["key"] = "";
-    REQUIRE_THROWS_AS(settings["key"].as<int>(), std::runtime_error);
+    REQUIRE_THROWS_AS(settings["key"].as<int>(), const std::runtime_error &);
 }
 
 TEST_CASE("The settings class throw an exception when the conversion is not "
           "complete") {
     Settings settings;
     settings["key"] = "4 5 6";
-    REQUIRE_THROWS_AS(settings["key"].as<int>(), std::runtime_error);
+    REQUIRE_THROWS_AS(settings["key"].as<int>(), const std::runtime_error &);
 }
 
 TEST_CASE("The settings class convert bool to int") {
@@ -54,14 +54,14 @@ TEST_CASE(
     "The settings class throws an exception while converting double to int") {
     Settings settings;
     settings["key"] = 6.5;
-    REQUIRE_THROWS_AS(settings["key"].as<int>(), std::runtime_error);
+    REQUIRE_THROWS_AS(settings["key"].as<int>(), const std::runtime_error &);
 }
 
 TEST_CASE(
     "The settings class throws an exception when converting double to bool") {
     Settings settings;
     settings["key"] = 6.5;
-    REQUIRE_THROWS_AS(settings["key"].as<bool>(), std::runtime_error);
+    REQUIRE_THROWS_AS(settings["key"].as<bool>(), const std::runtime_error &);
 }
 
 TEST_CASE("The settings class converts double to string") {
@@ -86,7 +86,7 @@ TEST_CASE(
     "The settings class throws an exception when converting int (10) to bool") {
     Settings settings;
     settings["key"] = 10;
-    REQUIRE_THROWS_AS(settings["key"].as<bool>(), std::runtime_error);
+    REQUIRE_THROWS_AS(settings["key"].as<bool>(), const std::runtime_error &);
 }
 
 TEST_CASE("The settings class converts string to int") {
@@ -111,7 +111,7 @@ TEST_CASE("The settings class throws an exception when converting from string"
           "to bool with an uncorrect value") {
     Settings settings;
     settings["key"] = "10";
-    REQUIRE_THROWS_AS(settings["key"].as<bool>(), std::runtime_error);
+    REQUIRE_THROWS_AS(settings["key"].as<bool>(), const std::runtime_error &);
 }
 
 TEST_CASE("The Settings::get() method works as expected "
@@ -155,6 +155,6 @@ TEST_CASE("The Settings::get_noexcept() method works as expected "
     };
     ErrorOr<double> rv = settings.get_noexcept("key", 17.0);
     REQUIRE(!rv);
-    REQUIRE_THROWS_AS(*rv, std::runtime_error);
+    REQUIRE_THROWS_AS(*rv, const std::runtime_error &);
     REQUIRE(settings.find("key") != settings.end());
 }

@@ -133,7 +133,7 @@ void run_impl(SharedPtr<Entry> entry, Callback<Error> callback, Settings setting
         return;
     }
     mlabns_query(settings.get<std::string>("mlabns_tool_name", "ndt"),
-                 [=](Error err, mlabns::Reply reply) {
+                 [=](Error err, mlabns::Reply reply) mutable {
                      if (err) {
                          callback(MlabnsQueryError(std::move(err)));
                          return;
