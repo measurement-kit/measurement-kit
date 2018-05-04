@@ -15,11 +15,9 @@ namespace mk {
 namespace ooni {
 namespace bouncer {
 
-static Error
+Error
 my_json_parse_process_and_filter_errors(const std::string &data,
-                                        Callback<Json &> &&callable) {
-    return json_process(data, std::move(callable));
-}
+                                        Callback<Json &> &&callable);
 
 template <MK_MOCK(my_json_parse_process_and_filter_errors)>
 ErrorOr<SharedPtr<BouncerReply>> create_impl(std::string data, SharedPtr<Logger> logger) {

@@ -113,8 +113,17 @@ double time_now();
 static inline void utc_time_now(struct tm *utc) {
     time_t tv = {};
     tv = time(nullptr);
-    // Note: on Windows gmtime() uses thread local storage.
+    // Note: on Windows gmtime() uses thread local storage. Disable
+    // the related warning since we don't store the return value.
+    //
+    // See <https://stackoverflow.com/a/12060751>.
+#ifdef _MSC_VER
+#pragma warning(disable:4996)
+#endif
     auto rv = gmtime(&tv);
+#ifdef _MSC_VER
+#pragma warning(default:4996)
+#endif
     assert(rv != nullptr);
     *utc = *rv;
 }

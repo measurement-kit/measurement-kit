@@ -16,20 +16,11 @@
 namespace mk {
 namespace nettests {
 
-static SharedPtr<std::istream> open_file_(const std::string &path) {
-    return SharedPtr<std::istream>{new std::ifstream{path}};
-}
+SharedPtr<std::istream> open_file_(const std::string &path);
 
-static bool readline_(std::istream &input, std::string &line) {
-    return static_cast<bool>(std::getline(input, line));
-}
+bool readline_(std::istream &input, std::string &line);
 
-static void randomize_input_(std::deque<std::string> &inputs) {
-    // See http://en.cppreference.com/w/cpp/algorithm/shuffle
-    std::random_device rd;
-    std::mt19937 g(rd());
-    std::shuffle(inputs.begin(), inputs.end(), g);
-}
+void randomize_input_(std::deque<std::string> &inputs);
 
 template <MK_MOCK(open_file_), MK_MOCK(readline_), MK_MOCK(randomize_input_)>
 Error process_input_filepaths_impl(std::deque<std::string> &inputs,
