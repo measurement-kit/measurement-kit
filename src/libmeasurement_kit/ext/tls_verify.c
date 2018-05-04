@@ -23,13 +23,6 @@
 
 #include <measurement_kit/common/aaa_base.h>
 
-#ifndef _WIN32
-#include <sys/socket.h>
-#else
-#include <winsock2.h>
-#include <ws2tcpip.h>
-#endif
-
 #include <string.h>
 
 #include <openssl/x509v3.h>

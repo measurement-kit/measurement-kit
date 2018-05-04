@@ -15,7 +15,6 @@
 #include <openssl/sha.h>
 #include <random>
 #include <regex>
-#include <time.h>
 
 struct timeval;
 

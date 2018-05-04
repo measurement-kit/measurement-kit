@@ -19,20 +19,6 @@ struct timeval;
 
 namespace mk {
 
-#ifdef _WIN32
-tm *gmtime_r(const time_t *timep, tm *result) {
-    // Win32 uses thread-local data (https://stackoverflow.com/a/12060751)
-    tm *res = gmtime(timep);
-    if (!res) {
-        return nullptr;
-    }
-    // I assume that it's expected behavior to return the same pointer
-    // that has been supplied by user rather than `res`.
-    *result = *res;
-    return result;
-}
-#endif
-
 double time_now() {
     timeval tv;
     timeval_now(&tv);

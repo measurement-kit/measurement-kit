@@ -71,14 +71,6 @@ class LibeventReactor : public Reactor, public NonCopyable, public NonMovable {
             if (initialized) {
                 return;
             }
-#ifdef _WIN32
-            WORD requested = MAKEWORD(2, 2);
-            WSADATA data;
-            int rv = WSAStartup(requested, &data);
-            if (rv) {
-                throw std::runtime_error("WSAStartup");
-            }
-#endif
             mk::debug("initializing libevent once");
             if (evthread_init() != 0) {
                 throw std::runtime_error("evthread_init");
