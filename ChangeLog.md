@@ -8,6 +8,11 @@
   the fly from this repository. Use [measurement-kit/script-build-unix](
   https://github.com/measurement-kit/script-build-unix) instead.
 
+- Documentation has been updated, old documentation removed.
+
+- We have update the build scripts to build with mingw-w64 with C++11
+  support from macOS when this toolchain is available.
+
 # MeasurementKit 0.9.0-alpha [2018-04-25]
 
 - Make Measurement Kit work on Windows64 with Msys2
