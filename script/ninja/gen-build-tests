@@ -1,0 +1,15 @@
+#!/bin/sh
+set -e
+
+echo ""
+for src in `find test -type f -name \*.cpp`; do
+  if echo $src | grep -q '.cpp$'; then
+    bin=`echo $src|sed -e 's/.cpp$//g'`
+    obj=`echo $src|sed -e "s/.cpp$/$objext/g"`
+    echo "build $obj: cxx $src"
+    echo "build $bin$exeext: link $obj ${libprefix}measurement_kit$libext"
+  else
+    echo "FATAL: unexpected file extension: $src" 1>&2
+    exit 1
+  fi
+done
