@@ -8,6 +8,10 @@ namespace mk {
 namespace ooni {
 namespace resources {
 
+bool ostream_bad(const std::ostream &s) {
+    return s.bad();
+}
+
 void get_latest_release(Callback<Error, std::string> cb, Settings settings,
                         SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
     get_latest_release_impl(cb, settings, reactor, logger);
