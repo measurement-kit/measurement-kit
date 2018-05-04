@@ -9,9 +9,9 @@ usage: $0 dependency-name
 
 WARNING! Deprecated script. The documentation below may be incorrect and/or
 outdated. For most dependencies you SHOULD actually build, it is already
-possible to use './script/build/<dependency>' instead. This script currently
-only serves the purpose of vendored and/or small dependencies that are
-always built along with MeasurementKit.
+possible to use https://github.com/measurement-kit/script-build-unix instead.
+This script currently only serves the purpose of vendored and/or small
+dependencies that are always built along with MeasurementKit.
 
 Clones repository, configure, build and install dependency. By default sources
 are temporarily downloaded below './src/empty' (except for vendored dependencies
@@ -144,12 +144,17 @@ fi
 pkg_rootdir=$(cd $(dirname $(dirname $0)) && pwd -P)
 cd $pkg_rootdir
 
-if [ ! -x ./build/spec/$1 -a -x ./script/build/$1 ]; then
-    echo "WARNING: Deprecated script! Documentation may be inaccurate!" 1>&2
-    echo "WARNING: You should use './script/build/$1' instead" 1>&2
-    echo "WARNING: Run '$0' to see a more detailed explanation" 1>&2
-    sleep 5
-    exec ./script/build/$1 # defer to new style build system
+if [ ! -x ./build/spec/$1 ]; then
+    echo "" 1>&2
+    echo "FATAL: Do not know how to build this dependency" 1>&2
+    echo "" 1>&2
+    echo "New location of Unix build scripts:" 1>&2
+    echo "" 1>&2
+    echo "    https://github.com/measurement-kit/script-build-unix" 1>&2
+    echo "" 1>&2
+    echo "Perhaps you want to check the above git repository?" 1>&2
+    echo "" 1>&2
+    exit 1
 fi
 
 # continue with the old ./build/dependency script

@@ -1,3 +1,13 @@
+# MeasurementKit 0.9.0-beta [XXXX-XX-XX]
+
+- Since this release, you cannot use anymore the podfile included in this
+  repository and you should use instead the podfile available at
+  [measurement-kit/ios-libs](https://github.com/measurement-kit/ios-libs).
+
+- Since this release, you cannot anymore (cross-)build dependencies or MK on
+  the fly from this repository. Use [measurement-kit/script-build-unix](
+  https://github.com/measurement-kit/script-build-unix) instead.
+
 # MeasurementKit 0.9.0-alpha [2018-04-25]
 
 - Make Measurement Kit work on Windows64 with Msys2
