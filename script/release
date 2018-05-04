@@ -1,0 +1,25 @@
+#!/bin/sh
+set -e
+if [ $# -ne 2 ]; then
+    echo "usage: $0 old-version-number new-version-number" 1>&2
+    exit 1
+fi
+old_version=$1
+new_version=$2
+
+for file in                                                                    \
+        Doxyfile                                                               \
+        configure.ac                                                           \
+        include/measurement_kit/common/version.h.in                            \
+        measurement_kit.podspec                                                \
+        script/update-includes; do
+    cp $file $file.old
+    sed "s/$old_version/$new_version/g" $file.old > $file
+    rm $file.old
+done
+# We expect this to fail if version number is not changed
+git commit -am "release $new_version: step 1: update version number"
+
+./script/update-includes
+# At least version.h should be changed after this command
+git commit -am "release $new_version: step 2: update headers"
