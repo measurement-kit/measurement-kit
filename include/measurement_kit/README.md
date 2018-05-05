@@ -14,8 +14,7 @@ this basic C-like FFI-friendly API:
 
 - [C++11 API](https://github.com/measurement-kit/cxx11-api).
 
-The rest of this document only touches upon the C-like API. We encourage you
-to avoid using it when a more user-friendly API is available.
+We encourage you to avoid using it when a more user-friendly API is available.
 
 ## Synopsis
 
