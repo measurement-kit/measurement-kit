@@ -562,7 +562,7 @@ autonomous system. In detail, the JSON is like:
 {
   "key": "status.geoip_lookup",
   "value": {
-    "probe_ip": "<ip_address>,
+    "probe_ip": "<ip_address>",
     "probe_asn": "<asn>",
     "probe_cc": "<cc>"
   }
