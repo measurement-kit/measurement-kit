@@ -114,8 +114,12 @@ The following example runs the "Ndt" test with "INFO" verbosity.
 
 The following illustrates in pseudocode the operations performed by a task
 once you call `mk_task_start`. It not 100% accurate, rather it's meant to help
-you understand how the various settings that you can pass to a task influence
-its behavior.
+you understand how Measurement Kit works internally.
+
+As mentioned, a task run in its own thread. It first validate settings, then
+it opens the logfile (if needed), and finally it waits in queue until other
+possibly running tasks terminate. The `finish` function will be called when the
+task is done, and will emit all the events emitted at the end of a task.
 
 ```JavaScript
 function taskThread(settings) {
@@ -147,6 +151,14 @@ function taskThread(settings) {
     emitEvent("status.terminated", {})
   }
 
+```
+
+After all this setup, a task contacts the OONI bouncer, lookups the IP address,
+the country code, the autonomous system number, and the resolver lookup. All
+these information end up in the JSON measurement. Also, all these operations can
+be explicitly disabled by setting the appropriate settings.
+
+```JavaScript
   if (!settings.options.no_bouncer) {
     let error = queryOONIBouncer()
     if (error && !settings.options.ignore_bouncer_error) {
@@ -203,7 +215,15 @@ function taskThread(settings) {
   }
 
   emitProgress(0.075, "resolver lookup")
+```
 
+Then, Measurement Kit opens the report file on disk, which will contain
+the measurements, each serialized on a JSON on its own line. It will also
+contact the OONI bouncer and obtain a report-ID for the report. You can
+disable both steps. Disabling the OONI bouncer means that the measurements
+will not be collected and published by OONI.
+
+```JavaScript
   if (!settings.options.no_file_report) {
     let error = openFileReport(settings.output_filepath)
     if (error) {
@@ -228,7 +248,15 @@ function taskThread(settings) {
   }
 
   emitProgress(0.1, "open report")
+```
 
+Then comes input processing. Measurement Kit assembles a list of inputs to
+process. If the test do not take any input, we fake a single input entry
+consisting of the empty string, implying that this test needs to perform just
+a single iteration. (This is a somewhat internal detail, but it explains
+some events with `idx` equal to `0` and `input equal to an empty string.)
+
+```JavaScript
   for (let i = 0; i < settings.input_filepaths.length; ++i) {
     let [inputs, error] = readInputFile(settings.input_filepaths[i])
     if (error) {
@@ -249,7 +277,12 @@ function taskThread(settings) {
   if (settings.options.randomize_input) {
     shuffle(settings.input)
   }
+```
 
+Then, Measurement Kit iterates over all the input and runs the function
+implementing the specified task on each input.
+
+```JavaScript
   let begin = TimeNow()
   for (let i = 0; i < settings.inputs; ++i) {
     if (settings.options.max_runtime >= 0 &&
@@ -261,10 +294,17 @@ function taskThread(settings) {
       idx: i,
       input: settings.inputs[i]
     })
-    let measurement = task.Run(settings.inputs[i])
-    emitEvent("measurement", {
-      "json_str": measurement.asJSON()
-    })
+    let [measurement, error] = task.Run(settings.inputs[i])
+    // TODO(bassosimone): in both of the following events I'd add `idx`
+    if (error) {
+      emitEvent("failure.measurement", {
+        failure: error.AsString()
+      })
+    } else {
+      emitEvent("measurement", {
+        json_str: measurement.asJSON()
+      })
+    }
     if (!settings.options.no_file_report) {
       let error = WriteReportToFile(measurement)
       if (error) {
@@ -291,7 +331,12 @@ function taskThread(settings) {
       idx: i
     })
   }
+```
 
+Finally, Measurement Kit ends the test by closing the local results file
+and the remote report managed by the OONI collector.
+
+```JavaScript
   emitProgress(0.95, "ending the test")
 
   if (!settings.options.no_file_report) {
