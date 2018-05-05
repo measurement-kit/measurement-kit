@@ -219,9 +219,7 @@ be explicitly disabled by setting the appropriate settings.
 
 Then, Measurement Kit opens the report file on disk, which will contain
 the measurements, each serialized on a JSON on its own line. It will also
-contact the OONI bouncer and obtain a report-ID for the report. You can
-disable both steps. Disabling the OONI bouncer means that the measurements
-will not be collected and published by OONI.
+contact the OONI bouncer and obtain a report-ID for the report.
 
 ```JavaScript
   if (!settings.options.no_file_report) {
