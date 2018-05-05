@@ -22,7 +22,7 @@ int main() {
                                     "        \"https://www.x.org\""
                                     "    ],\n"
                                     "    \"name\": \"WebConnectivity\",\n"
-                                    "    \"verbosity\": \"INFO\"\n"
+                                    "    \"log_level\": \"INFO\"\n"
                                     "}\n");
     if (err != MK_TASK_ENONE) {
         fprintf(stderr, "ERROR: cannot create/start task: %d\n", err);
