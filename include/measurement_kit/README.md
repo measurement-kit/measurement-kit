@@ -252,7 +252,7 @@ Then comes input processing. Measurement Kit assembles a list of inputs to
 process. If the test do not take any input, we fake a single input entry
 consisting of the empty string, implying that this test needs to perform just
 a single iteration. (This is a somewhat internal detail, but it explains
-some events with `idx` equal to `0` and `input equal to an empty string.)
+some events with `idx` equal to `0` and `input` equal to an empty string.)
 
 ```JavaScript
   for (let i = 0; i < settings.input_filepaths.length; ++i) {
