@@ -379,7 +379,7 @@ The task settings is a JSON like:
     "/path/to/another/file"
   ],
   "log_filepath": "logfile.txt",
-  "log_level": "INFO"
+  "log_level": "INFO",
   "name": "WebConnectivity",
   "options": {
   },
