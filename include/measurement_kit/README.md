@@ -77,10 +77,45 @@ destroy a `NULL` event has no effect.
 destroy a `NULL` task has no effect. Attempting to destroy a running `task` will
 wait for the task to complete before releasing memory.
 
+## Example
+
+The following example runs the "Ndt" test with "INFO" verbosity.
+
+```C++
+  const char *settings = R"({
+    "name": "Ndt",
+    "log_level": "INFO"
+  })";
+  mk_task_t *task = mk_task_start(settings);
+  if (!task) {
+    std::clog << "ERROR: cannot start task" << std::endl;
+    return;
+  }
+  while (!mk_task_is_done(task)) {
+    mk_event_t *event = mk_task_wait_for_next_event(task);
+    if (!event) {
+      std::clog << "ERROR: cannot wait for next event" << std::endl;
+      break;
+    }
+    const char *json_serialized_event = mk_event_serialize(event);
+    if (!json_serialized_event) {
+      std::clog << "ERROR: cannot serialize event" << std::endl;
+      break;
+    }
+    {
+      // TODO: process the JSON-serialized event
+    }
+    mk_event_destroy(event);
+  }
+  mk_task_destroy(task);
+```
+
 ## Task pseudocode
 
 The following illustrates in pseudocode the operations performed by a task
-and the events emitted during the task lifecycle:
+once you call `mk_task_start`. It not 100% accurate, rather it's meant to help
+you understand how the various settings that you can pass to a task influence
+its behavior.
 
 ```JavaScript
 function taskThread(settings) {
@@ -276,39 +311,6 @@ function taskThread(settings) {
 
   finish()
 }
-```
-
-## Example
-
-The following example runs the "Ndt" test with "INFO" verbosity.
-
-```C++
-  const char *settings = R"({
-    "name": "Ndt",
-    "log_level": "INFO"
-  })";
-  mk_task_t *task = mk_task_start(settings);
-  if (!task) {
-    std::clog << "ERROR: cannot start task" << std::endl;
-    return;
-  }
-  while (!mk_task_is_done(task)) {
-    mk_event_t *event = mk_task_wait_for_next_event(task);
-    if (!event) {
-      std::clog << "ERROR: cannot wait for next event" << std::endl;
-      break;
-    }
-    const char *json_serialized_event = mk_event_serialize(event);
-    if (!json_serialized_event) {
-      std::clog << "ERROR: cannot serialize event" << std::endl;
-      break;
-    }
-    {
-      // TODO: process the JSON-serialized event
-    }
-    mk_event_destroy(event);
-  }
-  mk_task_destroy(task);
 ```
 
 ## Settings
