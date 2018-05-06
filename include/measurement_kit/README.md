@@ -776,7 +776,7 @@ contact the OONI bouncer and obtain a report-ID for the report.
 
 ```JavaScript
   if (!settings.options.no_file_report) {
-    if (settings.output_filepath == ") {
+    if (settings.output_filepath == "") {
       settings.output_filepath = makeDefaultOutputFilepath(settings);
     }
     let error = openFileReport(settings.output_filepath)
