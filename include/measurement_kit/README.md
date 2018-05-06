@@ -110,251 +110,23 @@ The following example runs the "Ndt" test with "INFO" verbosity.
   mk_task_destroy(task);
 ```
 
-## Task pseudocode
+## Tasks
 
-The following illustrates in pseudocode the operations performed by a task
-once you call `mk_task_start`. It not 100% accurate, rather it's meant to help
-you understand how Measurement Kit works internally.
+The following tasks are defined (case matters):
 
-As mentioned, a task run in its own thread. It first validate settings, then
-it opens the logfile (if needed), and finally it waits in queue until other
-possibly running tasks terminate. The `finish` function will be called when the
-task is done, and will emit all the events emitted at the end of a task.
-
-```JavaScript
-function taskThread(settings) {
-  if (!settingsAreValid(settings)) {
-    emitEvent("status.failure_startup", {
-      failure: "value_error",
-    })
-    emitEvent("status.terminated", {})
-    return
-  }
-
-  if (settings.log_filepath != "") {
-    openLogFile(settings.log_filepath)
-  }
-
-  let task = MakeTask(settings.name)
-
-  emitEvent("status.queued", {})
-  semaphore.Acquire()                 // blocked until my turn
-  emitEvent("status.started", {})
-
-  let finish = function(error) {
-    semaphore.Release()               // allow another test to run
-    emitEvent("status.end", {
-      downloaded_kb: countDownloadedKb(),
-      uploaded_kb: countUploadedKb(),
-      failure: error.AsString()
-    })
-    emitEvent("status.terminated", {})
-  }
-
-```
-
-After all this setup, a task contacts the OONI bouncer, lookups the IP address,
-the country code, the autonomous system number, and the resolver lookup. All
-these information end up in the JSON measurement. Also, all these operations can
-be explicitly disabled by setting the appropriate settings.
-
-```JavaScript
-  if (!settings.options.no_bouncer) {
-    let error = queryOONIBouncer()
-    if (error && !settings.options.ignore_bouncer_error) {
-      finish(error)
-      return
-    }
-  }
-
-  emitProgress(0.025, "contacted bouncer")
-
-  let probe_ip = "127.0.0.1"
-  if (settings.options.probe_ip != "") {
-    probe_ip = settings.options.probe_ip
-  } else if (!settings.options.no_ip_lookup) {
-    let error = lookupIP(settings)
-    if (error) {
-      emitWarning(settings, "cannot lookup probe IP")
-    }
-  }
-
-  let probe_asn = "AS0"
-  if (settings.options.probe_asn != "") {
-    probe_asn = settings.options.probe_asn
-  } else if (!settings.options.no_asn_lookup &&
-             settings.options.geoip_asn_path != "") {
-    let error
-    [probe_asn, error] = lookupASN(settings)
-    if (error) {
-      emitWarning(settings, "cannot lookup probe ASN")
-    }
-  }
-
-  let probe_cc = "ZZ"
-  if (settings.options.probe_cc != "") {
-    probe_cc = settings.options.probe_cc
-  } else if (!settings.options.no_cc_lookup &&
-             settings.options.geoip_country_path != "") {
-    let error
-    [probe_cc, error] = lookupCC(settings)
-    if (error) {
-      emitWarning(settings, "cannot lookup probe CC")
-    }
-  }
-
-  emitProgress(0.05, "geoip lookup")
-
-  let resolver_ip
-  if (!settings.options.no_resolver_lookup) {
-    let error
-    [resolver_ip, error] = lookupResolver()
-    if (error) {
-      emitWarning(settings, "cannot lookup resolver IP")
-    }
-  }
-
-  emitProgress(0.075, "resolver lookup")
-```
-
-Then, Measurement Kit opens the report file on disk, which will contain
-the measurements, each serialized on a JSON on its own line. It will also
-contact the OONI bouncer and obtain a report-ID for the report.
-
-```JavaScript
-  if (!settings.options.no_file_report) {
-    let error = openFileReport(settings.output_filepath)
-    if (error) {
-      finish(error)
-      return
-    }
-  }
-
-  if (!settings.options.no_collector) {
-    let [report_id, error] = openRemoteReport(settings)
-    if (error) {
-      if (!settings.options.ignore_open_report_error) {
-        finish(error)
-        return
-      }
-      emitWarning("cannot open report")
-    } else {
-      emitEvent("status.report_created", {
-        report_id: report_id
-      })
-    }
-  }
-
-  emitProgress(0.1, "open report")
-```
-
-Then comes input processing. Measurement Kit assembles a list of inputs to
-process. If the test do not take any input, we fake a single input entry
-consisting of the empty string, implying that this test needs to perform just
-a single iteration. (This is a somewhat internal detail, but it explains
-some events with `idx` equal to `0` and `input` equal to an empty string.)
-
-```JavaScript
-  for (let i = 0; i < settings.input_filepaths.length; ++i) {
-    let [inputs, error] = readInputFile(settings.input_filepaths[i])
-    if (error) {
-      emitWarning("cannot read input file")
-      finish(error)
-      return
-    }
-    settings.inputs = settings.inputs.concat(inputs)
-  }
-  if (settings.inputs.length <= 0) {
-    if (task.needs_input) {
-      emitWarning(settings, "no input provided")
-      finish(Error("value_error"))
-      return
-    }
-    settings.inputs.push("") // empty input for input-less tests
-  }
-  if (settings.options.randomize_input) {
-    shuffle(settings.input)
-  }
-```
-
-Then, Measurement Kit iterates over all the input and runs the function
-implementing the specified task on each input.
-
-```JavaScript
-  let begin = TimeNow()
-  for (let i = 0; i < settings.inputs; ++i) {
-    if (settings.options.max_runtime >= 0 &&
-        TimeNow() - begin > settings.options.max_runtime) {
-      emitWarning("exceeded maximum runtime")
-      break
-    }
-    emitEvent("measurement.started", {
-      idx: i,
-      input: settings.inputs[i]
-    })
-    let [measurement, error] = task.Run(settings.inputs[i])
-    // TODO(bassosimone): in both of the following events I'd add `idx`
-    if (error) {
-      emitEvent("failure.measurement", {
-        failure: error.AsString()
-      })
-    } else {
-      emitEvent("measurement", {
-        json_str: measurement.asJSON()
-      })
-    }
-    if (!settings.options.no_file_report) {
-      let error = WriteReportToFile(measurement)
-      if (error) {
-        emitWarning("cannot write report to file")
-        finish(error)
-        return
-      }
-    }
-    if (!settings.options.no_collector) {
-      let error = SubmitMeasurementToCollector(measurement)
-      if (error) {
-        emitEvent("failure.measurement_submission", {
-          idx: i,
-          json_str: measurement.asJSON()
-          failure: error.AsString()
-        })
-      } else {
-        emitEvent("status.measurement_uploaded", {
-          idx: i
-        })
-      }
-    }
-    emitEvent("status.measurement_done", {
-      idx: i
-    })
-  }
-```
-
-Finally, Measurement Kit ends the test by closing the local results file
-and the remote report managed by the OONI collector.
-
-```JavaScript
-  emitProgress(0.95, "ending the test")
-
-  if (!settings.options.no_file_report) {
-    error = closeFileReport()
-    if (error) {
-      emitWarning("cannot close report file")
-      finish(error)
-      return
-    }
-  }
-  if (!settings.options.no_collector) {
-    let error = CloseReport()
-    if (error) {
-      emitWarning("cannot close remote report")
-    }
-  }
-
-  finish()
-}
-```
+- `"Dash"`: Neubot's DASH test.
+- `"CaptivePortal"`: OONI's captive portal test.
+- `"DnsInjection"`: OONI's DNS injection test.
+- `"FacebookMessenger"`: OONI's Facebook Messenger test.
+- `"HttpHeaderFieldManipulation"`: OONI's HTTP header field manipulation test.
+- `"HttpInvalidRequestLine"`: OONI's HTTP invalid request line test.
+- `"MeekFrontedRequests"`: OONI's meek fronted requests test.
+- `"MultiNdt"`: the multi NDT network performance test.
+- `"Ndt"`: the NDT network performance test.
+- `"TcpConnect"`: OONI's TCP connect test.
+- `"Telegram"`: OONI's Telegram test.
+- `"WebConnectivity"`: OONI's Web Connectivity test.
+- `"Whatsapp"`: OONI's WhatsApp test.
 
 ## Settings
 
@@ -363,8 +135,8 @@ The task settings is a JSON like:
 ```JSON
 {
   "annotations": {
-    "key": "value",
-    "foo": "bar"
+    "optional_annotation_1": "value_1",
+    "another_annotation": "with_its_value"
   },
   "disabled_events": [
     "status.queued",
@@ -382,12 +154,43 @@ The task settings is a JSON like:
   "log_level": "INFO",
   "name": "WebConnectivity",
   "options": {
+    "bouncer_base_url": "",
+    "collector_base_url": "",
+    "dns/nameserver": "",
+    "dns/engine": "system",
+    "geoip_asn_path": "",
+    "geoip_country_path": "",
+    "ignore_bouncer_error": 0,
+    "ignore_open_report_error": 1,
+    "max_runtime": -1.0,
+    "net/ca_bundle_path": "",
+    "net/timeout": 10.0,
+    "no_bouncer": 0,
+    "no_collector": 0,
+    "no_asn_lookup": 0,
+    "no_cc_lookup": 0,
+    "no_ip_lookup": 0,
+    "no_file_report": 0,
+    "no_resolver_lookup": 0,
+    "probe_asn": "",
+    "probe_cc": "",
+    "probe_ip": "",
+    "randomize_input": 1,
+    "save_real_probe_asn": 1,
+    "save_real_probe_cc": 1,
+    "save_real_probe_ip": 0,
+    "save_real_resolver_ip": 1,
+    "software_name": "measurement_kit",
+    "software_version": "<current-mk-version>"
   },
-  "output_filepath": "results.txt",
+  "output_filepath": "results.njson",
 }
 ```
 
-The following keys are available:
+The only mandatory key is `name`, which identifies the task. All the other
+keys are optional. Above we have shown the most commonly used options, that
+are described in greater detail below. The value we included for options
+is their default value. The following keys are available:
 
 - `"annotations"`: an optional JSON object containing key, value string
   mappings that are copied verbatim in the measurement result file;
@@ -723,24 +526,312 @@ terminated running. The related JSON is like:
 
 Where `value` is empty.
 
-## Task names
-
-The following task names are defined (case matters):
-
-- `"Dash"`: Neubot's DASH test.
-- `"CaptivePortal"`: OONI's captive portal test.
-- `"DnsInjection"`: OONI's DNS injection test.
-- `"FacebookMessenger"`: OONI's Facebook Messenger test.
-- `"HttpHeaderFieldManipulation"`: OONI's HTTP header field manipulation test.
-- `"HttpInvalidRequestLine"`: OONI's HTTP invalid request line test.
-- `"MeekFrontedRequests"`: OONI's meek fronted requests test.
-- `"MultiNdt"`: the multi NDT network performance test.
-- `"Ndt"`: the NDT network performance test.
-- `"TcpConnect"`: OONI's TCP connect test.
-- `"Telegram"`: OONI's Telegram test.
-- `"WebConnectivity"`: OONI's Web Connectivity test.
-- `"Whatsapp"`: OONI's WhatsApp test.
-
 ## Available options
 
 TBD
+
+## Task pseudocode
+
+The following illustrates in pseudocode the operations performed by a task
+once you call `mk_task_start`. It not 100% accurate; in particular, we have
+omitted the code that generates most log messages. This pseudocode is meant to
+help understand how Measurement Kit works internally, and specifically how all
+the settings described above interact together when you specify them for
+running Measurement Kit tasks. We are using pseudo JavaScript because that
+is the easiest language to show manipulation of JSON objects such as the
+`settings` object.
+
+As mentioned, a task run in its own thread. It first validate settings, then
+it opens the logfile (if needed), and finally it waits in queue until other
+possibly running tasks terminate. The `finish` function will be called when the
+task is done, and will emit all the events emitted at the end of a task.
+
+```JavaScript
+function taskThread(settings) {
+  if (!settingsAreValid(settings)) {
+    emitEvent("status.failure_startup", {
+      failure: "value_error",
+    })
+    emitEvent("status.terminated", {})
+    return
+  }
+
+  if (settings.log_filepath != "") {
+    // TODO(bassosimone): we should decide whether we want to deal with the
+    // case where we cannot write into the log file. Currently we don't.
+    openLogFile(settings.log_filepath)
+  }
+
+  let task = makeTask(settings.name)
+
+  emitEvent("status.queued", {})
+  semaphore.Acquire()                 // blocked until my turn
+  emitEvent("status.started", {})
+
+  let finish = function(error) {
+    semaphore.Release()               // allow another test to run
+    emitEvent("status.end", {
+      downloaded_kb: countDownloadedKb(),
+      uploaded_kb: countUploadedKb(),
+      failure: (error) ? error.AsString() : null
+    })
+    emitEvent("status.terminated", {})
+  }
+
+```
+
+After all this setup, a task contacts the OONI bouncer, lookups the IP address,
+the country code, the autonomous system number, and the resolver lookup. All
+these information end up in the JSON measurement. Also, all these operations can
+be explicitly disabled by setting the appropriate settings.
+
+```JavaScript
+  let test_helpers = test.defaultTestHelpers()
+  if (!settings.options.no_bouncer) {
+    if (settings.options.bouncer_base_url == "") {
+      settings.options.bouncer_base_url = defaultBouncerBaseURL();
+    }
+    let error
+    [test_helpers, error] = queryOONIBouncer(settings)
+    if (error) {
+      emitWarning(settings, "cannot query OONI bouncer")
+      if (!settings.options.ignore_bouncer_error) {
+        finish(error)
+        return
+      }
+    }
+  }
+
+  // TODO(bassosimone): we should make sure the progress described here
+  // is consistent with the one emitted by the real code.
+  emitProgress(0.1, "contacted bouncer")
+
+  let probe_ip = "127.0.0.1"
+  if (settings.options.probe_ip != "") {
+    probe_ip = settings.options.probe_ip
+  } else if (!settings.options.no_ip_lookup) {
+    let error = lookupIP(settings)
+    if (error) {
+      emitWarning(settings, "cannot lookup probe IP")
+    }
+  }
+
+  let probe_asn = "AS0"
+  if (settings.options.probe_asn != "") {
+    probe_asn = settings.options.probe_asn
+  } else if (!settings.options.no_asn_lookup &&
+             settings.options.geoip_asn_path != "" &&
+             settings.options.save_real_probe_asn) {
+    let error
+    [probe_asn, error] = lookupASN(settings)
+    if (error) {
+      emitWarning(settings, "cannot lookup probe ASN")
+    }
+  }
+
+  let probe_cc = "ZZ"
+  if (settings.options.probe_cc != "") {
+    probe_cc = settings.options.probe_cc
+  } else if (!settings.options.no_cc_lookup &&
+             settings.options.geoip_country_path != "" &&
+             settings.options.save_real_probe_cc) {
+    let error
+    [probe_cc, error] = lookupCC(settings)
+    if (error) {
+      emitWarning(settings, "cannot lookup probe CC")
+    }
+  }
+
+  if (!settings.options.save_real_probe_ip) {
+    probe_ip = "127.0.0.1"
+  }
+
+  emitProgress(0.2, "geoip lookup")
+
+  // TODO(bassosimone): take decision wrt null vs. ""
+  let resolver_ip = null
+  if (!settings.options.no_resolver_lookup &&
+      settings.options.save_real_resolver_ip) {
+    let error
+    [resolver_ip, error] = lookupResolver(settings)
+    if (error) {
+      emitWarning(settings, "cannot lookup resolver IP")
+    }
+  }
+
+  emitProgress(0.3, "resolver lookup")
+```
+
+Then, Measurement Kit opens the report file on disk, which will contain
+the measurements, each serialized on a JSON on its own line. It will also
+contact the OONI bouncer and obtain a report-ID for the report.
+
+```JavaScript
+  if (!settings.options.no_file_report) {
+    if (settings.output_filepath == ") {
+      settings.output_filepath = makeDefaultOutputFilepath(settings);
+    }
+    let error = openFileReport(settings.output_filepath)
+    if (error) {
+      emitWarning(settings, "cannot open file report")
+      finish(error)
+      return
+    }
+  }
+
+  let report_id
+  if (!settings.options.no_collector) {
+    if (settings.options.collector_base_url == "") {
+      settings.options.collector_base_url = defaultCollectorBaseURL();
+    }
+    let error
+    [report_id, error] = collectorOpenReport(settings)
+    if (error) {
+      emitWarning("cannot open report with OONI collector")
+      if (!settings.options.ignore_open_report_error) {
+        finish(error)
+        return
+      }
+    } else {
+      emitEvent("status.report_created", {
+        report_id: report_id
+      })
+    }
+  }
+
+  emitProgress(0.4, "open report")
+```
+
+Then comes input processing. Measurement Kit assembles a list of inputs to
+process. If the test do not take any input, we fake a single input entry
+consisting of the empty string, implying that this test needs to perform just
+a single iteration. (This is a somewhat internal detail, but it explains
+some events with `idx` equal to `0` and `input` equal to an empty string.)
+
+```JavaScript
+  for (let i = 0; i < settings.input_filepaths.length; ++i) {
+    let [inputs, error] = readInputFile(settings.input_filepaths[i])
+    if (error) {
+      emitWarning("cannot read input file")
+      finish(error)
+      return
+    }
+    settings.inputs = settings.inputs.concat(inputs)
+  }
+  if (settings.inputs.length <= 0) {
+    if (task.needs_input) {
+      emitWarning(settings, "no input provided")
+      finish(Error("value_error"))
+      return
+    }
+    settings.inputs.push("") // empty input for input-less tests
+  }
+  if (settings.options.randomize_input) {
+    shuffle(settings.input)
+  }
+```
+
+Then, Measurement Kit iterates over all the input and runs the function
+implementing the specified task on each input.
+
+```JavaScript
+  let begin = timeNow()
+  for (let i = 0; i < settings.inputs; ++i) {
+    let currentTime = timeNow()
+    if (settings.options.max_runtime >= 0 &&
+        currentTime - begin > settings.options.max_runtime) {
+      emitWarning("exceeded maximum runtime")
+      break
+    }
+    emitEvent("measurement.started", {
+      idx: i,
+      input: settings.inputs[i]
+    })
+    let measurement = Measurement()
+    measurement.annotations = settings.annotations
+    measurement.annotations.engine_name = "libmeasurement_kit"
+    measurement.annotations.engine_version = mkVersion()
+    measurement.annotations.engine_version_full = mkVersionFull()
+    measurement.annotations.platform = platformName()
+    measurement.id = UUID4()
+    measurement.input = settings.inputs[i]
+    measurement.input_hashes = []
+    measurement.measurement_start_time = currentTime
+    measurement.options = []
+    measurement.probe_asn = probe_asn
+    measurement.probe_cc = probe_cc
+    measurement.probe_ip = probe_ip
+    measurement.report_id = report_id
+    measurement.sotfware_name = settings.options.software_name
+    measurement.sotfware_version = settings.options.software_version
+    measurement.test_helpers = test_helpers
+    measurement.test_name = test.AsOONITestName()
+    measurement.test_start_time = begin
+    measurement.test_verson = test.Version()
+    let [test_keys, error] = task.Run(
+          settings.inputs[i], settings, test_helpers)
+    // TODO(bassosimone): in both of the following events I'd add `idx`
+    if (error) {
+      emitEvent("failure.measurement", {
+        failure: error.AsString()
+      })
+    } else {
+      measurement.test_runtime = timeNow() - currentTime
+      measurement.test_keys = test_keys
+      measurement.test_keys.resolver_ip = resolver_ip
+      emitEvent("measurement", {
+        json_str: measurement.asJSON()
+      })
+      if (!settings.options.no_file_report) {
+        let error = writeReportToFile(measurement)
+        if (error) {
+          emitWarning("cannot write report to file")
+          finish(error)
+          return
+        }
+      }
+      if (!settings.options.no_collector) {
+        let error = submitMeasurementToOONICollector(measurement)
+        if (error) {
+          emitEvent("failure.measurement_submission", {
+            idx: i,
+            json_str: measurement.asJSON()
+            failure: error.AsString()
+          })
+        } else {
+          emitEvent("status.measurement_uploaded", {
+            idx: i
+          })
+        }
+      }
+    }
+    emitEvent("status.measurement_done", {
+      idx: i
+    })
+  }
+```
+
+Finally, Measurement Kit ends the test by closing the local results file
+and the remote report managed by the OONI collector.
+
+```JavaScript
+  emitProgress(0.9, "ending the test")
+
+  if (!settings.options.no_file_report) {
+    error = closeFileReport()
+    if (error) {
+      emitWarning("cannot close file report")
+      finish(error)
+      return
+    }
+  }
+  if (!settings.options.no_collector) {
+    let error = closeRemoteReport()
+    if (error) {
+      emitWarning("cannot close remote report with OONI collector")
+    }
+  }
+
+  finish()
+}
+```
