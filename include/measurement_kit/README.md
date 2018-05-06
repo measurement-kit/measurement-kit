@@ -160,7 +160,7 @@ The task settings is a JSON like:
     "dns/engine": "system",
     "geoip_asn_path": "",
     "geoip_country_path": "",
-    "ignore_bouncer_error": 0,
+    "ignore_bouncer_error": 1,
     "ignore_open_report_error": 1,
     "max_runtime": -1.0,
     "net/ca_bundle_path": "",
@@ -188,9 +188,11 @@ The task settings is a JSON like:
 ```
 
 The only mandatory key is `name`, which identifies the task. All the other
-keys are optional. Above we have shown the most commonly used options, that
+keys are optional. Above we have shown the most commonly used `options`, that
 are described in greater detail below. The value we included for options
-is their default value. The following keys are available:
+is their default value (_however_, the value of non-`options` settings _is not_
+the default value, rather is a meaningful example). The following keys
+are available:
 
 - `"annotations"`: an optional JSON object containing key, value string
   mappings that are copied verbatim in the measurement result file;
@@ -201,17 +203,18 @@ is their default value. The following keys are available:
 
 - `"inputs"`: optional list of strings to be passed to the task as input. If
   the task does not take any input, this is ignored. If the task requires input
-  and you provide neither `"inputs"` nor `"no_input_filepaths"`, the task
-  will do nothing;
+  and you provide neither `"inputs"` nor `"input_filepaths"`, the task
+  will fail;
 
 - `"input_filepaths"`: optional list of strings containing input strings, one
-  per line, to be passed to the task. See `"inputs"`;
+  per line, to be passed to the task. These files are read and their content
+  is merged with the one of the `inputs` key.
 
 - `"log_filepath"`: optional string containing the name of the file where to
   write logs. By default logs are written on `stderr`;
 
 - `"name"`: name of the task to run. This setting is mandatory. The available
-  task names are described below;
+  task names have been described above;
 
 - `"options"`: options modifying the task behavior, as an object mapping
   string keys to string, integer or double values. As the same implies, this
@@ -241,6 +244,115 @@ The available log levels are:
 When you specify a log level in the settings, only message with a log level
 equal or greater than the specified one are emitted. For example, if you
 specify `"INFO"`, you will only see `"ERR"`, `"WARNING"`, and `"INFO"` logs.
+
+## Options
+
+Options can be `string`, `double`, or `int`. There is not boolean type, and
+we use `int`s with boolean semantics in some cases, with the usual convention
+that `0` means false and non-`0` means true.
+
+These are the available options:
+
+- `"bouncer_base_url"`: (string) base URL of OONI bouncer, by default set to
+  the empty string. If empty, the default will be used;
+
+- `"collector_base_url"`: (string) base URL of OONI collector, by default set
+  to the empty string. If empty, the default will be used;
+
+- `"dns/nameserver"`: (string) nameserver to be used with non-`system` DNS
+  engines. Can or cannot include an optional port number. By default, set
+  to the empty string;
+
+- `"dns/engine"`: (string) what DNS engine to use. By default, set to
+  `"system"`, meaning that `getaddrinfo()` will be used to resolve domain
+  names. Can also be set to `"libevent"`, to use libevent's DNS engine.
+  In such case, you must provide a `"dns/nameserver"` as well;
+
+- `"geoip_asn_path"`: (string) path to the GeoIP ASN database file. By
+  default not set;
+
+- `"geoip_country_path"`: (string) path to the GeoIP Country database
+  file. By default not set;
+
+- `"ignore_bouncer_error"`: (int) whether to ignore an error in contacting
+  the OONI bouncer. By default set to `1` so that bouncer errors will
+  be ignored;
+
+- `"ignore_open_report_error"`: (int) whether to ignore an error when opening
+  the report with the OONI collector. By default set to `1` so that errors
+  will be ignored;
+
+- `"max_runtime"`: (double) number of seconds after which the test will
+  be stopped. Works _only_ for tests taking input. By default set to `-1.0`
+  so that there is no maximum runtime for tests with input;
+
+- `"net/ca_bundle_path"`: (string) path to the CA bundle path to be used
+  to validate SSL certificates. Not necessary on platforms where we use
+  LibreSSL, because in such case we include a default CA bundle directly
+  inside of Measurement Kit. This currently happens for iOS and Android and
+  _should_ also be the case for Windows. If you compile a Measurement Kit
+  for yourself, then YMMV;
+
+- `"net/timeout"`: (double) number of seconds after which network I/O
+  operations will timeout. By default set to `10.0` seconds;
+
+- `"no_bouncer"`: (int) whether to use the OONI bouncer. By default set to
+  `0`, meaning that the OONI bouncer will be used;
+
+- `"no_collector"`: (int) whether to use the OONI collector. By default set to
+  `0`, meaning that the OONI collector will be used;
+
+- `"no_asn_lookup"`: (int) whether to lookup the Autonomous System Number
+  in which we're running. Requires the `"geoip_asn_path"` to be set. By
+  default set to `1`, meaning that we'll attempt ASN lookup;
+
+- `"no_cc_lookup"`: (int) whether to lookup the code of the country (CC) in
+  which we are. Requires the `"geoip_country_path"` to be set. By default,
+  set to `1`, meaning that we'll attempt CC lookup;
+
+- `"no_ip_lookup"`: (int) whether to lookup our IP address. By default set
+  to `1`, meaning that we'll try. Seting this to `0` prevents us from
+  looking up also the ASN and the CC and will also prevent us from attempting
+  to scrub the user IP address from the results of many OONI tests;
+
+- `"no_file_report"`: (int) whether to write a report (i.e. measurement
+  result) file on disk. By default set to `0`, meaning that we'll try;
+
+- `"no_resolver_lookup"`: (int) whether to lookup the IP address of the
+  resolver used. By default set to `0`, meaning that we'll try;
+
+- `"probe_asn"`: (string) ASN in which we are. Set this if you already
+  looked up for the ASN. Setting this to a non-empty string will disable
+  the ASN lookup. By default it's an empty string;
+
+- `"probe_cc"`: (string) Country code. Set this is you already looked up
+  the country code. Setting this to a non-empty string will disable CC
+  lookup. By default it's an empty string;
+
+- `"probe_ip"`: (string) Probe IP. Set this if you already know our
+  IP. Setting this to a non-empty string will disable the probe IP
+  lookup. By default it's an empty string;
+
+- `"randomize_input"`: (int) whether to randomize input. By default set to
+  `1`, meaning that we'll randomize input;
+
+- `"save_real_probe_asn"`: (int) whether to save the ASN. By default set
+  to `1`, meaning that we will save it;
+
+- `"save_real_probe_cc"`: (int) whether to save the CC. By default set to `1`,
+  meaning that we will save it;
+
+- `"save_real_probe_ip"`: (int) whether to save our IP. By default set to `0`,
+  meaning that we will not save it;
+
+- `"save_real_resolver_ip"`: (int) whether to save the resolver IP. By default
+  set to `1`, meaning that we'll save it;
+
+- `"software_name"`: (string) name of the app. By default set to
+  `"measurement_kit"`;
+
+- `"software_version"`: (string) version of the app. By default set to the
+  current version of Measurement Kit.
 
 ## Events
 
@@ -525,10 +637,6 @@ terminated running. The related JSON is like:
 ```
 
 Where `value` is empty.
-
-## Available options
-
-TBD
 
 ## Task pseudocode
 
