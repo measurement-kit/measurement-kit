@@ -7,7 +7,7 @@ matrix:
       services:
         - docker
       script:
-        - ./.ci/docker/setup bassosimone:mk-debian/testing cmake
+        - ./.ci/docker/setup bassosimone/mk-debian:testing cmake
 
     - sudo: required
       env: DOCKER_SPEC=valgrind-clang pkg_make_flags="V=0 -j3"
