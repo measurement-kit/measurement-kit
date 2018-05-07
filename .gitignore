@@ -13,7 +13,6 @@
 *.lo
 *.log
 *.o
-*.obj
 *.o-*
 *.out
 *.pyc
@@ -26,8 +25,6 @@
 .dirstamp
 .idea
 .libs
-.ninja_deps
-.ninja_log
 .vagrant
 /*.njson
 /CMakeCache.txt
@@ -37,7 +34,6 @@
 /GeoIPASNum.dat
 /MK_BUILD/
 /MK_DIST/
-/build.ninja
 /build/android/jni/conf
 /build/android/jni/spec
 /citizenlab-test-lists.*.csv
@@ -45,7 +41,6 @@
 /include.am
 /maxmind-geoip.*.dat*
 /measurement_kit
-/rules.ninja
 /test-driver
 /tmp
 /tor-bridges.tor-bridges-ip-port.csv
