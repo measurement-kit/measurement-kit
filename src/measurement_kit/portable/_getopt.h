@@ -4,7 +4,7 @@
 #ifndef MEASUREMENT_KIT_PORTABLE__GETOPT_H
 #define MEASUREMENT_KIT_PORTABLE__GETOPT_H
 
-#if (defined _WIN32 && !defined __MINGW__)
+#if defined _MSC_VER
 
 /*	$NetBSD: getopt.h,v 1.4 2000/07/07 10:43:54 ad Exp $	*/
 /*	$FreeBSD: src/include/getopt.h,v 1.6 2004/02/24 08:09:20 ache Exp $ */
@@ -89,10 +89,10 @@ int getopt_long_only(int nargc, char * const *nargv, const char *options,
 }
 #endif
 
-#else // !_WIN32
+#else // !_MSC_VER
 
 #include <getopt.h>
 
-#endif // WIN32/!_WIN32
+#endif // _MSC_VER/!_MSC_VER
 
 #endif
