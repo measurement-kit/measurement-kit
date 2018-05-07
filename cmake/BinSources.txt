@@ -16,5 +16,6 @@ src/measurement_kit/main.cpp
 src/measurement_kit/portable/_getopt.h
 src/measurement_kit/portable/err.h
 src/measurement_kit/portable/getopt.h
+src/measurement_kit/portable/getopt_long.c
 src/measurement_kit/portable/unistd.h
 src/measurement_kit/utils.cpp
