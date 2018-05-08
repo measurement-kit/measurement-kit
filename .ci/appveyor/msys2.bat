@@ -23,4 +23,4 @@ cd %APPVEYOR_BUILD_FOLDER%
 set CHERE_INVOKING=yes
 
 rem Build/test scripting
-bash -xlc "./.ci/appveyor/msys2_build.sh"
+bash -xlc "./.ci/appveyor/msys2.sh"
