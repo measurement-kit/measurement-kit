@@ -173,8 +173,11 @@ int main(int argc, char **argv) {
      *
      * Non portable. Assume it's either GNU or BSD. We can do better in
      * configure checking for the proper way to reset options.
+     *
+     * With Mingw-w64, getopt() honours optreset. With Windows we do
+     * compile the BSD version of getopt(), which has optreset.
      */
-#if HAVE_DECL_OPTRESET || defined __MINGW32__ /* Has optreset */
+#if HAVE_DECL_OPTRESET || defined __MINGW32__ || defined _MSC_VER
     optreset = 1, optind = 1;
 #elif defined __GLIBC__
     optind = 0;
