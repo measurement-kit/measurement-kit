@@ -49,13 +49,19 @@ TEST_CASE("libevent_init_once") {
 
 extern "C" {
 
-static event_base *event_base_new_fail() { return nullptr; }
+#ifndef _MSC_VER
+#define STATIC static
+#else
+#define STATIC /* Nothing */
+#endif
 
-static int event_base_dispatch_fail(event_base *) { return -1; }
+STATIC event_base *event_base_new_fail() { return nullptr; }
 
-static int event_base_dispatch_no_events(event_base *) { return 1; }
+STATIC int event_base_dispatch_fail(event_base *) { return -1; }
 
-static int event_base_loopbreak_fail(event_base *) { return -1; }
+STATIC int event_base_dispatch_no_events(event_base *) { return 1; }
+
+STATIC int event_base_loopbreak_fail(event_base *) { return -1; }
 
 } // extern "C"
 
@@ -89,7 +95,7 @@ TEST_CASE("Reactor: basic functionality") {
 
 extern "C" {
 
-static int event_base_once_fail(event_base *, evutil_socket_t, short,
+STATIC int event_base_once_fail(event_base *, evutil_socket_t, short,
         event_callback_fn, void *, const timeval *) {
     return -1;
 }
