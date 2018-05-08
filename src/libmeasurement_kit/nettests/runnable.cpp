@@ -337,9 +337,9 @@ std::string Runnable::generate_output_filepath() {
 
 void Runnable::query_bouncer(Callback<Error> cb) {
     ErrorOr<bool> disable_bouncer = options.get_noexcept(
-            "disable_bouncer", false);
+            "no_bouncer", false);
     if (disable_bouncer.as_error() != NoError()) {
-        logger->warn("Invalid 'disable_bouncer' option");
+        logger->warn("Invalid 'no_bouncer' option");
         cb(disable_bouncer.as_error());
         return;
     }

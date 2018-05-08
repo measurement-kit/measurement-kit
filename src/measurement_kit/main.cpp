@@ -148,7 +148,7 @@ int main(int argc, char **argv) {
             return 0;
         case 258:
             initializers.push_back(
-                [](BaseTest &test) { test.set_option("disable_bouncer", 1); });
+                [](BaseTest &test) { test.set_option("no_bouncer", 1); });
             break;
         default:
             return usage(1, stderr);
