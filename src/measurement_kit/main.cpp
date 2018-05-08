@@ -35,6 +35,7 @@ static OptionSpec kv_specs[] = {
     {'v', "verbose", false, nullptr, "Increase verbosity"},
     {256, "help", false, nullptr, "Display this help and exit"},
     {257, "version", false, nullptr, "Display version number and exit"},
+    {258, "no-bouncer", false, nullptr, "Disable the bouncer"},
     {0, nullptr, 0, 0, nullptr}
 };
 
@@ -145,6 +146,10 @@ int main(int argc, char **argv) {
             printf("libevent version: %s\n", mk_libevent_version());
             printf("OpenSSL version: %s\n", mk_openssl_version());
             return 0;
+        case 258:
+            initializers.push_back(
+                [](BaseTest &test) { test.set_option("no_bouncer", 1); });
+            break;
         default:
             return usage(1, stderr);
         }

@@ -336,8 +336,17 @@ std::string Runnable::generate_output_filepath() {
 }
 
 void Runnable::query_bouncer(Callback<Error> cb) {
-    if (!use_bouncer) {
-        logger->info("skipping bouncer");
+    ErrorOr<bool> disable_bouncer = options.get_noexcept(
+            "no_bouncer", false);
+    if (disable_bouncer.as_error() != NoError()) {
+        logger->warn("Invalid 'no_bouncer' option");
+        cb(disable_bouncer.as_error());
+        return;
+    }
+    // Note: `use_bouncer` is set for tasks that must not use the bouncer while
+    // the setting is to allow users to bypass the bouncer.
+    if (!use_bouncer || disable_bouncer.as_value() == true) {
+        logger->info("Skipping bouncer");
         cb(NoError());
         return;
     }
