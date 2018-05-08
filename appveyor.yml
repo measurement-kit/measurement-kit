@@ -6,4 +6,4 @@ environment:
       MSYSTEM: MINGW64
 
 build_script:
-  - cmd: .ci\appveyor\msys2_build.bat
+  - cmd: .ci\appveyor\msys2.bat
