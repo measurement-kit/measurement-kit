@@ -4,10 +4,10 @@ if (NOT MK_ROOT)
     set (MK_ROOT ${CMAKE_SOURCE_DIR})
 endif (NOT MK_ROOT)
 
-set(CMAKE_BUILD_TYPE Debug CACHE STRING "Set the build type")
+set(CMAKE_BUILD_TYPE Release CACHE STRING "Set the build type")
 
 set(CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}" CACHE PATH
-    "Where to install MK" FORCE)
+    "Where to install MK")
 
 set(MK_CA_BUNDLE "${MK_CA_BUNDLE}" CACHE PATH
     "Path where openssl CA bundle is installed")
@@ -49,7 +49,7 @@ if (${MK_BUILD_INTEGRATION_TESTS})
     add_definitions(-DENABLE_INTEGRATION_TESTS)
 endif()
 add_definitions(-DMK_CA_BUNDLE="${MK_CA_BUNDLE}")
-if (WIN32)
+if (${WIN32})
     add_definitions(-DNOMINMAX) # https://stackoverflow.com/a/11544154
     add_definitions(
       -D_CRT_SECURE_NO_DEPRECATE) # https://stackoverflow.com/a/14387
@@ -59,24 +59,18 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
     add_definitions(-DENABLE_TRACEROUTE)
 endif()
 
-if("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
+if(${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
   set(CMAKE_CXX_FLAGS
       "${CMAKE_CXX_FLAGS} ${MK_UNIX_CXXFLAGS} -Wmissing-prototypes")
-elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+elseif(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${MK_UNIX_CXXFLAGS}")
 endif()
 
-if("${CMAKE_C_COMPILER_ID}" MATCHES "Clang")
+if(${CMAKE_C_COMPILER_ID} MATCHES "Clang")
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${MK_UNIX_CFLAGS} -Wmissing-prototypes")
-elseif("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU")
+elseif(${CMAKE_C_COMPILER_ID} STREQUAL "GNU")
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${MK_UNIX_CFLAGS}")
 endif()
-
-# We compile our dependencies using `/MT`, so we must use `/MT` as well
-string(REPLACE "/MD" "/MT" CMAKE_C_FLAGS_RELEASE ${CMAKE_C_FLAGS_RELEASE})
-string(REPLACE "/MDd" "/MT" CMAKE_C_FLAGS_DEBUG ${CMAKE_C_FLAGS_DEBUG})
-string(REPLACE "/MD" "/MT" CMAKE_CXX_FLAGS_RELEASE ${CMAKE_CXX_FLAGS_RELEASE})
-string(REPLACE "/MDd" "/MT" CMAKE_CXX_FLAGS_DEBUG ${CMAKE_CXX_FLAGS_DEBUG})
 
 # Set target include directories and link libraries:
 
@@ -106,7 +100,7 @@ include(CheckIncludeFiles)
 include(CheckFunctionExists)
 include(CheckLibraryExists)
 
-if(UNIX)
+if(${UNIX})
 
   # libc
 
@@ -170,13 +164,13 @@ if(UNIX)
   list(APPEND MK_LIBS event_core)
   list(APPEND MK_LIBS event_extra)
 
-elseif(WIN32)
+elseif(${WIN32})
   list(APPEND MK_LIBS event)
 endif()
 
 list(APPEND MK_LIBS GeoIP crypto ssl)
 
-if(WIN32)
+if(${WIN32})
     list(APPEND MK_LIBS ws2_32)
 endif()
 
