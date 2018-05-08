@@ -4,6 +4,7 @@ environment:
   matrix:
     - MSYS2_ARCH: x86_64
       MSYSTEM: MINGW64
+      BUILD_TOOL: msys2
 
 build_script:
-  - cmd: .ci\appveyor\msys2.bat
+  - cmd: .ci\appveyor\%BUILD_TOOL%.bat
