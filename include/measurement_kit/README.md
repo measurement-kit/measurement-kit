@@ -657,10 +657,14 @@ task is done, and will emit all the events emitted at the end of a task.
 ```JavaScript
 function taskThread(settings) {
   if (!settingsAreValid(settings)) {
-    emitEvent("status.failure_startup", {
+    emitEvent("failure.startup", {
       failure: "value_error",
     })
-    emitEvent("status.terminated", {})
+    emitEvent("status.end", {
+      downloaded_kb: 0,
+      uploaded_kb: 0,
+      failure: "value_error",
+    })
     return
   }
 
@@ -683,7 +687,6 @@ function taskThread(settings) {
       uploaded_kb: countUploadedKb(),
       failure: (error) ? error.AsString() : null
     })
-    emitEvent("status.terminated", {})
   }
 
 ```
@@ -697,7 +700,7 @@ be explicitly disabled by setting the appropriate settings.
   let test_helpers = test.defaultTestHelpers()
   if (!settings.options.no_bouncer) {
     if (settings.options.bouncer_base_url == "") {
-      settings.options.bouncer_base_url = defaultBouncerBaseURL();
+      settings.options.bouncer_base_url = defaultBouncerBaseURL()
     }
     let error
     [test_helpers, error] = queryOONIBouncer(settings)
@@ -718,21 +721,28 @@ be explicitly disabled by setting the appropriate settings.
   if (settings.options.probe_ip != "") {
     probe_ip = settings.options.probe_ip
   } else if (!settings.options.no_ip_lookup) {
-    let error = lookupIP(settings)
+    let error
+    [probe_ip, error] = lookupIP(settings)
     if (error) {
+      emitEvent("failure.ip_lookup", {
+        failure: error.AsString()
+      })
       emitWarning(settings, "cannot lookup probe IP")
     }
   }
 
-  let probe_asn = "AS0"
+  let probe_asn = "AS0",
+      probe_network_name = "Unknown"
   if (settings.options.probe_asn != "") {
     probe_asn = settings.options.probe_asn
   } else if (!settings.options.no_asn_lookup &&
-             settings.options.geoip_asn_path != "" &&
-             settings.options.save_real_probe_asn) {
+             settings.options.geoip_asn_path != "") {
     let error
-    [probe_asn, error] = lookupASN(settings)
+    [probe_asn, probe_network_name, error] = lookupASN(settings)
     if (error) {
+      emitEvent("failure.asn_lookup", {
+        failure: error.AsString()
+      })
       emitWarning(settings, "cannot lookup probe ASN")
     }
   }
@@ -741,32 +751,42 @@ be explicitly disabled by setting the appropriate settings.
   if (settings.options.probe_cc != "") {
     probe_cc = settings.options.probe_cc
   } else if (!settings.options.no_cc_lookup &&
-             settings.options.geoip_country_path != "" &&
-             settings.options.save_real_probe_cc) {
+             settings.options.geoip_country_path != "") {
     let error
     [probe_cc, error] = lookupCC(settings)
     if (error) {
+      emitEvent("failure.cc_lookup", {
+        failure: error.AsString()
+      })
       emitWarning(settings, "cannot lookup probe CC")
     }
   }
 
-  if (!settings.options.save_real_probe_ip) {
-    probe_ip = "127.0.0.1"
-  }
+  emitEvent("status.geoip_lookup", {
+    probe_ip: probe_ip,
+    probe_asn: probe_asn,
+    probe_network_name: probe_network_name,
+    probe_cc: probe_cc
+  })
 
   emitProgress(0.2, "geoip lookup")
 
   // TODO(bassosimone): take decision wrt null vs. ""
   let resolver_ip = null
-  if (!settings.options.no_resolver_lookup &&
-      settings.options.save_real_resolver_ip) {
+  if (!settings.options.no_resolver_lookup) {
     let error
     [resolver_ip, error] = lookupResolver(settings)
     if (error) {
+      emitEvent("failure.resolver_lookup", {
+        failure: error.AsString()
+      })
       emitWarning(settings, "cannot lookup resolver IP")
     }
   }
 
+  emitEvent("status.resolver_lookup", {
+    resolver_ip: resolver_ip
+  })
   emitProgress(0.3, "resolver lookup")
 ```
 
@@ -796,12 +816,15 @@ contact the OONI bouncer and obtain a report-ID for the report.
     [report_id, error] = collectorOpenReport(settings)
     if (error) {
       emitWarning("cannot open report with OONI collector")
+      emitEvent("failure.report_create", {
+        failure: error.AsString()
+      })
       if (!settings.options.ignore_open_report_error) {
         finish(error)
         return
       }
     } else {
-      emitEvent("status.report_created", {
+      emitEvent("status.report_create", {
         report_id: report_id
       })
     }
@@ -861,14 +884,17 @@ implementing the specified task on each input.
     measurement.annotations.engine_version = mkVersion()
     measurement.annotations.engine_version_full = mkVersionFull()
     measurement.annotations.platform = platformName()
+    measurement.annotations.probe_network_name = settings.options.save_real_probe_asn
+                                                  ? probe_network_name : "Unknown"
     measurement.id = UUID4()
     measurement.input = settings.inputs[i]
     measurement.input_hashes = []
     measurement.measurement_start_time = currentTime
     measurement.options = []
-    measurement.probe_asn = probe_asn
-    measurement.probe_cc = probe_cc
-    measurement.probe_ip = probe_ip
+    measurement.probe_asn = settings.options.save_real_probe_asn ? probe_asn : "AS0"
+    measurement.probe_cc = settings.options.save_real_probe_cc ? probe_cc : "ZZ"
+    measurement.probe_ip = settings.options.save_real_probe_ip
+                              ? probe_ip : "127.0.0.1"
     measurement.report_id = report_id
     measurement.sotfware_name = settings.options.software_name
     measurement.sotfware_version = settings.options.software_version
@@ -878,39 +904,44 @@ implementing the specified task on each input.
     measurement.test_verson = test.Version()
     let [test_keys, error] = task.Run(
           settings.inputs[i], settings, test_helpers)
-    // TODO(bassosimone): in both of the following events I'd add `idx`
+    measurement.test_runtime = timeNow() - currentTime
+    measurement.test_keys = test_keys
+    measurement.test_keys.resolver_ip = settings.options.save_resolver_ip
+                                          ? resolve_ip : "127.0.0.1"
     if (error) {
       emitEvent("failure.measurement", {
-        failure: error.AsString()
+        failure: error.AsString(),
+        idx: i,
+        input: settings.inputs[i]
       })
-    } else {
-      measurement.test_runtime = timeNow() - currentTime
-      measurement.test_keys = test_keys
-      measurement.test_keys.resolver_ip = resolver_ip
-      emitEvent("measurement", {
-        json_str: measurement.asJSON()
-      })
-      if (!settings.options.no_file_report) {
-        let error = writeReportToFile(measurement)
-        if (error) {
-          emitWarning("cannot write report to file")
-          finish(error)
-          return
-        }
+    }
+    emitEvent("measurement", {
+      json_str: measurement.asJSON(),
+      idx: i,
+      input: settings.inputs[i]
+    })
+    if (!settings.options.no_file_report) {
+      let error = writeReportToFile(measurement)
+      if (error) {
+        emitWarning("cannot write report to file")
+        finish(error)
+        return
       }
-      if (!settings.options.no_collector) {
-        let error = submitMeasurementToOONICollector(measurement)
-        if (error) {
-          emitEvent("failure.measurement_submission", {
-            idx: i,
-            json_str: measurement.asJSON()
-            failure: error.AsString()
-          })
-        } else {
-          emitEvent("status.measurement_uploaded", {
-            idx: i
-          })
-        }
+    }
+    if (!settings.options.no_collector) {
+      let error = submitMeasurementToOONICollector(measurement)
+      if (error) {
+        emitEvent("failure.measurement_submission", {
+          idx: i,
+          input: settings.inputs[i],
+          json_str: measurement.asJSON(),
+          failure: error.AsString()
+        })
+      } else {
+        emitEvent("status.measurement_submission", {
+          idx: i,
+          input: settings.inputs[i],
+        })
       }
     }
     emitEvent("status.measurement_done", {
@@ -936,7 +967,14 @@ and the remote report managed by the OONI collector.
   if (!settings.options.no_collector) {
     let error = closeRemoteReport()
     if (error) {
+      emitEvent("failure.report_close", {
+        failure: error.AsString()
+      })
       emitWarning("cannot close remote report with OONI collector")
+    } else {
+      emitEvent("status.report_closed", {
+        report_id: report_id
+      })
     }
   }
 
