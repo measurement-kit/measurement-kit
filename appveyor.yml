@@ -8,6 +8,7 @@ environment:
 
     - BUILD_TOOL: msvc
       CMAKE_GENERATOR: "Visual Studio 15 2017 Win64"
+      WINDOWS_ARCH_NAME: x64
 
 build_script:
   - cmd: .ci\appveyor\%BUILD_TOOL%.bat

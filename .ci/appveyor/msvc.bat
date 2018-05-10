@@ -11,6 +11,6 @@ bash.exe -lc "curl -LsO https://github.com/measurement-kit/prebuilt/releases/dow
 cmake.exe -E tar -xzf windows-libressl-2.6.4-4.tar.gz || exit /b
 
 bash.exe -lc "./autogen.sh --cmake" || exit /b
-cmake.exe "-G%CMAKE_GENERATOR%" -DCMAKE_BUILD_TYPE=Release . || exit /b
+cmake.exe "-G%CMAKE_GENERATOR%" -DCMAKE_BUILD_TYPE=Release -DMK_GEOIP=MK_DIST/windows/geoip-api-c/1.6.12-2-g204cc59-4/%WINDOWS_ARCH_NAME%/ -DMK_LIBEVENT=MK_DIST/windows/libevent/2.1.8-4/%WINDOWS_ARCH_NAME%/ -DMK_LIBRESSL=MK_DIST/windows/libressl/2.6.4-4/%WINDOWS_ARCH_NAME%/ . || exit /b
 cmake.exe --build . || exit /b
 ctest.exe -a -j8 || exit /b
