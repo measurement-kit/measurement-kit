@@ -9,7 +9,7 @@ if (${MK_BUILD_BINARIES})
 
     target_link_libraries(
         measurement_kit
-        libmeasurement_kit
+        libmeasurement_kit_static
         ${MK_LIBS}
     )
 
