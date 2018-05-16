@@ -297,6 +297,7 @@ TEST_CASE(
     });
 }
 
+#if 0
 TEST_CASE("We can override software name and version") {
     Report report;
     Entry entry;
@@ -315,3 +316,4 @@ TEST_CASE("We can override software name and version") {
         REQUIRE(entry["software_version"] == "1.0.1");
     }
 }
+#endif
