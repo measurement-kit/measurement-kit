@@ -14,9 +14,7 @@
 namespace mk {
 namespace report {
 
-Report::Report() {
-    memset(&test_start_time, 0, sizeof (test_start_time));
-}
+Report::Report() {}
 
 void Report::add_reporter(SharedPtr<BaseReporter> reporter) {
     reporters_.push_back(reporter);

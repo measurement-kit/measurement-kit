@@ -141,7 +141,18 @@ Error parse_iso8601_utc(std::string ts, std::tm *tmb);
 template <MK_MOCK(strftime)>
 ErrorOr<std::string> timestamp(const struct tm *t) {
     char result[30];
-    if (strftime(result, sizeof(result), "%Y-%m-%d %H:%M:%S", t) == 0) {
+    // Under Windows systems the "invalid parameter handler" is invoked if
+    // `struct tm` has out-of-range parameters. If you ask me, this whole
+    // invalid-parameter-handle idea is very suprising since I was expecting
+    // C functions to return an error value on failure, not to abort. We
+    // should really run away from Microsoft own implementation of libc as
+    // it's very weird, and we should instead use as much as possible C++11,
+    // which _at least_ is specified and predictable. Until we reach that
+    // point, it seems that `tm_mday` is the only parameter for which zero
+    // is not a valid value. So use that as an indicator that the struct is
+    // not initialized and return an error. ("What a pain" - cit.)
+    if (t->tm_mday == 0 || strftime( //
+          result, sizeof(result), "%Y-%m-%d %H:%M:%S", t) == 0) {
         return {ValueError(), std::string{}};
     }
     return {NoError(), std::string(result)};

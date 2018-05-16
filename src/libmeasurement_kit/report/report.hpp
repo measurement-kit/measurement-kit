@@ -28,7 +28,7 @@ class Report {
     std::string probe_asn;
     std::string probe_cc;
 
-    tm test_start_time;
+    tm test_start_time{};
 
     Settings options;
 
