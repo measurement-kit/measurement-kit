@@ -94,6 +94,10 @@ TEST_CASE("the system resolver is able to resolve an ipv4 address") {
         });
 }
 
+// As mentioned in query.cpp tests, the CI infrastructure does not seem
+// to provide support for IPv6. It's TODO(bassosimone) to dive deeper into
+// this topic in the future but for now it's okay to disable it.
+#ifndef _WIN32
 TEST_CASE("the system resolver is able to resolve an ipv6 address") {
     run_system_resolver(
         "IN", "AAAA", "ooni.torproject.org", [](Error e, SharedPtr<Message> message) {
@@ -108,6 +112,7 @@ TEST_CASE("the system resolver is able to resolve an ipv6 address") {
             REQUIRE(found);
         });
 }
+#endif
 
 TEST_CASE("the system resolver can handle errors with a CNAME query") {
     run_system_resolver(

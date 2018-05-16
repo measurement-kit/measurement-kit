@@ -251,16 +251,25 @@ TEST_CASE("resolve_hostname works with IPv6 address") {
 
 TEST_CASE("resolve_hostname works with domain") {
     SharedPtr<Reactor> reactor = Reactor::make();
+    SharedPtr<Logger> logger = Logger::make();
+    logger->set_verbosity(MK_LOG_WARNING);
     reactor->run_with_initial_event([=]() {
         resolve_hostname("google.com", [=](ResolveHostnameResult r) {
             REQUIRE(not r.inet_pton_ipv4);
             REQUIRE(not r.inet_pton_ipv6);
             REQUIRE(not r.ipv4_err);
+#ifdef _WIN32
+            // At least one IPv4 address (it seems that IPv6 is not
+            // enabled on AppVeyor AFAICT and FWIW I also have disabled
+            // IPv6 on my Windows development machine).
+            REQUIRE(r.addresses.size() >= 1);
+#else
             REQUIRE(not r.ipv6_err);
             // At least one IPv4 and one IPv6 addresses
             REQUIRE(r.addresses.size() > 1);
+#endif
             reactor->stop();
-        }, {}, reactor);
+        }, {}, reactor, logger);
     });
 }
 
