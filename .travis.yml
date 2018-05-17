@@ -2,7 +2,9 @@ language: cpp
 
 matrix:
   include:
-    - env: CXXFLAGS="-Werror"
+    - env: BUILD_TYPE="vanilla"
+           CMAKE_OPTIONS="-D CMAKE_BUILD_TYPE=Release"
+           CXXFLAGS="-Werror"
       script:
         - ./.ci/docker/setup ubuntu:artful cmake
       services:
@@ -13,7 +15,29 @@ matrix:
            CFLAGS="-fsanitize=address"
            CXXFLAGS="-fsanitize=address"
            LDFLAGS="-fsanitize=address"
-           CMAKE_OPTIONS="-G Ninja -D CMAKE_BUILD_TYPE=Debug"
+           CMAKE_OPTIONS="-D CMAKE_BUILD_TYPE=Debug"
+      script:
+        - ./.ci/docker/setup ubuntu:artful cmake
+      services:
+        - docker
+      sudo: required
+
+    - env: BUILD_TYPE="lsan"
+           CFLAGS="-fsanitize=leak"
+           CXXFLAGS="-fsanitize=leak"
+           LDFLAGS="-fsanitize=leak"
+           CMAKE_OPTIONS="-D CMAKE_BUILD_TYPE=Debug"
+      script:
+        - ./.ci/docker/setup ubuntu:artful cmake
+      services:
+        - docker
+      sudo: required
+
+    - env: BUILD_TYPE="ubsan"
+           CFLAGS="-fsanitize=undefined -fno-sanitize-recover"
+           CXXFLAGS="-fsanitize=undefined -fno-sanitize-recover"
+           LDFLAGS="-fsanitize=undefined"
+           CMAKE_OPTIONS="-D CMAKE_BUILD_TYPE=Debug"
       script:
         - ./.ci/docker/setup ubuntu:artful cmake
       services:
