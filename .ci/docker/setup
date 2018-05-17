@@ -13,6 +13,7 @@ script_name=$2
 docker run                                                                 \
     --cap-add=NET_ADMIN                                                    \
     -e "CC=$CC"                                                            \
+    -e "CMAKE_OPTIONS=$CMAKE_OPTIONS"                                      \
     -e "CXX=$CXX"                                                          \
     -e "CPPFLAGS=$CPPFLAGS"                                                \
     -e "CFLAGS=$CFLAGS"                                                    \

@@ -2,12 +2,23 @@ language: cpp
 
 matrix:
   include:
-    - sudo: required
-      env: CXXFLAGS="-Werror"
-      services:
-        - docker
+    - env: CXXFLAGS="-Werror"
       script:
         - ./.ci/docker/setup ubuntu:artful cmake
+      services:
+        - docker
+      sudo: required
+
+    - env: BUILD_TYPE="asan"
+           CFLAGS="-fsanitize=address"
+           CXXFLAGS="-fsanitize=address"
+           LDFLAGS="-fsanitize=address"
+           CMAKE_OPTIONS="-G Ninja -D CMAKE_BUILD_TYPE=Debug"
+      script:
+        - ./.ci/docker/setup ubuntu:artful cmake
+      services:
+        - docker
+      sudo: required
 
     - sudo: required
       env: DOCKER_SPEC=valgrind-clang pkg_make_flags="V=0 -j3"
