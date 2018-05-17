@@ -45,6 +45,11 @@ set_target_properties(
     "measurement_kit_static"
 )
 
+target_link_libraries(
+    libmeasurement_kit_static
+    ${MK_LIBS}
+)
+
 install(
     TARGETS
     libmeasurement_kit_static

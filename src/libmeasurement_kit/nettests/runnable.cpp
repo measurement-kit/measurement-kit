@@ -37,7 +37,10 @@ Runnable::~Runnable() {
 void Runnable::setup(std::string) {}
 void Runnable::teardown(std::string) {}
 void Runnable::main(std::string, Settings, Callback<SharedPtr<report::Entry>> cb) {
-    reactor->call_soon([=]() { cb(SharedPtr<report::Entry>{new report::Entry}); });
+    // Deferring calling `cb` a little bit to better emulate real tests
+    // workflow because no test actually completes "immediately".
+    reactor->call_later(0.74,
+        [=]() { cb(SharedPtr<report::Entry>{new report::Entry}); });
 }
 void Runnable::fixup_entry(report::Entry &) {}
 

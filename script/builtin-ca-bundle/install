@@ -1,0 +1,11 @@
+#!/bin/sh
+set -ex
+version="2017-09-20"
+curl -LsO https://curl.haxx.se/ca/cacert-$version.pem
+# Save a copy that would be used for regress testing
+cp cacert-$version.pem test/fixtures/saved_ca_bundle.pem
+cfile="src/libmeasurement_kit/net/builtin_ca_bundle.c"
+hfile=`echo $cfile | sed 's/\.c/.h/g'`
+echo "#include \"$hfile\"" > $cfile
+xxd -i test/fixtures/saved_ca_bundle.pem \
+  | sed 's/test_fixtures_saved/mk/g' >> $cfile

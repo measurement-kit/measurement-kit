@@ -20,10 +20,10 @@ done
 
 echo "* Updating cmake/LibSources.txt"
 find include src/libmeasurement_kit -type f -name \*.h -o -name \*.hpp \
-  -o -name \*c -o -name \*.cpp | sort | sed 's/^\./${MK_ROOT}/g' \
+  -o -name \*.c -o -name \*.cpp | sort | sed 's/^\./${MK_ROOT}/g' \
   > cmake/LibSources.txt
 
 echo "* Updating cmake/BinSources.txt"
 find src/measurement_kit -type f -name \*.h -o -name \*.hpp \
-  -o -name \*c -o -name \*.cpp | sort | sed 's/^\./${MK_ROOT}/g' \
+  -o -name \*.c -o -name \*.cpp | sort | sed 's/^\./${MK_ROOT}/g' \
   > cmake/BinSources.txt
