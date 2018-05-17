@@ -1,0 +1,5 @@
+#!/bin/sh
+set -ex
+version=v1.12.2
+curl -Lso src/libmeasurement_kit/ext/catch.hpp                                 \
+  https://github.com/catchorg/Catch2/releases/download/$version/catch.hpp
