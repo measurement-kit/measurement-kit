@@ -172,7 +172,11 @@ class LibeventEmitter : public EmitterBase, public NonMovable, public NonCopyabl
             return;
         }
 
+#ifdef _WIN32
+        Error sys_error = net::map_errno(WSAGetLastError());
+#else
         Error sys_error = net::map_errno(errno);
+#endif
 
         if (sys_error == NoError()) {
             unsigned long openssl_error;

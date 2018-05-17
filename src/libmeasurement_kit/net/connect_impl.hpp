@@ -84,7 +84,11 @@ void connect_base(std::string address, uint16_t port, double timeout,
     if (bufferevent_socket_connect(bev, saddr, salen) != 0) {
         logger->warn("connect() for %s failed immediately", endpoint.c_str());
         bufferevent_free(bev);
+#ifdef _WIN32
+        Error sys_error = mk::net::map_errno(WSAGetLastError());
+#else
         Error sys_error = mk::net::map_errno(errno);
+#endif
         if (sys_error == NoError()) {
             sys_error = GenericError(); /* We must report an error */
         }

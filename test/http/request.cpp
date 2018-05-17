@@ -21,7 +21,8 @@ using namespace mk::http;
 // Either tor was running and hence everything should be OK, or tor was
 // not running and hence connect() to socks port must have failed.
 static inline bool check_error_after_tor(Error e) {
-    return e == NoError() or e == ConnectionRefusedError();
+    return e == NoError() or (e == NetworkError() and
+        e.reason == "connection_refused");
 }
 
 /*
