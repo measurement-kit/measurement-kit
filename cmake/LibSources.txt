@@ -130,6 +130,7 @@ src/libmeasurement_kit/net/connect.hpp
 src/libmeasurement_kit/net/connect_impl.hpp
 src/libmeasurement_kit/net/emitter.cpp
 src/libmeasurement_kit/net/emitter.hpp
+src/libmeasurement_kit/net/error.cpp
 src/libmeasurement_kit/net/error.hpp
 src/libmeasurement_kit/net/evbuffer.hpp
 src/libmeasurement_kit/net/libevent_emitter.hpp

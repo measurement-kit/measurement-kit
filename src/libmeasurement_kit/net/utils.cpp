@@ -301,6 +301,7 @@ Error disable_nagle(socket_t sockfd) {
 }
 
 Error map_errno(int error_code) {
+    // Intercept the case where there's no error and handle it.
     if (error_code == 0) {
         return NoError();
     }
@@ -311,17 +312,20 @@ Error map_errno(int error_code) {
      *
      * (Yes, EWOULDBLOCK is a BSD-ism, but I like it more.)
      */
+#if (defined EAGAIN && defined EWOULDBLOCK)
     if (error_code == EAGAIN) {
         error_code = EWOULDBLOCK;
         // FALLTHROUGH
     }
-#define XX(_code_, _name_, _descr_)                                            \
-    if (std::make_error_condition(std::errc::_descr_).value() == error_code) { \
-        return _name_();                                                       \
+#endif
+    // Simplification: since MK v0.9.0 we use a single class to
+    // represent multiple possible network errors.
+    std::string reason;
+    if (!net_error_to_ooni_error(error_code, &reason)) {
+        return GenericError();
     }
-    MK_NET_ERRORS_XX
-#undef XX
-    return GenericError();
+    static auto code = NetworkError{}.code;
+    return Error{code, std::move(reason)};
 }
 
 Error make_sockaddr(std::string s, uint16_t p,
