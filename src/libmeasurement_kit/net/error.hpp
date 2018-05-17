@@ -99,7 +99,7 @@ MK_DEFINE_ERR(MK_ERR_NET(59), SslMissingHostnameError, "ssl_missing_hostname")
 // Maps network error to corresponding OONI error. To this end it uses the
 // above defined error listings by correctly setting the `XX` macro.
 //
-// TODO(bassosimone): write unit tests for this functionality.
+// TODO(bassosimone): write more unit tests for this functionality.
 bool net_error_to_ooni_error(int code, std::string *str) noexcept;
 
 } // namespace net
