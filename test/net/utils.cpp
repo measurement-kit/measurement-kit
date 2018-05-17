@@ -242,8 +242,8 @@ TEST_CASE("map_errno() works as expected") {
 #ifndef _WIN32
     SECTION("Make sure that EAGAIN is correctly handled") {
         auto e = mk::net::map_errno(EAGAIN);
-        REQUIRE(e == mk::net::NetworkError() and
-                e.reason == "operation_would_block");
+        REQUIRE((e == mk::net::NetworkError() and
+                e.reason == "operation_would_block"));
     }
 #endif
 
