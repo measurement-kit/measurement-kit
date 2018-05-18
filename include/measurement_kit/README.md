@@ -507,8 +507,8 @@ Where `percentage` is the percentage of completion of the task, and `message`
 indicates the operation that the task just completed.
 
 - `"status.queued"`: Indicates that the task has been accepted. In case there
-are already running tasks, as mentioned above, the task will wait in a queue
-until previously running tasks have terminated. The JSON is like:
+are already running tasks, as mentioned above, they will be prevented from
+running concurrently. The JSON is like:
 
 ```JSON
 {
