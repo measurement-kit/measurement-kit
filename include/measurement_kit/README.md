@@ -628,8 +628,9 @@ the reachability of websites. The JSON is like:
 Where `url` is the URL we're measuring and `status` is either `accessible`
 or `blocking`.
 
-- `"task_terminated"`: This event is emitted only once when the task has
-terminated running. The related JSON is like:
+- `"task_terminated"`: This event is emitted when you attempt to extract events from
+the task queue, but the task is not running anymore (i.e. it's the equivalent of
+`EOF` for the task queue). The related JSON is like:
 
 ```JSON
 {
