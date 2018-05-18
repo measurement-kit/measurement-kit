@@ -293,9 +293,8 @@ These are the available options:
 - `"net/ca_bundle_path"`: (string) path to the CA bundle path to be used
   to validate SSL certificates. Not necessary on platforms where we use
   LibreSSL, because in such case we include a default CA bundle directly
-  inside of Measurement Kit. This currently happens for iOS and Android and
-  _should_ also be the case for Windows. If you compile a Measurement Kit
-  for yourself, then YMMV;
+  inside of Measurement Kit (Android, iOS, Windows). If you compile a
+  Measurement Kit for yourself, then YMMV;
 
 - `"net/timeout"`: (double) number of seconds after which network I/O
   operations will timeout. By default set to `10.0` seconds;
