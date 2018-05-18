@@ -68,8 +68,7 @@ class TaskImpl {
     std::thread thread;
 };
 
-static void task_run(TaskImpl *pimpl, nlohmann::json &settings,
-                     std::function<void()> &&);
+static void task_run(TaskImpl *pimpl, nlohmann::json &settings);
 static nlohmann::json possibly_validate_event(nlohmann::json &&);
 
 static void emit(TaskImpl *pimpl, nlohmann::json &&event) {
@@ -89,23 +88,19 @@ Task::Task(nlohmann::json &&settings) {
     // thread for running the test is up and running.
     std::promise<void> barrier;
     std::future<void> started = barrier.get_future();
-    pimpl_->thread = std::thread([this, &barrier,
-                                         settings = std::move(
-                                                 settings)]() mutable {
+    pimpl_->thread = std::thread([ //
+          this, &barrier, settings = std::move(settings)]() mutable {
         pimpl_->running = true;
         barrier.set_value();
         static Semaphore semaphore;
-        task_run(pimpl_.get(), settings, [&]() {
-            // The purpose of `semaphore` is to make sure that tests do not run
-            // concurrently, because that will possibly invalidate results. In
-            // theory, the app should guarantee that, but this is an extra layer
-            // of robustness to prevent this event from happening. The reason
-            // why the semaphore is acquired later is that we want tests having
-            // invalid parameters to fail immediately. The reason why this is
-            // done in a lambda rather than inside `task_run()` is to have all
-            // the potentially tricky thread code within the same ~50 lines.
-            semaphore.acquire();
-        });
+        {
+            nlohmann::json event;
+            event["key"] = "status.queued";
+            event["value"] = nlohmann::json::object();
+            emit(pimpl_, std::move(event));
+        }
+        semaphore.acquire(); // prevent concurrent tasks
+        task_run(pimpl_.get(), settings);
         pimpl_->running = false;
         pimpl_->cond.notify_all(); // tell the readers we're done
         semaphore.release();       // allow another task to run
@@ -319,8 +314,7 @@ static void remove_unknown_settings_and_warn(
 
 // # Run task
 
-static void task_run(TaskImpl *pimpl, nlohmann::json &settings,
-                     std::function<void()> &&wait_func) {
+static void task_run(TaskImpl *pimpl, nlohmann::json &settings) {
 
     // make sure that `settings` is an object
     if (!settings.is_object()) {
@@ -525,13 +519,6 @@ static void task_run(TaskImpl *pimpl, nlohmann::json &settings,
         });
     }
 
-    // Emit the queued event, then possibly block waiting in queue. Done now
-    // rather than before, because there's no point in keeping in queue tasks
-    // with a wrong configuration. Also, events related to configuration errors
-    // are always emitted unconditionally, because the user needs to know when
-    // he/she configured a Measurement Kit task incorrectly.
-    runnable->logger->emit_event_ex("status.queued", nlohmann::json::object());
-    wait_func();
     runnable->logger->emit_event_ex("status.started", nlohmann::json::object());
 
     // start the task (reactor and interrupted are MT safe)
