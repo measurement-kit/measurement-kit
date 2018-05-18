@@ -660,15 +660,23 @@ task is done, and will emit all the events emitted at the end of a task.
 
 ```JavaScript
 function taskThread(settings) {
+  emitEvent("status.queued", {})
+  semaphore.Acquire()                 // blocked until my turn
+
+  let finish = function(error) {
+    semaphore.Release()               // allow another test to run
+    emitEvent("status.end", {
+      downloaded_kb: countDownloadedKb(),
+      uploaded_kb: countUploadedKb(),
+      failure: (error) ? error.AsString() : null
+    })
+  }
+
   if (!settingsAreValid(settings)) {
     emitEvent("failure.startup", {
       failure: "value_error",
     })
-    emitEvent("status.end", {
-      downloaded_kb: 0,
-      uploaded_kb: 0,
-      failure: "value_error",
-    })
+    finish("value_error")
     return
   }
 
@@ -680,18 +688,8 @@ function taskThread(settings) {
 
   let task = makeTask(settings.name)
 
-  emitEvent("status.queued", {})
-  semaphore.Acquire()                 // blocked until my turn
   emitEvent("status.started", {})
 
-  let finish = function(error) {
-    semaphore.Release()               // allow another test to run
-    emitEvent("status.end", {
-      downloaded_kb: countDownloadedKb(),
-      uploaded_kb: countUploadedKb(),
-      failure: (error) ? error.AsString() : null
-    })
-  }
 
 ```
 
