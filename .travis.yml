@@ -22,6 +22,16 @@ matrix:
         - docker
       sudo: required
 
+    - env: BUILD_TYPE="tsan"
+           CFLAGS="-fsanitize=thread -g -O2"
+           CXXFLAGS="-fsanitize=thread -g -O2"
+           LDFLAGS="-fsanitize=thread"
+      script:
+        - ./.ci/docker/setup ubuntu:artful cmake
+      services:
+        - docker
+      sudo: required
+
     - env: BUILD_TYPE="lsan"
            CFLAGS="-fsanitize=leak"
            CXXFLAGS="-fsanitize=leak"
