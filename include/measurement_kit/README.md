@@ -647,7 +647,7 @@ Where `value` is empty.
 The following illustrates in pseudocode the operations performed by a task
 once you call `mk_task_start`. It not 100% accurate; in particular, we have
 omitted the code that generates most log messages. This pseudocode is meant to
-help understand how Measurement Kit works internally, and specifically how all
+help you understand how Measurement Kit works internally, and specifically how all
 the settings described above interact together when you specify them for
 running Measurement Kit tasks. We are using pseudo JavaScript because that
 is the easiest language to show manipulation of JSON objects such as the
