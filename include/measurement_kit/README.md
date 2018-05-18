@@ -56,7 +56,7 @@ shared queue until the task has finished running.
 
 ## API documentation
 
-`mk_task_start` starts a task with the configuration provided as a serialized
+`mk_task_start` starts a task with the settings provided as a serialized
 JSON. Returns `NULL` if `conf` was `NULL`, or in case of parse error. You
 own (and must destroy) the returned task pointer.
 
