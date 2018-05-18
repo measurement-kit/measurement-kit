@@ -1,0 +1,7 @@
+#!/bin/sh
+set -ex
+version=v2.8.1
+for file in http_parser.c http_parser.h; do
+  curl -Lso src/libmeasurement_kit/ext/$file                                   \
+    https://raw.githubusercontent.com/nodejs/http-parser/$version/$file
+done

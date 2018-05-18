@@ -238,32 +238,60 @@ TEST_CASE("map_errno() works as expected") {
         REQUIRE(mk::net::map_errno(0) == mk::NoError());
     }
 
+    // Not relevant on Windows where we only have WSAEWOULDBLOCK
+#ifndef _WIN32
     SECTION("Make sure that EAGAIN is correctly handled") {
-        REQUIRE(mk::net::map_errno(EAGAIN) ==
-                mk::net::OperationWouldBlockError());
+        auto e = mk::net::map_errno(EAGAIN);
+        REQUIRE((e == mk::net::NetworkError() and
+                e.reason == "operation_would_block"));
     }
+#endif
 
     SECTION("Make sure that mapped errors map to correct classes") {
-#define XX(_code_, _name_, _descr_)                                            \
+#ifdef _WIN32
+#define EPREFIX(x) WSAE##x
+#else
+#define EPREFIX(x) E##x
+#endif
+#define XX(_errno_name_, _ooni_name_)                                          \
     {                                                                          \
-        auto err_cond = std::make_error_condition(std::errc::_descr_);         \
-        int code = err_cond.value();                                           \
-        REQUIRE(mk::net::map_errno(code) == mk::net::_name_());                \
+        auto e = mk::net::map_errno(EPREFIX(_errno_name_));                    \
+        REQUIRE(e == mk::net::NetworkError());                                 \
+        REQUIRE(e.reason == #_ooni_name_);                                     \
     }
-        MK_NET_ERRORS_XX
+#ifndef _WIN32
+        MK_NET_ERRNO_UNIX_ONLY(XX)
+#endif
+        MK_NET_ERRNO(XX)
+#undef EPREFIX
 #undef XX
     }
 
     SECTION("Make sure some errors maps by passing the definition directly") {
-        REQUIRE(mk::net::map_errno(EWOULDBLOCK) ==
-                mk::net::OperationWouldBlockError());
-        REQUIRE(mk::net::map_errno(EINTR) == mk::net::InterruptedError());
-        REQUIRE(mk::net::map_errno(ENOBUFS)
-                == mk::net::NoBufferSpaceError());
+#ifdef _WIN32
+        auto e1 = mk::net::map_errno(WSAEWOULDBLOCK);
+        auto e2 = mk::net::map_errno(WSAEINTR);
+        auto e3 = mk::net::map_errno(WSAENOBUFS);
+#else
+        auto e1 = mk::net::map_errno(EWOULDBLOCK);
+        auto e2 = mk::net::map_errno(EINTR);
+        auto e3 = mk::net::map_errno(ENOBUFS);
+#endif
+        REQUIRE((e1 == mk::net::NetworkError() &&
+                e1.reason == "operation_would_block"));
+        REQUIRE((e2 == mk::net::NetworkError() &&
+                e2.reason == "interrupted"));
+        REQUIRE((e3 == mk::net::NetworkError() &&
+                e3.reason == "no_buffer_space"));
     }
 
     SECTION("Make sure that unmapped errors map to mk::GenericError") {
-        REQUIRE(mk::net::map_errno(ENOENT) == mk::GenericError());
+#ifdef _WIN32
+        auto e = mk::net::map_errno(ERROR_INVALID_HANDLE);
+#else
+        auto e = mk::net::map_errno(ENOENT);
+#endif
+        REQUIRE(e == mk::GenericError());
     }
 }
 

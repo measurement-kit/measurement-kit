@@ -23,11 +23,11 @@ TEST_CASE("mk::fmap() works as expected for empty vector") {
 
 TEST_CASE("mk::fmap() works as expected for simple numbers") {
     std::vector<int> input{1, 3, 5};
-    std::vector<float> output = mk::fmap<int, float>(input, [](int i) {
+    std::vector<double> output = mk::fmap<int, double>(input, [](int i) {
         return i / 10.0;
     });
     REQUIRE((output.size() > 0));
-    REQUIRE((output == std::vector<float>{0.1, 0.3, 0.5}));
+    REQUIRE((output == std::vector<double>{0.1, 0.3, 0.5}));
 }
 
 TEST_CASE("mk::fmap() allows to construct continuations") {

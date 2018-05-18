@@ -157,7 +157,8 @@ TEST_CASE("connect_base works with ipv4") {
 }
 
 static bool check_error(Error err) {
-    return err == ConnectionRefusedError() or err == TimeoutError();
+    return (err == NetworkError() and err.reason == "connection_refused") or
+           err == TimeoutError();
 }
 
 TEST_CASE("connect_base works with ipv4 and closed port") {

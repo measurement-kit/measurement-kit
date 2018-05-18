@@ -37,7 +37,10 @@ Runnable::~Runnable() {
 void Runnable::setup(std::string) {}
 void Runnable::teardown(std::string) {}
 void Runnable::main(std::string, Settings, Callback<SharedPtr<report::Entry>> cb) {
-    reactor->call_soon([=]() { cb(SharedPtr<report::Entry>{new report::Entry}); });
+    // Deferring calling `cb` a little bit to better emulate real tests
+    // workflow because no test actually completes "immediately".
+    reactor->call_later(0.74,
+        [=]() { cb(SharedPtr<report::Entry>{new report::Entry}); });
 }
 void Runnable::fixup_entry(report::Entry &) {}
 
@@ -336,8 +339,17 @@ std::string Runnable::generate_output_filepath() {
 }
 
 void Runnable::query_bouncer(Callback<Error> cb) {
-    if (!use_bouncer) {
-        logger->info("skipping bouncer");
+    ErrorOr<bool> disable_bouncer = options.get_noexcept(
+            "no_bouncer", false);
+    if (disable_bouncer.as_error() != NoError()) {
+        logger->warn("Invalid 'no_bouncer' option");
+        cb(disable_bouncer.as_error());
+        return;
+    }
+    // Note: `use_bouncer` is set for tasks that must not use the bouncer while
+    // the setting is to allow users to bypass the bouncer.
+    if (!use_bouncer || disable_bouncer.as_value() == true) {
+        logger->info("Skipping bouncer");
         cb(NoError());
         return;
     }

@@ -6,6 +6,8 @@
 
 #include <measurement_kit/common.hpp>
 
+#include <string>
+
 namespace mk {
 namespace net {
 
@@ -42,51 +44,63 @@ MK_DEFINE_ERR(MK_ERR_NET(27), SslCtxLoadVerifyLocationsError, "ssl_ctx_load_veri
 MK_DEFINE_ERR(MK_ERR_NET(28), SslCtxLoadVerifyMemError, "ssl_ctx_load_verify_mem_error")
 
 /*
- * Maps std::errc from <system_error>
- *
- * Note that EAGAIN is not handled here but in the .cpp file
- * and gets mapped to EWOULDBLOCK unconditionally like most modern
- * Unix systems already do in their <errno.h> or <sys/errno.h>.
+ * Historically used, now removed values: [29, 58)
  */
-#define MK_NET_ERRORS_XX                                                   \
-    XX(29, AddressFamilyNotSupportedError, address_family_not_supported)   \
-    XX(30, AddressInUseError, address_in_use)                              \
-    XX(31, AddressNotAvailableError, address_not_available)                \
-    XX(32, AlreadyConnectedError, already_connected)                       \
-    XX(33, BadAddressError, bad_address)                                   \
-    XX(34, BadFileDescriptorError, bad_file_descriptor)                    \
-    XX(35, BrokenPipeError, broken_pipe)                                   \
-    XX(36, ConnectionAbortedError, connection_aborted)                     \
-    XX(37, ConnectionAlreadyInProgressError,                               \
-       connection_already_in_progress)                                     \
-    XX(38, ConnectionRefusedError, connection_refused)                     \
-    XX(39, ConnectionResetError, connection_reset)                         \
-    XX(40, DestinationAddressRequiredError, destination_address_required)  \
-    XX(41, HostUnreachableError, host_unreachable)                         \
-    XX(42, InterruptedError, interrupted)                                  \
-    XX(43, InvalidArgumentError, invalid_argument)                         \
-    XX(44, MessageSizeError, message_size)                                 \
-    XX(45, NetworkDownError, network_down)                                 \
-    XX(46, NetworkResetError, network_reset)                               \
-    XX(47, NetworkUnreachableError, network_unreachable)                   \
-    XX(48, NoBufferSpaceError, no_buffer_space)                            \
-    XX(49, NoProtocolOptionError, no_protocol_option)                      \
-    XX(50, NotASocketError, not_a_socket)                                  \
-    XX(51, NotConnectedError, not_connected)                               \
-    XX(52, OperationWouldBlockError, operation_would_block)                \
-    XX(53, PermissionDeniedError, permission_denied)                       \
-    XX(54, ProtocolErrorError, protocol_error)                             \
-    XX(55, ProtocolNotSupportedError, protocol_not_supported)              \
-    XX(56, TimedOutError, timed_out)                                       \
-    XX(57, WrongProtocolTypeError, wrong_protocol_type)
-
-#define XX(_code_, _name_, _descr_)                                        \
-    MK_DEFINE_ERR(MK_ERR_NET(_code_), _name_, #_descr_)
-MK_NET_ERRORS_XX
-#undef XX
 
 MK_DEFINE_ERR(MK_ERR_NET(58), SslDirtyShutdownError, "ssl_dirty_shutdown")
 MK_DEFINE_ERR(MK_ERR_NET(59), SslMissingHostnameError, "ssl_missing_hostname")
+
+/*
+ * Mapping between errno (Unix) / WSAGetLastError (Windows) values and
+ * the corresponding strings. The strings we're using are backward compatible
+ * with older versions of Measurement Kit. They are the same strings with
+ * which such errors are named in the C++11 standard, BTW.
+ *
+ * Errors for which we don't have a Windows definition are included into a
+ * separate list, because that simplifies their handling significantly.
+ *
+ * Errno names (first argument) are like their POSIX counterpart, with the
+ * leading E (Unix) / WSAE (Windows) string missing.
+ */
+
+#define MK_NET_ERRNO_UNIX_ONLY(XX)                                             \
+    XX(PIPE, broken_pipe)                                                      \
+    XX(PROTO, protocol_error)
+
+#define MK_NET_ERRNO(XX)                                                       \
+    XX(AFNOSUPPORT, address_family_not_supported)                              \
+    XX(ADDRINUSE, address_in_use)                                              \
+    XX(ADDRNOTAVAIL, address_not_available)                                    \
+    XX(ISCONN, already_connected)                                              \
+    XX(FAULT, bad_address)                                                     \
+    XX(BADF, bad_file_descriptor)                                              \
+    XX(CONNABORTED, connection_aborted)                                        \
+    XX(ALREADY, connection_already_in_progress)                                \
+    XX(CONNREFUSED, connection_refused)                                        \
+    XX(CONNRESET, connection_reset)                                            \
+    XX(DESTADDRREQ, destination_address_required)                              \
+    XX(HOSTUNREACH, host_unreachable)                                          \
+    XX(INTR, interrupted)                                                      \
+    XX(INVAL, invalid_argument)                                                \
+    XX(MSGSIZE, message_size)                                                  \
+    XX(NETDOWN, network_down)                                                  \
+    XX(NETRESET, network_reset)                                                \
+    XX(NETUNREACH, network_unreachable)                                        \
+    XX(NOBUFS, no_buffer_space)                                                \
+    XX(NOPROTOOPT, no_protocol_option)                                         \
+    XX(NOTSOCK, not_a_socket)                                                  \
+    XX(NOTCONN, not_connected)                                                 \
+    XX(WOULDBLOCK, operation_would_block)                                      \
+    XX(ACCES, permission_denied)                                               \
+    XX(PROTONOSUPPORT, protocol_not_supported)                                 \
+    XX(TIMEDOUT, timed_out)                                                    \
+    XX(PROTOTYPE, wrong_protocol_type)
+
+// Maps network error to corresponding OONI error. To this end it uses the
+// above defined error listings by correctly setting the `XX` macro.
+//
+// TODO(bassosimone): write more unit tests for this functionality.
+bool net_error_to_ooni_error(int code, std::string *str) noexcept;
 
 } // namespace net
 } // namespace mk

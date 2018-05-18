@@ -12,8 +12,9 @@
 #endif
 
 #include <getopt.h>
-#include "../portable/_getopt.h"
 
+#else
+#include "../portable/_getopt.h"
 #endif /* !_WIN32 || __MINGW32__ */
 
 #endif

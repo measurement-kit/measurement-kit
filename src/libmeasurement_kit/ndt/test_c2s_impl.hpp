@@ -141,7 +141,7 @@ void run_impl(SharedPtr<Context> ctx, Callback<Error> callback) {
                     cc([=](Error err) {
                         ctx->logger->debug("ndt: c2s coroutine complete");
                         if (err) {
-                            if (err != BrokenPipeError()) {
+                            if (err.reason != "broken_pipe") {
                                 callback(err);
                                 return;
                             }

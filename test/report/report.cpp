@@ -7,6 +7,7 @@
 #define CATCH_CONFIG_MAIN
 #include "src/libmeasurement_kit/ext/catch.hpp"
 
+#include "src/libmeasurement_kit/common/utils.hpp"
 #include "src/libmeasurement_kit/report/base_reporter.hpp"
 #include "src/libmeasurement_kit/report/error.hpp"
 #include "src/libmeasurement_kit/report/report.hpp"
@@ -300,6 +301,10 @@ TEST_CASE(
 TEST_CASE("We can override software name and version") {
     Report report;
     Entry entry;
+
+    // We must set the `test_start_time` because otherwise the
+    // test fails with an `error_or_contains_error` failure.
+    mk::utc_time_now(&report.test_start_time);
 
     SECTION("We have a default") {
         report.fill_entry(entry);

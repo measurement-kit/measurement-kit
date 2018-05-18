@@ -46,8 +46,13 @@ void mk_bufferevent_on_event(bufferevent *bev, short what, void *ptr) {
          * which is reasonable because currently we only use this function
          * as callback for either socket or SSL connect.
          */
-        if (errno != 0) {
-            err = mk::net::map_errno(errno);
+#ifdef _WIN32
+        auto ecode = WSAGetLastError();
+#else
+        auto ecode = errno;
+#endif
+        if (ecode != 0) {
+            err = mk::net::map_errno(ecode);
         } else {
             long ssl_err = bufferevent_get_openssl_error(bev);
             std::string s = ERR_error_string(ssl_err, nullptr);
