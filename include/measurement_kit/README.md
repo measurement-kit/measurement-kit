@@ -38,7 +38,7 @@ void             mk_task_destroy(mk_task_t *task);
 ## Introduction
 
 Measurement Kit is a network measurement engine. It runs _tasks_ (e.g. a
-specific network measurement). To start a task, you need to configure with
+specific network measurement). To start a task, you need to configure it with
 specific _settings_. Among these settings there is the most important one, the
 task name (e.g. "Ndt" is the task name of the NDT network performance test).
 While running, a task emits _events_ (e.g. a log line, a JSON describing the
