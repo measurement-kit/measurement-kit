@@ -217,6 +217,9 @@ are available:
 - `"log_filepath"`: optional string containing the name of the file where to
   write logs. By default logs are written on `stderr`;
 
+- `"log_level"`: how much information you want to see written in the log
+  file and emitted by log-related events.
+
 - `"name"`: name of the task to run. This setting is mandatory. The available
   task names have been described above;
 
@@ -227,9 +230,6 @@ are available:
 - `"output_filepath"`: optional file where you want Measurement Kit to
   write measurement results, as a sequence of lines, each line being
   the result of a measurement serialized as JSON;
-
-- `"log_level"`: how much information you want to see written in the log
-  file and emitted by log-related events.
 
 ## Log levels
 
