@@ -299,11 +299,11 @@ These are the available options:
 - `"net/timeout"`: (double) number of seconds after which network I/O
   operations will timeout. By default set to `10.0` seconds;
 
-- `"no_bouncer"`: (int) whether to use the OONI bouncer. By default set to
-  `0`, meaning that the OONI bouncer will be used;
+- `"no_bouncer"`: (int) whether to use a bouncer. By default set to
+  `0`, meaning that a bouncer will be used;
 
-- `"no_collector"`: (int) whether to use the OONI collector. By default set to
-  `0`, meaning that the OONI collector will be used;
+- `"no_collector"`: (int) whether to use a collector. By default set to
+  `0`, meaning that a collector will be used;
 
 - `"no_asn_lookup"`: (int) whether to lookup the Autonomous System Number
   in which we're running. Requires the `"geoip_asn_path"` to be set. By
