@@ -97,7 +97,7 @@ Task::Task(nlohmann::json &&settings) {
             nlohmann::json event;
             event["key"] = "status.queued";
             event["value"] = nlohmann::json::object();
-            emit(pimpl_, std::move(event));
+            emit(pimpl_.get(), std::move(event));
         }
         semaphore.acquire(); // prevent concurrent tasks
         task_run(pimpl_.get(), settings);
