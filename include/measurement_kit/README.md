@@ -258,10 +258,10 @@ that `0` means false and non-`0` means true.
 These are the available options:
 
 - `"bouncer_base_url"`: (string) base URL of OONI bouncer, by default set to
-  the empty string. If empty, the default will be used;
+  the empty string. If empty, the OONI bouncer will be used;
 
 - `"collector_base_url"`: (string) base URL of OONI collector, by default set
-  to the empty string. If empty, the default will be used;
+  to the empty string. If empty, the OONI collector will be used;
 
 - `"dns/nameserver"`: (string) nameserver to be used with non-`system` DNS
   engines. Can or cannot include an optional port number. By default, set
