@@ -44,23 +44,6 @@ matrix:
         - docker
       sudo: required
 
-    - sudo: required
-      env: DOCKER_SPEC=valgrind-clang pkg_make_flags="V=0 -j3"
-           CXXFLAGS="-Werror" CFLAGS="-Werror"
-      services:
-        - docker
-      script:
-        - ./build/ci/travis
-
-    # Note: with CFLAGS="-Werror" ./configure fails for this job (see #1318)
-    - sudo: required
-      env: DOCKER_SPEC=valgrind-gcc pkg_make_flags="V=0 -j3"
-           CXXFLAGS="-Werror"
-      services:
-        - docker
-      script:
-        - ./build/ci/travis
-
     # Note: with CFLAGS="-Werror" ./configure fails for this job (see #1318)
     - sudo: required
       env: DOCKER_SPEC=coveralls pkg_make_flags="V=0 -j3"
