@@ -245,7 +245,7 @@ The available log levels are:
 
 - `"DEBUG2"`: a really specific debugging message
 
-When you specify a log level in the settings, only message with a log level
+When you specify a log level in the settings, only messages with a log level
 equal or greater than the specified one are emitted. For example, if you
 specify `"INFO"`, you will only see `"ERR"`, `"WARNING"`, and `"INFO"` logs.
 
