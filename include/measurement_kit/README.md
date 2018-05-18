@@ -61,7 +61,7 @@ JSON. Returns `NULL` if `conf` was `NULL`, or in case of parse error. You
 own (and must destroy) the returned task pointer.
 
 `mk_task_wait_for_next_event` blocks waiting for the `task` to emit the next
-event. Returns `NULL` if `task` is `NULL` or on internal error. If the task is
+event. Returns `NULL` if `task` is `NULL` or on error. If the task is
 terminated, it returns immediately a `task.terminated` event. You own (and
 must destroy) the returned event pointer.
 
@@ -72,7 +72,7 @@ the `task` is `NULL`, nonzero is returned.
 has no effect.
 
 `mk_event_serialize` obtains the JSON serialization of `event`. Return `NULL`
-if either the `event` is `NULL` or there is an internal error.
+if either the `event` is `NULL` or there is an error.
 
 `mk_event_destroy` destroys the memory associated with `event`. Attempting to
 destroy a `NULL` event has no effect.
