@@ -2,19 +2,41 @@ language: cpp
 
 matrix:
   include:
-    - env: BUILD_TYPE="vanilla"
+    # CMake builds
+    # ------------
+    #
+    # We will eventually use CMake only.
+
+    # Build using flags that would be used by Debian
+    - env: BUILD_TYPE="gcc_release_build"
+           CFLAGS="-fstack-protector-strong -Wformat -Werror=format-security"
            CMAKE_OPTIONS="-D CMAKE_BUILD_TYPE=Release"
-           CXXFLAGS="-Werror"
+           CPPFLAGS="-Wdate-time -D_FORTIFY_SOURCE=2"
+           CXXFLAGS="-stdlib=libc++ -fstack-protector-strong -Wformat -Werror=format-security"
       script:
         - ./.ci/docker/setup ubuntu:artful cmake
       services:
         - docker
       sudo: required
 
+    # Same as above but use clang/clang++ and libc++
+    - env: BUILD_TYPE="clang_release_build"
+           CFLAGS="-fstack-protector-strong -Wformat -Werror=format-security"
+           CMAKE_OPTIONS="-D CMAKE_BUILD_TYPE=Release"
+           CPPFLAGS="-Wdate-time -D_FORTIFY_SOURCE=2"
+           CXXFLAGS="-stdlib=libc++ -fstack-protector-strong -Wformat -Werror=format-security"
+           MK_CC=clang MK_CXX=clang++
+      script:
+        - ./.ci/docker/setup ubuntu:artful cmake
+      services:
+        - docker
+      sudo: required
+
+    # See https://github.com/google/sanitizers/wiki/AddressSanitizer
     - env: BUILD_TYPE="asan"
-           CFLAGS="-fsanitize=address"
-           CXXFLAGS="-fsanitize=address"
-           LDFLAGS="-fsanitize=address"
+           CFLAGS="-fsanitize=address -O1 -fno-omit-frame-pointer"
+           CXXFLAGS="-fsanitize=address -O1 -fno-omit-frame-pointer"
+           LDFLAGS="-fsanitize=address -fno-omit-frame-pointer"
            CMAKE_OPTIONS="-D CMAKE_BUILD_TYPE=Debug"
       script:
         - ./.ci/docker/setup ubuntu:artful cmake
@@ -22,16 +44,19 @@ matrix:
         - docker
       sudo: required
 
+    # See https://github.com/google/sanitizers/wiki/ThreadSanitizerCppManual
     - env: BUILD_TYPE="tsan"
-           CFLAGS="-fsanitize=thread -g -O2"
-           CXXFLAGS="-fsanitize=thread -g -O2"
+           CFLAGS="-fsanitize=thread -O2"
+           CXXFLAGS="-fsanitize=thread -O2"
            LDFLAGS="-fsanitize=thread"
+           CMAKE_OPTIONS="-D CMAKE_BUILD_TYPE=Debug"
       script:
         - ./.ci/docker/setup ubuntu:artful cmake
       services:
         - docker
       sudo: required
 
+    # See https://github.com/google/sanitizers/wiki/AddressSanitizerLeakSanitizer
     - env: BUILD_TYPE="lsan"
            CFLAGS="-fsanitize=leak"
            CXXFLAGS="-fsanitize=leak"
@@ -43,6 +68,8 @@ matrix:
         - docker
       sudo: required
 
+    # "I was told on IRC -fsanitize=undefined enables all those sub-options."
+    # See https://stackoverflow.com/a/20738666
     - env: BUILD_TYPE="ubsan"
            CFLAGS="-fsanitize=undefined -fno-sanitize-recover"
            CXXFLAGS="-fsanitize=undefined -fno-sanitize-recover"
@@ -53,6 +80,14 @@ matrix:
       services:
         - docker
       sudo: required
+
+    # Autotools builds
+    # ----------------
+    #
+    # We need to keep at least one build using autotools to make sure
+    # building with autotools is not broken. The blocker to migrate from
+    # autotools to CMake build is that currently we're not able to
+    # compile for Msys, Android, and iOS using CMake.
 
     # Note: with CFLAGS="-Werror" ./configure fails for this job (see #1318)
     - sudo: required
