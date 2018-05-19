@@ -27,6 +27,7 @@ subr_start_over() {
 }
 
 subr_build() {
+    tc qdisc add dev eth0 root netem delay 200ms 10ms  # Slow down
     ./autogen.sh
     ./configure --disable-shared $CONFIGURE_FLAGS
     make V=0 -j$(nproc) $MAKE_CHECK_TARGET || {
@@ -48,8 +49,6 @@ sleep 5
 if [ $# -eq 0 ]; then
     set -- depend start_over build finalize
 fi
-
-tc qdisc add dev eth0 root netem delay 200ms 10ms  # Slow down
 
 while [ $# -gt 0 ]; do
     echo ""
