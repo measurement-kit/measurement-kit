@@ -12,9 +12,9 @@ matrix:
            CFLAGS="-fstack-protector-strong -Wformat -Werror=format-security"
            CMAKE_OPTIONS="-D CMAKE_BUILD_TYPE=Release"
            CPPFLAGS="-Wdate-time -D_FORTIFY_SOURCE=2"
-           CXXFLAGS="-stdlib=libc++ -fstack-protector-strong -Wformat -Werror=format-security"
+           CXXFLAGS="-fstack-protector-strong -Wformat -Werror=format-security"
       script:
-        - ./.ci/docker/setup ubuntu:artful cmake
+        - ./.ci/docker/setup bassosimone/mk-debian:testing cmake
       services:
         - docker
       sudo: required
@@ -27,7 +27,7 @@ matrix:
            CXXFLAGS="-stdlib=libc++ -fstack-protector-strong -Wformat -Werror=format-security"
            MK_CC=clang MK_CXX=clang++
       script:
-        - ./.ci/docker/setup ubuntu:artful cmake
+        - ./.ci/docker/setup bassosimone/mk-debian:testing cmake
       services:
         - docker
       sudo: required
@@ -39,7 +39,7 @@ matrix:
            LDFLAGS="-fsanitize=address -fno-omit-frame-pointer"
            CMAKE_OPTIONS="-D CMAKE_BUILD_TYPE=Debug"
       script:
-        - ./.ci/docker/setup ubuntu:artful cmake
+        - ./.ci/docker/setup bassosimone/mk-debian:testing cmake
       services:
         - docker
       sudo: required
@@ -51,7 +51,7 @@ matrix:
            LDFLAGS="-fsanitize=thread"
            CMAKE_OPTIONS="-D CMAKE_BUILD_TYPE=Debug"
       script:
-        - ./.ci/docker/setup ubuntu:artful cmake
+        - ./.ci/docker/setup bassosimone/mk-debian:testing cmake
       services:
         - docker
       sudo: required
@@ -63,7 +63,7 @@ matrix:
            LDFLAGS="-fsanitize=leak"
            CMAKE_OPTIONS="-D CMAKE_BUILD_TYPE=Debug"
       script:
-        - ./.ci/docker/setup ubuntu:artful cmake
+        - ./.ci/docker/setup bassosimone/mk-debian:testing cmake
       services:
         - docker
       sudo: required
@@ -76,7 +76,7 @@ matrix:
            LDFLAGS="-fsanitize=undefined"
            CMAKE_OPTIONS="-D CMAKE_BUILD_TYPE=Debug"
       script:
-        - ./.ci/docker/setup ubuntu:artful cmake
+        - ./.ci/docker/setup bassosimone/mk-debian:testing cmake
       services:
         - docker
       sudo: required
