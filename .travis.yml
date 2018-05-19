@@ -12,7 +12,7 @@ matrix:
            CFLAGS="-fstack-protector-strong -Wformat -Werror=format-security"
            CMAKE_OPTIONS="-D CMAKE_BUILD_TYPE=Release"
            CPPFLAGS="-Wdate-time -D_FORTIFY_SOURCE=2"
-           CXXFLAGS="-stdlib=libc++ -fstack-protector-strong -Wformat -Werror=format-security"
+           CXXFLAGS="-fstack-protector-strong -Wformat -Werror=format-security"
       script:
         - ./.ci/docker/setup ubuntu:artful cmake
       services:
