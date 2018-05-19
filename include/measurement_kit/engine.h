@@ -97,21 +97,21 @@ class Task {
     XX(inputs, array, false)                                                   \
     XX(input_filepaths, array, false)                                          \
     XX(log_filepath, string, false)                                            \
+    XX(log_level, string, false)                                               \
     XX(name, string, true)                                                     \
     XX(options, object, false)                                                 \
-    XX(output_filepath, string, false)                                         \
-    XX(verbosity, string, false)
+    XX(output_filepath, string, false)
 
 /**
- * MK_ENUM_LOG_LEVEL enumerates all the possible verbosity values. To
- * specify the verbosity level of a task, you should pass one of this values as
- * string (e.g.  "INFO") when you configure the task verbosity. For example, the
- * minimal JSON to run NDT with verbosity level equal to INFO is:
+ * MK_ENUM_LOG_LEVEL enumerates all the possible log-level values. To
+ * specify the log level of a task, you should pass one of this values as
+ * string (e.g.  "INFO") when you configure the task log level. For example,
+ * the minimal JSON to run NDT with log level equal to INFO is:
  *
  * ```JSON
  * {
- * "name": "Ndt",
- * "log_level": "INFO"
+ *   "name": "Ndt",
+ *   "log_level": "INFO"
  * }
  * ```
  */
