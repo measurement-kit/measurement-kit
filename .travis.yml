@@ -19,19 +19,6 @@ matrix:
         - docker
       sudo: required
 
-    # Same as above but use clang/clang++ and libc++
-    - env: BUILD_TYPE="clang_release_build"
-           CFLAGS="-fstack-protector-strong -Wformat -Werror=format-security"
-           CMAKE_OPTIONS="-D CMAKE_BUILD_TYPE=Release"
-           CPPFLAGS="-Wdate-time -D_FORTIFY_SOURCE=2"
-           CXXFLAGS="-stdlib=libc++ -fstack-protector-strong -Wformat -Werror=format-security"
-           MK_CC=clang MK_CXX=clang++
-      script:
-        - ./.ci/docker/setup ubuntu:artful cmake
-      services:
-        - docker
-      sudo: required
-
     # See https://github.com/google/sanitizers/wiki/AddressSanitizer
     - env: BUILD_TYPE="asan"
            CFLAGS="-fsanitize=address -O1 -fno-omit-frame-pointer"
@@ -88,6 +75,18 @@ matrix:
     # building with autotools is not broken. The blocker to migrate from
     # autotools to CMake build is that currently we're not able to
     # compile for Msys, Android, and iOS using CMake.
+    #
+    # Another blocker is that updating the clang build to our custom
+    # Debian Docker image did not work immediately out of the box, so
+    # we have deferred a bit converting up clang to CMake.
+
+    - sudo: required
+      env: DOCKER_SPEC=clang pkg_make_flags="V=0 -j3"
+           CXXFLAGS="-Werror" CFLAGS="-Werror"
+      services:
+        - docker
+      script:
+        - ./build/ci/travis
 
     # Note: with CFLAGS="-Werror" ./configure fails for this job (see #1318)
     - sudo: required
