@@ -374,6 +374,48 @@ is a string. Below we describe all the possible event keys, along with the
 an arbitrary number of times during the lifecycle of a task. Unless otherwise
 specified, all the keys introduced below where added in MK v0.9.0.
 
+- `"failure.asn_lookup"`: There was a failure attempting to lookup the user
+  autonomous system number. The JSON returned by this event is like:
+
+```JSON
+{
+  "key": "failure.asn_lookup",
+  "value": {
+    "failure": "<failure_string>"
+  }
+}
+```
+
+Where all the possible values of `<failure_string>` are described below.
+
+- `"failure.cc_lookup"`: There was a failure attempting to lookup the user
+  country code. The JSON returned by this event is like:
+
+```JSON
+{
+  "key": "failure.cc_lookup",
+  "value": {
+    "failure": "<failure_string>"
+  }
+}
+```
+
+Where all the possible values of `<failure_string>` are described below.
+
+- `"failure.ip_lookup"`: There was a failure attempting to lookup the user
+  IP address. The JSON returned by this event is like:
+
+```JSON
+{
+  "key": "failure.ip_lookup",
+  "value": {
+    "failure": "<failure_string>"
+  }
+}
+```
+
+Where all the possible values of `<failure_string>` are described below.
+
 - `"failure.measurement"`: There was a failure running the measurement. The
 complete JSON returned by this event is like:
 
@@ -406,6 +448,50 @@ returned by this event is like:
 Where `idx` is the index of the current measurement, which is relevant for the
 tests that run over an input list; `json_str` is the measurement that we failed
 to submit, serialized as JSON; `failure` is the error that occurred.
+
+- `"failure.report_create"`: There was a failure in creating the
+measurement result to the configured collector (if any). The complete JSON
+returned by this event is like:
+
+```JSON
+{
+  "key": "failure.report_create",
+  "value": {
+    "failure": "<failure_string>"
+  }
+}
+```
+
+Where `failure` is the error that occurred.
+
+- `"failure.report_close"`: There was a failure in closing the
+measurement result to the configured collector (if any). The complete JSON
+returned by this event is like:
+
+```JSON
+{
+  "key": "failure.report_close",
+  "value": {
+    "failure": "<failure_string>"
+  }
+}
+```
+
+Where `failure` is the error that occurred.
+
+- `"failure.resolver_lookup"`: There was a failure attempting to lookup the user
+  DNS resolver. The JSON returned by this event is like:
+
+```JSON
+{
+  "key": "failure.resolver_lookup",
+  "value": {
+    "failure": "<failure_string>"
+  }
+}
+```
+
+Where all the possible values of `<failure_string>` are described below.
 
 - `"failure.startup"`: There was a failure starting the test, most likely
 because you passed in incorrect options. The complete JSON returned by this
@@ -483,12 +569,14 @@ autonomous system. In detail, the JSON is like:
     "probe_ip": "<ip_address>",
     "probe_asn": "<asn>",
     "probe_cc": "<cc>"
+    "probe_network_name": "<network_name>"
   }
 }
 ```
 
 Where `<ip_address>` is the user's IP address, `asn` is the autonomous
-system number, `cc` is the country code.
+system number, `cc` is the country code, `network_name` is the commercial
+name associated to the autonomous system number.
 
 - `"status.progress"`: This is emitted during the task lifecycle to inform
 you about the task progress towards completion. In detail, the JSON is like:
@@ -520,12 +608,12 @@ running concurrently. The JSON is like:
 
 Where `value` is empty.
 
-- `"status.measurement_started"`: Indicates that a measurement inside a task
+- `"status.measurement_start"`: Indicates that a measurement inside a task
 has started. The JSON is like:
 
 ```JSON
 {
-  "key": "status.measurement_started",
+  "key": "status.measurement_start",
   "value": {
     "idx": 0,
     "input": "<input>"
@@ -537,7 +625,7 @@ Where `idx` is the index of the current input and `input` is the current
 input. For tests that take no input, this event MAY be emitted with
 `idx` equal to `0` and `input` equal to the empty string.
 
-- `"status.measurement_uploaded"`: The specific measurement has been
+- `"status.measurement_submission"`: The specific measurement has been
 uploaded successfully. The JSON is like:
 
 ```JSON
@@ -556,7 +644,7 @@ the specified input. The JSON is like:
 
 ```JSON
 {
-  "key": "status.measurement_uploaded",
+  "key": "status.measurement_done",
   "value": {
     "idx": 0,
   }
@@ -565,13 +653,13 @@ the specified input. The JSON is like:
 
 Where `idx` is the index of the measurement input.
 
-- `"status.report_created"`: Measurement Kit has created a report for the
+- `"status.report_close"`: Measurement Kit has closed a report for the
 current task, and tells you the report-ID. The report-ID is the identifier of
-the measurement result(s), which will be later submitted. The JSON is like:
+the measurement result(s), which have been submitted. The JSON is like:
 
 ```JSON
 {
-  "key": "status.report_created",
+  "key": "status.report_create",
   "value": {
     "report_id": "string",
   }
@@ -579,6 +667,36 @@ the measurement result(s), which will be later submitted. The JSON is like:
 ```
 
 Where `report_id` is the report identifier.
+
+- `"status.report_create"`: Measurement Kit has created a report for the
+current task, and tells you the report-ID. The report-ID is the identifier of
+the measurement result(s), which will be later submitted. The JSON is like:
+
+```JSON
+{
+  "key": "status.report_create",
+  "value": {
+    "report_id": "string",
+  }
+}
+```
+
+Where `report_id` is the report identifier.
+
+- `"status.resolver_lookup"`: This event is emitted only once at the beginning
+of the task, when the IP address of the resolver is discovered. The JSON is
+like:
+
+```JSON
+{
+  "key": "status.resolver_lookup",
+  "value": {
+    "resolver_ip": "<ip_address>"
+  }
+}
+```
+
+Where `<ip_address>` is the resolver's IP address.
 
 - `"status.started"`: The task has started, and the JSON is like:
 
@@ -876,7 +994,7 @@ implementing the specified task on each input.
       emitWarning("exceeded maximum runtime")
       break
     }
-    emitEvent("measurement.started", {
+    emitEvent("status.measurement_start", {
       idx: i,
       input: settings.inputs[i]
     })
@@ -974,7 +1092,7 @@ and the remote report managed by the OONI collector.
       })
       emitWarning("cannot close remote report with OONI collector")
     } else {
-      emitEvent("status.report_closed", {
+      emitEvent("status.report_close", {
         report_id: report_id
       })
     }
