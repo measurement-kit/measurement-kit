@@ -152,7 +152,7 @@ Task::~Task() {
 
 // # Helpers
 
-static std::tuple<int, bool> verbosity_atoi(const std::string &str) {
+static std::tuple<int, bool> log_level_atoi(const std::string &str) {
 #define ATOI(value)                                                            \
     if (str == #value) {                                                       \
         return std::make_tuple(MK_LOG_##value, true);                          \
@@ -162,7 +162,7 @@ static std::tuple<int, bool> verbosity_atoi(const std::string &str) {
     return std::make_tuple(0, false);
 }
 
-static std::tuple<std::string, bool> verbosity_itoa(int n) {
+static std::tuple<std::string, bool> log_level_itoa(int n) {
 #define ITOA(value)                                                            \
     if (n == MK_LOG_##value) {                                                 \
         return std::make_tuple(std::string{#value}, true);                     \
@@ -172,10 +172,10 @@ static std::tuple<std::string, bool> verbosity_itoa(int n) {
     return std::make_tuple(std::string{}, false);
 }
 
-static nlohmann::json make_log_event(uint32_t verbosity, const char *message) {
-    auto verbosity_tuple = verbosity_itoa(verbosity);
-    assert(std::get<1>(verbosity_tuple));
-    const std::string &vs = std::get<0>(verbosity_tuple);
+static nlohmann::json make_log_event(uint32_t log_level, const char *message) {
+    auto log_level_tuple = log_level_itoa(log_level);
+    assert(std::get<1>(log_level_tuple));
+    const std::string &vs = std::get<0>(log_level_tuple);
     nlohmann::json object;
     object["key"] = "log";
     object["value"]["log_level"] = vs;
@@ -231,7 +231,7 @@ static std::string known_tasks() {
     return json.dump();
 }
 
-static std::string known_verbosity_levels() {
+static std::string known_log_level_levels() {
     nlohmann::json json;
 #define ADD(name) json.push_back(#name);
     MK_ENUM_LOG_LEVEL(ADD)
@@ -453,24 +453,24 @@ static void task_run(TaskImpl *pimpl, nlohmann::json &settings) {
         runnable->output_filepath = value.get<std::string>();
     }
 
-    // extract and process `verbosity`
+    // extract and process `log_level`
     {
-        uint32_t verbosity = MK_LOG_WARNING;
+        uint32_t log_level = MK_LOG_WARNING;
         if (settings.count("log_level") != 0) {
-            auto verbosity_string = settings.at("log_level").get<std::string>();
-            auto verbosity_tuple = verbosity_atoi(verbosity_string);
-            bool okay = std::get<1>(verbosity_tuple);
+            auto log_level_string = settings.at("log_level").get<std::string>();
+            auto log_level_tuple = log_level_atoi(log_level_string);
+            bool okay = std::get<1>(log_level_tuple);
             if (!okay) {
                 std::stringstream ss;
-                ss << "Unknown verbosity level '" << verbosity_string << "' "
-                    << "(fyi: known verbosity levels are: " <<
-                    known_verbosity_levels() << ")";
+                ss << "Unknown log_level level '" << log_level_string << "' "
+                    << "(fyi: known log_level levels are: " <<
+                    known_log_level_levels() << ")";
                 emit_settings_failure(pimpl, ss.str().data());
                 return;
             }
-            verbosity = std::get<0>(verbosity_tuple);
+            log_level = std::get<0>(log_level_tuple);
         }
-        runnable->logger->set_verbosity(verbosity);
+        runnable->logger->set_verbosity(log_level);
     }
 
     // Mask out events that are user-disabled.
@@ -501,11 +501,11 @@ static void task_run(TaskImpl *pimpl, nlohmann::json &settings) {
 
     // see whether 'log' is enabled
     if (enabled_events.count("log") != 0) {
-        runnable->logger->on_log([pimpl](uint32_t verbosity, const char *line) {
-            if ((verbosity & ~MK_LOG_VERBOSITY_MASK) != 0) {
+        runnable->logger->on_log([pimpl](uint32_t log_level, const char *line) {
+            if ((log_level & ~MK_LOG_VERBOSITY_MASK) != 0) {
                 return; // mask out non-logging events
             }
-            emit(pimpl, make_log_event(verbosity, line));
+            emit(pimpl, make_log_event(log_level, line));
         });
         enabled_events.erase("log"); // we have consumed this event key
     } else {
