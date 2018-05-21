@@ -9,6 +9,7 @@ spec_name=$1
 shift
 
 subr_depend() {
+    debian_deps="$debian_deps iproute2"
     echo "- install debian deps: $debian_deps"
     apt-get update
     apt-get upgrade -y
@@ -26,6 +27,7 @@ subr_start_over() {
 }
 
 subr_build() {
+    tc qdisc add dev eth0 root netem delay 200ms 10ms  # Slow down
     ./autogen.sh
     ./configure --disable-shared $CONFIGURE_FLAGS
     make V=0 -j$(nproc) $MAKE_CHECK_TARGET || {

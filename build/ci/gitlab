@@ -1,4 +1,0 @@
-#!/bin/sh
-set -e
-export pkg_make_flags="$pkg_make_flags V=0 -j$(nproc)"
-./build/docker/script/run $1

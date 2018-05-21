@@ -7,7 +7,6 @@ export CC="clang"
 export CFLAGS="$CFLAGS -fstack-protector-strong -Wformat -Werror=format-security -O2"
 export CXX="clang++"
 export CXXFLAGS="-stdlib=libc++ $CXXFLAGS -fstack-protector-strong -Wformat -Werror=format-security -O2"
-export MAKE_CHECK_TARGET="run-valgrind-docker"
 
 debian_deps="$debian_deps autoconf"
 debian_deps="$debian_deps automake"
@@ -21,7 +20,6 @@ debian_deps="$debian_deps libgeoip-dev"
 debian_deps="$debian_deps libssl-dev"
 debian_deps="$debian_deps libtool"
 debian_deps="$debian_deps make"
-debian_deps="$debian_deps valgrind"
 debian_deps="$debian_deps wget"
 
 # XXX workaround for broken libc++ in artful.
