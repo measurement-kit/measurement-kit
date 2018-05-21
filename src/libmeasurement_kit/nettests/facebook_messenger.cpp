@@ -10,10 +10,6 @@
 namespace mk {
 namespace nettests {
 
-FacebookMessengerTest::FacebookMessengerTest() : BaseTest() {
-    runnable.reset(new FacebookMessengerRunnable);
-}
-
 FacebookMessengerRunnable::FacebookMessengerRunnable() noexcept {
     test_name = "facebook_messenger";
     test_version = "0.0.2";

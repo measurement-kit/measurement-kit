@@ -7,27 +7,23 @@
 // Inline reimplementation of Measurement Kit's original API in terms
 // of the new <measurement_kit/ffi.h> API.
 
-// TODO(bassosimone): IWYU on this file!
 #include <stdint.h>
 
 #include <functional>
 #include <memory>
 #include <string>
+#include <thread>
 #include <type_traits>
 #include <vector>
 
-// TODO(bassosimone): ideally here we should just keep log levels.
-#include <measurement_kit/common/log.hpp>
-
-// TODO(bassosimone): The following headers should be moved.
-#include <measurement_kit/nettests/data_usage.hpp>
-#include <measurement_kit/nettests/json.hpp>
-#include <measurement_kit/nettests/shared_ptr.hpp>
+#include <measurement_kit/common/data_usage.hpp>
+#include <measurement_kit/common/logger.hpp>
+#include <measurement_kit/common/nlohmann/json.hpp>
+#include <measurement_kit/common/shared_ptr.hpp>
 
 #include <measurement_kit/ffi.h>
 
-// XXX: check that the values are OKAY
-#if __cplusplus >= 201103L && !defined MK_NETTESTS_INTERNAL
+#if __cplusplus >= 201402L && !defined MK_NETTESTS_INTERNAL
 #define MK_NETTESTS_DEPRECATED [[deprecated]]
 #else
 #define MK_NETTESTS_DEPRECATED /* Nothing */
@@ -38,13 +34,13 @@ namespace nettests {
 
 class TaskDeleter {
   public:
-    void operator()(mk_task_t *task) noexcept { mk_task_delete(task); }
+    void operator()(mk_task_t *task) noexcept { mk_task_destroy(task); }
 };
 using TaskUptr = std::unique_ptr<mk_task_t, TaskDeleter>;
 
 class EventDeleter {
   public:
-    void operator()(mk_event_t *event) noexcept { mk_event_delete(event); }
+    void operator()(mk_event_t *event) noexcept { mk_event_destroy(event); }
 };
 using EventUptr = std::unique_ptr<mk_event_t, EventDeleter>;
 
@@ -76,7 +72,7 @@ class MK_NETTESTS_DEPRECATED BaseTest {
         std::vector<std::function<void()>> begin_cbs;
         std::vector<std::function<void()>> end_cbs;
         std::vector<std::function<void()>> destroy_cbs;
-        std::vector<std::function<void(DataUsage)>> data_usage_cbs;
+        std::vector<std::function<void(DataUsage)>> overall_data_usage_cbs;
     };
 
     BaseTest() { impl_.reset(new Details); }
@@ -167,27 +163,27 @@ class MK_NETTESTS_DEPRECATED BaseTest {
     }
 
     BaseTest &on_entry(std::function<void(std::string)> &&fn) {
-        impl_->entry_cbs_.push_back(std::move(fn));
+        impl_->entry_cbs.push_back(std::move(fn));
         return *this;
     }
 
     BaseTest &on_begin(std::function<void()> &&fn) {
-        impl_->begin_cbs_.push_back(std::move(fn));
+        impl_->begin_cbs.push_back(std::move(fn));
         return *this;
     }
 
     BaseTest &on_end(std::function<void()> &&fn) {
-        impl_->end_cbs_.push_back(std::move(fn));
+        impl_->end_cbs.push_back(std::move(fn));
         return *this;
     }
 
-    BaseTest &on_destroy(std::function<void()> &&) {
-        impl_->destroy_cbs_.push_back(std::move(fn));
+    BaseTest &on_destroy(std::function<void()> &&fn) {
+        impl_->destroy_cbs.push_back(std::move(fn));
         return *this;
     }
 
     BaseTest &on_overall_data_usage(std::function<void(DataUsage)> &&fn) {
-        impl_->overall_data_usage_cbs_.push_back(std::move(fn));
+        impl_->overall_data_usage_cbs.push_back(std::move(fn));
         return *this;
     }
 
@@ -202,10 +198,10 @@ class MK_NETTESTS_DEPRECATED BaseTest {
     void run() { run_static(std::move(impl_)); }
 
     void start(std::function<void()> &&fn) {
-        std::thread{[tip = std::move(impl_)]}() { //
+        std::thread{[tip = std::move(impl_), fn = std::move(fn)]() {
             run_static(std::move(tip));
-        }
-        .detach();
+            fn();
+        }}.detach();
     }
 
   private:
@@ -344,7 +340,7 @@ class MK_NETTESTS_DEPRECATED BaseTest {
             DataUsage du;
             du.down = (uint64_t)(downloaded_kb * 1000.0);
             du.up = (uint64_t)(uploaded_kb * 1000.0);
-            for (auto &cb : tip->data_usage_cbs) {
+            for (auto &cb : tip->overall_data_usage_cbs) {
                 MK_NETTESTS_CALL_AND_SUPPRESS(cb, (du));
             }
             for (auto &cb : tip->end_cbs) {
@@ -355,7 +351,7 @@ class MK_NETTESTS_DEPRECATED BaseTest {
         } else if (key == "status.progress") {
             double percentage = ev.at("value").at("percentage");
             std::string message = ev.at("value").at("message");
-            for (auto &cb : status_progress_cbs_) {
+            for (auto &cb : tip->progress_cbs) {
                 MK_NETTESTS_CALL_AND_SUPPRESS(
                         cb, (percentage, message.c_str()));
             }

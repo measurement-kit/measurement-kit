@@ -12,10 +12,6 @@
 namespace mk {
 namespace nettests {
 
-MultiNdtTest::MultiNdtTest() : BaseTest() {
-    runnable.reset(new MultiNdtRunnable);
-}
-
 MultiNdtRunnable::MultiNdtRunnable() noexcept {
     options["save_real_probe_ip"] = true;
     options["dns/engine"] = "system";

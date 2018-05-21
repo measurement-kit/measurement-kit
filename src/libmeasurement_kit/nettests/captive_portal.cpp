@@ -10,10 +10,6 @@
 namespace mk {
 namespace nettests {
 
-CaptivePortalTest::CaptivePortalTest() : BaseTest() {
-    runnable.reset(new CaptivePortalRunnable);
-}
-
 CaptivePortalRunnable::CaptivePortalRunnable() noexcept {
     test_name = "captiveportal";
     test_version = "0.4.0";

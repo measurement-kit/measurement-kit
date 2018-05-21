@@ -10,10 +10,6 @@
 namespace mk {
 namespace nettests {
 
-DnsInjectionTest::DnsInjectionTest() : BaseTest() {
-    runnable.reset(new DnsInjectionRunnable);
-}
-
 DnsInjectionRunnable::DnsInjectionRunnable() noexcept {
     test_name = "dns_injection";
     test_version = "0.0.1";
