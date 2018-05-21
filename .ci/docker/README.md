@@ -1,7 +1,7 @@
 # Build scripts for Travis CI using Docker
 
 The scripts in this directory are used to build Measurement
-Kit in CI context (e.g. Travis-CI) using Docker.
+Kit in Travis-CI using Docker.
 
 With Docker installed on your local machine, you can basically
 reproduce the Travis CI builds by setting the same flags that
