@@ -15,6 +15,7 @@ Measurement Kit case.
 We look forward to switching over to [measurement-kit/docker-ci](
 https://github.com/measurement-kit/docker-ci) once the build of MK
 can be further simplified. That is, when one needs to invoke less
-Unix scripts (like `./script/cmake/run`) to initialize the build. To
-this end, we will basically need to move this functionality from
-Unix scripts into the top-level `CMakeLists.txt` file.
+Unix scripts (like [./script/cmake/run](../../script/cmake/run))
+to initialize the build. To this end, we will basically need to move
+this functionality from Unix scripts into the top-level
+[CMakeLists.txt](../../CMakeLists.txt) file.
