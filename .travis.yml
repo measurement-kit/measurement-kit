@@ -79,10 +79,13 @@ matrix:
     # Another blocker is that updating the clang build to our custom
     # Debian Docker image did not work immediately out of the box, so
     # we have deferred a bit converting up clang to CMake.
+    #
+    # Only using `-Werror` for CXXFLAGS because using it for CFLAGS
+    # prevents the `./configure` script from running (see #1318).
 
     - sudo: required
       env: DOCKER_SPEC=clang pkg_make_flags="V=0 -j3"
-           CXXFLAGS="-Werror" CFLAGS="-Werror"
+           CXXFLAGS="-Werror"
       services:
         - docker
       script:
@@ -90,7 +93,7 @@ matrix:
 
     - sudo: required
       env: DOCKER_SPEC=coveralls pkg_make_flags="V=0 -j3"
-           CXXFLAGS="-Werror" CFLAGS="-Werror"
+           CXXFLAGS="-Werror"
       services:
         - docker
       script:
