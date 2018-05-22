@@ -91,7 +91,7 @@ void Runnable::run_next_measurement(size_t thread_id, Callback<Error> cb,
     setup(next_input);
 
     logger->debug("net_test: running with input %s", next_input.c_str());
-    logger->emit_event_ex("status.measurement_started", nlohmann::json::object({
+    logger->emit_event_ex("status.measurement_start", nlohmann::json::object({
         {"idx", saved_current_entry},
         {"input", next_input},
     }));
@@ -164,7 +164,7 @@ void Runnable::run_next_measurement(size_t thread_id, Callback<Error> cb,
                 }
             } else {
                 logger->debug("net_test: written entry");
-                logger->emit_event_ex("status.measurement_uploaded", {
+                logger->emit_event_ex("status.measurement_submission", {
                     {"idx", saved_current_entry}
                 });
             }

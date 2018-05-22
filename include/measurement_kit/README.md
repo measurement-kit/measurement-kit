@@ -629,7 +629,7 @@ uploaded successfully. The JSON is like:
 
 ```JSON
 {
-  "key": "status.measurement_uploaded",
+  "key": "status.measurement_submission",
   "value": {
     "idx": 0,
   }
