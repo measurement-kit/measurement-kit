@@ -13,7 +13,8 @@
 #include <string>
 
 #include <measurement_kit/common/nlohmann/json.hpp>
-#include <measurement_kit/engine.h>
+
+#include "src/libmeasurement_kit/engine.hpp"
 
 struct mk_event_ : public std::string {
     using std::string::string;

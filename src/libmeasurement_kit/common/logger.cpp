@@ -19,7 +19,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 
-#include <measurement_kit/engine.h>
+#include "src/libmeasurement_kit/ffi_macros.h"
 
 namespace mk {
 
@@ -216,12 +216,12 @@ class DefaultLogger : public Logger, public NonCopyable, public NonMovable {
         {
             bool found = false;
             do {
-#define CHECK(name_)                                                           \
-    if (key == name_) {                                                        \
+#define CHECK(name_, type_ignored_, mandatory_ignored_)                        \
+    if (key == #name_) {                                                       \
         found = true;                                                          \
         break;                                                                 \
     }
-                MK_ENUM_EVENT(CHECK)
+                MK_ENUM_EVENTS(CHECK)
 #undef CHECK
             } while (0);
             if (!found) {

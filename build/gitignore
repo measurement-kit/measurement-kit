@@ -1,6 +1,9 @@
 #!/bin/sh
 set -e
 for dir in example/* test/*; do (
+    if [ ! -d $dir ]; then
+        continue
+    fi
     echo "* $dir"
     cd $dir
     rm -rf .gitignore

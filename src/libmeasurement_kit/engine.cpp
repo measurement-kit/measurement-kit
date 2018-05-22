@@ -2,8 +2,7 @@
 // Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
-#define MK_ENGINE_INTERNALS
-#include <measurement_kit/engine.h>
+#include "src/libmeasurement_kit/engine.hpp"
 
 #include <assert.h>
 #include <stdint.h>
@@ -29,6 +28,7 @@
 #include <measurement_kit/common/shared_ptr.hpp>
 
 #include "src/libmeasurement_kit/common/reactor.hpp"
+#include "src/libmeasurement_kit/ffi_macros.h"
 #include "src/libmeasurement_kit/nettests/runnable.hpp"
 
 namespace mk {
@@ -153,21 +153,21 @@ Task::~Task() {
 // # Helpers
 
 static std::tuple<int, bool> log_level_atoi(const std::string &str) {
-#define ATOI(value)                                                            \
+#define ATOI(value, type_ignored, mandatory_ignored)                           \
     if (str == #value) {                                                       \
         return std::make_tuple(MK_LOG_##value, true);                          \
     }
-    MK_ENUM_LOG_LEVEL(ATOI)
+    MK_ENUM_LOG_LEVELS(ATOI)
 #undef ATOI
     return std::make_tuple(0, false);
 }
 
 static std::tuple<std::string, bool> log_level_itoa(int n) {
-#define ITOA(value)                                                            \
+#define ITOA(value, type_ignored, mandatory_ignored)                           \
     if (n == MK_LOG_##value) {                                                 \
         return std::make_tuple(std::string{#value}, true);                     \
     }
-    MK_ENUM_LOG_LEVEL(ITOA)
+    MK_ENUM_LOG_LEVELS(ITOA)
 #undef ITOA
     return std::make_tuple(std::string{}, false);
 }
@@ -193,12 +193,12 @@ static nlohmann::json make_failure_event(const Error &error) {
 static bool is_event_valid(const std::string &str) {
     bool rv = false;
     do {
-#define CHECK(value)                                                           \
-    if (value == str) {                                                        \
+#define CHECK(value, type_ignored, mandatory_ignored)                          \
+    if (#value == str) {                                                       \
         rv = true;                                                             \
         break;                                                                 \
     }
-        MK_ENUM_EVENT(CHECK)
+        MK_ENUM_EVENTS(CHECK)
 #undef CHECK
     } while (0);
     return rv;
@@ -217,35 +217,35 @@ static nlohmann::json possibly_validate_event(nlohmann::json &&event) {
 
 static nlohmann::json known_events() {
     nlohmann::json json;
-#define ADD(name) json.push_back(name);
-    MK_ENUM_EVENT(ADD)
+#define ADD(name, type_ignored, mandatory_ignored) json.push_back(#name);
+    MK_ENUM_EVENTS(ADD)
 #undef ADD
     return json;
 }
 
 static std::string known_tasks() {
     nlohmann::json json;
-#define ADD(name) json.push_back(#name);
-    MK_ENUM_TASK(ADD)
+#define ADD(name, type_ignored, mandatory_ignored) json.push_back(#name);
+    MK_ENUM_TASKS(ADD)
 #undef ADD
     return json.dump();
 }
 
 static std::string known_log_level_levels() {
     nlohmann::json json;
-#define ADD(name) json.push_back(#name);
-    MK_ENUM_LOG_LEVEL(ADD)
+#define ADD(name, type_ignored, mandatory_ignored) json.push_back(#name);
+    MK_ENUM_LOG_LEVELS(ADD)
 #undef ADD
     return json.dump();
 }
 
 static std::unique_ptr<nettests::Runnable> make_runnable(const std::string &s) {
     std::unique_ptr<nettests::Runnable> runnable;
-#define ATOP(value)                                                            \
+#define ATOP(value, type_ignored, mandatory_ignored)                           \
     if (s == #value) {                                                         \
         runnable.reset(new nettests::value##Runnable);                         \
     }
-    MK_ENUM_TASK(ATOP)
+    MK_ENUM_TASKS(ATOP)
 #undef ATOP
     return runnable;
 }

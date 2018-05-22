@@ -198,36 +198,35 @@ is their default value (_however_, the value of non-`options` settings _is not_
 the default value, rather is a meaningful example). The following keys
 are available:
 
-- `"annotations"`: an optional JSON object containing key, value string
+- `"annotations"`: (object; optional) JSON object containing key, value string
   mappings that are copied verbatim in the measurement result file;
 
-- `"disabled_events"`: optional strings array containing the names of
+- `"disabled_events"`: (array; optional) strings array containing the names of
   the events that you are not interested into. All the available event
   names are described below. By default all events are enabled;
 
-- `"inputs"`: optional list of strings to be passed to the task as input. If
-  the task does not take any input, this is ignored. If the task requires input
-  and you provide neither `"inputs"` nor `"input_filepaths"`, the task
-  will fail;
+- `"inputs"`: (array; optional) array of strings to be passed to the task as
+  input. If the task does not take any input, this is ignored. If the task
+  requires input and you provide neither `"inputs"` nor `"input_filepaths"`,
+  the task will fail;
 
-- `"input_filepaths"`: optional list of strings containing input strings, one
-  per line, to be passed to the task. These files are read and their content
-  is merged with the one of the `inputs` key.
+- `"input_filepaths"`: (array; optional) array of files containing input
+  strings, one per line, to be passed to the task. These files are read and
+  their content is merged with the one of the `inputs` key.
 
-- `"log_filepath"`: optional string containing the name of the file where to
+- `"log_filepath"`: (string; optional) name of the file where to
   write logs. By default logs are written on `stderr`;
 
-- `"log_level"`: how much information you want to see written in the log
-  file and emitted by log-related events.
+- `"log_level"`: (string; optional) how much information you want to see
+  written in the log file and emitted by log-related events.
 
-- `"name"`: name of the task to run. This setting is mandatory. The available
+- `"name"`: (string; mandatory) name of the task to run. The available
   task names have been described above;
 
-- `"options"`: options modifying the task behavior, as an object mapping
-  string keys to string, integer or double values. As the same implies, this
-  field is optional;
+- `"options"`: (object; optional) options modifying the task behavior, as
+  an object mapping string keys to string, integer or double values;
 
-- `"output_filepath"`: optional file where you want Measurement Kit to
+- `"output_filepath"`: (string; optional) file where you want MK to
   write measurement results, as a sequence of lines, each line being
   the result of a measurement serialized as JSON;
 
