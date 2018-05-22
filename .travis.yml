@@ -80,7 +80,6 @@ matrix:
     # Debian Docker image did not work immediately out of the box, so
     # we have deferred a bit converting up clang to CMake.
 
-    # Note: with CFLAGS="-Werror" ./configure fails for this job (see #1318)
     - sudo: required
       env: DOCKER_SPEC=clang pkg_make_flags="V=0 -j3"
            CXXFLAGS="-Werror" CFLAGS="-Werror"
@@ -89,10 +88,9 @@ matrix:
       script:
         - ./build/ci/travis
 
-    # Note: with CFLAGS="-Werror" ./configure fails for this job (see #1318)
     - sudo: required
       env: DOCKER_SPEC=coveralls pkg_make_flags="V=0 -j3"
-           CXXFLAGS="-Werror"
+           CXXFLAGS="-Werror" CFLAGS="-Werror"
       services:
         - docker
       script:
