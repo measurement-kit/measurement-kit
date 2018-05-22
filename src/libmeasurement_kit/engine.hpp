@@ -34,8 +34,6 @@ class TaskImpl;
 ///
 /// The destructor, ~Task(), will join on the Task thread. That is, it will
 /// wait for the Task to complete before destroying all the resources.
-///
-/// See example/engine/ndt.cpp for an example of usage.
 class Task {
   public:
     /// Task() creates and starts a Task configured according settings. See
