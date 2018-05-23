@@ -23,7 +23,6 @@ include/measurement_kit/common/settings.hpp
 include/measurement_kit/common/shared_ptr.hpp
 include/measurement_kit/common/version.h
 include/measurement_kit/ffi.h
-include/measurement_kit/ffi_macros.h
 include/measurement_kit/ndt.hpp
 include/measurement_kit/ndt/defs.hpp
 include/measurement_kit/nettests.hpp
@@ -95,6 +94,7 @@ src/libmeasurement_kit/ext/sole.hpp
 src/libmeasurement_kit/ext/tls_internal.h
 src/libmeasurement_kit/ext/tls_verify.c
 src/libmeasurement_kit/ffi.cpp
+src/libmeasurement_kit/ffi_macros.h
 src/libmeasurement_kit/http/http.hpp
 src/libmeasurement_kit/http/parse_url.cpp
 src/libmeasurement_kit/http/request.cpp
