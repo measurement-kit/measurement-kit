@@ -17,7 +17,6 @@ debian_deps="$debian_deps wget"
 pip_deps="$pip_deps cpp-coveralls"
 
 export CONFIGURE_FLAGS="--enable-coverage"
-export MAKE_CHECK_TARGET="check"
 
 subr_finalize() {
     if [ "$COVERALLS_REPO_TOKEN" != "" ]; then

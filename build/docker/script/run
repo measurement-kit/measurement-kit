@@ -30,7 +30,7 @@ subr_build() {
     tc qdisc add dev eth0 root netem delay 200ms 10ms  # Slow down
     ./autogen.sh
     ./configure --disable-shared $CONFIGURE_FLAGS
-    make V=0 -j$(nproc) $MAKE_CHECK_TARGET || {
+    make V=0 -j$(nproc) check || {
         if [ -f ./test-suite.log ]; then
             cat ./test-suite.log
         fi
