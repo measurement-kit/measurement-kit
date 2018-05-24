@@ -361,7 +361,7 @@ TEST_CASE("net::connect() can connect to open port") {
 TEST_CASE("net::connect() can connect to ssl port") {
     SharedPtr<Reactor> reactor = Reactor::make();
     reactor->run_with_initial_event([=]() {
-        connect("nexa.polito.it", 443,
+        connect("www.google.com", 443,
                 [=](Error error, SharedPtr<Transport> txp) {
                     REQUIRE(!error);
                     auto resolve_result = txp->dns_result();
