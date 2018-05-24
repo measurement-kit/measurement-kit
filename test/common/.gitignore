@@ -19,6 +19,7 @@
 /maybe
 /parallel
 /range
+/scalar
 /settings
 /shared_ptr
 /unique_ptr

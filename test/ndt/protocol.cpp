@@ -277,7 +277,7 @@ static void fail(SharedPtr<Context>, Callback<Error> cb) { cb(MockedError()); }
 
 TEST_CASE("run_tests() deals with test failure") {
     SharedPtr<Context> ctx(new Context);
-    ctx->granted_suite.push_front(lexical_cast<std::string>(TEST_C2S));
+    ctx->granted_suite.push_front(std::to_string(TEST_C2S));
     ctx->entry = SharedPtr<Entry>::make();
     protocol::run_tests_impl<fail>(ctx, [ctx](Error err) {
         REQUIRE(err == NoError());

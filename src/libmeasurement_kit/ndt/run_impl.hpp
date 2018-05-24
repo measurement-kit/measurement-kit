@@ -126,13 +126,13 @@ void run_impl(SharedPtr<Entry> entry, Callback<Error> callback, Settings setting
         callback(InvalidPortError(port.as_error()));
         return;
     }
-    std::string address = settings.get<std::string>("address", "");
+    std::string address = settings.get("address", "");
     if (address != "") {
         run_with_specific_server(entry, address, *port, callback, settings,
                                  reactor, logger);
         return;
     }
-    mlabns_query(settings.get<std::string>("mlabns_tool_name", "ndt"),
+    mlabns_query(settings.get("mlabns_tool_name", "ndt"),
                  [=](Error err, mlabns::Reply reply) mutable {
                      if (err) {
                          callback(MlabnsQueryError(std::move(err)));
