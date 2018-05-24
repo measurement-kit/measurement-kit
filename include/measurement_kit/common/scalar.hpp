@@ -35,7 +35,8 @@ class Scalar : public std::string {
     /// \brief `as()` converts the scalar into the specified type.
     /// \throw std::runtime_error if the conversion is not possible.
     /// \return the converted value otherwise.
-    template <typename Type> Type as() const {
+    template <typename Type, typename = typename std::enable_if<
+                    std::is_arithmetic<Type>::value>::type> Type as() const {
         std::stringstream ss{c_str()};
         Type value{};
         ss >> value;
@@ -47,6 +48,8 @@ class Scalar : public std::string {
         }
         return value;
     }
+
+    std::string as_string() const { return c_str(); }
 
     /// \brief `as_noexcept()` is like except but, rather than throwing
     /// on error, returns the error that occurred.

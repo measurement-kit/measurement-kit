@@ -29,7 +29,7 @@ void read_msg(SharedPtr<Context> ctx, Callback<Error, uint8_t, std::string> cb,
 ErrorOr<Buffer> format_msg_extended_login(unsigned char tests) {
     return format_any(MSG_EXTENDED_LOGIN, Json{
                           {"msg", MSG_NDT_VERSION},
-                          {"tests", lexical_cast<std::string>((int)tests)},
+                          {"tests", std::to_string((int)tests)},
                       });
 }
 

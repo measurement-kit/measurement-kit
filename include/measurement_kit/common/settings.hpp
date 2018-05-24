@@ -29,11 +29,20 @@ class Settings : public std::map<std::string, Scalar> {
     /// returns the default value \p def_value.
     /// \throw std::runtime_error if the value associated to \p key cannot be
     /// converted to the specified type.
-    template <typename Type> Type get(std::string key, Type def_value) const {
+    template <typename Type, typename = typename std::enable_if<
+                    std::is_arithmetic<Type>::value>::type>
+             Type get(std::string key, Type def_value) const {
         if (find(key) == end()) {
             return def_value;
         }
         return at(key).as<Type>();
+    }
+
+    std::string get(std::string key, std::string def_value) const {
+        if (find(key) == end()) {
+            return def_value;
+        }
+        return at(key).as_string();
     }
 
     /// `get_noexcept` is like `get()` but returns Error rather than throwing.
