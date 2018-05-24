@@ -79,7 +79,7 @@ class MK_NETTESTS_DEPRECATED BaseTest {
 
     // The original implementation had a virtual destructor but no other
     // virtual members. Hence in the reimplementation I am removing the
-    // attribute `virtual` seems it seems unnecessary.
+    // attribute `virtual` since it seems unnecessary.
     ~BaseTest() {}
 
     // Setters
@@ -213,6 +213,9 @@ class MK_NETTESTS_DEPRECATED BaseTest {
     // Helper macro used to facilitate suppressing exceptions since the
     // nettest.hpp API always suppresses exceptions in callbacks. This is
     // consistent with the original implementation's behavior.
+    //
+    // This is not necessarily a very good idea, but the original code was
+    // doing that, hence we should to that here as well.
 #define MK_NETTESTS_CALL_AND_SUPPRESS(func, args)                              \
     do {                                                                       \
         try {                                                                  \
@@ -269,7 +272,7 @@ class MK_NETTESTS_DEPRECATED BaseTest {
 #ifdef MK_NETTESTS_TRACE_EVENTS
                 std::clog << "mk::nettests: got event: " << s << std::endl;
 #endif
-                // The following statement MAY throw. Since we do not except
+                // The following statement MAY throw. Since we do not expect
                 // MK to serialize a non-parseable JSON, just let the eventual
                 // exception propagate and terminate the program.
                 ev = nlohmann::json::parse(s);
@@ -338,6 +341,8 @@ class MK_NETTESTS_DEPRECATED BaseTest {
             double downloaded_kb = ev.at("value").at("downloaded_kb");
             double uploaded_kb = ev.at("value").at("uploaded_kb");
             DataUsage du;
+            // There are cases where the following could overflow but, again, we
+            // do not want to break the existing API.
             du.down = (uint64_t)(downloaded_kb * 1000.0);
             du.up = (uint64_t)(uploaded_kb * 1000.0);
             for (auto &cb : tip->overall_data_usage_cbs) {
@@ -379,6 +384,8 @@ class MK_NETTESTS_DEPRECATED BaseTest {
             doc["elapsed"] = {elapsed, "s"};
             doc["num_streams"] = num_streams;
             doc["speed"] = {speed_kbps, "kbit/s"};
+            // Serializing may throw but we expect MK to pass us a good
+            // JSON so don't consider this possible error condition.
             const char *s = doc.dump().c_str();
             for (auto &cb : tip->event_cbs) {
                 MK_NETTESTS_CALL_AND_SUPPRESS(cb, (s));
@@ -398,7 +405,7 @@ class MK_NETTESTS_DEPRECATED BaseTest {
 #undef MK_NETTESTS_CALL_AND_SUPPRESS // Tidy up
 
   protected:
-    // Implementation note: using a shared pointer because it's easy to
+    // Implementation note: using a SharedPtr<T> because it's easy to
     // move around (especially into lambdas) and because it provides the
     // guarantee of throwing on null, which was a trait of the previous
     // implementation of the nettests API.
