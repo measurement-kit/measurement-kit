@@ -51,6 +51,7 @@ def main():
         filep.write("#ifndef SRC_LIBMEASUREMENT_KIT_FFI_MACROS_H\n")
         filep.write("#define SRC_LIBMEASUREMENT_KIT_FFI_MACROS_H\n\n")
         for key in sorted(sections):
+            filep.write("/* %s(name, type, mandatory) */\n" % key)
             filep.write("#define %s(XX) \\\n" % key)
             for index, value in enumerate(sections[key]):
                 name, datatype, mandatory = value

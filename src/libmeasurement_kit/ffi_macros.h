@@ -2,33 +2,35 @@
 #ifndef SRC_LIBMEASUREMENT_KIT_FFI_MACROS_H
 #define SRC_LIBMEASUREMENT_KIT_FFI_MACROS_H
 
+/* MK_ENUM_EVENTS(name, type, mandatory) */
 #define MK_ENUM_EVENTS(XX) \
-  XX(failure.asn_lookup, string, false) \
-  XX(failure.cc_lookup, string, false) \
-  XX(failure.ip_lookup, string, false) \
-  XX(failure.measurement, string, false) \
-  XX(failure.measurement_submission, string, false) \
-  XX(failure.report_create, string, false) \
-  XX(failure.report_close, string, false) \
-  XX(failure.resolver_lookup, string, false) \
-  XX(failure.startup, string, false) \
-  XX(log, string, false) \
-  XX(measurement, string, false) \
-  XX(status.end, string, false) \
-  XX(status.geoip_lookup, string, false) \
-  XX(status.progress, string, false) \
-  XX(status.queued, string, false) \
-  XX(status.measurement_start, string, false) \
-  XX(status.measurement_submission, string, false) \
-  XX(status.measurement_done, string, false) \
-  XX(status.report_close, string, false) \
-  XX(status.report_create, string, false) \
-  XX(status.resolver_lookup, string, false) \
-  XX(status.started, string, false) \
-  XX(status.update.performance, string, false) \
-  XX(status.update.websites, string, false) \
-  XX(task_terminated, string, false)
+  XX(failure.asn_lookup, object, false) \
+  XX(failure.cc_lookup, object, false) \
+  XX(failure.ip_lookup, object, false) \
+  XX(failure.measurement, object, false) \
+  XX(failure.measurement_submission, object, false) \
+  XX(failure.report_create, object, false) \
+  XX(failure.report_close, object, false) \
+  XX(failure.resolver_lookup, object, false) \
+  XX(failure.startup, object, false) \
+  XX(log, object, false) \
+  XX(measurement, object, false) \
+  XX(status.end, object, false) \
+  XX(status.geoip_lookup, object, false) \
+  XX(status.progress, object, false) \
+  XX(status.queued, object, false) \
+  XX(status.measurement_start, object, false) \
+  XX(status.measurement_submission, object, false) \
+  XX(status.measurement_done, object, false) \
+  XX(status.report_close, object, false) \
+  XX(status.report_create, object, false) \
+  XX(status.resolver_lookup, object, false) \
+  XX(status.started, object, false) \
+  XX(status.update.performance, object, false) \
+  XX(status.update.websites, object, false) \
+  XX(task_terminated, object, false)
 
+/* MK_ENUM_LOG_LEVELS(name, type, mandatory) */
 #define MK_ENUM_LOG_LEVELS(XX) \
   XX(ERR, string, false) \
   XX(WARNING, string, false) \
@@ -36,6 +38,7 @@
   XX(DEBUG, string, false) \
   XX(DEBUG2, string, false)
 
+/* MK_ENUM_OPTIONS(name, type, mandatory) */
 #define MK_ENUM_OPTIONS(XX) \
   XX(bouncer_base_url, string, false) \
   XX(collector_base_url, string, false) \
@@ -66,6 +69,7 @@
   XX(software_name, string, false) \
   XX(software_version, string, false)
 
+/* MK_ENUM_SETTINGS(name, type, mandatory) */
 #define MK_ENUM_SETTINGS(XX) \
   XX(annotations, object, false) \
   XX(disabled_events, array, false) \
@@ -77,6 +81,7 @@
   XX(options, object, false) \
   XX(output_filepath, string, false)
 
+/* MK_ENUM_TASKS(name, type, mandatory) */
 #define MK_ENUM_TASKS(XX) \
   XX(Dash, string, false) \
   XX(CaptivePortal, string, false) \
