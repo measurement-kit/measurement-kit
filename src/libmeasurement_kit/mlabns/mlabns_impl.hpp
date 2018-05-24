@@ -17,11 +17,10 @@ namespace mlabns {
 
 static inline ErrorOr<std::string> as_query(Settings &settings) {
     std::string query;
-    std::string policy = settings.get<std::string>("mlabns/policy", "");
-    std::string country = settings.get<std::string>("mlabns/country", "");
-    std::string metro = settings.get<std::string>("mlabns/metro", "");
-    std::string address_family =
-        settings.get<std::string>("mlabns/address_family", "");
+    std::string policy = settings.get("mlabns/policy", "");
+    std::string country = settings.get("mlabns/country", "");
+    std::string metro = settings.get("mlabns/metro", "");
+    std::string address_family = settings.get("mlabns/address_family", "");
     if (policy == "" && metro == "" && address_family == "") {
         return {NoError(), query};
     }
