@@ -266,7 +266,7 @@ void run_impl(SharedPtr<Context> ctx, Callback<Error> callback) {
                             // We send our measured throughput to the server
                             ctx->logger->debug("ndt: send TEST_MSG ...");
                             ErrorOr<Buffer> out = messages_format_test_msg(
-                                lexical_cast<std::string>(speed));
+                                std::to_string(speed));
                             if (!out) {
                                 callback(SerializingTestMsgError());
                                 return;
