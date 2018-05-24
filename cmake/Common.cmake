@@ -61,6 +61,7 @@ endif()
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
   add_definitions(-DENABLE_TRACEROUTE)
 endif()
+add_definitions(-DMK_NETTESTS_INTERNAL)
 
 if(${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
   set(CMAKE_CXX_FLAGS
