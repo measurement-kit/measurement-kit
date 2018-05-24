@@ -20,7 +20,8 @@ class TaskImpl;
 ///
 /// Creating a Task also creates the thread that will run it. Altough you can
 /// construct more than one Task at a time, Measurement Kit will make sure that
-/// tasks run sequentially in the order in which they were created.
+/// tasks do not run concurrently, even though there is no guarantee that they
+/// will actually run sequentially.
 ///
 /// A Task will emits events while running, which you can retrieve using the
 /// wait_for_next_event() call, which blocks until next event occurs. You can
