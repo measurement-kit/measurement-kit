@@ -23,7 +23,7 @@ class TaskImpl;
 /// tasks do not run concurrently, even though there is no guarantee that they
 /// will actually run sequentially.
 ///
-/// A Task will emits events while running, which you can retrieve using the
+/// A Task will emit events while running, which you can retrieve using the
 /// wait_for_next_event() call, which blocks until next event occurs. You can
 /// configure a Task to disable some or all events.
 ///
