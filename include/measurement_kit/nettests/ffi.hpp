@@ -424,7 +424,7 @@ class MK_NETTESTS_DEPRECATED BaseTest {
         _name_##Test() : BaseTest() { impl_->settings["name"] = #_name_; }     \
     };
 MK_ENUM_TASKS(MK_DECLARE_TEST)
-#undef MK_DECLARE_TEST
+#undef MK_DECLARE_TEST // Tidy
 
 } // namespace nettests
 } // namespace mk
