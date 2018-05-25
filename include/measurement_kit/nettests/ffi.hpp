@@ -22,6 +22,7 @@
 #include <measurement_kit/common/shared_ptr.hpp>
 
 #include <measurement_kit/ffi.h>
+#include <measurement_kit/ffi_macros.h>
 
 #if __cplusplus >= 201402L && !defined MK_NETTESTS_INTERNAL
 #define MK_NETTESTS_DEPRECATED [[deprecated]]
@@ -198,10 +199,11 @@ class MK_NETTESTS_DEPRECATED BaseTest {
     void run() { run_static(std::move(impl_)); }
 
     void start(std::function<void()> &&fn) {
-        std::thread{[tip = std::move(impl_), fn = std::move(fn)]() {
+        std::thread thread{[tip = std::move(impl_), fn = std::move(fn)]() {
             run_static(std::move(tip));
             fn();
-        }}.detach();
+        }};
+        thread.detach();
     }
 
   private:
@@ -416,31 +418,12 @@ class MK_NETTESTS_DEPRECATED BaseTest {
     SharedPtr<Details> impl_;
 };
 
-// TODO(bassosimone): find a way to avoid duplicating this list? We have such
-// a list in engine.hpp, which I wanted to hide, so perhaps move the list
-// instead inside of the ffi.h file? Also, maybe more X-macros can help to
-// make more checks regarding the stuff we're shuffling around?
-#define MK_ENUM_TEST(XX)                                                       \
-    XX(Dash)                                                                   \
-    XX(CaptivePortal)                                                          \
-    XX(DnsInjection)                                                           \
-    XX(FacebookMessenger)                                                      \
-    XX(HttpHeaderFieldManipulation)                                            \
-    XX(HttpInvalidRequestLine)                                                 \
-    XX(MeekFrontedRequests)                                                    \
-    XX(MultiNdt)                                                               \
-    XX(Ndt)                                                                    \
-    XX(TcpConnect)                                                             \
-    XX(Telegram)                                                               \
-    XX(WebConnectivity)                                                        \
-    XX(Whatsapp)
-
 #define MK_DECLARE_TEST(_name_)                                                \
     class _name_##Test : public BaseTest {                                     \
       public:                                                                  \
         _name_##Test() : BaseTest() { impl_->settings["name"] = #_name_; }     \
     };
-MK_ENUM_TEST(MK_DECLARE_TEST)
+MK_ENUM_TASKS(MK_DECLARE_TEST)
 #undef MK_DECLARE_TEST
 
 } // namespace nettests
