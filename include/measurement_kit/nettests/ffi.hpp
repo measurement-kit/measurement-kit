@@ -6,6 +6,14 @@
 
 // Inline reimplementation of Measurement Kit's original API in terms
 // of the new <measurement_kit/ffi.h> API.
+//
+// The most striking, major difference between this implementation and the
+// previous implementation is the following. In the previous implementation
+// tests were executed in FIFO order. In the new implementation, instead,
+// they are still queued but the order of execution is random. This is fine
+// since apps should actively discourage people from running parallel tests,
+// using proper UX, as that is bad. The rough queuing mechanism that we
+// have here is just the last line of defence against that behavior.
 
 #include <stdint.h>
 
