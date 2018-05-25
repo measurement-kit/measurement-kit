@@ -198,36 +198,35 @@ is their default value (_however_, the value of non-`options` settings _is not_
 the default value, rather is a meaningful example). The following keys
 are available:
 
-- `"annotations"`: an optional JSON object containing key, value string
+- `"annotations"`: (object; optional) JSON object containing key, value string
   mappings that are copied verbatim in the measurement result file;
 
-- `"disabled_events"`: optional strings array containing the names of
+- `"disabled_events"`: (array; optional) strings array containing the names of
   the events that you are not interested into. All the available event
   names are described below. By default all events are enabled;
 
-- `"inputs"`: optional list of strings to be passed to the task as input. If
-  the task does not take any input, this is ignored. If the task requires input
-  and you provide neither `"inputs"` nor `"input_filepaths"`, the task
-  will fail;
+- `"inputs"`: (array; optional) array of strings to be passed to the task as
+  input. If the task does not take any input, this is ignored. If the task
+  requires input and you provide neither `"inputs"` nor `"input_filepaths"`,
+  the task will fail;
 
-- `"input_filepaths"`: optional list of strings containing input strings, one
-  per line, to be passed to the task. These files are read and their content
-  is merged with the one of the `inputs` key.
+- `"input_filepaths"`: (array; optional) array of files containing input
+  strings, one per line, to be passed to the task. These files are read and
+  their content is merged with the one of the `inputs` key.
 
-- `"log_filepath"`: optional string containing the name of the file where to
+- `"log_filepath"`: (string; optional) name of the file where to
   write logs. By default logs are written on `stderr`;
 
-- `"log_level"`: how much information you want to see written in the log
-  file and emitted by log-related events.
+- `"log_level"`: (string; optional) how much information you want to see
+  written in the log file and emitted by log-related events.
 
-- `"name"`: name of the task to run. This setting is mandatory. The available
+- `"name"`: (string; mandatory) name of the task to run. The available
   task names have been described above;
 
-- `"options"`: options modifying the task behavior, as an object mapping
-  string keys to string, integer or double values. As the same implies, this
-  field is optional;
+- `"options"`: (object; optional) options modifying the task behavior, as
+  an object mapping string keys to string, integer or double values;
 
-- `"output_filepath"`: optional file where you want Measurement Kit to
+- `"output_filepath"`: (string; optional) file where you want MK to
   write measurement results, as a sequence of lines, each line being
   the result of a measurement serialized as JSON;
 
@@ -374,8 +373,8 @@ is a string. Below we describe all the possible event keys, along with the
 an arbitrary number of times during the lifecycle of a task. Unless otherwise
 specified, all the keys introduced below where added in MK v0.9.0.
 
-- `"failure.asn_lookup"`: There was a failure attempting to lookup the user
-  autonomous system number. The JSON returned by this event is like:
+- `"failure.asn_lookup"`: (object) There was a failure attempting to lookup the
+  user autonomous system number. The JSON returned by this event is like:
 
 ```JSON
 {
@@ -388,8 +387,8 @@ specified, all the keys introduced below where added in MK v0.9.0.
 
 Where all the possible values of `<failure_string>` are described below.
 
-- `"failure.cc_lookup"`: There was a failure attempting to lookup the user
-  country code. The JSON returned by this event is like:
+- `"failure.cc_lookup"`: (object) There was a failure attempting to lookup the
+  user country code. The JSON returned by this event is like:
 
 ```JSON
 {
@@ -402,8 +401,8 @@ Where all the possible values of `<failure_string>` are described below.
 
 Where all the possible values of `<failure_string>` are described below.
 
-- `"failure.ip_lookup"`: There was a failure attempting to lookup the user
-  IP address. The JSON returned by this event is like:
+- `"failure.ip_lookup"`: (object) There was a failure attempting to lookup the
+  user IP address. The JSON returned by this event is like:
 
 ```JSON
 {
@@ -416,8 +415,8 @@ Where all the possible values of `<failure_string>` are described below.
 
 Where all the possible values of `<failure_string>` are described below.
 
-- `"failure.measurement"`: There was a failure running the measurement. The
-complete JSON returned by this event is like:
+- `"failure.measurement"`: (object) There was a failure running the
+  measurement. The complete JSON returned by this event is like:
 
 ```JSON
 {
@@ -430,9 +429,9 @@ complete JSON returned by this event is like:
 
 Where all the possible values of `<failure_string>` are described below.
 
-- `"failure.measurement_submission"`: There was a failure in submitting the
-measurement result to the configured collector (if any). The complete JSON
-returned by this event is like:
+- `"failure.measurement_submission"`: (object) There was a failure in
+submitting the measurement result to the configured collector (if any). The
+complete JSON returned by this event is like:
 
 ```JSON
 {
@@ -449,7 +448,7 @@ Where `idx` is the index of the current measurement, which is relevant for the
 tests that run over an input list; `json_str` is the measurement that we failed
 to submit, serialized as JSON; `failure` is the error that occurred.
 
-- `"failure.report_create"`: There was a failure in creating the
+- `"failure.report_create"`: (object) There was a failure in creating the
 measurement result to the configured collector (if any). The complete JSON
 returned by this event is like:
 
@@ -464,7 +463,7 @@ returned by this event is like:
 
 Where `failure` is the error that occurred.
 
-- `"failure.report_close"`: There was a failure in closing the
+- `"failure.report_close"`: (object) There was a failure in closing the
 measurement result to the configured collector (if any). The complete JSON
 returned by this event is like:
 
@@ -479,8 +478,8 @@ returned by this event is like:
 
 Where `failure` is the error that occurred.
 
-- `"failure.resolver_lookup"`: There was a failure attempting to lookup the user
-  DNS resolver. The JSON returned by this event is like:
+- `"failure.resolver_lookup"`: (object) There was a failure attempting to
+  lookup the user DNS resolver. The JSON returned by this event is like:
 
 ```JSON
 {
@@ -493,9 +492,9 @@ Where `failure` is the error that occurred.
 
 Where all the possible values of `<failure_string>` are described below.
 
-- `"failure.startup"`: There was a failure starting the test, most likely
-because you passed in incorrect options. The complete JSON returned by this
-event is like:
+- `"failure.startup"`: (object) There was a failure starting the test, most
+likely because you passed in incorrect options. The complete JSON returned by
+this event is like:
 
 ```JSON
 {
@@ -508,7 +507,7 @@ event is like:
 
 Where `<failure_string>` is the error that occurred.
 
-- `"log"`: A log line was emitted. The complete JSON is like:
+- `"log"`: (object) A log line was emitted. The complete JSON is like:
 
 ```JSON
 {
@@ -523,7 +522,8 @@ Where `<failure_string>` is the error that occurred.
 Where `log_level` is one of the log levels described above, and `message`
 is the log message emitted by Measurement Kit.
 
-- `"measurement"`: The result of a measurement. The complete JSON is like:
+- `"measurement"`: (object) The result of a measurement. The complete JSON
+is like:
 
 ```JSON
 {
@@ -540,8 +540,8 @@ a measurement result depends on the type of task, as described below. And
 where `idx` is the index of the current measurement (relevant only for tasks
 that iterate over an input list).
 
-- `"status.end"`: This event is emitted just once at the end of the test. The
-complete JSON is like:
+- `"status.end"`: (object) This event is emitted just once at the end of the
+test. The complete JSON is like:
 
 ```JSON
 {
@@ -558,9 +558,9 @@ Where `downloaded_kb` and `uploaded_kb` are the amount of downloaded and
 uploaded kilo-bytes, and `failure` is the overall failure that occurred during
 the test (or the empty string, if no error occurred).
 
-- `"status.geoip_lookup"`: This event is emitted only once at the beginning
-of the task, and provides information about the user's IP address, country and
-autonomous system. In detail, the JSON is like:
+- `"status.geoip_lookup"`: (object) This event is emitted only once at the
+beginning of the task, and provides information about the user's IP address,
+country and autonomous system. In detail, the JSON is like:
 
 ```JSON
 {
@@ -578,8 +578,9 @@ Where `<ip_address>` is the user's IP address, `asn` is the autonomous
 system number, `cc` is the country code, `network_name` is the commercial
 name associated to the autonomous system number.
 
-- `"status.progress"`: This is emitted during the task lifecycle to inform
-you about the task progress towards completion. In detail, the JSON is like:
+- `"status.progress"`: (object) This is emitted during the task lifecycle to
+inform you about the task progress towards completion. In detail, the JSON is
+like:
 
 ```JSON
 {
@@ -594,9 +595,9 @@ you about the task progress towards completion. In detail, the JSON is like:
 Where `percentage` is the percentage of completion of the task, and `message`
 indicates the operation that the task just completed.
 
-- `"status.queued"`: Indicates that the task has been accepted. In case there
-are already running tasks, as mentioned above, they will be prevented from
-running concurrently. The JSON is like:
+- `"status.queued"`: (object) Indicates that the task has been accepted. In
+case there are already running tasks, as mentioned above, they will be
+prevented from running concurrently. The JSON is like:
 
 ```JSON
 {
@@ -608,8 +609,8 @@ running concurrently. The JSON is like:
 
 Where `value` is empty.
 
-- `"status.measurement_start"`: Indicates that a measurement inside a task
-has started. The JSON is like:
+- `"status.measurement_start"`: (object) Indicates that a measurement inside
+a task has started. The JSON is like:
 
 ```JSON
 {
@@ -625,12 +626,12 @@ Where `idx` is the index of the current input and `input` is the current
 input. For tests that take no input, this event MAY be emitted with
 `idx` equal to `0` and `input` equal to the empty string.
 
-- `"status.measurement_submission"`: The specific measurement has been
-uploaded successfully. The JSON is like:
+- `"status.measurement_submission"`: (object) The specific measurement has
+been uploaded successfully. The JSON is like:
 
 ```JSON
 {
-  "key": "status.measurement_uploaded",
+  "key": "status.measurement_submission",
   "value": {
     "idx": 0,
   }
@@ -639,7 +640,7 @@ uploaded successfully. The JSON is like:
 
 Where `idx` is the index of the measurement input.
 
-- `"status.measurement_done"`: Measurement Kit has finished processing
+- `"status.measurement_done"`: (object) Measurement Kit has finished processing
 the specified input. The JSON is like:
 
 ```JSON
@@ -653,7 +654,7 @@ the specified input. The JSON is like:
 
 Where `idx` is the index of the measurement input.
 
-- `"status.report_close"`: Measurement Kit has closed a report for the
+- `"status.report_close"`: (object) Measurement Kit has closed a report for the
 current task, and tells you the report-ID. The report-ID is the identifier of
 the measurement result(s), which have been submitted. The JSON is like:
 
@@ -668,9 +669,9 @@ the measurement result(s), which have been submitted. The JSON is like:
 
 Where `report_id` is the report identifier.
 
-- `"status.report_create"`: Measurement Kit has created a report for the
-current task, and tells you the report-ID. The report-ID is the identifier of
-the measurement result(s), which will be later submitted. The JSON is like:
+- `"status.report_create"`: (object) Measurement Kit has created a report for
+the current task, and tells you the report-ID. The report-ID is the identifier
+of the measurement result(s), which will be later submitted. The JSON is like:
 
 ```JSON
 {
@@ -683,9 +684,9 @@ the measurement result(s), which will be later submitted. The JSON is like:
 
 Where `report_id` is the report identifier.
 
-- `"status.resolver_lookup"`: This event is emitted only once at the beginning
-of the task, when the IP address of the resolver is discovered. The JSON is
-like:
+- `"status.resolver_lookup"`: (object) This event is emitted only once at the
+beginning of the task, when the IP address of the resolver is discovered. The
+JSON is like:
 
 ```JSON
 {
@@ -698,7 +699,7 @@ like:
 
 Where `<ip_address>` is the resolver's IP address.
 
-- `"status.started"`: The task has started, and the JSON is like:
+- `"status.started"`: (object) The task has started, and the JSON is like:
 
 ```JSON
 {
@@ -710,7 +711,7 @@ Where `<ip_address>` is the resolver's IP address.
 
 Where `value` is empty.
 
-- `"status.update.performance"`: This is an event emitted by tests that
+- `"status.update.performance"`: (object) This is an event emitted by tests that
 measure network performance. The JSON is like:
 
 ```JSON
@@ -730,8 +731,8 @@ time (in seconds) since the measurement started, `num_streams` is the number of
 streams we are using to measure performance, `speed_kbps` is the speed, in
 kbit/s, measured since the previous performance measurement.
 
-- `"status.update.websites"`: This is an event emitted by tests that measure
-the reachability of websites. The JSON is like:
+- `"status.update.websites"`: (object) This is an event emitted by tests that
+measure the reachability of websites. The JSON is like:
 
 ```JSON
 {
@@ -746,9 +747,9 @@ the reachability of websites. The JSON is like:
 Where `url` is the URL we're measuring and `status` is either `accessible`
 or `blocking`.
 
-- `"task_terminated"`: This event is emitted when you attempt to extract events from
-the task queue, but the task is not running anymore (i.e. it's the equivalent of
-`EOF` for the task queue). The related JSON is like:
+- `"task_terminated"`: (object) This event is emitted when you attempt to
+extract events from the task queue, but the task is not running anymore (i.e.
+it's the equivalent of `EOF` for the task queue). The related JSON is like:
 
 ```JSON
 {
