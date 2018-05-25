@@ -426,7 +426,7 @@ class MK_NETTESTS_DEPRECATED BaseTest {
     SharedPtr<Details> impl_;
 };
 
-#define MK_DECLARE_TEST(_name_)                                                \
+#define MK_DECLARE_TEST(_name_,  _type_ignored_, _mandatory_ignored_)          \
     class _name_##Test : public BaseTest {                                     \
       public:                                                                  \
         _name_##Test() : BaseTest() { impl_->settings["name"] = #_name_; }     \
