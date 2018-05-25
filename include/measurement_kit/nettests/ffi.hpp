@@ -217,7 +217,7 @@ class MK_NETTESTS_DEPRECATED BaseTest {
     // consistent with the original implementation's behavior.
     //
     // This is not necessarily a very good idea, but the original code was
-    // doing that, hence we should to that here as well.
+    // doing that, hence we should do that here as well.
 #define MK_NETTESTS_CALL_AND_SUPPRESS(func, args)                              \
     do {                                                                       \
         try {                                                                  \
