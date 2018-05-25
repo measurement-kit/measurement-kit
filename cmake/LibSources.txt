@@ -22,8 +22,8 @@ include/measurement_kit/common/scalar.hpp
 include/measurement_kit/common/settings.hpp
 include/measurement_kit/common/shared_ptr.hpp
 include/measurement_kit/common/version.h
-include/measurement_kit/engine.h
 include/measurement_kit/ffi.h
+include/measurement_kit/ffi_macros.h
 include/measurement_kit/ndt.hpp
 include/measurement_kit/ndt/defs.hpp
 include/measurement_kit/nettests.hpp
@@ -86,6 +86,7 @@ src/libmeasurement_kit/dns/resolve_hostname.hpp
 src/libmeasurement_kit/dns/system_resolver.hpp
 src/libmeasurement_kit/dns/utils.hpp
 src/libmeasurement_kit/engine.cpp
+src/libmeasurement_kit/engine.hpp
 src/libmeasurement_kit/ext/catch.hpp
 src/libmeasurement_kit/ext/http_parser.c
 src/libmeasurement_kit/ext/http_parser.h

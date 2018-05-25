@@ -2,24 +2,26 @@
 // Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
+#include <measurement_kit/common/aaa_base.h>
+#include <measurement_kit/common/callback.hpp>
+#include <measurement_kit/common/json.hpp>
+#include <measurement_kit/common/logger.hpp>
+#include <measurement_kit/common/shared_ptr.hpp>
+#include <measurement_kit/ffi_macros.h>
+
 #include <assert.h>
+#include <stdarg.h>
+#include <stdio.h>
+
 #include <cstdint>
 #include <fstream>
 #include <list>
-#include <measurement_kit/common/aaa_base.h>
-#include <measurement_kit/common/callback.hpp>
+#include <mutex>
+
 #include "src/libmeasurement_kit/common/delegate.hpp"
 #include "src/libmeasurement_kit/common/locked.hpp"
 #include "src/libmeasurement_kit/common/non_copyable.hpp"
 #include "src/libmeasurement_kit/common/non_movable.hpp"
-#include <measurement_kit/common/json.hpp>
-#include <measurement_kit/common/logger.hpp>
-#include <measurement_kit/common/shared_ptr.hpp>
-#include <mutex>
-#include <stdarg.h>
-#include <stdio.h>
-
-#include <measurement_kit/engine.h>
 
 namespace mk {
 
@@ -216,12 +218,12 @@ class DefaultLogger : public Logger, public NonCopyable, public NonMovable {
         {
             bool found = false;
             do {
-#define CHECK(name_)                                                           \
-    if (key == name_) {                                                        \
+#define CHECK(name_, type_ignored_, mandatory_ignored_)                        \
+    if (key == #name_) {                                                       \
         found = true;                                                          \
         break;                                                                 \
     }
-                MK_ENUM_EVENT(CHECK)
+                MK_ENUM_EVENTS(CHECK)
 #undef CHECK
             } while (0);
             if (!found) {
