@@ -10,10 +10,6 @@
 namespace mk {
 namespace nettests {
 
-TcpConnectTest::TcpConnectTest() : BaseTest() {
-    runnable.reset(new TcpConnectRunnable);
-}
-
 TcpConnectRunnable::TcpConnectRunnable() noexcept {
     test_name = "tcp_connect";
     test_version = "0.1.0";

@@ -10,10 +10,6 @@
 namespace mk {
 namespace nettests {
 
-HttpHeaderFieldManipulationTest::HttpHeaderFieldManipulationTest() : BaseTest() {
-    runnable.reset(new HttpHeaderFieldManipulationRunnable);
-}
-
 HttpHeaderFieldManipulationRunnable::HttpHeaderFieldManipulationRunnable()
         noexcept {
     test_name = "http_header_field_manipulation";

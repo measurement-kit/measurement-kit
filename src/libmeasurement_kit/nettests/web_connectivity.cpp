@@ -11,10 +11,6 @@
 namespace mk {
 namespace nettests {
 
-WebConnectivityTest::WebConnectivityTest() : BaseTest() {
-    runnable.reset(new WebConnectivityRunnable);
-}
-
 WebConnectivityRunnable::WebConnectivityRunnable() noexcept {
     test_name = "web_connectivity";
     test_version = "0.0.1";

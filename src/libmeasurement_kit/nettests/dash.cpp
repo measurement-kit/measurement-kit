@@ -9,10 +9,6 @@
 namespace mk {
 namespace nettests {
 
-DashTest::DashTest() : BaseTest() {
-    runnable.reset(new DashRunnable);
-}
-
 DashRunnable::DashRunnable() noexcept {
     test_name = "dash";
     test_version = "0.7.0";

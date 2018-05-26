@@ -10,10 +10,6 @@
 namespace mk {
 namespace nettests {
 
-MeekFrontedRequestsTest::MeekFrontedRequestsTest() : BaseTest() {
-    runnable.reset(new MeekFrontedRequestsRunnable);
-}
-
 MeekFrontedRequestsRunnable::MeekFrontedRequestsRunnable() noexcept {
     test_name = "meek_fronted_requests";
     test_version = "0.0.1";

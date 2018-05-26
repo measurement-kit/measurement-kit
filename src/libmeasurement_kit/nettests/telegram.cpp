@@ -10,10 +10,6 @@
 namespace mk {
 namespace nettests {
 
-TelegramTest::TelegramTest() : BaseTest() {
-    runnable.reset(new TelegramRunnable);
-}
-
 TelegramRunnable::TelegramRunnable() noexcept {
     test_name = "telegram";
     test_version = "0.0.2";

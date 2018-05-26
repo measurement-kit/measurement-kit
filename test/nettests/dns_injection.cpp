@@ -20,16 +20,3 @@ TEST_CASE("Synchronous dns-injection test") {
 }
 
 #endif
-
-// Note: we don't repeat this test for every type of nettest
-TEST_CASE("Make sure that set_output_filepath() works") {
-    /*
-       Note: must also set valid input file path otherwise the constructor
-       called inside create_test_() throws an exception
-    */
-    auto runnable = DnsInjectionTest{}
-                        .add_input_filepath("test/fixtures/hosts.txt")
-                        .set_output_filepath("foo.txt")
-                        .runnable;
-    REQUIRE(runnable->output_filepath == "foo.txt");
-}

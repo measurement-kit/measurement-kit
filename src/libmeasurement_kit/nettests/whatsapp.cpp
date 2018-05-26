@@ -10,10 +10,6 @@
 namespace mk {
 namespace nettests {
 
-WhatsappTest::WhatsappTest() : BaseTest() {
-    runnable.reset(new WhatsappRunnable);
-}
-
 WhatsappRunnable::WhatsappRunnable() noexcept {
     test_name = "whatsapp";
     test_version = "0.6.1";

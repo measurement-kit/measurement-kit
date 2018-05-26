@@ -27,7 +27,7 @@ include/measurement_kit/ffi_macros.h
 include/measurement_kit/ndt.hpp
 include/measurement_kit/ndt/defs.hpp
 include/measurement_kit/nettests.hpp
-include/measurement_kit/nettests/nettests.hpp
+include/measurement_kit/nettests/ffi.hpp
 include/measurement_kit/ooni.hpp
 include/measurement_kit/ooni/error.hpp
 include/measurement_kit/ooni/orchestrate.hpp
@@ -142,7 +142,6 @@ src/libmeasurement_kit/net/transport.cpp
 src/libmeasurement_kit/net/transport.hpp
 src/libmeasurement_kit/net/utils.cpp
 src/libmeasurement_kit/net/utils.hpp
-src/libmeasurement_kit/nettests/base_test.cpp
 src/libmeasurement_kit/nettests/captive_portal.cpp
 src/libmeasurement_kit/nettests/dash.cpp
 src/libmeasurement_kit/nettests/dns_injection.cpp

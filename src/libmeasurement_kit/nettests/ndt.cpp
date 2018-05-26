@@ -12,10 +12,6 @@
 namespace mk {
 namespace nettests {
 
-NdtTest::NdtTest() : BaseTest() {
-    runnable.reset(new NdtRunnable);
-}
-
 NdtRunnable::NdtRunnable() noexcept {
     test_name = "ndt";
     test_version = "0.1.0";
