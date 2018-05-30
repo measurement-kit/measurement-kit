@@ -1,8 +1,22 @@
-# Measurement Kit 0.9.0-beta [XXXX-XX-XX]
+# MeasurementKit 0.9.0-alpha.2 [2018-05-30]
 
-- We have fixed all the places where MK was not compiling with MSVC.
+- We have rewritten the existing API (nettests.hpp) in terms of the new
+  FFI-friendly API (ffi.h), see #1630
 
-# MeasurementKit 0.9.0-apha.1 [2018-05-04]
+- We have fixed a bug that prevented paths with spaces and more in
+  general strings with spaces to be used, see #1631
+
+- We have started using Google's sanitizers in CI builds, to make sure
+  our code is more robuts with respect to a range of programming errors
+  (e.g. memory errors, concurrency issues), see #1626
+
+- We have finalized documentation of the ffi.h API, see #1627
+
+- We have fixed all the places where MK was not compiling with MSVC, see #1624
+
+- We have improved reliability on Windows, and implemented other minor fixes
+
+# MeasurementKit 0.9.0-alpha.1 [2018-05-04]
 
 - Since this release, you cannot use anymore the podfile included in this
   repository and you should use instead the podfile available at
@@ -784,7 +798,7 @@ To speed up cross compiling, this release would also be the first release to con
 
 # MeasurementKit 0.1.1 [2016-01-13]
 - allow to specify report file path for OONI tests
-- add missing documentation 
+- add missing documentation
 - add Vagrantfile
 - mv ooni::NetTest ooni::NetTest to avoid confusion with common::NetTest
 - misc fixes
