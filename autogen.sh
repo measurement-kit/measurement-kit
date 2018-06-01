@@ -77,6 +77,7 @@ gen_executables() {
 
 ./script/gen/nettests/events
 ./script/gen/nettests/macros
+./script/update-includes
 
 if [ $cmake -eq 0 ]; then
     echo "* Generating include.am"
