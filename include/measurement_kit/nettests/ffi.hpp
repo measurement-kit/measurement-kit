@@ -29,8 +29,8 @@
 #include <measurement_kit/common/nlohmann/json.hpp>
 #include <measurement_kit/common/shared_ptr.hpp>
 
+#include <measurement_kit/nettests/events.hpp>
 #include <measurement_kit/nettests/macros.h>
-#include <measurement_kit/nettests/events.h>
 
 #include <measurement_kit/ffi.h>
 
@@ -87,6 +87,8 @@ class BaseTest {
         std::vector<std::function<void(DataUsage)>> overall_data_usage_cbs;
         EventsRouter router;
 
+        Details() noexcept {}
+
         explicit Details(EventsRouter &&router) noexcept {
             std::swap(router, this->router);
         }
@@ -95,7 +97,7 @@ class BaseTest {
     MK_NETTESTS_DEPRECATED BaseTest() { impl_.reset(new Details); }
 
     explicit BaseTest(EventsRouter &&router) noexcept {
-        impl_.reset(new Details{std::move(router)};
+        impl_.reset(new Details{std::move(router)});
     }
 
     // The original implementation had a virtual destructor but no other
@@ -297,7 +299,7 @@ class BaseTest {
                 // Note: the following routes the event to new style callbacks
                 // while process_event() is here for backward compatibility. We
                 // ignore the return value of route() for now.
-                (void)tip->router->route(s);
+                (void)tip->router.route(s);
                 // The following statement MAY throw. Since we do not expect
                 // MK to serialize a non-parseable JSON, just let the eventual
                 // exception propagate and terminate the program.

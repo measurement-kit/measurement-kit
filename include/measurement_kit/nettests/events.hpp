@@ -360,6 +360,9 @@ using NlohmannJsonException = std::exception;
 /// Routes events to callbacks
 class EventsRouter {
   public:
+    /// Default constructor
+    EventsRouter() noexcept {}
+
     /// Constructor with specific callbacks
     explicit EventsRouter(EventsCallbacks &&cbs) noexcept {
         std::swap(cbs, cbs_);
