@@ -79,9 +79,6 @@ CXXFLAGS="-Wall -Wextra -pedantic $CXXFLAGS"
 # key and the separator (i.e. ':').
 CPPFLAGS="-DHTTP_PARSER_STRICT=0 $CPPFLAGS"
 
-# Make sure the build is not gonna fail for deprecated stuff.
-CPPFLAGS="-DMK_NETTESTS_INTERNAL $CPPFLAGS"
-
 MK_AM_REQUIRE_C99
 MK_AM_REQUIRE_CXX14
 MK_AM_CXXFLAGS_ADD_WARNINGS

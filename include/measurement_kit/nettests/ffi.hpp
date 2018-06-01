@@ -29,10 +29,12 @@
 #include <measurement_kit/common/nlohmann/json.hpp>
 #include <measurement_kit/common/shared_ptr.hpp>
 
-#include <measurement_kit/ffi.h>
 #include <measurement_kit/nettests/macros.h>
+#include <measurement_kit/nettests/events.h>
 
-#if __cplusplus >= 201402L && !defined MK_NETTESTS_INTERNAL
+#include <measurement_kit/ffi.h>
+
+#if __cplusplus >= 201402L
 #define MK_NETTESTS_DEPRECATED [[deprecated]]
 #else
 #define MK_NETTESTS_DEPRECATED /* Nothing */
@@ -53,7 +55,7 @@ class EventDeleter {
 };
 using EventUptr = std::unique_ptr<mk_event_t, EventDeleter>;
 
-class MK_NETTESTS_DEPRECATED BaseTest {
+class BaseTest {
   public:
     // Implementation notes
     // --------------------
@@ -82,9 +84,18 @@ class MK_NETTESTS_DEPRECATED BaseTest {
         std::vector<std::function<void()>> end_cbs;
         std::vector<std::function<void()>> destroy_cbs;
         std::vector<std::function<void(DataUsage)>> overall_data_usage_cbs;
+        EventsRouter router;
+
+        explicit Details(EventsRouter &&router) noexcept {
+            std::swap(router, this->router);
+        }
     };
 
-    BaseTest() { impl_.reset(new Details); }
+    MK_NETTESTS_DEPRECATED BaseTest() { impl_.reset(new Details); }
+
+    explicit BaseTest(EventsRouter &&router) noexcept {
+        impl_.reset(new Details{std::move(router)};
+    }
 
     // The original implementation had a virtual destructor but no other
     // virtual members. Hence in the reimplementation I am removing the
@@ -102,7 +113,7 @@ class MK_NETTESTS_DEPRECATED BaseTest {
         return *this;
     }
 
-    BaseTest &set_input_filepath(std::string s) {
+    BaseTest & MK_NETTESTS_DEPRECATED set_input_filepath(std::string s) {
         impl_->settings["input_filepaths"].clear();
         return add_input_filepath(std::move(s));
     }
@@ -122,22 +133,22 @@ class MK_NETTESTS_DEPRECATED BaseTest {
         return *this;
     }
 
-    BaseTest &on_logger_eof(std::function<void()> &&fn) {
+    BaseTest & MK_NETTESTS_DEPRECATED on_logger_eof(std::function<void()> &&fn) {
         impl_->logger_eof_cbs.push_back(std::move(fn));
         return *this;
     }
 
-    BaseTest &on_log(std::function<void(uint32_t, const char *)> &&fn) {
+    BaseTest & MK_NETTESTS_DEPRECATED on_log(std::function<void(uint32_t, const char *)> &&fn) {
         impl_->log_cbs.push_back(std::move(fn));
         return *this;
     }
 
-    BaseTest &on_event(std::function<void(const char *)> &&fn) {
+    BaseTest & MK_NETTESTS_DEPRECATED on_event(std::function<void(const char *)> &&fn) {
         impl_->event_cbs.push_back(std::move(fn));
         return *this;
     }
 
-    BaseTest &on_progress(std::function<void(double, const char *)> &&fn) {
+    BaseTest & MK_NETTESTS_DEPRECATED on_progress(std::function<void(double, const char *)> &&fn) {
         impl_->progress_cbs.push_back(std::move(fn));
         return *this;
     }
@@ -171,17 +182,17 @@ class MK_NETTESTS_DEPRECATED BaseTest {
         return *this;
     }
 
-    BaseTest &on_entry(std::function<void(std::string)> &&fn) {
+    BaseTest & MK_NETTESTS_DEPRECATED on_entry(std::function<void(std::string)> &&fn) {
         impl_->entry_cbs.push_back(std::move(fn));
         return *this;
     }
 
-    BaseTest &on_begin(std::function<void()> &&fn) {
+    BaseTest & MK_NETTESTS_DEPRECATED on_begin(std::function<void()> &&fn) {
         impl_->begin_cbs.push_back(std::move(fn));
         return *this;
     }
 
-    BaseTest &on_end(std::function<void()> &&fn) {
+    BaseTest & MK_NETTESTS_DEPRECATED on_end(std::function<void()> &&fn) {
         impl_->end_cbs.push_back(std::move(fn));
         return *this;
     }
@@ -191,7 +202,7 @@ class MK_NETTESTS_DEPRECATED BaseTest {
         return *this;
     }
 
-    BaseTest &on_overall_data_usage(std::function<void(DataUsage)> &&fn) {
+    BaseTest & MK_NETTESTS_DEPRECATED on_overall_data_usage(std::function<void(DataUsage)> &&fn) {
         impl_->overall_data_usage_cbs.push_back(std::move(fn));
         return *this;
     }
@@ -282,6 +293,10 @@ class MK_NETTESTS_DEPRECATED BaseTest {
 #ifdef MK_NETTESTS_TRACE_EVENTS
                 std::clog << "mk::nettests: got event: " << s << std::endl;
 #endif
+                // Note: the following routes the event to new style callbacks
+                // while process_event() is here for backward compatibility. We
+                // ignore the return value of route() for now.
+                (void)tip->router->route(s);
                 // The following statement MAY throw. Since we do not expect
                 // MK to serialize a non-parseable JSON, just let the eventual
                 // exception propagate and terminate the program.
@@ -372,13 +387,13 @@ class MK_NETTESTS_DEPRECATED BaseTest {
             }
         } else if (key == "status.queued") {
             // NOTHING
-        } else if (key == "status.measurement_started") {
+        } else if (key == "status.measurement_start") {
             // NOTHING
-        } else if (key == "status.measurement_uploaded") {
+        } else if (key == "status.measurement_submission") {
             // NOTHING
         } else if (key == "status.measurement_done") {
             // NOTHING
-        } else if (key == "status.report_created") {
+        } else if (key == "status.report_create") {
             // NOTHING
         } else if (key == "status.started") {
             for (auto &cb : tip->begin_cbs) {
