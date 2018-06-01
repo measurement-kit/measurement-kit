@@ -34,7 +34,8 @@
 
 #include <measurement_kit/ffi.h>
 
-#if __cplusplus >= 201402L
+// Do not issue deprecation warning for us until we update to new API
+#if __cplusplus >= 201402L && !defined MK_NETTESTS_INTERNAL
 #define MK_NETTESTS_DEPRECATED [[deprecated]]
 #else
 #define MK_NETTESTS_DEPRECATED /* Nothing */
