@@ -75,7 +75,8 @@ gen_executables() {
     done
 }
 
-./script/gen-ffi-macros
+./script/gen/nettests/events
+./script/gen/nettests/macros
 
 if [ $cmake -eq 0 ]; then
     echo "* Generating include.am"

@@ -7,7 +7,7 @@
 #include <measurement_kit/common/json.hpp>
 #include <measurement_kit/common/logger.hpp>
 #include <measurement_kit/common/shared_ptr.hpp>
-#include <measurement_kit/ffi_macros.h>
+#include <measurement_kit/nettests/macros.h>
 
 #include <assert.h>
 #include <stdarg.h>

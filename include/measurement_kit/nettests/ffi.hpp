@@ -30,7 +30,7 @@
 #include <measurement_kit/common/shared_ptr.hpp>
 
 #include <measurement_kit/ffi.h>
-#include <measurement_kit/ffi_macros.h>
+#include <measurement_kit/nettests/macros.h>
 
 #if __cplusplus >= 201402L && !defined MK_NETTESTS_INTERNAL
 #define MK_NETTESTS_DEPRECATED [[deprecated]]

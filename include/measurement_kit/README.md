@@ -187,7 +187,7 @@ The task settings is a JSON like:
     "software_name": "measurement_kit",
     "software_version": "<current-mk-version>"
   },
-  "output_filepath": "results.njson",
+  "output_filepath": "results.njson"
 }
 ```
 
@@ -568,7 +568,7 @@ country and autonomous system. In detail, the JSON is like:
   "value": {
     "probe_ip": "<ip_address>",
     "probe_asn": "<asn>",
-    "probe_cc": "<cc>"
+    "probe_cc": "<cc>",
     "probe_network_name": "<network_name>"
   }
 }
@@ -633,7 +633,7 @@ been uploaded successfully. The JSON is like:
 {
   "key": "status.measurement_submission",
   "value": {
-    "idx": 0,
+    "idx": 0
   }
 }
 ```
@@ -647,7 +647,7 @@ the specified input. The JSON is like:
 {
   "key": "status.measurement_done",
   "value": {
-    "idx": 0,
+    "idx": 0
   }
 }
 ```
@@ -660,9 +660,9 @@ the measurement result(s), which have been submitted. The JSON is like:
 
 ```JSON
 {
-  "key": "status.report_create",
+  "key": "status.report_close",
   "value": {
-    "report_id": "string",
+    "report_id": "string"
   }
 }
 ```
@@ -677,7 +677,7 @@ of the measurement result(s), which will be later submitted. The JSON is like:
 {
   "key": "status.report_create",
   "value": {
-    "report_id": "string",
+    "report_id": "string"
   }
 }
 ```
