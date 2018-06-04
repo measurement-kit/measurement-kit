@@ -224,7 +224,7 @@ are available:
   task names have been described above;
 
 - `"options"`: (object; optional) options modifying the task behavior, as
-  an object mapping string keys to string, integer or double values;
+  an object mapping string keys to string, int or float values;
 
 - `"output_filepath"`: (string; optional) file where you want MK to
   write measurement results, as a sequence of lines, each line being
@@ -250,7 +250,7 @@ specify `"INFO"`, you will only see `"ERR"`, `"WARNING"`, and `"INFO"` logs.
 
 ## Options
 
-Options can be `string`, `double`, or `int`. There is not boolean type, and
+Options can be `string`, `float`, or `int`. There is not boolean type, and
 we use `int`s with boolean semantics in some cases, with the usual convention
 that `0` means false and non-`0` means true.
 
@@ -285,7 +285,7 @@ These are the available options:
   the report with the OONI collector. By default set to `1` so that errors
   will be ignored;
 
-- `"max_runtime"`: (double) number of seconds after which the test will
+- `"max_runtime"`: (float) number of seconds after which the test will
   be stopped. Works _only_ for tests taking input. By default set to `-1.0`
   so that there is no maximum runtime for tests with input;
 
@@ -295,7 +295,7 @@ These are the available options:
   inside of Measurement Kit (Android, iOS, Windows). If you compile a
   Measurement Kit for yourself, then YMMV;
 
-- `"net/timeout"`: (double) number of seconds after which network I/O
+- `"net/timeout"`: (float) number of seconds after which network I/O
   operations will timeout. By default set to `10.0` seconds;
 
 - `"no_bouncer"`: (int) whether to use a bouncer. By default set to

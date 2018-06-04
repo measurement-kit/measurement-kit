@@ -75,6 +75,7 @@ gen_executables() {
     done
 }
 
+./script/gen/cxx14/all
 ./script/gen/nettests/events
 ./script/gen/nettests/macros
 ./script/update-includes
