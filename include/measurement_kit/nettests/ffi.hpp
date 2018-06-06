@@ -14,6 +14,15 @@
 // since apps should actively discourage people from running parallel tests,
 // using proper UX, as that is bad. The rough queuing mechanism that we
 // have here is just the last line of defence against that behavior.
+//
+// XXX: make sure comment here is still up to date
+
+// XXX: need to run `iwyu` again
+//
+// XXX: the `started` event should actually be `start`: this is a good
+// moment to make sure we can cope easily with events
+//
+// XXX: invent a Leonidism to protect us against changes in spec
 
 #include <stdint.h>
 
@@ -29,10 +38,10 @@
 #include <measurement_kit/common/nlohmann/json.hpp>
 #include <measurement_kit/common/shared_ptr.hpp>
 
-#include <measurement_kit/nettests/events.hpp>
+#include <measurement_kit/nettests/events.hpp> // FIXME: get rid of this
 #include <measurement_kit/nettests/macros.h>
 
-#include <measurement_kit/ffi.h>
+#include <measurement_kit/cxx14.h>
 
 // Do not issue deprecation warning for us until we update to new API
 #if __cplusplus >= 201402L && !defined MK_NETTESTS_INTERNAL
@@ -44,19 +53,7 @@
 namespace mk {
 namespace nettests {
 
-class TaskDeleter {
-  public:
-    void operator()(mk_task_t *task) noexcept { mk_task_destroy(task); }
-};
-using TaskUptr = std::unique_ptr<mk_task_t, TaskDeleter>;
-
-class EventDeleter {
-  public:
-    void operator()(mk_event_t *event) noexcept { mk_event_destroy(event); }
-};
-using EventUptr = std::unique_ptr<mk_event_t, EventDeleter>;
-
-class BaseTest {
+class MK_NETTETS_DEPRECATED BaseTest {
   public:
     // Implementation notes
     // --------------------
@@ -71,168 +68,8 @@ class BaseTest {
     // 3. compared to the original implementation, this API allows to have
     // multiple callbacks registered for any kind of event. In the original
     // code, only _some_ events accepted multiple callbacks.
-
-    class Details {
-      public:
-        nlohmann::json settings;
-        std::vector<std::function<void()>> logger_eof_cbs;
-        std::vector<std::function<void(uint32_t, const char *)>> log_cbs;
-        std::vector<std::function<void(const char *)>> event_cbs;
-        std::vector<std::function<void(double, const char *)>> progress_cbs;
-        uint32_t log_level = MK_LOG_WARNING;
-        std::vector<std::function<void(std::string)>> entry_cbs;
-        std::vector<std::function<void()>> begin_cbs;
-        std::vector<std::function<void()>> end_cbs;
-        std::vector<std::function<void()>> destroy_cbs;
-        std::vector<std::function<void(DataUsage)>> overall_data_usage_cbs;
-        EventsRouter router;
-
-        Details() noexcept {}
-
-        explicit Details(EventsRouter &&router) noexcept {
-            std::swap(router, this->router);
-        }
-    };
-
-    MK_NETTESTS_DEPRECATED BaseTest() { impl_.reset(new Details); }
-
-    explicit BaseTest(EventsRouter &&router) noexcept {
-        impl_.reset(new Details{std::move(router)});
-    }
-
-    // The original implementation had a virtual destructor but no other
-    // virtual members. Hence in the reimplementation I am removing the
-    // attribute `virtual` since it seems unnecessary.
-    ~BaseTest() {}
-
-    // Setters
-    // -------
     //
-    // All the following methods are straightforward because they just
-    // configure the settings or register specific callbacks.
-
-    BaseTest &add_input(std::string s) {
-        impl_->settings["inputs"].push_back(std::move(s));
-        return *this;
-    }
-
-    BaseTest & MK_NETTESTS_DEPRECATED set_input_filepath(std::string s) {
-        impl_->settings["input_filepaths"].clear();
-        return add_input_filepath(std::move(s));
-    }
-
-    BaseTest &add_input_filepath(std::string s) {
-        impl_->settings["input_filepaths"].push_back(std::move(s));
-        return *this;
-    }
-
-    BaseTest &set_output_filepath(std::string s) {
-        impl_->settings["output_filepath"] = std::move(s);
-        return *this;
-    }
-
-    BaseTest &set_error_filepath(std::string s) {
-        impl_->settings["log_filepath"] = std::move(s);
-        return *this;
-    }
-
-    BaseTest & MK_NETTESTS_DEPRECATED on_logger_eof(std::function<void()> &&fn) {
-        impl_->logger_eof_cbs.push_back(std::move(fn));
-        return *this;
-    }
-
-    BaseTest & MK_NETTESTS_DEPRECATED on_log(std::function<void(uint32_t, const char *)> &&fn) {
-        impl_->log_cbs.push_back(std::move(fn));
-        return *this;
-    }
-
-    BaseTest & MK_NETTESTS_DEPRECATED on_event(std::function<void(const char *)> &&fn) {
-        impl_->event_cbs.push_back(std::move(fn));
-        return *this;
-    }
-
-    BaseTest & MK_NETTESTS_DEPRECATED on_progress(std::function<void(double, const char *)> &&fn) {
-        impl_->progress_cbs.push_back(std::move(fn));
-        return *this;
-    }
-
-    BaseTest &set_verbosity(uint32_t level) {
-        impl_->log_level = level;
-        return *this;
-    }
-
-    BaseTest &increase_verbosity() {
-        if (impl_->log_level < MK_LOG_DEBUG2) {
-            ++impl_->log_level;
-        }
-        return *this;
-    }
-
-    template <typename T, typename = typename std::enable_if<
-                                  std::is_arithmetic<T>::value>::type>
-    BaseTest &set_option(std::string key, T value) {
-        impl_->settings["options"][key] = value;
-        return *this;
-    }
-
-    BaseTest &set_option(std::string key, std::string value) {
-        impl_->settings["options"][key] = value;
-        return *this;
-    }
-
-    BaseTest &add_annotation(std::string key, std::string value) {
-        impl_->settings["annotations"][key] = value;
-        return *this;
-    }
-
-    BaseTest & MK_NETTESTS_DEPRECATED on_entry(std::function<void(std::string)> &&fn) {
-        impl_->entry_cbs.push_back(std::move(fn));
-        return *this;
-    }
-
-    BaseTest & MK_NETTESTS_DEPRECATED on_begin(std::function<void()> &&fn) {
-        impl_->begin_cbs.push_back(std::move(fn));
-        return *this;
-    }
-
-    BaseTest & MK_NETTESTS_DEPRECATED on_end(std::function<void()> &&fn) {
-        impl_->end_cbs.push_back(std::move(fn));
-        return *this;
-    }
-
-    BaseTest &on_destroy(std::function<void()> &&fn) {
-        impl_->destroy_cbs.push_back(std::move(fn));
-        return *this;
-    }
-
-    BaseTest & MK_NETTESTS_DEPRECATED on_overall_data_usage(std::function<void(DataUsage)> &&fn) {
-        impl_->overall_data_usage_cbs.push_back(std::move(fn));
-        return *this;
-    }
-
-    // run() & start()
-    // ---------------
-    //
-    // We should not be able to run more than a test with this class
-    // hence we immediately swap the context. Because we're using a
-    // SharedPtr, this means that attempting to run more than one test
-    // leads to an exception being thrown.
-
-    void run() { run_static(std::move(impl_)); }
-
-    void start(std::function<void()> &&fn) {
-        std::thread thread{[tip = std::move(impl_), fn = std::move(fn)]() {
-            run_static(std::move(tip));
-            fn();
-        }};
-        thread.detach();
-    }
-
-  private:
-    // Task running
-    // ------------
-    //
-    // How we actually start a task and process its events.
+    // XXX make sure comments still make sense
 
     // Helper macro used to facilitate suppressing exceptions since the
     // nettest.hpp API always suppresses exceptions in callbacks. This is
@@ -249,188 +86,235 @@ class BaseTest {
         }                                                                      \
     } while (0)
 
-    static void run_static(SharedPtr<Details> tip) {
-        switch (tip->log_level) {
-        case MK_LOG_ERR:
-            tip->settings["log_level"] = "ERR";
-            break;
-        case MK_LOG_WARNING:
-            tip->settings["log_level"] = "WARNING";
-            break;
-        case MK_LOG_INFO:
-            tip->settings["log_level"] = "INFO";
-            break;
-        case MK_LOG_DEBUG:
-            tip->settings["log_level"] = "DEBUG";
-            break;
-        case MK_LOG_DEBUG2:
-            tip->settings["log_level"] = "DEBUG2";
-            break;
-        default:
-            assert(false); // Should not happen
-            break;
+    class Details : public cxx14::TaskInfo {
+      public:
+        std::vector<std::function<void()>> final_cbs;
+
+        Details() noexcept : cxx14::TaskInfo::TaskInfo() {
+            log_level = "WARNING";
         }
-        // Serializing the settings MAY throw if we provided strings
-        // that are non-JSON serializeable. For now, let the exception
-        // propagate if that unexpected condition occurs.
-        //
-        // TODO(bassosimone): since this error condition did not happen
-        // with the previous iteration of this API, it's an open question
-        // whether to handle this possible error condition or not.
-        std::string serialized_settings;
-        serialized_settings = tip->settings.dump();
-        TaskUptr tup{mk_task_start(serialized_settings.c_str())};
-        if (!tup) {
-            throw std::runtime_error("mk_task_start() failed");
-        }
-        while (!mk_task_is_done(tup.get())) {
-            nlohmann::json ev;
-            {
-                EventUptr eup{mk_task_wait_for_next_event(tup.get())};
-                if (!eup) {
-                    throw std::runtime_error(
-                            "mk_task_wait_for_next_event() failed");
-                }
-                const char *s = mk_event_serialize(eup.get());
-                assert(s != nullptr);
-#ifdef MK_NETTESTS_TRACE_EVENTS
-                std::clog << "mk::nettests: got event: " << s << std::endl;
-#endif
-                // Note: the following routes the event to new style callbacks
-                // while process_event() is here for backward compatibility. We
-                // ignore the return value of route() for now.
-                (void)tip->router.route(s);
-                // The following statement MAY throw. Since we do not expect
-                // MK to serialize a non-parseable JSON, just let the eventual
-                // exception propagate and terminate the program.
-                ev = nlohmann::json::parse(s);
+
+        ~Details() noexcept {
+            for (const auto &fn : final_cbs) {
+                MK_NETTESTS_CALL_AND_SUPPRESS(fn, ());
             }
-            process_event(tip, std::move(ev));
         }
-        for (auto &cb : tip->logger_eof_cbs) {
-            MK_NETTESTS_CALL_AND_SUPPRESS(cb, ());
-        }
-        for (auto &cb : tip->destroy_cbs) {
-            MK_NETTESTS_CALL_AND_SUPPRESS(cb, ());
-        }
+    };
+
+    BaseTest() { impl_.reset(new Details); }
+
+    // The original implementation had a virtual destructor but no other
+    // virtual members. Hence in the reimplementation I am removing the
+    // attribute `virtual` since it seems unnecessary.
+    ~BaseTest() {}
+
+    // Setters
+    // -------
+    //
+    // All the following methods are straightforward because they just
+    // configure the settings or register specific callbacks.
+    //
+    // XXX Make sure comments still make sense
+
+    BaseTest &add_input(std::string s) {
+        impl_->add_input(s);
+        return *this;
     }
 
-    // Events processing
-    // -----------------
-    //
-    // Map events emitted by the FFI API to nettests.hpp callbacks. This is the
-    // section where most of the complexity is.
+    BaseTest &set_input_filepath(std::string s) {
+        impl_->input_filepaths.clear();
+        impl_->add_input_filepath(s);
+        return *this;
+    }
 
-    static void process_event(
-            const SharedPtr<Details> &tip, nlohmann::json ev) {
-        // Implementation notes:
-        //
-        // 1) as mentioned above, in processing events we're quite strict in the
-        // sense that we _assume_ events to have a specific structure and fail
-        // with an unhandled exception otherwise;
-        //
-        // 2) the nettests API is less rich that the FFI API; as such, there
-        // are several FFI events that are going to be ignored.
-        std::string key = ev.at("key");
-        // TODO(bassosimone): make sure events names are OK.
-        if (key == "failure.measurement") {
-            // NOTHING
-        } else if (key == "failure.measurement_submission") {
-            // NOTHING
-        } else if (key == "failure.startup") {
-            // NOTHING
-        } else if (key == "log") {
-            std::string log_level = ev.at("value").at("log_level");
-            std::string message = ev.at("value").at("message");
-            uint32_t verbosity = MK_LOG_QUIET;
-            if (log_level == "ERR") {
-                verbosity = MK_LOG_ERR;
-            } else if (log_level == "WARNING") {
-                verbosity = MK_LOG_WARNING;
-            } else if (log_level == "INFO") {
-                verbosity = MK_LOG_INFO;
-            } else if (log_level == "DEBUG") {
-                verbosity = MK_LOG_DEBUG;
-            } else if (log_level == "DEBUG2") {
-                verbosity = MK_LOG_DEBUG2;
+    BaseTest &add_input_filepath(std::string s) {
+        impl_->add_input_filepath(s);
+        return *this;
+    }
+
+    BaseTest &set_output_filepath(std::string s) {
+        impl_->set_output_filepath(s);
+        return *this;
+    }
+
+    BaseTest &set_error_filepath(std::string s) {
+        impl_->set_log_filepath(s);
+        return *this;
+    }
+
+    BaseTest &on_logger_eof(std::function<void()> &&fn) {
+        impl_->final_cbs.push_back(std::move(fn));
+        return *this;
+    }
+
+    BaseTest &on_log(std::function<void(uint32_t, const char *)> &&fn) {
+        impl_->on_log([fn = std::move(fn)](const cxx14::Log &info) noexcept {
+            uint32_t severity = 0;
+            if (info.log_level == "ERR") {
+                severity = MK_LOG_ERR;
+            } else if (info.log_level == "WARNING") {
+                severity = MK_LOG_WARNING;
+            } else if (info.log_level == "INFO") {
+                severity = MK_LOG_INFO;
+            } else if (info.log_level == "DEBUG") {
+                severity = MK_LOG_DEBUG;
+            } else if (info.log_level == "DEBUG2") {
+                severity = MK_LOG_DEBUG2;
             } else {
-                assert(false);
+                assert(false); // should not happen
                 return;
             }
-            for (auto &cb : tip->log_cbs) {
-                MK_NETTESTS_CALL_AND_SUPPRESS(cb, (verbosity, message.c_str()));
-            }
-        } else if (key == "measurement") {
-            std::string json_str = ev.at("value").at("json_str");
-            for (auto &cb : tip->entry_cbs) {
-                MK_NETTESTS_CALL_AND_SUPPRESS(cb, (json_str));
-            }
-        } else if (key == "status.end") {
-            double downloaded_kb = ev.at("value").at("downloaded_kb");
-            double uploaded_kb = ev.at("value").at("uploaded_kb");
-            DataUsage du;
-            // There are cases where the following could overflow but, again, we
-            // do not want to break the existing API.
-            du.down = (uint64_t)(downloaded_kb * 1000.0);
-            du.up = (uint64_t)(uploaded_kb * 1000.0);
-            for (auto &cb : tip->overall_data_usage_cbs) {
-                MK_NETTESTS_CALL_AND_SUPPRESS(cb, (du));
-            }
-            for (auto &cb : tip->end_cbs) {
-                MK_NETTESTS_CALL_AND_SUPPRESS(cb, ());
-            }
-        } else if (key == "status.geoip_lookup") {
-            // NOTHING
-        } else if (key == "status.progress") {
-            double percentage = ev.at("value").at("percentage");
-            std::string message = ev.at("value").at("message");
-            for (auto &cb : tip->progress_cbs) {
-                MK_NETTESTS_CALL_AND_SUPPRESS(
-                        cb, (percentage, message.c_str()));
-            }
-        } else if (key == "status.queued") {
-            // NOTHING
-        } else if (key == "status.measurement_start") {
-            // NOTHING
-        } else if (key == "status.measurement_submission") {
-            // NOTHING
-        } else if (key == "status.measurement_done") {
-            // NOTHING
-        } else if (key == "status.report_create") {
-            // NOTHING
-        } else if (key == "status.started") {
-            for (auto &cb : tip->begin_cbs) {
-                MK_NETTESTS_CALL_AND_SUPPRESS(cb, ());
-            }
-        } else if (key == "status.update.performance") {
-            std::string direction = ev.at("value").at("direction");
-            double elapsed = ev.at("value").at("elapsed");
-            int64_t num_streams = ev.at("value").at("num_streams");
-            double speed_kbps = ev.at("value").at("speed_kbps");
+            MK_NETTESTS_CALL_AND_SUPPRESS(fn, (severity, info.message.c_str()));
+        });
+        return *this;
+    }
+
+    BaseTest &on_event(std::function<void(const char *)> &&fn) {
+        impl_->on_status_update_performance([fn = std::move(fn)](
+              const cxx14::StatusUpdatePerformance &info) noexcept {
             nlohmann::json doc;
-            doc["type"] = direction + "-speed";
-            doc["elapsed"] = {elapsed, "s"};
-            doc["num_streams"] = num_streams;
-            doc["speed"] = {speed_kbps, "kbit/s"};
+            doc["type"] = info.direction + "-speed";
+            doc["elapsed"] = {info.elapsed, "s"};
+            doc["num_streams"] = info.num_streams;
+            doc["speed"] = {info.speed_kbps, "kbit/s"};
             // Serializing may throw but we expect MK to pass us a good
             // JSON so don't consider this possible error condition.
             const char *s = doc.dump().c_str();
-            for (auto &cb : tip->event_cbs) {
-                MK_NETTESTS_CALL_AND_SUPPRESS(cb, (s));
-            }
-        } else if (key == "status.update.websites") {
-            // NOTHING
-        } else if (key == "task_terminated") {
-            // NOTHING
-        } else {
-#ifdef MK_NETTESTS_TRACE_EVENTS
-            std::clog << "WARNING: mk::nettests: unhandled event: " << key
-                      << std::endl;
-#endif
-        }
+            MK_NETTESTS_CALL_AND_SUPPRESS(fn, (s));
+        });
+        return *this;
     }
 
-#undef MK_NETTESTS_CALL_AND_SUPPRESS // Tidy up
+    BaseTest &on_progress(std::function<void(double, const char *)> &&fn) {
+        impl_->on_status_progress([fn = std::move(fn)](
+              const cxx14::StatusProgress &info) noexcept {
+            MK_NETTESTS_CALL_AND_SUPPRESS(fn, //
+                  (info.percentage, info.message.c_str()));
+        });
+        return *this;
+    }
+
+    BaseTest &set_verbosity(uint32_t level) {
+        std::string log_level;
+        switch (level) {
+        case MK_LOG_ERR:
+            log_level = "ERR";
+            break;
+        case MK_LOG_WARNING:
+            log_level = "WARNING";
+            break;
+        case MK_LOG_INFO:
+            log_level = "INFO";
+            break;
+        case MK_LOG_DEBUG:
+            log_level = "DEBUG";
+            break;
+        case MK_LOG_DEBUG2:
+            log_level = "DEBUG2";
+            break;
+        default:
+            assert(false); // Programmer error
+            return *this;
+        }
+        impl_->set_log_level(log_level);
+        return *this;
+    }
+
+    BaseTest &increase_verbosity() {
+        if (impl_->log_level == "ERR") {
+            impl_->log_level = "WARNING";
+        } else if (impl_->log_level == "WARNING") {
+            impl_->log_level = "INFO";
+        } else if (impl_->log_level == "INFO") {
+            impl_->log_level = "DEBUG";
+        } else if (impl_->log_level == "DEBUG") {
+            impl_->log_level = "DEBUG2";
+        } else if (impl_->log_level == "DEBUG2") {
+            return *this;
+        } else {
+            assert(false); // Internal error
+            return *this;
+        }
+        return *this;
+    }
+
+    template <typename T, typename = typename std::enable_if<
+                                  std::is_arithmetic<T>::value>::type>
+    BaseTest &set_option(std::string key, T value) {
+        impl_->set_option(key, value);
+        return *this;
+    }
+
+    BaseTest &set_option(std::string key, std::string value) {
+        impl_->set_option(key, value);
+        return *this;
+    }
+
+    BaseTest &add_annotation(std::string key, std::string value) {
+        impl_->set_option(key, value);
+        return *this;
+    }
+
+    BaseTest &on_entry(std::function<void(std::string)> &&fn) {
+        impl_->on_measurement([fn = std::move(fn)](
+              const cxx14::Measurement &info) noexcept {
+            MK_NETTESTS_CALL_AND_SUPPRESS(fn, (info.json_str));
+        });
+        return *this;
+    }
+
+    BaseTest &on_begin(std::function<void()> &&fn) {
+        impl_->on_status_started([fn = std::move(fn)]() noexcept {
+            MK_NETTESTS_CALL_AND_SUPPRESS(fn, ());
+        });
+        return *this;
+    }
+
+    BaseTest &on_end(std::function<void()> &&fn) {
+        impl_->on_status_end([fn = std::move(fn)]() noexcept {
+            MK_NETTESTS_CALL_AND_SUPPRESS(fn, ());
+        });
+        return *this;
+    }
+
+    BaseTest &on_destroy(std::function<void()> &&fn) {
+        impl_->final_cbs.push_back(std::move(fn));
+        return *this;
+    }
+
+    BaseTest &on_overall_data_usage(std::function<void(DataUsage)> &&fn) {
+        impl_->on_status_end([fn = std::move(fn)](
+                const cxx14::StatusEnd &info) noexcept {
+            DataUsage du;
+            // There are cases where the following could overflow but, again, we
+            // do not want to break the existing API.
+            du.down = (uint64_t)(info.downloaded_kb * 1000.0);
+            du.up = (uint64_t)(info.uploaded_kb * 1000.0);
+            MK_NETTESTS_CALL_AND_SUPPRESS(fn, (du));
+        });
+        return *this;
+    }
+
+    // run() & start()
+    // ---------------
+    //
+    // We should not be able to run more than a test with this class
+    // hence we immediately swap the context. Because we're using a
+    // SharedPtr, this means that attempting to run more than one test
+    // leads to an exception being thrown.
+
+    void run() {
+        (void)cxx14::TaskRunner::global().run(std::move(impl_));
+    }
+
+    void start(std::function<void()> &&fn) {
+        (void)cxx14::TaskRunner::global().start( //
+            std::move(impl_), std::move(fn));
+    }
+
+    // FIXME: ability to print events on the standard error?
+
+#undef MK_NETTESTS_CALL_AND_SUPPRESS // Tidy
 
   protected:
     // Implementation note: using a SharedPtr<T> because it's easy to
