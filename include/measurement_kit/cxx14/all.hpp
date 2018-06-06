@@ -6,6 +6,7 @@
 #include <stdint.h>
 
 #include <functional>
+#include <memory>
 #include <string>
 #include <thread>
 #include <utility>
@@ -16,6 +17,24 @@
 
 namespace mk {
 namespace cxx14 {
+
+/// Deletes a mk_task_t pointer
+class TaskDeleter {
+  public:
+    void operator()(mk_task_t *task) noexcept { mk_task_destroy(task); }
+};
+
+/// Unique pointer to mk_task_t
+using TaskUptr = std::unique_ptr<mk_task_t, TaskDeleter>;
+
+/// Deletes a mk_event_t pointer
+class EventDeleter {
+  public:
+    void operator()(mk_event_t *event) noexcept { mk_event_destroy(event); }
+};
+
+/// Unique pointer to mk_event_t
+using EventUptr = std::unique_ptr<mk_event_t, EventDeleter>;
 
 /// C++ representation of 'failure.asn_lookup' event
 class FailureAsnLookup {
@@ -875,20 +894,21 @@ class TaskRunner {
         } catch (const NlohmannJsonException &) {
             return false;
         }
-        auto ptask = mk_task_start(settings.c_str());
+        TaskUptr ptask;
+        ptask.reset(mk_task_start(settings.c_str()));
         if (!ptask) {
             return false;
         }
         auto rv = true;
-        while (rv && !mk_task_is_done(ptask)) {
-            auto pevent = mk_task_wait_for_next_event(ptask);
+        while (rv && !mk_task_is_done(ptask.get())) {
+            EventUptr pevent;
+            pevent.reset(mk_task_wait_for_next_event(ptask.get()));
             if (!pevent) {
                 rv = false;
                 break;
             }
-            auto pstr = mk_event_serialize(pevent);
+            auto pstr = mk_event_serialize(pevent.get());
             if (!pstr) {
-                mk_event_destroy(pevent);
                 assert(false);
                 rv = false;
                 break;
@@ -897,18 +917,15 @@ class TaskRunner {
             try {
                 event = nlohmann::json::parse(pstr);
             } catch (const NlohmannJsonException &) {
-                mk_event_destroy(pevent);
                 assert(false);
                 rv = false;
                 break;
             }
-            mk_event_destroy(pevent);
             rv = process_event(info, event);
         }
         if (!rv) {
-            mk_task_interrupt(ptask);
+            mk_task_interrupt(ptask.get());
         }
-        mk_task_destroy(ptask);
         return rv;
     }
 
