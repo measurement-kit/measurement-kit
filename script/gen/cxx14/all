@@ -179,9 +179,9 @@ def write_events_classes(filep, events):
 def write_events_callbacks(filep, events):
     """ Writes events callbacks in the header file """
     for key, value in sorted(events.items()):
-        filep.write("/// Callback taking %s as unique argument\n" %
+        filep.write("/// Callback taking `const %s &` as unique argument\n" %
                     event_name_to_camel_case(key))
-        filep.write("using %sCallback = std::function<void(%s)>;\n" % (
+        filep.write("using %sCallback = std::function<void(const %s &)>;\n" % (
             event_name_to_camel_case(key), event_name_to_camel_case(key)))
         filep.write("\n")
 
@@ -386,6 +386,7 @@ def write_runner(filep, settings, events):
     filep.write("        return runner;\n")
     filep.write("    }\n")
     filep.write("};\n")
+    filep.write("\n")
 
 def write_header_epilogue(filep):
     """ write header epilogue """

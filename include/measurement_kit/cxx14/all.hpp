@@ -198,80 +198,80 @@ class StatusUpdateWebsites {
     std::string status;
 };
 
-/// Callback taking FailureAsnLookup as unique argument
-using FailureAsnLookupCallback = std::function<void(FailureAsnLookup)>;
+/// Callback taking `const FailureAsnLookup &` as unique argument
+using FailureAsnLookupCallback = std::function<void(const FailureAsnLookup &)>;
 
-/// Callback taking FailureCcLookup as unique argument
-using FailureCcLookupCallback = std::function<void(FailureCcLookup)>;
+/// Callback taking `const FailureCcLookup &` as unique argument
+using FailureCcLookupCallback = std::function<void(const FailureCcLookup &)>;
 
-/// Callback taking FailureIpLookup as unique argument
-using FailureIpLookupCallback = std::function<void(FailureIpLookup)>;
+/// Callback taking `const FailureIpLookup &` as unique argument
+using FailureIpLookupCallback = std::function<void(const FailureIpLookup &)>;
 
-/// Callback taking FailureMeasurement as unique argument
-using FailureMeasurementCallback = std::function<void(FailureMeasurement)>;
+/// Callback taking `const FailureMeasurement &` as unique argument
+using FailureMeasurementCallback = std::function<void(const FailureMeasurement &)>;
 
-/// Callback taking FailureMeasurementSubmission as unique argument
-using FailureMeasurementSubmissionCallback = std::function<void(FailureMeasurementSubmission)>;
+/// Callback taking `const FailureMeasurementSubmission &` as unique argument
+using FailureMeasurementSubmissionCallback = std::function<void(const FailureMeasurementSubmission &)>;
 
-/// Callback taking FailureReportClose as unique argument
-using FailureReportCloseCallback = std::function<void(FailureReportClose)>;
+/// Callback taking `const FailureReportClose &` as unique argument
+using FailureReportCloseCallback = std::function<void(const FailureReportClose &)>;
 
-/// Callback taking FailureReportCreate as unique argument
-using FailureReportCreateCallback = std::function<void(FailureReportCreate)>;
+/// Callback taking `const FailureReportCreate &` as unique argument
+using FailureReportCreateCallback = std::function<void(const FailureReportCreate &)>;
 
-/// Callback taking FailureResolverLookup as unique argument
-using FailureResolverLookupCallback = std::function<void(FailureResolverLookup)>;
+/// Callback taking `const FailureResolverLookup &` as unique argument
+using FailureResolverLookupCallback = std::function<void(const FailureResolverLookup &)>;
 
-/// Callback taking FailureStartup as unique argument
-using FailureStartupCallback = std::function<void(FailureStartup)>;
+/// Callback taking `const FailureStartup &` as unique argument
+using FailureStartupCallback = std::function<void(const FailureStartup &)>;
 
-/// Callback taking Log as unique argument
-using LogCallback = std::function<void(Log)>;
+/// Callback taking `const Log &` as unique argument
+using LogCallback = std::function<void(const Log &)>;
 
-/// Callback taking Measurement as unique argument
-using MeasurementCallback = std::function<void(Measurement)>;
+/// Callback taking `const Measurement &` as unique argument
+using MeasurementCallback = std::function<void(const Measurement &)>;
 
-/// Callback taking StatusEnd as unique argument
-using StatusEndCallback = std::function<void(StatusEnd)>;
+/// Callback taking `const StatusEnd &` as unique argument
+using StatusEndCallback = std::function<void(const StatusEnd &)>;
 
-/// Callback taking StatusGeoipLookup as unique argument
-using StatusGeoipLookupCallback = std::function<void(StatusGeoipLookup)>;
+/// Callback taking `const StatusGeoipLookup &` as unique argument
+using StatusGeoipLookupCallback = std::function<void(const StatusGeoipLookup &)>;
 
-/// Callback taking StatusMeasurementDone as unique argument
-using StatusMeasurementDoneCallback = std::function<void(StatusMeasurementDone)>;
+/// Callback taking `const StatusMeasurementDone &` as unique argument
+using StatusMeasurementDoneCallback = std::function<void(const StatusMeasurementDone &)>;
 
-/// Callback taking StatusMeasurementStart as unique argument
-using StatusMeasurementStartCallback = std::function<void(StatusMeasurementStart)>;
+/// Callback taking `const StatusMeasurementStart &` as unique argument
+using StatusMeasurementStartCallback = std::function<void(const StatusMeasurementStart &)>;
 
-/// Callback taking StatusMeasurementSubmission as unique argument
-using StatusMeasurementSubmissionCallback = std::function<void(StatusMeasurementSubmission)>;
+/// Callback taking `const StatusMeasurementSubmission &` as unique argument
+using StatusMeasurementSubmissionCallback = std::function<void(const StatusMeasurementSubmission &)>;
 
-/// Callback taking StatusProgress as unique argument
-using StatusProgressCallback = std::function<void(StatusProgress)>;
+/// Callback taking `const StatusProgress &` as unique argument
+using StatusProgressCallback = std::function<void(const StatusProgress &)>;
 
-/// Callback taking StatusQueued as unique argument
-using StatusQueuedCallback = std::function<void(StatusQueued)>;
+/// Callback taking `const StatusQueued &` as unique argument
+using StatusQueuedCallback = std::function<void(const StatusQueued &)>;
 
-/// Callback taking StatusReportClose as unique argument
-using StatusReportCloseCallback = std::function<void(StatusReportClose)>;
+/// Callback taking `const StatusReportClose &` as unique argument
+using StatusReportCloseCallback = std::function<void(const StatusReportClose &)>;
 
-/// Callback taking StatusReportCreate as unique argument
-using StatusReportCreateCallback = std::function<void(StatusReportCreate)>;
+/// Callback taking `const StatusReportCreate &` as unique argument
+using StatusReportCreateCallback = std::function<void(const StatusReportCreate &)>;
 
-/// Callback taking StatusResolverLookup as unique argument
-using StatusResolverLookupCallback = std::function<void(StatusResolverLookup)>;
+/// Callback taking `const StatusResolverLookup &` as unique argument
+using StatusResolverLookupCallback = std::function<void(const StatusResolverLookup &)>;
 
-/// Callback taking StatusStarted as unique argument
-using StatusStartedCallback = std::function<void(StatusStarted)>;
+/// Callback taking `const StatusStarted &` as unique argument
+using StatusStartedCallback = std::function<void(const StatusStarted &)>;
 
-/// Callback taking StatusTerminated as unique argument
-using StatusTerminatedCallback = std::function<void(StatusTerminated)>;
+/// Callback taking `const StatusTerminated &` as unique argument
+using StatusTerminatedCallback = std::function<void(const StatusTerminated &)>;
 
-/// Callback taking StatusUpdatePerformance as unique argument
-using StatusUpdatePerformanceCallback = std::function<void(StatusUpdatePerformance)>;
+/// Callback taking `const StatusUpdatePerformance &` as unique argument
+using StatusUpdatePerformanceCallback = std::function<void(const StatusUpdatePerformance &)>;
 
-/// Callback taking StatusUpdateWebsites as unique argument
-using StatusUpdateWebsitesCallback = std::function<void(StatusUpdateWebsites)>;
+/// Callback taking `const StatusUpdateWebsites &` as unique argument
+using StatusUpdateWebsitesCallback = std::function<void(const StatusUpdateWebsites &)>;
 
 /// Info on a generic task
 class TaskInfo {
@@ -1461,6 +1461,7 @@ class TaskRunner {
         return runner;
     }
 };
+
 } // namespace cxx14
 } // namespace mk
 #endif // MEASUREMENT_KIT_CXX14_ALL_HPP
