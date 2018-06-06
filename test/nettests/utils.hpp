@@ -34,7 +34,7 @@ template <typename T> void with_test(with_test_cb &&lambda) {
                 // TODO(bassosimone): switch to production collector when
                 // the new implementation is confirmed to be okay.
                 .set_option("collector_base_url",
-                            "https://collector-sandbox.ooni.io/")
+                            "https://collector-sandbox.ooni.io")
                 .set_option("bouncer_base_url",
                              mk::ooni::bouncer::production_bouncer_url()));
     /*
@@ -59,7 +59,7 @@ with_runnable(std::function<void(mk::nettests::Runnable &)> lambda) {
     mk::nettests::Runnable test;
     test.annotations["continuous_integration"] = "true";
     // TODO(bassosimone): see above comment regarding collector and bouncer
-    test.options["collector_base_url"] = "https://collector-sandbox.ooni.io/";
+    test.options["collector_base_url"] = "https://collector-sandbox.ooni.io";
     test.options["bouncer_base_url"] =
           mk::ooni::bouncer::production_bouncer_url();
     /*
