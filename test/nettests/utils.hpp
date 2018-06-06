@@ -27,14 +27,14 @@ static inline void run_test(mk::nettests::BaseTest &test) {
 template <typename T> void with_test(with_test_cb &&lambda) {
     lambda(
           T{}.set_option("geoip_country_path", "GeoIP.dat")
+                .add_annotation("continuous_integration", "true")
                 .set_option("geoip_asn_path", "GeoIPASNum.dat")
                 .set_verbosity(MK_LOG_INFO)
-                /*
-                 * FIXME: the testing bouncer is not working. So use the testing
-                 * collector with the production bouncer.
-                 */
+                // Using the new collector for testing purposes.
+                // TODO(bassosimone): switch to production collector when
+                // the new implementation is confirmed to be okay.
                 .set_option("collector_base_url",
-                             mk::ooni::collector::testing_collector_url())
+                            "https://collector-sandbox.ooni.io/")
                 .set_option("bouncer_base_url",
                              mk::ooni::bouncer::production_bouncer_url()));
     /*
@@ -57,9 +57,9 @@ template <typename T> void with_test(std::string s, with_test_cb &&lambda) {
 static inline void
 with_runnable(std::function<void(mk::nettests::Runnable &)> lambda) {
     mk::nettests::Runnable test;
-    // FIXME: see above comment regarding collector and bouncer
-    test.options["collector_base_url"] =
-          mk::ooni::collector::testing_collector_url();
+    test.add_annotation("continuous_integration", "true");
+    // TODO(bassosimone): see above comment regarding collector and bouncer
+    test.options["collector_base_url"] = "https://collector-sandbox.ooni.io/";
     test.options["bouncer_base_url"] =
           mk::ooni::bouncer::production_bouncer_url();
     /*
