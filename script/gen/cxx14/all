@@ -147,9 +147,9 @@ def write_events_classes(filep, events):
             if isinstance(pattern, STR):
                 filep.write("std::string %s;\n" % name)
             elif isinstance(pattern, int):
-                filep.write("int64_t %s;\n" % name)
+                filep.write("int64_t %s = 0;\n" % name)
             elif isinstance(pattern, float):
-                filep.write("double %s;\n" % name)
+                filep.write("double %s = 0.0;\n" % name)
             else:
                 raise RuntimeError("unexpected type for: %s" % pattern)
         filep.write("};\n\n")

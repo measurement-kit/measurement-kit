@@ -46,7 +46,7 @@ class FailureMeasurementSubmission {
   public:
     std::string failure;
     std::string json_str;
-    int64_t idx;
+    int64_t idx = 0;
 };
 
 /// C++ representation of 'failure.report_close' event
@@ -84,15 +84,15 @@ class Log {
 class Measurement {
   public:
     std::string json_str;
-    int64_t idx;
+    int64_t idx = 0;
 };
 
 /// C++ representation of 'status.end' event
 class StatusEnd {
   public:
     std::string failure;
-    double uploaded_kb;
-    double downloaded_kb;
+    double uploaded_kb = 0.0;
+    double downloaded_kb = 0.0;
 };
 
 /// C++ representation of 'status.geoip_lookup' event
@@ -107,26 +107,26 @@ class StatusGeoipLookup {
 /// C++ representation of 'status.measurement_done' event
 class StatusMeasurementDone {
   public:
-    int64_t idx;
+    int64_t idx = 0;
 };
 
 /// C++ representation of 'status.measurement_start' event
 class StatusMeasurementStart {
   public:
     std::string input;
-    int64_t idx;
+    int64_t idx = 0;
 };
 
 /// C++ representation of 'status.measurement_submission' event
 class StatusMeasurementSubmission {
   public:
-    int64_t idx;
+    int64_t idx = 0;
 };
 
 /// C++ representation of 'status.progress' event
 class StatusProgress {
   public:
-    double percentage;
+    double percentage = 0.0;
     std::string message;
 };
 
@@ -167,9 +167,9 @@ class StatusTerminated {
 class StatusUpdatePerformance {
   public:
     std::string direction;
-    int64_t num_streams;
-    double speed_kbps;
-    double elapsed;
+    int64_t num_streams = 0;
+    double speed_kbps = 0.0;
+    double elapsed = 0.0;
 };
 
 /// C++ representation of 'status.update.websites' event
