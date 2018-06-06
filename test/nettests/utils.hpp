@@ -57,7 +57,7 @@ template <typename T> void with_test(std::string s, with_test_cb &&lambda) {
 static inline void
 with_runnable(std::function<void(mk::nettests::Runnable &)> lambda) {
     mk::nettests::Runnable test;
-    test.add_annotation("continuous_integration", "true");
+    test.annotations["continuous_integration"] = "true";
     // TODO(bassosimone): see above comment regarding collector and bouncer
     test.options["collector_base_url"] = "https://collector-sandbox.ooni.io/";
     test.options["bouncer_base_url"] =
