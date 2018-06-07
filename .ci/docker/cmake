@@ -32,4 +32,4 @@ tc qdisc add dev eth0 root netem delay 200ms 10ms  # Slow down
 ./autogen.sh --cmake
 ./script/cmake/run -GNinja $CMAKE_OPTIONS
 ninja -v
-ctest -j6 --output-on-failure
+ctest -j6 --output-on-failure --timeout 300
