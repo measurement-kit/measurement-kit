@@ -48,9 +48,9 @@
   XX(geoip_country_path, string, false) \
   XX(ignore_bouncer_error, int, false) \
   XX(ignore_open_report_error, int, false) \
-  XX(max_runtime, string, false) \
+  XX(max_runtime, float, false) \
   XX(net/ca_bundle_path, string, false) \
-  XX(net/timeout, string, false) \
+  XX(net/timeout, float, false) \
   XX(no_bouncer, int, false) \
   XX(no_collector, int, false) \
   XX(no_asn_lookup, int, false) \

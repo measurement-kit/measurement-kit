@@ -41,7 +41,7 @@
 #include <measurement_kit/nettests/events.hpp> // FIXME: get rid of this
 #include <measurement_kit/nettests/macros.h>
 
-#include <measurement_kit/cxx14.h>
+#include <measurement_kit/cxx14.hpp>
 
 // Do not issue deprecation warning for us until we update to new API
 #if __cplusplus >= 201402L && !defined MK_NETTESTS_INTERNAL
@@ -53,7 +53,7 @@
 namespace mk {
 namespace nettests {
 
-class MK_NETTETS_DEPRECATED BaseTest {
+class MK_NETTESTS_DEPRECATED BaseTest {
   public:
     // Implementation notes
     // --------------------
@@ -77,6 +77,8 @@ class MK_NETTETS_DEPRECATED BaseTest {
     //
     // This is not necessarily a very good idea, but the original code was
     // doing that, hence we should do that here as well.
+    //
+    // XXX: move down?
 #define MK_NETTESTS_CALL_AND_SUPPRESS(func, args)                              \
     do {                                                                       \
         try {                                                                  \
@@ -86,22 +88,7 @@ class MK_NETTETS_DEPRECATED BaseTest {
         }                                                                      \
     } while (0)
 
-    class Details : public cxx14::TaskInfo {
-      public:
-        std::vector<std::function<void()>> final_cbs;
-
-        Details() noexcept : cxx14::TaskInfo::TaskInfo() {
-            log_level = "WARNING";
-        }
-
-        ~Details() noexcept {
-            for (const auto &fn : final_cbs) {
-                MK_NETTESTS_CALL_AND_SUPPRESS(fn, ());
-            }
-        }
-    };
-
-    BaseTest() { impl_.reset(new Details); }
+    BaseTest() { impl_.log_level = "WARNING"; }
 
     // The original implementation had a virtual destructor but no other
     // virtual members. Hence in the reimplementation I am removing the
@@ -117,38 +104,41 @@ class MK_NETTETS_DEPRECATED BaseTest {
     // XXX Make sure comments still make sense
 
     BaseTest &add_input(std::string s) {
-        impl_->add_input(s);
+        impl_.add_input(s);
         return *this;
     }
 
     BaseTest &set_input_filepath(std::string s) {
-        impl_->input_filepaths.clear();
-        impl_->add_input_filepath(s);
+        impl_.input_filepaths.clear();
+        impl_.add_input_filepath(s);
         return *this;
     }
 
     BaseTest &add_input_filepath(std::string s) {
-        impl_->add_input_filepath(s);
+        impl_.add_input_filepath(s);
         return *this;
     }
 
     BaseTest &set_output_filepath(std::string s) {
-        impl_->set_output_filepath(s);
+        impl_.set_output_filepath(s);
         return *this;
     }
 
     BaseTest &set_error_filepath(std::string s) {
-        impl_->set_log_filepath(s);
+        impl_.set_log_filepath(s);
         return *this;
     }
 
     BaseTest &on_logger_eof(std::function<void()> &&fn) {
-        impl_->final_cbs.push_back(std::move(fn));
+        impl_.on_status_terminated([fn = std::move(fn)](
+                const cxx14::StatusTerminated &) noexcept {
+            MK_NETTESTS_CALL_AND_SUPPRESS(fn, ());
+        });
         return *this;
     }
 
     BaseTest &on_log(std::function<void(uint32_t, const char *)> &&fn) {
-        impl_->on_log([fn = std::move(fn)](const cxx14::Log &info) noexcept {
+        impl_.on_log([fn = std::move(fn)](const cxx14::Log &info) noexcept {
             uint32_t severity = 0;
             if (info.log_level == "ERR") {
                 severity = MK_LOG_ERR;
@@ -170,7 +160,7 @@ class MK_NETTETS_DEPRECATED BaseTest {
     }
 
     BaseTest &on_event(std::function<void(const char *)> &&fn) {
-        impl_->on_status_update_performance([fn = std::move(fn)](
+        impl_.on_status_update_performance([fn = std::move(fn)](
               const cxx14::StatusUpdatePerformance &info) noexcept {
             nlohmann::json doc;
             doc["type"] = info.direction + "-speed";
@@ -186,7 +176,7 @@ class MK_NETTETS_DEPRECATED BaseTest {
     }
 
     BaseTest &on_progress(std::function<void(double, const char *)> &&fn) {
-        impl_->on_status_progress([fn = std::move(fn)](
+        impl_.on_status_progress([fn = std::move(fn)](
               const cxx14::StatusProgress &info) noexcept {
             MK_NETTESTS_CALL_AND_SUPPRESS(fn, //
                   (info.percentage, info.message.c_str()));
@@ -216,20 +206,20 @@ class MK_NETTETS_DEPRECATED BaseTest {
             assert(false); // Programmer error
             return *this;
         }
-        impl_->set_log_level(log_level);
+        impl_.set_log_level(log_level);
         return *this;
     }
 
     BaseTest &increase_verbosity() {
-        if (impl_->log_level == "ERR") {
-            impl_->log_level = "WARNING";
-        } else if (impl_->log_level == "WARNING") {
-            impl_->log_level = "INFO";
-        } else if (impl_->log_level == "INFO") {
-            impl_->log_level = "DEBUG";
-        } else if (impl_->log_level == "DEBUG") {
-            impl_->log_level = "DEBUG2";
-        } else if (impl_->log_level == "DEBUG2") {
+        if (impl_.log_level == "ERR") {
+            impl_.log_level = "WARNING";
+        } else if (impl_.log_level == "WARNING") {
+            impl_.log_level = "INFO";
+        } else if (impl_.log_level == "INFO") {
+            impl_.log_level = "DEBUG";
+        } else if (impl_.log_level == "DEBUG") {
+            impl_.log_level = "DEBUG2";
+        } else if (impl_.log_level == "DEBUG2") {
             return *this;
         } else {
             assert(false); // Internal error
@@ -241,22 +231,22 @@ class MK_NETTETS_DEPRECATED BaseTest {
     template <typename T, typename = typename std::enable_if<
                                   std::is_arithmetic<T>::value>::type>
     BaseTest &set_option(std::string key, T value) {
-        impl_->set_option(key, value);
+        impl_.set_option(key, value);
         return *this;
     }
 
     BaseTest &set_option(std::string key, std::string value) {
-        impl_->set_option(key, value);
+        impl_.set_option(key, value);
         return *this;
     }
 
     BaseTest &add_annotation(std::string key, std::string value) {
-        impl_->set_option(key, value);
+        impl_.set_option(key, value);
         return *this;
     }
 
     BaseTest &on_entry(std::function<void(std::string)> &&fn) {
-        impl_->on_measurement([fn = std::move(fn)](
+        impl_.on_measurement([fn = std::move(fn)](
               const cxx14::Measurement &info) noexcept {
             MK_NETTESTS_CALL_AND_SUPPRESS(fn, (info.json_str));
         });
@@ -264,26 +254,31 @@ class MK_NETTETS_DEPRECATED BaseTest {
     }
 
     BaseTest &on_begin(std::function<void()> &&fn) {
-        impl_->on_status_started([fn = std::move(fn)]() noexcept {
+        impl_.on_status_started([fn = std::move(fn)](
+              const cxx14::StatusStarted &) noexcept {
             MK_NETTESTS_CALL_AND_SUPPRESS(fn, ());
         });
         return *this;
     }
 
     BaseTest &on_end(std::function<void()> &&fn) {
-        impl_->on_status_end([fn = std::move(fn)]() noexcept {
+        impl_.on_status_end([fn = std::move(fn)](
+              const cxx14::StatusEnd &) noexcept {
             MK_NETTESTS_CALL_AND_SUPPRESS(fn, ());
         });
         return *this;
     }
 
     BaseTest &on_destroy(std::function<void()> &&fn) {
-        impl_->final_cbs.push_back(std::move(fn));
+        impl_.on_status_terminated([fn = std::move(fn)](
+                const cxx14::StatusTerminated &) noexcept {
+            MK_NETTESTS_CALL_AND_SUPPRESS(fn, ());
+        });
         return *this;
     }
 
     BaseTest &on_overall_data_usage(std::function<void(DataUsage)> &&fn) {
-        impl_->on_status_end([fn = std::move(fn)](
+        impl_.on_status_end([fn = std::move(fn)](
                 const cxx14::StatusEnd &info) noexcept {
             DataUsage du;
             // There are cases where the following could overflow but, again, we
@@ -325,13 +320,15 @@ class MK_NETTETS_DEPRECATED BaseTest {
     // Also: the pointer was public in the previous implementation but
     // it was also opaque, so not very useful. For this reason, it's
     // now protected in this implementation.
-    SharedPtr<Details> impl_;
+    //
+    // FIXME: no longer the case. Also change the variable name.
+    cxx14::TaskInfo impl_;
 };
 
-#define MK_DECLARE_TEST(_name_,  _type_ignored_, _mandatory_ignored_)          \
+#define MK_DECLARE_TEST(_name_, _type_ignored_, _mandatory_ignored_)           \
     class _name_##Test : public BaseTest {                                     \
       public:                                                                  \
-        _name_##Test() : BaseTest() { impl_->settings["name"] = #_name_; }     \
+        _name_##Test() : BaseTest() { impl_.name = #_name_; }                  \
     };
 MK_ENUM_TASKS(MK_DECLARE_TEST)
 #undef MK_DECLARE_TEST // Tidy

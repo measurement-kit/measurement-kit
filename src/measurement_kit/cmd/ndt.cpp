@@ -68,7 +68,7 @@ int main(std::list<Callback<BaseTest &>> &initializers, int argc, char **argv) {
     // If the user expressed preference force test suite, otherwise the
     // code would use the default test suite (download|upload).
     if (!use_default_test_suite) {
-        test.set_option("test_suite", test_suite);
+        test.set_option("test_suite", (int64_t)test_suite);
     }
 
     if (argc == 1) {

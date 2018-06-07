@@ -23,7 +23,7 @@ int main(std::list<Callback<BaseTest &>> &initializers, int argc, char **argv) {
         case 'u':
             // By default only the download phase is performed
             test.set_option("single_test_suite",
-                    MK_NDT_DOWNLOAD | MK_NDT_UPLOAD);
+                    (int64_t)(MK_NDT_DOWNLOAD | MK_NDT_UPLOAD));
             break;
         default:
             fprintf(stderr, "%s\n", USAGE);
