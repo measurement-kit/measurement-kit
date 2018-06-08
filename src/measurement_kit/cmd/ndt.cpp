@@ -2,9 +2,10 @@
 // Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
-#include "../cmdline.hpp"
 #include <measurement_kit/common/json.hpp>
 #include <measurement_kit/ndt.hpp>
+
+#include "src/measurement_kit/cmdline.hpp"
 
 namespace ndt {
 

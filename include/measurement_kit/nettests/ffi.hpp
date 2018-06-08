@@ -311,8 +311,6 @@ class MK_NETTESTS_DEPRECATED BaseTest {
             std::move(impl_), std::move(fn));
     }
 
-    // FIXME: ability to print events on the standard error?
-
 #undef MK_NETTESTS_CALL_AND_SUPPRESS // Tidy
 
   protected:

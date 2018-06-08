@@ -12,6 +12,10 @@
 #include <utility>
 #include <vector>
 
+#ifdef MK_CXX14_TRACE_EVENTS
+#include <iostream>
+#endif
+
 #include <measurement_kit/common/nlohmann/json.hpp>
 #include <measurement_kit/ffi.h>
 
@@ -277,7 +281,7 @@ using StatusUpdateWebsitesCallback = std::function<void(const StatusUpdateWebsit
 class TaskInfo {
   public:
     /// 'annotations' field of settings
-    nlohmann::json annotations;
+    nlohmann::json annotations = nlohmann::json::object();
 
     /// Allows to set annotation using method chaining
     TaskInfo &set_annotation(const std::string &k, double v) noexcept {
@@ -358,7 +362,7 @@ class TaskInfo {
     }
 
     /// 'options' field of settings
-    nlohmann::json options;
+    nlohmann::json options = nlohmann::json::object();
 
     /// Allows to set option using method chaining
     TaskInfo &set_option(const std::string &k, double v) noexcept {
@@ -1017,6 +1021,9 @@ class TaskRunner {
                 rv = false;
                 break;
             }
+#ifdef MK_CXX14_TRACE_EVENTS
+            std::clog << "MK event: " << event.dump() << std::endl;
+#endif
             rv = process_event(info, event);
         }
         if (!rv) {
