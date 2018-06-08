@@ -129,8 +129,11 @@ class MK_NETTESTS_DEPRECATED BaseTest {
     }
 
     BaseTest &on_logger_eof(std::function<void()> &&fn) {
-        impl_.on_status_terminated([fn = std::move(fn)](
-                const cxx14::StatusTerminated &) noexcept {
+        // Note: as documented `status.end` is always emmitted just once at
+        // the end of the task. As such it's perfect for clearing up resources,
+        // which is the reason why `on_logger_eof()` was introduced.
+        impl_.on_status_end([fn = std::move(fn)](
+                const cxx14::StatusEnd &) noexcept {
             MK_NETTESTS_CALL_AND_SUPPRESS(fn, ());
         });
         return *this;
@@ -269,8 +272,10 @@ class MK_NETTESTS_DEPRECATED BaseTest {
     }
 
     BaseTest &on_destroy(std::function<void()> &&fn) {
-        impl_.on_status_terminated([fn = std::move(fn)](
-                const cxx14::StatusTerminated &) noexcept {
+        // As mentioned above, `on_status_end` is the right callback to map
+        // onto callbacks used to clear resources when the task is done.
+        impl_.on_status_end([fn = std::move(fn)](
+                const cxx14::StatusEnd &) noexcept {
             MK_NETTESTS_CALL_AND_SUPPRESS(fn, ());
         });
         return *this;

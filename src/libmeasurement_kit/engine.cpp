@@ -537,6 +537,12 @@ static void task_run(TaskImpl *pimpl, nlohmann::json &settings) {
         });
     });
 
+    // Important! Code in nettests/ffi.hpp assumes that this event is called
+    // in any case, regardless of whether this task smoothly arrives to its end
+    // or is interrupted. While this seems to be a reasonable thing to do as
+    // far as the implementation is concerned, I've decided to add this comment
+    // here to make sure we don't forget about this fact. This is also part of
+    // the documentation of the FFI API.
     DataUsage du;
     runnable->reactor->with_current_data_usage([&](DataUsage &x) {
         du = x;

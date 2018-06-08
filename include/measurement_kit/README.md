@@ -556,7 +556,10 @@ test. The complete JSON is like:
 
 Where `downloaded_kb` and `uploaded_kb` are the amount of downloaded and
 uploaded kilo-bytes, and `failure` is the overall failure that occurred during
-the test (or the empty string, if no error occurred).
+the test (or the empty string, if no error occurred). This event is always
+emitted, regardless of whether the task arrives naturally to its end or instead
+is interrupted. As such, you can rely on this event as a "once" event suitable
+for clearing up resources allocated as part of the task lifecycle.
 
 - `"status.geoip_lookup"`: (object) This event is emitted only once at the
 beginning of the task, and provides information about the user's IP address,
