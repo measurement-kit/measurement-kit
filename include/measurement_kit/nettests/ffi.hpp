@@ -38,7 +38,6 @@
 #include <measurement_kit/common/nlohmann/json.hpp>
 #include <measurement_kit/common/shared_ptr.hpp>
 
-#include <measurement_kit/nettests/events.hpp> // FIXME: get rid of this
 #include <measurement_kit/nettests/macros.h>
 
 #include <measurement_kit/cxx14.hpp>
