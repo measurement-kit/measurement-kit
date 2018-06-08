@@ -1,8 +1,8 @@
 // Part of Measurement Kit <https://measurement-kit.github.io/>.
 // Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
-#ifndef MEASUREMENT_KIT_NETTESTS_FFI_HPP
-#define MEASUREMENT_KIT_NETTESTS_FFI_HPP
+#ifndef MEASUREMENT_KIT_NETTESTS_CXX14_HPP
+#define MEASUREMENT_KIT_NETTESTS_CXX14_HPP
 
 // Inline reimplementation of Measurement Kit's original API in terms
 // of the new <measurement_kit/ffi.h> API.

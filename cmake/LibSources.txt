@@ -28,7 +28,7 @@ include/measurement_kit/ffi.h
 include/measurement_kit/ndt.hpp
 include/measurement_kit/ndt/defs.hpp
 include/measurement_kit/nettests.hpp
-include/measurement_kit/nettests/ffi.hpp
+include/measurement_kit/nettests/cxx14.hpp
 include/measurement_kit/nettests/macros.h
 include/measurement_kit/ooni.hpp
 include/measurement_kit/ooni/error.hpp
