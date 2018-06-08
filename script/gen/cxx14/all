@@ -195,7 +195,7 @@ def write_taskinfo_class(filep, settings, sections, events):
         if isinstance(value, list):
             filep.write("    std::vector<std::string> %s;\n" % name)
             filep.write("\n")
-            filep.write("    /// Allows to append to '%s' using a fluent style\n" % name)
+            filep.write("    /// Allows to append to '%s' using method chaining\n" % name)
             singular_name = name
             if singular_name.endswith("s"):
                 singular_name = singular_name[:-1]
@@ -207,7 +207,7 @@ def write_taskinfo_class(filep, settings, sections, events):
             filep.write("    nlohmann::json %s;\n" % name)
             filep.write("\n")
             for var in ("double v", "int64_t v", "const std::string &v"):
-                filep.write("    /// Allows to set %s using a fluent style\n" % name[:-1])
+                filep.write("    /// Allows to set %s using method chaining\n" % name[:-1])
                 filep.write("    TaskInfo &set_%s(const std::string &k, %s) noexcept {\n" % (name[:-1], var))
                 filep.write("        %s[k] = v;\n" % name)
                 filep.write("        return *this;\n")
@@ -215,7 +215,7 @@ def write_taskinfo_class(filep, settings, sections, events):
                 filep.write("\n")
             if name == "options":  # Options deserve special processing
                 for oname, otype, _ in sorted(sections["options"]):
-                    filep.write("    /// Allows to set '%s' option using a fluent style\n" % oname)
+                    filep.write("    /// Allows to set '%s' option using method chaining\n" % oname)
                     if otype == "float":
                         otype = "double v"
                     elif otype == "int":
@@ -234,7 +234,7 @@ def write_taskinfo_class(filep, settings, sections, events):
         elif isinstance(value, STR):
             filep.write("    std::string %s;\n" % name)
             filep.write("\n")
-            filep.write("    /// Allows to set '%s' using a fluent style\n" % name)
+            filep.write("    /// Allows to set '%s' using method chaining\n" % name)
             filep.write("    TaskInfo &set_%s(const std::string &s) noexcept {\n" % name)
             filep.write("        %s = s;\n" % name)
             filep.write("        return *this;\n")
@@ -252,7 +252,7 @@ def write_taskinfo_class(filep, settings, sections, events):
         filep.write("    std::vector<%sCallback> %s_cbs;\n" % (
             event_name_to_camel_case(key), event_name_to_snake_case(key)))
         filep.write("\n")
-        filep.write("    /// Allows to add callback for '%s' event using a fluent style\n" % key)
+        filep.write("    /// Allows to add callback for '%s' event using method chaining\n" % key)
         filep.write("    TaskInfo &on_%s(%sCallback &&cb) noexcept {\n" % (
             event_name_to_snake_case(key), event_name_to_camel_case(key)))
         filep.write("        %s_cbs.push_back(std::move(cb));\n" % event_name_to_snake_case(key))

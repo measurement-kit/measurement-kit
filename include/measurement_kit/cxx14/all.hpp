@@ -279,19 +279,19 @@ class TaskInfo {
     /// 'annotations' field of settings
     nlohmann::json annotations;
 
-    /// Allows to set annotation using a fluent style
+    /// Allows to set annotation using method chaining
     TaskInfo &set_annotation(const std::string &k, double v) noexcept {
         annotations[k] = v;
         return *this;
     }
 
-    /// Allows to set annotation using a fluent style
+    /// Allows to set annotation using method chaining
     TaskInfo &set_annotation(const std::string &k, int64_t v) noexcept {
         annotations[k] = v;
         return *this;
     }
 
-    /// Allows to set annotation using a fluent style
+    /// Allows to set annotation using method chaining
     TaskInfo &set_annotation(const std::string &k, const std::string &v) noexcept {
         annotations[k] = v;
         return *this;
@@ -300,7 +300,7 @@ class TaskInfo {
     /// 'disabled_events' field of settings
     std::vector<std::string> disabled_events;
 
-    /// Allows to append to 'disabled_events' using a fluent style
+    /// Allows to append to 'disabled_events' using method chaining
     TaskInfo &add_disabled_event(const std::string &s) noexcept {
         disabled_events.push_back(s);
         return *this;
@@ -309,7 +309,7 @@ class TaskInfo {
     /// 'input_filepaths' field of settings
     std::vector<std::string> input_filepaths;
 
-    /// Allows to append to 'input_filepaths' using a fluent style
+    /// Allows to append to 'input_filepaths' using method chaining
     TaskInfo &add_input_filepath(const std::string &s) noexcept {
         input_filepaths.push_back(s);
         return *this;
@@ -318,7 +318,7 @@ class TaskInfo {
     /// 'inputs' field of settings
     std::vector<std::string> inputs;
 
-    /// Allows to append to 'inputs' using a fluent style
+    /// Allows to append to 'inputs' using method chaining
     TaskInfo &add_input(const std::string &s) noexcept {
         inputs.push_back(s);
         return *this;
@@ -327,7 +327,7 @@ class TaskInfo {
     /// 'log_filepath' field of settings
     std::string log_filepath;
 
-    /// Allows to set 'log_filepath' using a fluent style
+    /// Allows to set 'log_filepath' using method chaining
     TaskInfo &set_log_filepath(const std::string &s) noexcept {
         log_filepath = s;
         return *this;
@@ -336,7 +336,7 @@ class TaskInfo {
     /// 'log_level' field of settings
     std::string log_level;
 
-    /// Allows to set 'log_level' using a fluent style
+    /// Allows to set 'log_level' using method chaining
     TaskInfo &set_log_level(const std::string &s) noexcept {
         log_level = s;
         return *this;
@@ -345,7 +345,7 @@ class TaskInfo {
     /// 'name' field of settings
     std::string name;
 
-    /// Allows to set 'name' using a fluent style
+    /// Allows to set 'name' using method chaining
     TaskInfo &set_name(const std::string &s) noexcept {
         name = s;
         return *this;
@@ -354,187 +354,187 @@ class TaskInfo {
     /// 'options' field of settings
     nlohmann::json options;
 
-    /// Allows to set option using a fluent style
+    /// Allows to set option using method chaining
     TaskInfo &set_option(const std::string &k, double v) noexcept {
         options[k] = v;
         return *this;
     }
 
-    /// Allows to set option using a fluent style
+    /// Allows to set option using method chaining
     TaskInfo &set_option(const std::string &k, int64_t v) noexcept {
         options[k] = v;
         return *this;
     }
 
-    /// Allows to set option using a fluent style
+    /// Allows to set option using method chaining
     TaskInfo &set_option(const std::string &k, const std::string &v) noexcept {
         options[k] = v;
         return *this;
     }
 
-    /// Allows to set 'bouncer_base_url' option using a fluent style
+    /// Allows to set 'bouncer_base_url' option using method chaining
     TaskInfo &set_bouncer_base_url_option(const std::string &v) noexcept {
         options["bouncer_base_url"] = v;
         return *this;
     }
 
-    /// Allows to set 'collector_base_url' option using a fluent style
+    /// Allows to set 'collector_base_url' option using method chaining
     TaskInfo &set_collector_base_url_option(const std::string &v) noexcept {
         options["collector_base_url"] = v;
         return *this;
     }
 
-    /// Allows to set 'dns/engine' option using a fluent style
+    /// Allows to set 'dns/engine' option using method chaining
     TaskInfo &set_dns_engine_option(const std::string &v) noexcept {
         options["dns/engine"] = v;
         return *this;
     }
 
-    /// Allows to set 'dns/nameserver' option using a fluent style
+    /// Allows to set 'dns/nameserver' option using method chaining
     TaskInfo &set_dns_nameserver_option(const std::string &v) noexcept {
         options["dns/nameserver"] = v;
         return *this;
     }
 
-    /// Allows to set 'geoip_asn_path' option using a fluent style
+    /// Allows to set 'geoip_asn_path' option using method chaining
     TaskInfo &set_geoip_asn_path_option(const std::string &v) noexcept {
         options["geoip_asn_path"] = v;
         return *this;
     }
 
-    /// Allows to set 'geoip_country_path' option using a fluent style
+    /// Allows to set 'geoip_country_path' option using method chaining
     TaskInfo &set_geoip_country_path_option(const std::string &v) noexcept {
         options["geoip_country_path"] = v;
         return *this;
     }
 
-    /// Allows to set 'ignore_bouncer_error' option using a fluent style
+    /// Allows to set 'ignore_bouncer_error' option using method chaining
     TaskInfo &set_ignore_bouncer_error_option(int64_t v) noexcept {
         options["ignore_bouncer_error"] = v;
         return *this;
     }
 
-    /// Allows to set 'ignore_open_report_error' option using a fluent style
+    /// Allows to set 'ignore_open_report_error' option using method chaining
     TaskInfo &set_ignore_open_report_error_option(int64_t v) noexcept {
         options["ignore_open_report_error"] = v;
         return *this;
     }
 
-    /// Allows to set 'max_runtime' option using a fluent style
+    /// Allows to set 'max_runtime' option using method chaining
     TaskInfo &set_max_runtime_option(double v) noexcept {
         options["max_runtime"] = v;
         return *this;
     }
 
-    /// Allows to set 'net/ca_bundle_path' option using a fluent style
+    /// Allows to set 'net/ca_bundle_path' option using method chaining
     TaskInfo &set_net_ca_bundle_path_option(const std::string &v) noexcept {
         options["net/ca_bundle_path"] = v;
         return *this;
     }
 
-    /// Allows to set 'net/timeout' option using a fluent style
+    /// Allows to set 'net/timeout' option using method chaining
     TaskInfo &set_net_timeout_option(double v) noexcept {
         options["net/timeout"] = v;
         return *this;
     }
 
-    /// Allows to set 'no_asn_lookup' option using a fluent style
+    /// Allows to set 'no_asn_lookup' option using method chaining
     TaskInfo &set_no_asn_lookup_option(int64_t v) noexcept {
         options["no_asn_lookup"] = v;
         return *this;
     }
 
-    /// Allows to set 'no_bouncer' option using a fluent style
+    /// Allows to set 'no_bouncer' option using method chaining
     TaskInfo &set_no_bouncer_option(int64_t v) noexcept {
         options["no_bouncer"] = v;
         return *this;
     }
 
-    /// Allows to set 'no_cc_lookup' option using a fluent style
+    /// Allows to set 'no_cc_lookup' option using method chaining
     TaskInfo &set_no_cc_lookup_option(int64_t v) noexcept {
         options["no_cc_lookup"] = v;
         return *this;
     }
 
-    /// Allows to set 'no_collector' option using a fluent style
+    /// Allows to set 'no_collector' option using method chaining
     TaskInfo &set_no_collector_option(int64_t v) noexcept {
         options["no_collector"] = v;
         return *this;
     }
 
-    /// Allows to set 'no_file_report' option using a fluent style
+    /// Allows to set 'no_file_report' option using method chaining
     TaskInfo &set_no_file_report_option(int64_t v) noexcept {
         options["no_file_report"] = v;
         return *this;
     }
 
-    /// Allows to set 'no_ip_lookup' option using a fluent style
+    /// Allows to set 'no_ip_lookup' option using method chaining
     TaskInfo &set_no_ip_lookup_option(int64_t v) noexcept {
         options["no_ip_lookup"] = v;
         return *this;
     }
 
-    /// Allows to set 'no_resolver_lookup' option using a fluent style
+    /// Allows to set 'no_resolver_lookup' option using method chaining
     TaskInfo &set_no_resolver_lookup_option(int64_t v) noexcept {
         options["no_resolver_lookup"] = v;
         return *this;
     }
 
-    /// Allows to set 'probe_asn' option using a fluent style
+    /// Allows to set 'probe_asn' option using method chaining
     TaskInfo &set_probe_asn_option(const std::string &v) noexcept {
         options["probe_asn"] = v;
         return *this;
     }
 
-    /// Allows to set 'probe_cc' option using a fluent style
+    /// Allows to set 'probe_cc' option using method chaining
     TaskInfo &set_probe_cc_option(const std::string &v) noexcept {
         options["probe_cc"] = v;
         return *this;
     }
 
-    /// Allows to set 'probe_ip' option using a fluent style
+    /// Allows to set 'probe_ip' option using method chaining
     TaskInfo &set_probe_ip_option(const std::string &v) noexcept {
         options["probe_ip"] = v;
         return *this;
     }
 
-    /// Allows to set 'randomize_input' option using a fluent style
+    /// Allows to set 'randomize_input' option using method chaining
     TaskInfo &set_randomize_input_option(int64_t v) noexcept {
         options["randomize_input"] = v;
         return *this;
     }
 
-    /// Allows to set 'save_real_probe_asn' option using a fluent style
+    /// Allows to set 'save_real_probe_asn' option using method chaining
     TaskInfo &set_save_real_probe_asn_option(int64_t v) noexcept {
         options["save_real_probe_asn"] = v;
         return *this;
     }
 
-    /// Allows to set 'save_real_probe_cc' option using a fluent style
+    /// Allows to set 'save_real_probe_cc' option using method chaining
     TaskInfo &set_save_real_probe_cc_option(int64_t v) noexcept {
         options["save_real_probe_cc"] = v;
         return *this;
     }
 
-    /// Allows to set 'save_real_probe_ip' option using a fluent style
+    /// Allows to set 'save_real_probe_ip' option using method chaining
     TaskInfo &set_save_real_probe_ip_option(int64_t v) noexcept {
         options["save_real_probe_ip"] = v;
         return *this;
     }
 
-    /// Allows to set 'save_real_resolver_ip' option using a fluent style
+    /// Allows to set 'save_real_resolver_ip' option using method chaining
     TaskInfo &set_save_real_resolver_ip_option(int64_t v) noexcept {
         options["save_real_resolver_ip"] = v;
         return *this;
     }
 
-    /// Allows to set 'software_name' option using a fluent style
+    /// Allows to set 'software_name' option using method chaining
     TaskInfo &set_software_name_option(const std::string &v) noexcept {
         options["software_name"] = v;
         return *this;
     }
 
-    /// Allows to set 'software_version' option using a fluent style
+    /// Allows to set 'software_version' option using method chaining
     TaskInfo &set_software_version_option(const std::string &v) noexcept {
         options["software_version"] = v;
         return *this;
@@ -543,7 +543,7 @@ class TaskInfo {
     /// 'output_filepath' field of settings
     std::string output_filepath;
 
-    /// Allows to set 'output_filepath' using a fluent style
+    /// Allows to set 'output_filepath' using method chaining
     TaskInfo &set_output_filepath(const std::string &s) noexcept {
         output_filepath = s;
         return *this;
@@ -552,7 +552,7 @@ class TaskInfo {
     /// Callbacks for 'failure.asn_lookup' event
     std::vector<FailureAsnLookupCallback> failure_asn_lookup_cbs;
 
-    /// Allows to add callback for 'failure.asn_lookup' event using a fluent style
+    /// Allows to add callback for 'failure.asn_lookup' event using method chaining
     TaskInfo &on_failure_asn_lookup(FailureAsnLookupCallback &&cb) noexcept {
         failure_asn_lookup_cbs.push_back(std::move(cb));
         return *this;
@@ -561,7 +561,7 @@ class TaskInfo {
     /// Callbacks for 'failure.cc_lookup' event
     std::vector<FailureCcLookupCallback> failure_cc_lookup_cbs;
 
-    /// Allows to add callback for 'failure.cc_lookup' event using a fluent style
+    /// Allows to add callback for 'failure.cc_lookup' event using method chaining
     TaskInfo &on_failure_cc_lookup(FailureCcLookupCallback &&cb) noexcept {
         failure_cc_lookup_cbs.push_back(std::move(cb));
         return *this;
@@ -570,7 +570,7 @@ class TaskInfo {
     /// Callbacks for 'failure.ip_lookup' event
     std::vector<FailureIpLookupCallback> failure_ip_lookup_cbs;
 
-    /// Allows to add callback for 'failure.ip_lookup' event using a fluent style
+    /// Allows to add callback for 'failure.ip_lookup' event using method chaining
     TaskInfo &on_failure_ip_lookup(FailureIpLookupCallback &&cb) noexcept {
         failure_ip_lookup_cbs.push_back(std::move(cb));
         return *this;
@@ -579,7 +579,7 @@ class TaskInfo {
     /// Callbacks for 'failure.measurement' event
     std::vector<FailureMeasurementCallback> failure_measurement_cbs;
 
-    /// Allows to add callback for 'failure.measurement' event using a fluent style
+    /// Allows to add callback for 'failure.measurement' event using method chaining
     TaskInfo &on_failure_measurement(FailureMeasurementCallback &&cb) noexcept {
         failure_measurement_cbs.push_back(std::move(cb));
         return *this;
@@ -588,7 +588,7 @@ class TaskInfo {
     /// Callbacks for 'failure.measurement_submission' event
     std::vector<FailureMeasurementSubmissionCallback> failure_measurement_submission_cbs;
 
-    /// Allows to add callback for 'failure.measurement_submission' event using a fluent style
+    /// Allows to add callback for 'failure.measurement_submission' event using method chaining
     TaskInfo &on_failure_measurement_submission(FailureMeasurementSubmissionCallback &&cb) noexcept {
         failure_measurement_submission_cbs.push_back(std::move(cb));
         return *this;
@@ -597,7 +597,7 @@ class TaskInfo {
     /// Callbacks for 'failure.report_close' event
     std::vector<FailureReportCloseCallback> failure_report_close_cbs;
 
-    /// Allows to add callback for 'failure.report_close' event using a fluent style
+    /// Allows to add callback for 'failure.report_close' event using method chaining
     TaskInfo &on_failure_report_close(FailureReportCloseCallback &&cb) noexcept {
         failure_report_close_cbs.push_back(std::move(cb));
         return *this;
@@ -606,7 +606,7 @@ class TaskInfo {
     /// Callbacks for 'failure.report_create' event
     std::vector<FailureReportCreateCallback> failure_report_create_cbs;
 
-    /// Allows to add callback for 'failure.report_create' event using a fluent style
+    /// Allows to add callback for 'failure.report_create' event using method chaining
     TaskInfo &on_failure_report_create(FailureReportCreateCallback &&cb) noexcept {
         failure_report_create_cbs.push_back(std::move(cb));
         return *this;
@@ -615,7 +615,7 @@ class TaskInfo {
     /// Callbacks for 'failure.resolver_lookup' event
     std::vector<FailureResolverLookupCallback> failure_resolver_lookup_cbs;
 
-    /// Allows to add callback for 'failure.resolver_lookup' event using a fluent style
+    /// Allows to add callback for 'failure.resolver_lookup' event using method chaining
     TaskInfo &on_failure_resolver_lookup(FailureResolverLookupCallback &&cb) noexcept {
         failure_resolver_lookup_cbs.push_back(std::move(cb));
         return *this;
@@ -624,7 +624,7 @@ class TaskInfo {
     /// Callbacks for 'failure.startup' event
     std::vector<FailureStartupCallback> failure_startup_cbs;
 
-    /// Allows to add callback for 'failure.startup' event using a fluent style
+    /// Allows to add callback for 'failure.startup' event using method chaining
     TaskInfo &on_failure_startup(FailureStartupCallback &&cb) noexcept {
         failure_startup_cbs.push_back(std::move(cb));
         return *this;
@@ -633,7 +633,7 @@ class TaskInfo {
     /// Callbacks for 'log' event
     std::vector<LogCallback> log_cbs;
 
-    /// Allows to add callback for 'log' event using a fluent style
+    /// Allows to add callback for 'log' event using method chaining
     TaskInfo &on_log(LogCallback &&cb) noexcept {
         log_cbs.push_back(std::move(cb));
         return *this;
@@ -642,7 +642,7 @@ class TaskInfo {
     /// Callbacks for 'measurement' event
     std::vector<MeasurementCallback> measurement_cbs;
 
-    /// Allows to add callback for 'measurement' event using a fluent style
+    /// Allows to add callback for 'measurement' event using method chaining
     TaskInfo &on_measurement(MeasurementCallback &&cb) noexcept {
         measurement_cbs.push_back(std::move(cb));
         return *this;
@@ -651,7 +651,7 @@ class TaskInfo {
     /// Callbacks for 'status.end' event
     std::vector<StatusEndCallback> status_end_cbs;
 
-    /// Allows to add callback for 'status.end' event using a fluent style
+    /// Allows to add callback for 'status.end' event using method chaining
     TaskInfo &on_status_end(StatusEndCallback &&cb) noexcept {
         status_end_cbs.push_back(std::move(cb));
         return *this;
@@ -660,7 +660,7 @@ class TaskInfo {
     /// Callbacks for 'status.geoip_lookup' event
     std::vector<StatusGeoipLookupCallback> status_geoip_lookup_cbs;
 
-    /// Allows to add callback for 'status.geoip_lookup' event using a fluent style
+    /// Allows to add callback for 'status.geoip_lookup' event using method chaining
     TaskInfo &on_status_geoip_lookup(StatusGeoipLookupCallback &&cb) noexcept {
         status_geoip_lookup_cbs.push_back(std::move(cb));
         return *this;
@@ -669,7 +669,7 @@ class TaskInfo {
     /// Callbacks for 'status.measurement_done' event
     std::vector<StatusMeasurementDoneCallback> status_measurement_done_cbs;
 
-    /// Allows to add callback for 'status.measurement_done' event using a fluent style
+    /// Allows to add callback for 'status.measurement_done' event using method chaining
     TaskInfo &on_status_measurement_done(StatusMeasurementDoneCallback &&cb) noexcept {
         status_measurement_done_cbs.push_back(std::move(cb));
         return *this;
@@ -678,7 +678,7 @@ class TaskInfo {
     /// Callbacks for 'status.measurement_start' event
     std::vector<StatusMeasurementStartCallback> status_measurement_start_cbs;
 
-    /// Allows to add callback for 'status.measurement_start' event using a fluent style
+    /// Allows to add callback for 'status.measurement_start' event using method chaining
     TaskInfo &on_status_measurement_start(StatusMeasurementStartCallback &&cb) noexcept {
         status_measurement_start_cbs.push_back(std::move(cb));
         return *this;
@@ -687,7 +687,7 @@ class TaskInfo {
     /// Callbacks for 'status.measurement_submission' event
     std::vector<StatusMeasurementSubmissionCallback> status_measurement_submission_cbs;
 
-    /// Allows to add callback for 'status.measurement_submission' event using a fluent style
+    /// Allows to add callback for 'status.measurement_submission' event using method chaining
     TaskInfo &on_status_measurement_submission(StatusMeasurementSubmissionCallback &&cb) noexcept {
         status_measurement_submission_cbs.push_back(std::move(cb));
         return *this;
@@ -696,7 +696,7 @@ class TaskInfo {
     /// Callbacks for 'status.progress' event
     std::vector<StatusProgressCallback> status_progress_cbs;
 
-    /// Allows to add callback for 'status.progress' event using a fluent style
+    /// Allows to add callback for 'status.progress' event using method chaining
     TaskInfo &on_status_progress(StatusProgressCallback &&cb) noexcept {
         status_progress_cbs.push_back(std::move(cb));
         return *this;
@@ -705,7 +705,7 @@ class TaskInfo {
     /// Callbacks for 'status.queued' event
     std::vector<StatusQueuedCallback> status_queued_cbs;
 
-    /// Allows to add callback for 'status.queued' event using a fluent style
+    /// Allows to add callback for 'status.queued' event using method chaining
     TaskInfo &on_status_queued(StatusQueuedCallback &&cb) noexcept {
         status_queued_cbs.push_back(std::move(cb));
         return *this;
@@ -714,7 +714,7 @@ class TaskInfo {
     /// Callbacks for 'status.report_close' event
     std::vector<StatusReportCloseCallback> status_report_close_cbs;
 
-    /// Allows to add callback for 'status.report_close' event using a fluent style
+    /// Allows to add callback for 'status.report_close' event using method chaining
     TaskInfo &on_status_report_close(StatusReportCloseCallback &&cb) noexcept {
         status_report_close_cbs.push_back(std::move(cb));
         return *this;
@@ -723,7 +723,7 @@ class TaskInfo {
     /// Callbacks for 'status.report_create' event
     std::vector<StatusReportCreateCallback> status_report_create_cbs;
 
-    /// Allows to add callback for 'status.report_create' event using a fluent style
+    /// Allows to add callback for 'status.report_create' event using method chaining
     TaskInfo &on_status_report_create(StatusReportCreateCallback &&cb) noexcept {
         status_report_create_cbs.push_back(std::move(cb));
         return *this;
@@ -732,7 +732,7 @@ class TaskInfo {
     /// Callbacks for 'status.resolver_lookup' event
     std::vector<StatusResolverLookupCallback> status_resolver_lookup_cbs;
 
-    /// Allows to add callback for 'status.resolver_lookup' event using a fluent style
+    /// Allows to add callback for 'status.resolver_lookup' event using method chaining
     TaskInfo &on_status_resolver_lookup(StatusResolverLookupCallback &&cb) noexcept {
         status_resolver_lookup_cbs.push_back(std::move(cb));
         return *this;
@@ -741,7 +741,7 @@ class TaskInfo {
     /// Callbacks for 'status.started' event
     std::vector<StatusStartedCallback> status_started_cbs;
 
-    /// Allows to add callback for 'status.started' event using a fluent style
+    /// Allows to add callback for 'status.started' event using method chaining
     TaskInfo &on_status_started(StatusStartedCallback &&cb) noexcept {
         status_started_cbs.push_back(std::move(cb));
         return *this;
@@ -750,7 +750,7 @@ class TaskInfo {
     /// Callbacks for 'status.terminated' event
     std::vector<StatusTerminatedCallback> status_terminated_cbs;
 
-    /// Allows to add callback for 'status.terminated' event using a fluent style
+    /// Allows to add callback for 'status.terminated' event using method chaining
     TaskInfo &on_status_terminated(StatusTerminatedCallback &&cb) noexcept {
         status_terminated_cbs.push_back(std::move(cb));
         return *this;
@@ -759,7 +759,7 @@ class TaskInfo {
     /// Callbacks for 'status.update.performance' event
     std::vector<StatusUpdatePerformanceCallback> status_update_performance_cbs;
 
-    /// Allows to add callback for 'status.update.performance' event using a fluent style
+    /// Allows to add callback for 'status.update.performance' event using method chaining
     TaskInfo &on_status_update_performance(StatusUpdatePerformanceCallback &&cb) noexcept {
         status_update_performance_cbs.push_back(std::move(cb));
         return *this;
@@ -768,7 +768,7 @@ class TaskInfo {
     /// Callbacks for 'status.update.websites' event
     std::vector<StatusUpdateWebsitesCallback> status_update_websites_cbs;
 
-    /// Allows to add callback for 'status.update.websites' event using a fluent style
+    /// Allows to add callback for 'status.update.websites' event using method chaining
     TaskInfo &on_status_update_websites(StatusUpdateWebsitesCallback &&cb) noexcept {
         status_update_websites_cbs.push_back(std::move(cb));
         return *this;
