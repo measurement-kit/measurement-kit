@@ -292,6 +292,12 @@ class TaskInfo {
     }
 
     /// Allows to set annotation using method chaining
+    TaskInfo &set_annotation(const std::string &k, int32_t v) noexcept {
+        annotations[k] = v;
+        return *this;
+    }
+
+    /// Allows to set annotation using method chaining
     TaskInfo &set_annotation(const std::string &k, const std::string &v) noexcept {
         annotations[k] = v;
         return *this;
@@ -367,6 +373,12 @@ class TaskInfo {
     }
 
     /// Allows to set option using method chaining
+    TaskInfo &set_option(const std::string &k, int32_t v) noexcept {
+        options[k] = v;
+        return *this;
+    }
+
+    /// Allows to set option using method chaining
     TaskInfo &set_option(const std::string &k, const std::string &v) noexcept {
         options[k] = v;
         return *this;
@@ -414,8 +426,20 @@ class TaskInfo {
         return *this;
     }
 
+    /// Allows to set 'ignore_bouncer_error' option using method chaining
+    TaskInfo &set_ignore_bouncer_error_option(int32_t v) noexcept {
+        options["ignore_bouncer_error"] = v;
+        return *this;
+    }
+
     /// Allows to set 'ignore_open_report_error' option using method chaining
     TaskInfo &set_ignore_open_report_error_option(int64_t v) noexcept {
+        options["ignore_open_report_error"] = v;
+        return *this;
+    }
+
+    /// Allows to set 'ignore_open_report_error' option using method chaining
+    TaskInfo &set_ignore_open_report_error_option(int32_t v) noexcept {
         options["ignore_open_report_error"] = v;
         return *this;
     }
@@ -444,8 +468,20 @@ class TaskInfo {
         return *this;
     }
 
+    /// Allows to set 'no_asn_lookup' option using method chaining
+    TaskInfo &set_no_asn_lookup_option(int32_t v) noexcept {
+        options["no_asn_lookup"] = v;
+        return *this;
+    }
+
     /// Allows to set 'no_bouncer' option using method chaining
     TaskInfo &set_no_bouncer_option(int64_t v) noexcept {
+        options["no_bouncer"] = v;
+        return *this;
+    }
+
+    /// Allows to set 'no_bouncer' option using method chaining
+    TaskInfo &set_no_bouncer_option(int32_t v) noexcept {
         options["no_bouncer"] = v;
         return *this;
     }
@@ -456,8 +492,20 @@ class TaskInfo {
         return *this;
     }
 
+    /// Allows to set 'no_cc_lookup' option using method chaining
+    TaskInfo &set_no_cc_lookup_option(int32_t v) noexcept {
+        options["no_cc_lookup"] = v;
+        return *this;
+    }
+
     /// Allows to set 'no_collector' option using method chaining
     TaskInfo &set_no_collector_option(int64_t v) noexcept {
+        options["no_collector"] = v;
+        return *this;
+    }
+
+    /// Allows to set 'no_collector' option using method chaining
+    TaskInfo &set_no_collector_option(int32_t v) noexcept {
         options["no_collector"] = v;
         return *this;
     }
@@ -468,14 +516,32 @@ class TaskInfo {
         return *this;
     }
 
+    /// Allows to set 'no_file_report' option using method chaining
+    TaskInfo &set_no_file_report_option(int32_t v) noexcept {
+        options["no_file_report"] = v;
+        return *this;
+    }
+
     /// Allows to set 'no_ip_lookup' option using method chaining
     TaskInfo &set_no_ip_lookup_option(int64_t v) noexcept {
         options["no_ip_lookup"] = v;
         return *this;
     }
 
+    /// Allows to set 'no_ip_lookup' option using method chaining
+    TaskInfo &set_no_ip_lookup_option(int32_t v) noexcept {
+        options["no_ip_lookup"] = v;
+        return *this;
+    }
+
     /// Allows to set 'no_resolver_lookup' option using method chaining
     TaskInfo &set_no_resolver_lookup_option(int64_t v) noexcept {
+        options["no_resolver_lookup"] = v;
+        return *this;
+    }
+
+    /// Allows to set 'no_resolver_lookup' option using method chaining
+    TaskInfo &set_no_resolver_lookup_option(int32_t v) noexcept {
         options["no_resolver_lookup"] = v;
         return *this;
     }
@@ -504,8 +570,20 @@ class TaskInfo {
         return *this;
     }
 
+    /// Allows to set 'randomize_input' option using method chaining
+    TaskInfo &set_randomize_input_option(int32_t v) noexcept {
+        options["randomize_input"] = v;
+        return *this;
+    }
+
     /// Allows to set 'save_real_probe_asn' option using method chaining
     TaskInfo &set_save_real_probe_asn_option(int64_t v) noexcept {
+        options["save_real_probe_asn"] = v;
+        return *this;
+    }
+
+    /// Allows to set 'save_real_probe_asn' option using method chaining
+    TaskInfo &set_save_real_probe_asn_option(int32_t v) noexcept {
         options["save_real_probe_asn"] = v;
         return *this;
     }
@@ -516,14 +594,32 @@ class TaskInfo {
         return *this;
     }
 
+    /// Allows to set 'save_real_probe_cc' option using method chaining
+    TaskInfo &set_save_real_probe_cc_option(int32_t v) noexcept {
+        options["save_real_probe_cc"] = v;
+        return *this;
+    }
+
     /// Allows to set 'save_real_probe_ip' option using method chaining
     TaskInfo &set_save_real_probe_ip_option(int64_t v) noexcept {
         options["save_real_probe_ip"] = v;
         return *this;
     }
 
+    /// Allows to set 'save_real_probe_ip' option using method chaining
+    TaskInfo &set_save_real_probe_ip_option(int32_t v) noexcept {
+        options["save_real_probe_ip"] = v;
+        return *this;
+    }
+
     /// Allows to set 'save_real_resolver_ip' option using method chaining
     TaskInfo &set_save_real_resolver_ip_option(int64_t v) noexcept {
+        options["save_real_resolver_ip"] = v;
+        return *this;
+    }
+
+    /// Allows to set 'save_real_resolver_ip' option using method chaining
+    TaskInfo &set_save_real_resolver_ip_option(int32_t v) noexcept {
         options["save_real_resolver_ip"] = v;
         return *this;
     }

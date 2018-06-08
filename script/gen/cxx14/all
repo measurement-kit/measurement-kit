@@ -206,7 +206,7 @@ def write_taskinfo_class(filep, settings, sections, events):
         elif isinstance(value, dict):
             filep.write("    nlohmann::json %s;\n" % name)
             filep.write("\n")
-            for var in ("double v", "int64_t v", "const std::string &v"):
+            for var in ("double v", "int64_t v", "int32_t v", "const std::string &v"):
                 filep.write("    /// Allows to set %s using method chaining\n" % name[:-1])
                 filep.write("    TaskInfo &set_%s(const std::string &k, %s) noexcept {\n" % (name[:-1], var))
                 filep.write("        %s[k] = v;\n" % name)
@@ -215,21 +215,24 @@ def write_taskinfo_class(filep, settings, sections, events):
                 filep.write("\n")
             if name == "options":  # Options deserve special processing
                 for oname, otype, _ in sorted(sections["options"]):
-                    filep.write("    /// Allows to set '%s' option using method chaining\n" % oname)
+                    otypes = []
                     if otype == "float":
-                        otype = "double v"
+                        otypes.append("double v")
                     elif otype == "int":
-                        otype = "int64_t v"
+                        otypes.append("int64_t v")
+                        otypes.append("int32_t v")
                     elif otype == "string":
-                        otype = "const std::string &v"
+                        otypes.append("const std::string &v")
                     else:
                         raise RuntimeError("unexpected option type: %s" % otype)
-                    filep.write("    TaskInfo &set_%s_option(%s) noexcept {\n" % (
-                                option_name_to_snake_case(oname), otype))
-                    filep.write("        options[\"%s\"] = v;\n" % oname)
-                    filep.write("        return *this;\n")
-                    filep.write("    }\n")
-                    filep.write("\n")
+                    for ot in otypes:
+                        filep.write("    /// Allows to set '%s' option using method chaining\n" % oname)
+                        filep.write("    TaskInfo &set_%s_option(%s) noexcept {\n" % (
+                                    option_name_to_snake_case(oname), ot))
+                        filep.write("        options[\"%s\"] = v;\n" % oname)
+                        filep.write("        return *this;\n")
+                        filep.write("    }\n")
+                        filep.write("\n")
             omit_nl = True
         elif isinstance(value, STR):
             filep.write("    std::string %s;\n" % name)
