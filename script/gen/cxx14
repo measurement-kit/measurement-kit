@@ -142,7 +142,7 @@ def write_header_prologue(filep):
     filep.write("#include <utility>\n")
     filep.write("#include <vector>\n")
     filep.write("\n")
-    filep.write("/// Define and recompile client code to get useful debugging info\n")
+    filep.write("// Define and recompile client code to get useful debugging info\n")
     filep.write("#ifdef MK_CXX14_TRACE\n")
     filep.write("#include <iostream>\n")
     filep.write("#endif\n")

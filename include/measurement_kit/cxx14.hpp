@@ -15,7 +15,7 @@
 #include <utility>
 #include <vector>
 
-/// Define and recompile client code to get useful debugging info
+// Define and recompile client code to get useful debugging info
 #ifdef MK_CXX14_TRACE
 #include <iostream>
 #endif
