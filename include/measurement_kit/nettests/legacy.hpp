@@ -13,7 +13,7 @@
 // they are still queued but the order of execution is random. This is fine
 // since apps should actively discourage people from running parallel tests,
 // using proper UX, as that is bad. The rough queuing mechanism that we
-// have here is just the last line of defence against that behavior.
+// have here is just the last line of defense against that behavior.
 
 #include <stdint.h>
 
