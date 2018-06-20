@@ -1,9 +1,9 @@
 # Measurement Kit API
 
-Measurement Kit only exposes a simple C like API suitable to be used via
+Measurement Kit exposes a simple C like API suitable to be used via
 [FFI](https://en.wikipedia.org/wiki/Foreign_function_interface).
 
-We implemented the following higher-level, easier-to-use APIs on top of
+We also implemented the following higher-level, easier-to-use APIs on top of
 this basic C-like FFI-friendly API:
 
 - [Android Java API](https://github.com/measurement-kit/android-libs);
