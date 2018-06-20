@@ -29,24 +29,32 @@ https://github.com/ooni/spec/blob/master/test-specs/ts-017-web-connectivity.md
 https://github.com/ooni/spec/blob/master/test-specs/ts-022-ndt.md).
 
 To _start_ a task you call `mk_task_start` by passing it specific
-_settings_ as a serialized JSON string. You should configure a test
-using high level code and then use a JSON serializer to obtain the
-JSON string. All settings are optional, except for the `name` of
-the task. Once started, a task will emit _events_. There are several
-kind of events, the most common of which is `log` that identifies
-a log line.
+_settings_ as a serialized JSON string.  All settings are optional,
+except for the `name` of the task.  Ideally, you should have high
+level code where the settings are a class that gets serialized to
+a JSON string. This is, for example, what we do in the higher-level
+[C++14 API](cxx14.hpp).
+
+Once started, a task will emit _events_. There are several kind of
+events, the most common of which is `"log"` that identifies a log
+line emitted by the task. Another event is `"status.update.performance"`,
+which provides network performance information while a task for
+measuring network performance is being run. See below for more
+information on the specific events.
 
 The task runs in a separate thread and posts events on a queue. You extract
 events from such queue using `mk_task_wait_for_next_event`. This is a _blocking_
 function that returns when a new event is posted into the queue. To
 process an event, use `mk_event_serialize` to obtain its JSON serialization,
-then parse the JSON into some high level data structure, and process it. See
-[cxx14.hpp](cxx14.hpp) for an example of such processing.
+then parse the JSON into some high level data structure, and process it. See,
+again, the [C++14 API](cxx14.hpp) events processing code to have an idea of
+how this could be implemented. (Or, if we have already written an API that
+does that works for your use case, perhaps just use such API.)
 
 You should loop processing events until `mk_task_is_done` returns nonzero. At
 that point, the task is done, and attempting to extract further events from
 the queue with `mk_task_wait_for_next_event` will immediately return the dummy
-`status.terminated` event.
+`status.terminated` event (equivalent to `EOF` for the task queue).
 
 Since the FFI API is basically a C API, you need to manually manage memory
 by freeing events and the task, once you are done with them. To this end, use
@@ -59,7 +67,7 @@ You can find working examples of usage of the FFI API inside the
 the FFI API is [cxx14.hpp](cxx14.hpp). In such file, we wrap the FFI API
 into a more-user-friendly C++14 interface, by mapping each event to
 a class. Specifically, it may be of interest to read how we
-process events in the `TaskRunner` class.
+process events in the `run()` and `process_event()` functions.
 
 ## Tasks
 
