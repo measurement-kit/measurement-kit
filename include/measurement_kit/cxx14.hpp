@@ -15,6 +15,7 @@
 #include <utility>
 #include <vector>
 
+/// Define and recompile client code to get useful debugging info
 #ifdef MK_CXX14_TRACE
 #include <iostream>
 #endif
@@ -26,7 +27,7 @@
 ///
 /// @brief Measurement Kit C++14 API.
 ///
-/// C++14 wrapper around the FFI API. We provide a class
+/// C++14 wrapper around the FFI API. We provide a class for
 /// each event returned by Measurement Kit's FFI API.
 ///
 /// @addtogroup cxx14 C++14 API
