@@ -208,7 +208,9 @@ are available:
 
 - `"output_filepath"`: (string; optional) file where you want MK to
   write measurement results, as a sequence of lines, each line being
-  the result of a measurement serialized as JSON;
+  the result of a measurement serialized as JSON. If you do not specify
+  an output file, Measurement Kit will write the test results in a
+  file in the current working directory.
 
 ## Log levels
 
