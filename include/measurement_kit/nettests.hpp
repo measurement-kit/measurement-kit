@@ -2,7 +2,7 @@
 #ifndef MEASUREMENT_KIT_NETTESTS_HPP
 #define MEASUREMENT_KIT_NETTESTS_HPP
 
-#include <measurement_kit/nettests/cxx14.hpp>
+#include <measurement_kit/nettests/legacy.hpp>
 #include <measurement_kit/nettests/macros.h>
 
 #endif

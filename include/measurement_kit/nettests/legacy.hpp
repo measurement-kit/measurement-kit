@@ -1,8 +1,8 @@
 // Part of Measurement Kit <https://measurement-kit.github.io/>.
 // Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
-#ifndef MEASUREMENT_KIT_NETTESTS_CXX14_HPP
-#define MEASUREMENT_KIT_NETTESTS_CXX14_HPP
+#ifndef MEASUREMENT_KIT_NETTESTS_LEGACY_HPP
+#define MEASUREMENT_KIT_NETTESTS_LEGACY_HPP
 
 // Inline reimplementation of Measurement Kit's original API in terms
 // of the new <measurement_kit/ffi.h> API.
@@ -277,12 +277,11 @@ class MK_NETTESTS_DEPRECATED BaseTest {
     // good with doing nothing and wait for this API to die.
 
     void run() {
-        (void)cxx14::TaskRunner{true}.run(std::move(impl_));
+        (void)cxx14::run(std::move(impl_), true);
     }
 
     void start(std::function<void()> &&fn) {
-        (void)cxx14::TaskRunner{true}.start( //
-            std::move(impl_), std::move(fn));
+        (void)cxx14::start(std::move(impl_), true, std::move(fn));
     }
 
   protected:
