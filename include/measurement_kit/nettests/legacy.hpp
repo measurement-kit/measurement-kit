@@ -272,7 +272,7 @@ class MK_NETTESTS_DEPRECATED BaseTest {
     // SharedPtr, leading to an exception being thrown if a test was
     // reused to run a test. Here the code will probably just misbehave
     // by saying that no test name is provided. Anyway, since that was
-    // not supported behavior and this API is deprecayed, we're probably
+    // not supported behavior and this API is deprecated, we're probably
     // good with doing nothing and wait for this API to die.
 
     void run() {
