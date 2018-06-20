@@ -201,7 +201,10 @@ are available:
   task names have been described above;
 
 - `"options"`: (object; optional) options modifying the task behavior, as
-  an object mapping string keys to string, int or float values;
+  an object mapping string keys to string, int or float values. As mentioned,
+  the above example shows the default value of options. Also, there are no
+  boolean options, but we use `int` with boolean semantics, i.e., we use
+  `0` to indicate `false`, and nonzero to indicate `true`;
 
 - `"output_filepath"`: (string; optional) file where you want MK to
   write measurement results, as a sequence of lines, each line being
