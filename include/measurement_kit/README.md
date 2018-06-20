@@ -12,7 +12,7 @@ this basic C-like FFI-friendly API:
 
 - [C++14 API](cxx14.hpp) (also suitable to be used via ObjectiveC).
 
-We encourage you to avoid using it when a more user-friendly API is available.
+We encourage you to select the most programmer-friendly API available.
 
 ## Introduction and synopsis
 
