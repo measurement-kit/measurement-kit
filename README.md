@@ -27,7 +27,9 @@ folder documentation for an up-to-date list of available tests.
 Measurement Kit exposes a simple C-like API that is described in detail
 in the [include/measurement_kit](include/measurement_kit) folder
 documentation. You can find examples of usage of such API into the
-[example](example) folder.
+[example](example) folder. Reading the source code of the Measurement
+Kit binary (in [src/measurement_kit](src/measurement_kit)) may also
+be of interest to understand how to use Measurement Kit.
 
 ## Generic Unix instructions
 
