@@ -10,7 +10,7 @@ this basic C-like FFI-friendly API:
 
 - [Golang API](https://github.com/measurement-kit/go-measurement-kit);
 
-- [C++14 API](cxx14.hpp)
+- [C++14 API](cxx14.hpp) (also suitable to be used via ObjectiveC).
 
 We encourage you to avoid using it when a more user-friendly API is available.
 
