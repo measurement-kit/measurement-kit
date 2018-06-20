@@ -2,7 +2,7 @@
 
 """ Extracts MK FFI's specifications from the
     `include/measurement_kit/README.md` file and generates the corresponding
-    C++11 wrappers into the `include/measurement_kit/cxx14/all.hpp` file. """
+    C++11 wrappers into the `include/measurement_kit/cxx14.hpp` file. """
 
 from __future__ import print_function
 
@@ -92,12 +92,16 @@ def gather_sections_info():
         for line in filep:
             line = line.rstrip()
             # Change section we're in
+            # TODO(bassosimone): perhaps we should not hardcode section names
             if (line == "## Tasks" or line == "## Settings" 
                 or line == "## Log levels" or line == "## Options"
                 or line == "## Events"):
                 line = line.replace("## ", "").replace(" ", "_").lower()
                 section = line
             # Extract documentation related to a section
+            # TODO(bassosimone): probably we don't need to check whether a line
+            # startswith a specific pattern given than that is also part of the
+            # regular expression used to extract information from the line.
             if section and line.startswith('- `"'):
                 match = re.match(re_spec, line)
                 if not match:
@@ -109,6 +113,11 @@ def gather_sections_info():
                 mandatory = False
                 if match.group(5):
                     mandatory = match.group(5) == "mandatory"
+                #
+                # Here we create a tuple where the first element is the name
+                # of a variable, the second is the datatype of the variable, and
+                # the third is whether such variable is mandatory.
+                #
                 spec = name, datatype, mandatory
                 sections.setdefault(section, [])
                 sections[section].append(spec)
@@ -123,8 +132,11 @@ def write_header_prologue(filep):
     filep.write("#include <assert.h>\n")
     filep.write("#include <stdint.h>\n")
     filep.write("\n")
+    filep.write("#include <atomic>\n")
+    filep.write("#include <exception>\n")
     filep.write("#include <functional>\n")
     filep.write("#include <memory>\n")
+    filep.write("#include <new>\n")
     filep.write("#include <string>\n")
     filep.write("#include <thread>\n")
     filep.write("#include <utility>\n")
@@ -137,7 +149,27 @@ def write_header_prologue(filep):
     filep.write("#include <measurement_kit/common/nlohmann/json.hpp>\n")
     filep.write("#include <measurement_kit/ffi.h>\n")
     filep.write("\n")
+    filep.write("/// @file measurement_kit/cxx14.hpp\n")
+    filep.write("///\n")
+    filep.write("/// @brief Measurement Kit C++14 API.\n")
+    filep.write("///\n")
+    filep.write("/// C++14 wrapper around the FFI API. We provide a class\n")
+    filep.write("/// each event returned by Measurement Kit's FFI API.\n")
+    filep.write("///\n")
+    filep.write("/// @addtogroup cxx14 C++14 API\n")
+    filep.write("///\n")
+    filep.write("/// @brief C++14 API.\n")
+    filep.write("///\n")
+    filep.write("/// This API is an automatically generated C++14 wrapper of\n")
+    filep.write("/// the FFI API, where we provide classes representing in\n")
+    filep.write("/// C++14 events and settings that in the FFI API would be\n")
+    filep.write("/// otherwise represented as serialized JSON strings.\n")
+    filep.write("///\n")
+    filep.write("/// @{\n")
+    filep.write("\n")
+    filep.write("/// Contains Measurement Kit code.\n")
     filep.write("namespace mk {\n")
+    filep.write("/// Contains the C++14 API.\n")
     filep.write("namespace cxx14 {\n")
     filep.write("\n")
 
@@ -146,6 +178,7 @@ def write_ffi_helpers(filep):
     filep.write("/// Deletes a mk_task_t pointer\n")
     filep.write("class TaskDeleter {\n")
     filep.write("  public:\n")
+    filep.write("    /// Deletes @p task\n")
     filep.write("    void operator()(mk_task_t *task) noexcept { mk_task_destroy(task); }\n")
     filep.write("};\n")
     filep.write("\n")
@@ -155,6 +188,7 @@ def write_ffi_helpers(filep):
     filep.write("/// Deletes a mk_event_t pointer\n")
     filep.write("class EventDeleter {\n")
     filep.write("  public:\n")
+    filep.write("    /// Deletes @p event\n")
     filep.write("    void operator()(mk_event_t *event) noexcept { mk_event_destroy(event); }\n")
     filep.write("};\n")
     filep.write("\n")
@@ -169,6 +203,7 @@ def write_events_classes(filep, events):
         filep.write("class %s {\n" % event_name_to_camel_case(key))
         filep.write("  public:\n")
         for name, pattern in value.items():
+            filep.write("    /// The '%s' field of '%s'\n" % (name, key))
             filep.write("    ")
             if isinstance(pattern, STR):
                 filep.write("std::string %s;\n" % name)
@@ -197,6 +232,8 @@ def write_taskinfo_class(filep, settings, sections, events):
         value, omit_nl = settings[name], False
         filep.write("    /// '%s' field of settings\n" % name)
         if isinstance(value, list):
+            # TODO(bassosimone): it is a bit surprising that here we use a
+            # vector and we use a JSON for objects. Maybe always a JSON?
             filep.write("    std::vector<std::string> %s;\n" % name)
             filep.write("\n")
             filep.write("    /// Allows to append to '%s' using method chaining\n" % name)
@@ -217,7 +254,13 @@ def write_taskinfo_class(filep, settings, sections, events):
                 filep.write("        return *this;\n")
                 filep.write("    }\n")
                 filep.write("\n")
-            if name == "options":  # Options deserve special processing
+            #
+            # TODO(bassosimone): the following code to generate specific setters
+            # for options is for now disabled by `and False`. I need to think
+            # whether this is the proper way of exposing options, so, while I am
+            # thinking, better to keep just the usual way of setting them.
+            #
+            if name == "options" and False:  # Options deserve special processing
                 for oname, otype, _ in sorted(sections["options"]):
                     otypes = []
                     if otype == "float":
@@ -293,6 +336,10 @@ def write_runner(filep, settings, events):
     filep.write("/// Runs a task\n")
     filep.write("class TaskRunner {\n")
     filep.write("  public:\n")
+    filep.write("    /// Constructs a TaskRunner. @param suppress Whether to suppress exceptions\n")
+    filep.write("    /// in callbacks (true) or to return when they occur (false).\n")
+    filep.write("    explicit TaskRunner(bool suppress) : suppress_cb_exceptions_{suppress} {}\n")
+    filep.write("\n")
     filep.write("    /// Runs the specified task in the current thread\n")
     filep.write("    bool run(TaskInfo &&info) const noexcept {\n")
     filep.write("        nlohmann::json doc;\n")
@@ -374,10 +421,24 @@ def write_runner(filep, settings, events):
                 filep.write("           } catch (const NlohmannJsonException &exc) {\n")
                 filep.write("               return false;\n")
                 filep.write("           }\n")
+        filep.write("           // Rationale: the previous implementation\n")
+        filep.write("           // used to suppress exceptions. This is not\n")
+        filep.write("           // necessarily a good idea, but we need to\n")
+        filep.write("           // do the same for backwards compatibility.\n")
+        filep.write("           // However, this behavior is configurable\n")
+        filep.write("           // in the constructor, so at least now the\n")
+        filep.write("           // user can choose the desired behavior.\n")
+        filep.write("           auto rv = true;\n")
         filep.write("           for (auto &cb : info.%s_cbs) {\n" % event_name_to_snake_case(key))
-        filep.write("               cb(data);\n")
+        filep.write("               try {\n");
+        filep.write("                   cb(data);\n")
+        filep.write("               } catch (const std::bad_alloc &) {\n");
+        filep.write("                   throw;\n")
+        filep.write("               } catch (const std::exception &) {\n");
+        filep.write("                   rv = suppress_cb_exceptions_;\n")
+        filep.write("               }\n")
         filep.write("           }\n")
-        filep.write("           return true;\n")
+        filep.write("           return rv;\n")
         filep.write("       }\n\n")
     filep.write("       return false;\n")
     filep.write("    }\n")
@@ -390,11 +451,8 @@ def write_runner(filep, settings, events):
     filep.write("        }};\n")
     filep.write("    }\n")
     filep.write("\n")
-    filep.write("    /// Factory to obtain the global runner\n")
-    filep.write("    static const TaskRunner &global() noexcept {\n")
-    filep.write("        static TaskRunner runner;\n")
-    filep.write("        return runner;\n")
-    filep.write("    }\n")
+    filep.write("  private:\n")
+    filep.write("    std::atomic_bool suppress_cb_exceptions_{true};\n")
     filep.write("};\n")
     filep.write("\n")
 
@@ -402,17 +460,19 @@ def write_header_epilogue(filep):
     """ write header epilogue """
     filep.write("} // namespace cxx14\n")
     filep.write("} // namespace mk\n")
+    filep.write("\n")
+    filep.write("/// @}\n")
+    filep.write("\n")
     filep.write("#endif // MEASUREMENT_KIT_CXX14_ALL_HPP\n")
 
 def main():
     """ Main function """
-    outfile_path = "include/measurement_kit/cxx14/all.hpp"
+    outfile_path = "include/measurement_kit/cxx14.hpp"
     sys.stderr.write("* Generating %s\n" % outfile_path)
 
     sections = gather_sections_info()
     events = gather_events_info()
     settings = gather_settings_info()
-
     # TODO(bassosimone): add cross check between settings and sections
 
     with open(outfile_path, "w") as filep:

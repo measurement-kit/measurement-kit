@@ -5,6 +5,10 @@
     used by C++ code to make sure Measurement Kit parses and emits JSON
     documents consistent with its documentation. """
 
+# TODO(bassosimone): This file duplicates code that is also present in
+# script/gen/cxx14/all. It is fine to have this duplication for some time
+# but eventually we should engineer code to auto-generate code.
+
 import re
 import sys
 
@@ -23,6 +27,7 @@ def main():
             line = line.rstrip()
 
             # Change section we're in
+            # TODO(bassosimone): perhaps we should not hardcode section names
             if (line == "## Tasks" or line == "## Settings" 
                 or line == "## Log levels" or line == "## Options"
                 or line == "## Events"):
@@ -31,6 +36,9 @@ def main():
                 section = line
 
             # Extract documentation related to a section
+            # TODO(bassosimone): probably we don't need to check whether a line
+            # startswith a specific pattern given than that is also part of the
+            # regular expression used to extract information from the line.
             if section and line.startswith('- `"'):
                 match = re.match(RE_SPEC, line)
                 if not match:
@@ -42,6 +50,11 @@ def main():
                 mandatory = False
                 if match.group(5):
                     mandatory = match.group(5) == "mandatory"
+                #
+                # Here we create a tuple where the first element is the name
+                # of a variable, the second is the datatype of the variable, and
+                # the third is whether such variable is mandatory.
+                #
                 spec = name, datatype, mandatory
                 sections.setdefault(section, [])
                 sections[section].append(spec)

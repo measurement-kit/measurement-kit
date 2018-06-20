@@ -14,15 +14,6 @@
 // since apps should actively discourage people from running parallel tests,
 // using proper UX, as that is bad. The rough queuing mechanism that we
 // have here is just the last line of defence against that behavior.
-//
-// XXX: make sure comment here is still up to date
-
-// XXX: need to run `iwyu` again
-//
-// XXX: the `started` event should actually be `start`: this is a good
-// moment to make sure we can cope easily with events
-//
-// XXX: invent a Leonidism to protect us against changes in spec
 
 #include <stdint.h>
 
@@ -36,7 +27,6 @@
 #include <measurement_kit/common/data_usage.hpp>
 #include <measurement_kit/common/logger.hpp>
 #include <measurement_kit/common/nlohmann/json.hpp>
-#include <measurement_kit/common/shared_ptr.hpp>
 
 #include <measurement_kit/nettests/macros.h>
 
@@ -57,35 +47,16 @@ class MK_NETTESTS_DEPRECATED BaseTest {
     // Implementation notes
     // --------------------
     //
-    // 1. the code in here should work with both nlohmann/json v2 and v3 as
-    // long as we do not catch any exception. In fact, v2 used to throw standard
-    // exceptions (i.e. `std::exception`) while v3 has its own exceptions;
+    // 1. the code in here should work with both nlohmann/json v2 and v3 since
+    // in nlohmann::json v3 `nlohmann::json::exception` is a derived class of
+    // `std::exception`, hence we can use `std::exception` for robustness;
     //
-    // 2. as a result, we're going to assume that the JSON objects passed to us
-    // by the FFI API of MK are always containing the fields we expect;
+    // 2. in the event in which we receive a JSON with unexpected fiels, the
+    // test will be interrupted (see `../cxx14.hpp` for more info);
     //
     // 3. compared to the original implementation, this API allows to have
     // multiple callbacks registered for any kind of event. In the original
     // code, only _some_ events accepted multiple callbacks.
-    //
-    // XXX make sure comments still make sense
-
-    // Helper macro used to facilitate suppressing exceptions since the
-    // nettest.hpp API always suppresses exceptions in callbacks. This is
-    // consistent with the original implementation's behavior.
-    //
-    // This is not necessarily a very good idea, but the original code was
-    // doing that, hence we should do that here as well.
-    //
-    // XXX: move down?
-#define MK_NETTESTS_CALL_AND_SUPPRESS(func, args)                              \
-    do {                                                                       \
-        try {                                                                  \
-            func args;                                                         \
-        } catch (...) {                                                        \
-            /* SUPPRESS */                                                     \
-        }                                                                      \
-    } while (0)
 
     BaseTest() { impl_.log_level = "WARNING"; }
 
@@ -99,8 +70,6 @@ class MK_NETTESTS_DEPRECATED BaseTest {
     //
     // All the following methods are straightforward because they just
     // configure the settings or register specific callbacks.
-    //
-    // XXX Make sure comments still make sense
 
     BaseTest &add_input(std::string s) {
         impl_.add_input(s);
@@ -134,7 +103,7 @@ class MK_NETTESTS_DEPRECATED BaseTest {
         // which is the reason why `on_logger_eof()` was introduced.
         impl_.on_status_end([fn = std::move(fn)](
                 const cxx14::StatusEnd &) noexcept {
-            MK_NETTESTS_CALL_AND_SUPPRESS(fn, ());
+            fn();
         });
         return *this;
     }
@@ -156,7 +125,7 @@ class MK_NETTESTS_DEPRECATED BaseTest {
                 assert(false); // should not happen
                 return;
             }
-            MK_NETTESTS_CALL_AND_SUPPRESS(fn, (severity, info.message.c_str()));
+            fn(severity, info.message.c_str());
         });
         return *this;
     }
@@ -170,9 +139,12 @@ class MK_NETTESTS_DEPRECATED BaseTest {
             doc["num_streams"] = info.num_streams;
             doc["speed"] = {info.speed_kbps, "kbit/s"};
             // Serializing may throw but we expect MK to pass us a good
-            // JSON so don't consider this possible error condition.
+            // JSON so don't consider this possible error condition. Provided
+            // that an exception is raised, this will be handled inside
+            // `../cxx14.hpp`: it will be either ignored or it will cause
+            // the current test to interrupt and stop running.
             const char *s = doc.dump().c_str();
-            MK_NETTESTS_CALL_AND_SUPPRESS(fn, (s));
+            fn(s);
         });
         return *this;
     }
@@ -180,8 +152,7 @@ class MK_NETTESTS_DEPRECATED BaseTest {
     BaseTest &on_progress(std::function<void(double, const char *)> &&fn) {
         impl_.on_status_progress([fn = std::move(fn)](
               const cxx14::StatusProgress &info) noexcept {
-            MK_NETTESTS_CALL_AND_SUPPRESS(fn, //
-                  (info.percentage, info.message.c_str()));
+            fn(info.percentage, info.message.c_str());
         });
         return *this;
     }
@@ -250,7 +221,7 @@ class MK_NETTESTS_DEPRECATED BaseTest {
     BaseTest &on_entry(std::function<void(std::string)> &&fn) {
         impl_.on_measurement([fn = std::move(fn)](
               const cxx14::Measurement &info) noexcept {
-            MK_NETTESTS_CALL_AND_SUPPRESS(fn, (info.json_str));
+            fn(info.json_str);
         });
         return *this;
     }
@@ -258,7 +229,7 @@ class MK_NETTESTS_DEPRECATED BaseTest {
     BaseTest &on_begin(std::function<void()> &&fn) {
         impl_.on_status_started([fn = std::move(fn)](
               const cxx14::StatusStarted &) noexcept {
-            MK_NETTESTS_CALL_AND_SUPPRESS(fn, ());
+            fn();
         });
         return *this;
     }
@@ -266,7 +237,7 @@ class MK_NETTESTS_DEPRECATED BaseTest {
     BaseTest &on_end(std::function<void()> &&fn) {
         impl_.on_status_end([fn = std::move(fn)](
               const cxx14::StatusEnd &) noexcept {
-            MK_NETTESTS_CALL_AND_SUPPRESS(fn, ());
+            fn();
         });
         return *this;
     }
@@ -276,7 +247,7 @@ class MK_NETTESTS_DEPRECATED BaseTest {
         // onto callbacks used to clear resources when the task is done.
         impl_.on_status_end([fn = std::move(fn)](
                 const cxx14::StatusEnd &) noexcept {
-            MK_NETTESTS_CALL_AND_SUPPRESS(fn, ());
+            fn();
         });
         return *this;
     }
@@ -289,7 +260,7 @@ class MK_NETTESTS_DEPRECATED BaseTest {
             // do not want to break the existing API.
             du.down = (uint64_t)(info.downloaded_kb * 1000.0);
             du.up = (uint64_t)(info.uploaded_kb * 1000.0);
-            MK_NETTESTS_CALL_AND_SUPPRESS(fn, (du));
+            fn(du);
         });
         return *this;
     }
@@ -298,32 +269,23 @@ class MK_NETTESTS_DEPRECATED BaseTest {
     // ---------------
     //
     // We should not be able to run more than a test with this class
-    // hence we immediately swap the context. Because we're using a
-    // SharedPtr, this means that attempting to run more than one test
-    // leads to an exception being thrown.
+    // hence we immediately swap the context. The previouis code used
+    // SharedPtr, leading to an exception being thrown if a test was
+    // reused to run a test. Here the code will probably just misbehave
+    // by saying that no test name is provided. Anyway, since that was
+    // not supported behavior and this API is deprecayed, we're probably
+    // good with doing nothing and wait for this API to die.
 
     void run() {
-        (void)cxx14::TaskRunner::global().run(std::move(impl_));
+        (void)cxx14::TaskRunner{true}.run(std::move(impl_));
     }
 
     void start(std::function<void()> &&fn) {
-        (void)cxx14::TaskRunner::global().start( //
+        (void)cxx14::TaskRunner{true}.start( //
             std::move(impl_), std::move(fn));
     }
 
-#undef MK_NETTESTS_CALL_AND_SUPPRESS // Tidy
-
   protected:
-    // Implementation note: using a SharedPtr<T> because it's easy to
-    // move around (especially into lambdas) and because it provides the
-    // guarantee of throwing on null, which was a trait of the previous
-    // implementation of the nettests API.
-    //
-    // Also: the pointer was public in the previous implementation but
-    // it was also opaque, so not very useful. For this reason, it's
-    // now protected in this implementation.
-    //
-    // FIXME: no longer the case. Also change the variable name.
     cxx14::TaskInfo impl_;
 };
 

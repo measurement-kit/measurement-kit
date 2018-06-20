@@ -1,6 +1,4 @@
-/* Public domain 2017, Simone Basso <bassosimone@gmail.com. */
-
-#include "test/winsock.hpp"
+// Public domain 2017, Simone Basso <bassosimone@gmail.com>.
 
 #include <measurement_kit/ffi.h>
 
@@ -8,39 +6,36 @@
 #include <stdlib.h>
 #include <string.h>
 
-/*
- * Ideally it would be nice to have this written in C. For this to work,
- * however, we would need to specifically compile Measurement Kit to link
- * statically with its own version of libc++.
- */
+#include "test/winsock.hpp"  // auto-configure winsockets
+
 int main() {
-    mk_task_t *task = nullptr;
-    mk_task_error_t err =
-            mk_task_start_ex(&task, "{\n"
-                                    "    \"name\": \"Ndt\",\n"
-                                    "    \"log_level\": \"INFO\"\n"
-                                    "}\n");
-    if (err != MK_TASK_ENONE) {
-        fprintf(stderr, "ERROR: cannot create/start task: %d\n", err);
+    auto settings = R"({
+        "name": "Ndt",
+        "log_level": "INFO"
+    })";
+    auto task = mk_task_start(settings.c_str());
+    if (task == nullptr) {
+        fprintf(stderr, "ERROR: mk_task_start() failed\n");
         exit(1);
     }
-
+    auto exitvalue = 0;
     while (!mk_task_is_done(task)) {
-        mk_event_t *event = mk_task_wait_for_next_event(task);
-        if (event == NULL) {
-            fprintf(stderr, "ERROR: cannot wait for next event\n");
-            exit(1);
+        auto event = mk_task_wait_for_next_event(task);
+        if (event == nullptr) {
+            fprintf(stderr, "ERROR: mk_task_wait_for_next_event() failed\n");
+            exitvalue = 1;
+            break;
         }
-        const char *serio = mk_event_serialize(event);
-        if (serio == NULL) {
-            fprintf(stderr, "ERROR: cannot serialize event\n");
-            exit(1);
+        auto serialization = mk_event_serialize(event);
+        if (serialization == nullptr) {
+            fprintf(stderr, "ERROR: mk_event_serialize() failed\n");
+            exitvalue = 1;
+            break;
         }
-        printf("%s\n", serio);
+        printf("%s\n", serialization);
         fflush(stdout);
         mk_event_destroy(event);
     }
-
     mk_task_destroy(task);
-    return 0;
+    return exitvalue;
 }

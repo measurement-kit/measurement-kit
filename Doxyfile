@@ -1,6 +1,8 @@
 BUILTIN_STL_SUPPORT = YES
 EXTRACT_ALL = YES
-INPUT = include/measurement_kit/ffi.h
+INPUT =                                                                        \
+        include/measurement_kit/cxx14.hpp                                      \
+        include/measurement_kit/ffi.h
 JAVADOC_AUTOBRIEF = YES
 PROJECT_BRIEF = "Portable C++14 network measurement library"
 PROJECT_NAME = measurement-kit
