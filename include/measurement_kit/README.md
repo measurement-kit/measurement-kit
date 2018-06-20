@@ -28,17 +28,22 @@ https://github.com/ooni/spec/blob/master/test-specs/ts-017-web-connectivity.md
 ) or the [Network Diagnostic Test](
 https://github.com/ooni/spec/blob/master/test-specs/ts-022-ndt.md).
 
-To _start_ a task you call `mk_task_start` by passing it specific _settings_
-as a serialized JSON string. All settings are optional, except for the `name` of
-the task. Once started, a task will emit _events_. There are several kind of
-events, the most common of which is `log` that identifies a log line.
+To _start_ a task you call `mk_task_start` by passing it specific
+_settings_ as a serialized JSON string. You should configure a test
+using high level code and then use a JSON serializer to obtain the
+JSON string. All settings are optional, except for the `name` of
+the task. Once started, a task will emit _events_. There are several
+kind of events, the most common of which is `log` that identifies
+a log line.
 
 The task runs in a separate thread and posts events on a queue. You extract
 events from such queue using `mk_task_wait_for_next_event`. This is a _blocking_
-function that returns as soon as a new event is available in the queue. To
-process an event, use `mk_event_serialize` to obtain its JSON serialization.
+function that returns when a new event is posted into the queue. To
+process an event, use `mk_event_serialize` to obtain its JSON serialization,
+then parse the JSON into some high level data structure, and process it. See
+[cxx14.hpp](cxx14.hpp) for an example of such processing.
 
-You should look processing events until `mk_task_is_done` returns nonzero. At
+You should loop processing events until `mk_task_is_done` returns nonzero. At
 that point, the task is done, and attempting to extract further events from
 the queue with `mk_task_wait_for_next_event` will immediately return the dummy
 `status.terminated` event.
