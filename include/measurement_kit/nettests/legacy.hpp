@@ -143,8 +143,7 @@ class MK_NETTESTS_DEPRECATED BaseTest {
             // that an exception is raised, this will be handled inside
             // `../cxx14.hpp`: it will be either ignored or it will cause
             // the current test to interrupt and stop running.
-            const char *s = doc.dump().c_str();
-            fn(s);
+            fn(doc.dump().c_str());
         });
         return *this;
     }
