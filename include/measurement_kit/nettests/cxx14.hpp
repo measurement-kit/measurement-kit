@@ -214,7 +214,7 @@ class MK_NETTESTS_DEPRECATED BaseTest {
     }
 
     BaseTest &add_annotation(std::string key, std::string value) {
-        impl_.set_option(key, value);
+        impl_.set_annotation(key, value);
         return *this;
     }
 
