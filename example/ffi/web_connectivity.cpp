@@ -17,7 +17,7 @@ int main() {
         "name": "WebConnectivity",
         "log_level": "INFO"
     })";
-    auto task = mk_task_start(settings.c_str());
+    auto task = mk_task_start(settings);
     if (task == nullptr) {
         fprintf(stderr, "ERROR: mk_task_start() failed\n");
         exit(1);

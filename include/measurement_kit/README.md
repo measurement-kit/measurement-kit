@@ -55,7 +55,11 @@ respectively, `mk_event_destroy` and `mk_task_destroy`.
 ## Examples
 
 You can find working examples of usage of the FFI API inside the
-[example/ffi](../../example/ffi) directory.
+[example/ffi](../../example/ffi) directory. Another usage example of
+the FFI API is [cxx14.hpp](cxx14.hpp), where we wrap the FFI API
+into a more-user-friendly C++14 interface, by mapping each event to
+a class. Specifically, it may be of interest to read how we
+process events in the `TaskRunner` class.
 
 ## Tasks
 
