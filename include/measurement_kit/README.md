@@ -26,7 +26,7 @@ The FFI API allows you to run _tasks_. In most cases tasks are network
 measurement tests, like [OONI's Web Connectivity](
 https://github.com/ooni/spec/blob/master/test-specs/ts-017-web-connectivity.md
 ) or the [Network Diagnostic Test](
-https://github.com/ndt-project/ndt/wiki/NDTProtocol).
+https://github.com/ooni/spec/blob/master/test-specs/ts-022-ndt.md).
 
 To _start_ a task you call `mk_task_start` by passing it specific _settings_
 as a serialized JSON string. All settings are optional, except for the `name` of
