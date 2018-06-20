@@ -75,7 +75,7 @@ extern "C" {
     Creating a Task also creates the thread that will run it. Altough you can
     construct more than one Task at a time, Measurement Kit will make sure that
     tasks do not run concurrently, even though there is no guarantee that they
-    will actually run sequentially.
+    will actually run in FIFO order.
 
     A Task will emit events while running, which you can retrieve using the
     mk_task_wait_for_next_event() call, which blocks until an event occurs. You
