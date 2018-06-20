@@ -115,6 +115,9 @@ typedef struct mk_event_ mk_event_t;
 
     @remark The returned string is owned by @p event, DO NOT free it.
 
+    @remark Since the returned string is owned by @p event, attempting to
+    use it after @p event has been destroyed is a use after free error.
+
     @see <a href="https://github.com/measurement-kit/measurement-kit/blob/master/include/measurement_kit/README.md">
     the FFI API specification</a> for more information on the JSON schema
     used by returned events.
