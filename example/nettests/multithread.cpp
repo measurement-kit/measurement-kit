@@ -1,5 +1,7 @@
 // Public domain 2017, Simone Basso <bassosimone@gmail.com.
 
+#define MK_CXX14_TRACE
+
 #include <measurement_kit/common.hpp>
 #include <measurement_kit/nettests.hpp> // Import mk::nettests
 

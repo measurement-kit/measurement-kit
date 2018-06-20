@@ -102,14 +102,14 @@ class MK_NETTESTS_DEPRECATED BaseTest {
         // the end of the task. As such it's perfect for clearing up resources,
         // which is the reason why `on_logger_eof()` was introduced.
         impl_.on_status_end([fn = std::move(fn)](
-                const cxx14::StatusEnd &) noexcept {
+                const cxx14::StatusEnd &) {
             fn();
         });
         return *this;
     }
 
     BaseTest &on_log(std::function<void(uint32_t, const char *)> &&fn) {
-        impl_.on_log([fn = std::move(fn)](const cxx14::Log &info) noexcept {
+        impl_.on_log([fn = std::move(fn)](const cxx14::Log &info) {
             uint32_t severity = 0;
             if (info.log_level == "ERR") {
                 severity = MK_LOG_ERR;
@@ -132,7 +132,7 @@ class MK_NETTESTS_DEPRECATED BaseTest {
 
     BaseTest &on_event(std::function<void(const char *)> &&fn) {
         impl_.on_status_update_performance([fn = std::move(fn)](
-              const cxx14::StatusUpdatePerformance &info) noexcept {
+              const cxx14::StatusUpdatePerformance &info) {
             nlohmann::json doc;
             doc["type"] = info.direction + "-speed";
             doc["elapsed"] = {info.elapsed, "s"};
@@ -151,7 +151,7 @@ class MK_NETTESTS_DEPRECATED BaseTest {
 
     BaseTest &on_progress(std::function<void(double, const char *)> &&fn) {
         impl_.on_status_progress([fn = std::move(fn)](
-              const cxx14::StatusProgress &info) noexcept {
+              const cxx14::StatusProgress &info) {
             fn(info.percentage, info.message.c_str());
         });
         return *this;
@@ -220,7 +220,7 @@ class MK_NETTESTS_DEPRECATED BaseTest {
 
     BaseTest &on_entry(std::function<void(std::string)> &&fn) {
         impl_.on_measurement([fn = std::move(fn)](
-              const cxx14::Measurement &info) noexcept {
+              const cxx14::Measurement &info) {
             fn(info.json_str);
         });
         return *this;
@@ -228,7 +228,7 @@ class MK_NETTESTS_DEPRECATED BaseTest {
 
     BaseTest &on_begin(std::function<void()> &&fn) {
         impl_.on_status_started([fn = std::move(fn)](
-              const cxx14::StatusStarted &) noexcept {
+              const cxx14::StatusStarted &) {
             fn();
         });
         return *this;
@@ -236,7 +236,7 @@ class MK_NETTESTS_DEPRECATED BaseTest {
 
     BaseTest &on_end(std::function<void()> &&fn) {
         impl_.on_status_end([fn = std::move(fn)](
-              const cxx14::StatusEnd &) noexcept {
+              const cxx14::StatusEnd &) {
             fn();
         });
         return *this;
@@ -246,7 +246,7 @@ class MK_NETTESTS_DEPRECATED BaseTest {
         // As mentioned above, `on_status_end` is the right callback to map
         // onto callbacks used to clear resources when the task is done.
         impl_.on_status_end([fn = std::move(fn)](
-                const cxx14::StatusEnd &) noexcept {
+                const cxx14::StatusEnd &) {
             fn();
         });
         return *this;
@@ -254,7 +254,7 @@ class MK_NETTESTS_DEPRECATED BaseTest {
 
     BaseTest &on_overall_data_usage(std::function<void(DataUsage)> &&fn) {
         impl_.on_status_end([fn = std::move(fn)](
-                const cxx14::StatusEnd &info) noexcept {
+                const cxx14::StatusEnd &info) {
             DataUsage du;
             // There are cases where the following could overflow but, again, we
             // do not want to break the existing API.

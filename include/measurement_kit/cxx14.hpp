@@ -15,7 +15,7 @@
 #include <utility>
 #include <vector>
 
-#ifdef MK_CXX14_TRACE_EVENTS
+#ifdef MK_CXX14_TRACE
 #include <iostream>
 #endif
 
@@ -835,10 +835,13 @@ class TaskRunner {
                 rv = false;
                 break;
             }
-#ifdef MK_CXX14_TRACE_EVENTS
-            std::clog << "MK event: " << event.dump() << std::endl;
+#ifdef MK_CXX14_TRACE
+            std::clog << "MK_CXX14: event: " << event.dump() << std::endl;
 #endif
             rv = process_event(info, event);
+#ifdef MK_CXX14_TRACE
+            std::clog << "MK_CXX14: process_event: " << rv << std::endl;
+#endif
         }
         if (!rv) {
             mk_task_interrupt(ptask.get());
@@ -888,7 +891,12 @@ class TaskRunner {
                    cb(data);
                } catch (const std::bad_alloc &) {
                    throw;
-               } catch (const std::exception &) {
+               } catch (const std::exception &exc) {
+#ifdef MK_CXX14_TRACE
+                   std::clog << "MK_CXX14: callback exception: " << exc.what() << std::endl;
+#else
+                   (void)exc;
+#endif
                    rv = suppress_cb_exceptions_;
                }
            }
@@ -918,7 +926,12 @@ class TaskRunner {
                    cb(data);
                } catch (const std::bad_alloc &) {
                    throw;
-               } catch (const std::exception &) {
+               } catch (const std::exception &exc) {
+#ifdef MK_CXX14_TRACE
+                   std::clog << "MK_CXX14: callback exception: " << exc.what() << std::endl;
+#else
+                   (void)exc;
+#endif
                    rv = suppress_cb_exceptions_;
                }
            }
@@ -948,7 +961,12 @@ class TaskRunner {
                    cb(data);
                } catch (const std::bad_alloc &) {
                    throw;
-               } catch (const std::exception &) {
+               } catch (const std::exception &exc) {
+#ifdef MK_CXX14_TRACE
+                   std::clog << "MK_CXX14: callback exception: " << exc.what() << std::endl;
+#else
+                   (void)exc;
+#endif
                    rv = suppress_cb_exceptions_;
                }
            }
@@ -978,7 +996,12 @@ class TaskRunner {
                    cb(data);
                } catch (const std::bad_alloc &) {
                    throw;
-               } catch (const std::exception &) {
+               } catch (const std::exception &exc) {
+#ifdef MK_CXX14_TRACE
+                   std::clog << "MK_CXX14: callback exception: " << exc.what() << std::endl;
+#else
+                   (void)exc;
+#endif
                    rv = suppress_cb_exceptions_;
                }
            }
@@ -1024,7 +1047,12 @@ class TaskRunner {
                    cb(data);
                } catch (const std::bad_alloc &) {
                    throw;
-               } catch (const std::exception &) {
+               } catch (const std::exception &exc) {
+#ifdef MK_CXX14_TRACE
+                   std::clog << "MK_CXX14: callback exception: " << exc.what() << std::endl;
+#else
+                   (void)exc;
+#endif
                    rv = suppress_cb_exceptions_;
                }
            }
@@ -1054,7 +1082,12 @@ class TaskRunner {
                    cb(data);
                } catch (const std::bad_alloc &) {
                    throw;
-               } catch (const std::exception &) {
+               } catch (const std::exception &exc) {
+#ifdef MK_CXX14_TRACE
+                   std::clog << "MK_CXX14: callback exception: " << exc.what() << std::endl;
+#else
+                   (void)exc;
+#endif
                    rv = suppress_cb_exceptions_;
                }
            }
@@ -1084,7 +1117,12 @@ class TaskRunner {
                    cb(data);
                } catch (const std::bad_alloc &) {
                    throw;
-               } catch (const std::exception &) {
+               } catch (const std::exception &exc) {
+#ifdef MK_CXX14_TRACE
+                   std::clog << "MK_CXX14: callback exception: " << exc.what() << std::endl;
+#else
+                   (void)exc;
+#endif
                    rv = suppress_cb_exceptions_;
                }
            }
@@ -1114,7 +1152,12 @@ class TaskRunner {
                    cb(data);
                } catch (const std::bad_alloc &) {
                    throw;
-               } catch (const std::exception &) {
+               } catch (const std::exception &exc) {
+#ifdef MK_CXX14_TRACE
+                   std::clog << "MK_CXX14: callback exception: " << exc.what() << std::endl;
+#else
+                   (void)exc;
+#endif
                    rv = suppress_cb_exceptions_;
                }
            }
@@ -1144,7 +1187,12 @@ class TaskRunner {
                    cb(data);
                } catch (const std::bad_alloc &) {
                    throw;
-               } catch (const std::exception &) {
+               } catch (const std::exception &exc) {
+#ifdef MK_CXX14_TRACE
+                   std::clog << "MK_CXX14: callback exception: " << exc.what() << std::endl;
+#else
+                   (void)exc;
+#endif
                    rv = suppress_cb_exceptions_;
                }
            }
@@ -1182,7 +1230,12 @@ class TaskRunner {
                    cb(data);
                } catch (const std::bad_alloc &) {
                    throw;
-               } catch (const std::exception &) {
+               } catch (const std::exception &exc) {
+#ifdef MK_CXX14_TRACE
+                   std::clog << "MK_CXX14: callback exception: " << exc.what() << std::endl;
+#else
+                   (void)exc;
+#endif
                    rv = suppress_cb_exceptions_;
                }
            }
@@ -1220,7 +1273,12 @@ class TaskRunner {
                    cb(data);
                } catch (const std::bad_alloc &) {
                    throw;
-               } catch (const std::exception &) {
+               } catch (const std::exception &exc) {
+#ifdef MK_CXX14_TRACE
+                   std::clog << "MK_CXX14: callback exception: " << exc.what() << std::endl;
+#else
+                   (void)exc;
+#endif
                    rv = suppress_cb_exceptions_;
                }
            }
@@ -1266,7 +1324,12 @@ class TaskRunner {
                    cb(data);
                } catch (const std::bad_alloc &) {
                    throw;
-               } catch (const std::exception &) {
+               } catch (const std::exception &exc) {
+#ifdef MK_CXX14_TRACE
+                   std::clog << "MK_CXX14: callback exception: " << exc.what() << std::endl;
+#else
+                   (void)exc;
+#endif
                    rv = suppress_cb_exceptions_;
                }
            }
@@ -1320,7 +1383,12 @@ class TaskRunner {
                    cb(data);
                } catch (const std::bad_alloc &) {
                    throw;
-               } catch (const std::exception &) {
+               } catch (const std::exception &exc) {
+#ifdef MK_CXX14_TRACE
+                   std::clog << "MK_CXX14: callback exception: " << exc.what() << std::endl;
+#else
+                   (void)exc;
+#endif
                    rv = suppress_cb_exceptions_;
                }
            }
@@ -1350,7 +1418,12 @@ class TaskRunner {
                    cb(data);
                } catch (const std::bad_alloc &) {
                    throw;
-               } catch (const std::exception &) {
+               } catch (const std::exception &exc) {
+#ifdef MK_CXX14_TRACE
+                   std::clog << "MK_CXX14: callback exception: " << exc.what() << std::endl;
+#else
+                   (void)exc;
+#endif
                    rv = suppress_cb_exceptions_;
                }
            }
@@ -1388,7 +1461,12 @@ class TaskRunner {
                    cb(data);
                } catch (const std::bad_alloc &) {
                    throw;
-               } catch (const std::exception &) {
+               } catch (const std::exception &exc) {
+#ifdef MK_CXX14_TRACE
+                   std::clog << "MK_CXX14: callback exception: " << exc.what() << std::endl;
+#else
+                   (void)exc;
+#endif
                    rv = suppress_cb_exceptions_;
                }
            }
@@ -1418,7 +1496,12 @@ class TaskRunner {
                    cb(data);
                } catch (const std::bad_alloc &) {
                    throw;
-               } catch (const std::exception &) {
+               } catch (const std::exception &exc) {
+#ifdef MK_CXX14_TRACE
+                   std::clog << "MK_CXX14: callback exception: " << exc.what() << std::endl;
+#else
+                   (void)exc;
+#endif
                    rv = suppress_cb_exceptions_;
                }
            }
@@ -1456,7 +1539,12 @@ class TaskRunner {
                    cb(data);
                } catch (const std::bad_alloc &) {
                    throw;
-               } catch (const std::exception &) {
+               } catch (const std::exception &exc) {
+#ifdef MK_CXX14_TRACE
+                   std::clog << "MK_CXX14: callback exception: " << exc.what() << std::endl;
+#else
+                   (void)exc;
+#endif
                    rv = suppress_cb_exceptions_;
                }
            }
@@ -1478,7 +1566,12 @@ class TaskRunner {
                    cb(data);
                } catch (const std::bad_alloc &) {
                    throw;
-               } catch (const std::exception &) {
+               } catch (const std::exception &exc) {
+#ifdef MK_CXX14_TRACE
+                   std::clog << "MK_CXX14: callback exception: " << exc.what() << std::endl;
+#else
+                   (void)exc;
+#endif
                    rv = suppress_cb_exceptions_;
                }
            }
@@ -1508,7 +1601,12 @@ class TaskRunner {
                    cb(data);
                } catch (const std::bad_alloc &) {
                    throw;
-               } catch (const std::exception &) {
+               } catch (const std::exception &exc) {
+#ifdef MK_CXX14_TRACE
+                   std::clog << "MK_CXX14: callback exception: " << exc.what() << std::endl;
+#else
+                   (void)exc;
+#endif
                    rv = suppress_cb_exceptions_;
                }
            }
@@ -1538,7 +1636,12 @@ class TaskRunner {
                    cb(data);
                } catch (const std::bad_alloc &) {
                    throw;
-               } catch (const std::exception &) {
+               } catch (const std::exception &exc) {
+#ifdef MK_CXX14_TRACE
+                   std::clog << "MK_CXX14: callback exception: " << exc.what() << std::endl;
+#else
+                   (void)exc;
+#endif
                    rv = suppress_cb_exceptions_;
                }
            }
@@ -1568,7 +1671,12 @@ class TaskRunner {
                    cb(data);
                } catch (const std::bad_alloc &) {
                    throw;
-               } catch (const std::exception &) {
+               } catch (const std::exception &exc) {
+#ifdef MK_CXX14_TRACE
+                   std::clog << "MK_CXX14: callback exception: " << exc.what() << std::endl;
+#else
+                   (void)exc;
+#endif
                    rv = suppress_cb_exceptions_;
                }
            }
@@ -1590,7 +1698,12 @@ class TaskRunner {
                    cb(data);
                } catch (const std::bad_alloc &) {
                    throw;
-               } catch (const std::exception &) {
+               } catch (const std::exception &exc) {
+#ifdef MK_CXX14_TRACE
+                   std::clog << "MK_CXX14: callback exception: " << exc.what() << std::endl;
+#else
+                   (void)exc;
+#endif
                    rv = suppress_cb_exceptions_;
                }
            }
@@ -1612,7 +1725,12 @@ class TaskRunner {
                    cb(data);
                } catch (const std::bad_alloc &) {
                    throw;
-               } catch (const std::exception &) {
+               } catch (const std::exception &exc) {
+#ifdef MK_CXX14_TRACE
+                   std::clog << "MK_CXX14: callback exception: " << exc.what() << std::endl;
+#else
+                   (void)exc;
+#endif
                    rv = suppress_cb_exceptions_;
                }
            }
@@ -1666,7 +1784,12 @@ class TaskRunner {
                    cb(data);
                } catch (const std::bad_alloc &) {
                    throw;
-               } catch (const std::exception &) {
+               } catch (const std::exception &exc) {
+#ifdef MK_CXX14_TRACE
+                   std::clog << "MK_CXX14: callback exception: " << exc.what() << std::endl;
+#else
+                   (void)exc;
+#endif
                    rv = suppress_cb_exceptions_;
                }
            }
@@ -1704,7 +1827,12 @@ class TaskRunner {
                    cb(data);
                } catch (const std::bad_alloc &) {
                    throw;
-               } catch (const std::exception &) {
+               } catch (const std::exception &exc) {
+#ifdef MK_CXX14_TRACE
+                   std::clog << "MK_CXX14: callback exception: " << exc.what() << std::endl;
+#else
+                   (void)exc;
+#endif
                    rv = suppress_cb_exceptions_;
                }
            }
