@@ -7,8 +7,10 @@
 /http_invalid_request_line
 /meek_fronted_requests
 /multi_ndt
+/multithread_example
 /ndt
 /runnable
+/simple_example
 /tcp_connect
 /telegram
 /utils
