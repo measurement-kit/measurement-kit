@@ -811,7 +811,7 @@ inline bool process_event(const TaskInfo &info, const nlohmann::json &event, boo
         }
         try {
             data.failure = value.at("failure");
-        } catch (const NlohmannJsonException &exc) {
+        } catch (const NlohmannJsonException &) {
             return false;
         }
         // Rationale: the previous implementation
@@ -844,7 +844,7 @@ inline bool process_event(const TaskInfo &info, const nlohmann::json &event, boo
         }
         try {
             data.failure = value.at("failure");
-        } catch (const NlohmannJsonException &exc) {
+        } catch (const NlohmannJsonException &) {
             return false;
         }
         // Rationale: the previous implementation
@@ -877,7 +877,7 @@ inline bool process_event(const TaskInfo &info, const nlohmann::json &event, boo
         }
         try {
             data.failure = value.at("failure");
-        } catch (const NlohmannJsonException &exc) {
+        } catch (const NlohmannJsonException &) {
             return false;
         }
         // Rationale: the previous implementation
@@ -910,7 +910,7 @@ inline bool process_event(const TaskInfo &info, const nlohmann::json &event, boo
         }
         try {
             data.failure = value.at("failure");
-        } catch (const NlohmannJsonException &exc) {
+        } catch (const NlohmannJsonException &) {
             return false;
         }
         // Rationale: the previous implementation
@@ -943,7 +943,7 @@ inline bool process_event(const TaskInfo &info, const nlohmann::json &event, boo
         }
         try {
             data.failure = value.at("failure");
-        } catch (const NlohmannJsonException &exc) {
+        } catch (const NlohmannJsonException &) {
             return false;
         }
         if (value.count("json_str") <= 0) {
@@ -951,7 +951,7 @@ inline bool process_event(const TaskInfo &info, const nlohmann::json &event, boo
         }
         try {
             data.json_str = value.at("json_str");
-        } catch (const NlohmannJsonException &exc) {
+        } catch (const NlohmannJsonException &) {
             return false;
         }
         if (value.count("idx") <= 0) {
@@ -959,7 +959,7 @@ inline bool process_event(const TaskInfo &info, const nlohmann::json &event, boo
         }
         try {
             data.idx = value.at("idx");
-        } catch (const NlohmannJsonException &exc) {
+        } catch (const NlohmannJsonException &) {
             return false;
         }
         // Rationale: the previous implementation
@@ -992,7 +992,7 @@ inline bool process_event(const TaskInfo &info, const nlohmann::json &event, boo
         }
         try {
             data.failure = value.at("failure");
-        } catch (const NlohmannJsonException &exc) {
+        } catch (const NlohmannJsonException &) {
             return false;
         }
         // Rationale: the previous implementation
@@ -1025,7 +1025,7 @@ inline bool process_event(const TaskInfo &info, const nlohmann::json &event, boo
         }
         try {
             data.failure = value.at("failure");
-        } catch (const NlohmannJsonException &exc) {
+        } catch (const NlohmannJsonException &) {
             return false;
         }
         // Rationale: the previous implementation
@@ -1058,7 +1058,7 @@ inline bool process_event(const TaskInfo &info, const nlohmann::json &event, boo
         }
         try {
             data.failure = value.at("failure");
-        } catch (const NlohmannJsonException &exc) {
+        } catch (const NlohmannJsonException &) {
             return false;
         }
         // Rationale: the previous implementation
@@ -1091,7 +1091,7 @@ inline bool process_event(const TaskInfo &info, const nlohmann::json &event, boo
         }
         try {
             data.failure = value.at("failure");
-        } catch (const NlohmannJsonException &exc) {
+        } catch (const NlohmannJsonException &) {
             return false;
         }
         // Rationale: the previous implementation
@@ -1124,7 +1124,7 @@ inline bool process_event(const TaskInfo &info, const nlohmann::json &event, boo
         }
         try {
             data.message = value.at("message");
-        } catch (const NlohmannJsonException &exc) {
+        } catch (const NlohmannJsonException &) {
             return false;
         }
         if (value.count("log_level") <= 0) {
@@ -1132,7 +1132,7 @@ inline bool process_event(const TaskInfo &info, const nlohmann::json &event, boo
         }
         try {
             data.log_level = value.at("log_level");
-        } catch (const NlohmannJsonException &exc) {
+        } catch (const NlohmannJsonException &) {
             return false;
         }
         // Rationale: the previous implementation
@@ -1165,7 +1165,7 @@ inline bool process_event(const TaskInfo &info, const nlohmann::json &event, boo
         }
         try {
             data.json_str = value.at("json_str");
-        } catch (const NlohmannJsonException &exc) {
+        } catch (const NlohmannJsonException &) {
             return false;
         }
         if (value.count("idx") <= 0) {
@@ -1173,7 +1173,7 @@ inline bool process_event(const TaskInfo &info, const nlohmann::json &event, boo
         }
         try {
             data.idx = value.at("idx");
-        } catch (const NlohmannJsonException &exc) {
+        } catch (const NlohmannJsonException &) {
             return false;
         }
         // Rationale: the previous implementation
@@ -1206,7 +1206,7 @@ inline bool process_event(const TaskInfo &info, const nlohmann::json &event, boo
         }
         try {
             data.failure = value.at("failure");
-        } catch (const NlohmannJsonException &exc) {
+        } catch (const NlohmannJsonException &) {
             return false;
         }
         if (value.count("uploaded_kb") <= 0) {
@@ -1214,7 +1214,7 @@ inline bool process_event(const TaskInfo &info, const nlohmann::json &event, boo
         }
         try {
             data.uploaded_kb = value.at("uploaded_kb");
-        } catch (const NlohmannJsonException &exc) {
+        } catch (const NlohmannJsonException &) {
             return false;
         }
         if (value.count("downloaded_kb") <= 0) {
@@ -1222,7 +1222,7 @@ inline bool process_event(const TaskInfo &info, const nlohmann::json &event, boo
         }
         try {
             data.downloaded_kb = value.at("downloaded_kb");
-        } catch (const NlohmannJsonException &exc) {
+        } catch (const NlohmannJsonException &) {
             return false;
         }
         // Rationale: the previous implementation
@@ -1255,7 +1255,7 @@ inline bool process_event(const TaskInfo &info, const nlohmann::json &event, boo
         }
         try {
             data.probe_ip = value.at("probe_ip");
-        } catch (const NlohmannJsonException &exc) {
+        } catch (const NlohmannJsonException &) {
             return false;
         }
         if (value.count("probe_network_name") <= 0) {
@@ -1263,7 +1263,7 @@ inline bool process_event(const TaskInfo &info, const nlohmann::json &event, boo
         }
         try {
             data.probe_network_name = value.at("probe_network_name");
-        } catch (const NlohmannJsonException &exc) {
+        } catch (const NlohmannJsonException &) {
             return false;
         }
         if (value.count("probe_asn") <= 0) {
@@ -1271,7 +1271,7 @@ inline bool process_event(const TaskInfo &info, const nlohmann::json &event, boo
         }
         try {
             data.probe_asn = value.at("probe_asn");
-        } catch (const NlohmannJsonException &exc) {
+        } catch (const NlohmannJsonException &) {
             return false;
         }
         if (value.count("probe_cc") <= 0) {
@@ -1279,7 +1279,7 @@ inline bool process_event(const TaskInfo &info, const nlohmann::json &event, boo
         }
         try {
             data.probe_cc = value.at("probe_cc");
-        } catch (const NlohmannJsonException &exc) {
+        } catch (const NlohmannJsonException &) {
             return false;
         }
         // Rationale: the previous implementation
@@ -1312,7 +1312,7 @@ inline bool process_event(const TaskInfo &info, const nlohmann::json &event, boo
         }
         try {
             data.idx = value.at("idx");
-        } catch (const NlohmannJsonException &exc) {
+        } catch (const NlohmannJsonException &) {
             return false;
         }
         // Rationale: the previous implementation
@@ -1345,7 +1345,7 @@ inline bool process_event(const TaskInfo &info, const nlohmann::json &event, boo
         }
         try {
             data.input = value.at("input");
-        } catch (const NlohmannJsonException &exc) {
+        } catch (const NlohmannJsonException &) {
             return false;
         }
         if (value.count("idx") <= 0) {
@@ -1353,7 +1353,7 @@ inline bool process_event(const TaskInfo &info, const nlohmann::json &event, boo
         }
         try {
             data.idx = value.at("idx");
-        } catch (const NlohmannJsonException &exc) {
+        } catch (const NlohmannJsonException &) {
             return false;
         }
         // Rationale: the previous implementation
@@ -1386,7 +1386,7 @@ inline bool process_event(const TaskInfo &info, const nlohmann::json &event, boo
         }
         try {
             data.idx = value.at("idx");
-        } catch (const NlohmannJsonException &exc) {
+        } catch (const NlohmannJsonException &) {
             return false;
         }
         // Rationale: the previous implementation
@@ -1419,7 +1419,7 @@ inline bool process_event(const TaskInfo &info, const nlohmann::json &event, boo
         }
         try {
             data.percentage = value.at("percentage");
-        } catch (const NlohmannJsonException &exc) {
+        } catch (const NlohmannJsonException &) {
             return false;
         }
         if (value.count("message") <= 0) {
@@ -1427,7 +1427,7 @@ inline bool process_event(const TaskInfo &info, const nlohmann::json &event, boo
         }
         try {
             data.message = value.at("message");
-        } catch (const NlohmannJsonException &exc) {
+        } catch (const NlohmannJsonException &) {
             return false;
         }
         // Rationale: the previous implementation
@@ -1485,7 +1485,7 @@ inline bool process_event(const TaskInfo &info, const nlohmann::json &event, boo
         }
         try {
             data.report_id = value.at("report_id");
-        } catch (const NlohmannJsonException &exc) {
+        } catch (const NlohmannJsonException &) {
             return false;
         }
         // Rationale: the previous implementation
@@ -1518,7 +1518,7 @@ inline bool process_event(const TaskInfo &info, const nlohmann::json &event, boo
         }
         try {
             data.report_id = value.at("report_id");
-        } catch (const NlohmannJsonException &exc) {
+        } catch (const NlohmannJsonException &) {
             return false;
         }
         // Rationale: the previous implementation
@@ -1551,7 +1551,7 @@ inline bool process_event(const TaskInfo &info, const nlohmann::json &event, boo
         }
         try {
             data.resolver_ip = value.at("resolver_ip");
-        } catch (const NlohmannJsonException &exc) {
+        } catch (const NlohmannJsonException &) {
             return false;
         }
         // Rationale: the previous implementation
@@ -1634,7 +1634,7 @@ inline bool process_event(const TaskInfo &info, const nlohmann::json &event, boo
         }
         try {
             data.direction = value.at("direction");
-        } catch (const NlohmannJsonException &exc) {
+        } catch (const NlohmannJsonException &) {
             return false;
         }
         if (value.count("num_streams") <= 0) {
@@ -1642,7 +1642,7 @@ inline bool process_event(const TaskInfo &info, const nlohmann::json &event, boo
         }
         try {
             data.num_streams = value.at("num_streams");
-        } catch (const NlohmannJsonException &exc) {
+        } catch (const NlohmannJsonException &) {
             return false;
         }
         if (value.count("speed_kbps") <= 0) {
@@ -1650,7 +1650,7 @@ inline bool process_event(const TaskInfo &info, const nlohmann::json &event, boo
         }
         try {
             data.speed_kbps = value.at("speed_kbps");
-        } catch (const NlohmannJsonException &exc) {
+        } catch (const NlohmannJsonException &) {
             return false;
         }
         if (value.count("elapsed") <= 0) {
@@ -1658,7 +1658,7 @@ inline bool process_event(const TaskInfo &info, const nlohmann::json &event, boo
         }
         try {
             data.elapsed = value.at("elapsed");
-        } catch (const NlohmannJsonException &exc) {
+        } catch (const NlohmannJsonException &) {
             return false;
         }
         // Rationale: the previous implementation
@@ -1691,7 +1691,7 @@ inline bool process_event(const TaskInfo &info, const nlohmann::json &event, boo
         }
         try {
             data.url = value.at("url");
-        } catch (const NlohmannJsonException &exc) {
+        } catch (const NlohmannJsonException &) {
             return false;
         }
         if (value.count("status") <= 0) {
@@ -1699,7 +1699,7 @@ inline bool process_event(const TaskInfo &info, const nlohmann::json &event, boo
         }
         try {
             data.status = value.at("status");
-        } catch (const NlohmannJsonException &exc) {
+        } catch (const NlohmannJsonException &) {
             return false;
         }
         // Rationale: the previous implementation

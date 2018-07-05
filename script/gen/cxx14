@@ -365,7 +365,7 @@ def write_runner(filep, settings, events):
                 filep.write("        }\n")
                 filep.write("        try {\n")
                 filep.write("            data.%s = value.at(\"%s\");\n" % (name, name))
-                filep.write("        } catch (const NlohmannJsonException &exc) {\n")
+                filep.write("        } catch (const NlohmannJsonException &) {\n")
                 filep.write("            return false;\n")
                 filep.write("        }\n")
         filep.write("        // Rationale: the previous implementation\n")
