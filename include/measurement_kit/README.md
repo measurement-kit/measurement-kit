@@ -3,6 +3,10 @@
 Measurement Kit exposes a simple C like API suitable to be used via
 [FFI](https://en.wikipedia.org/wiki/Foreign_function_interface).
 
+_As of v0.9.0, this API is still to be considered experimental. We will
+most likely change names from `mk_task_foo` to `mk_nettest_foo`. See
+also PR #1640 where we discussed these changes._
+
 We also implemented the following higher-level, easier-to-use APIs on top of
 this basic C-like FFI-friendly API:
 

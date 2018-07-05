@@ -37,6 +37,9 @@
     <a href="https://github.com/measurement-kit/measurement-kit/blob/master/include/measurement_kit/README.md">
     in the FFI API specification</a>.
 
+    @warning This API is not stable yet. We may want to change the names here
+    in accordance with a discussion we had merging PR #1640.
+
     @addtogroup FFI FFI API
     @brief Foreign Function Interface friendly API.
     @{
