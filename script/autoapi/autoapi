@@ -1,0 +1,173 @@
+#!/usr/bin/env python
+
+""" Automatically generate API headers from a specification of the JSON
+    messsages that are part of Measurement Kit's FFI API. """
+
+import jinja2
+import json
+import sys
+
+class Attribute(object):
+    """ Attribute of a class. """
+
+    def __init__(self, cxx_type, key, value=None):
+        self.cxx_type = cxx_type
+        self.key = key
+        self.value = value if value is not None else "{}"
+        # Casting from/to JSON is required for booleans because the FFI
+        # implementation uses integers instead of booleans.
+        self.cxx_cast_to_json = "(int64_t)" if cxx_type == "bool" else ""
+        self.cxx_cast_from_json = "(bool)" if cxx_type == "bool" else ""
+        # We need to know the JSON type to tell our JSON library what is
+        # the expected type of specific settings or options.
+        self.json_type = {
+            "Options": "object",
+            "bool": "number_integer",
+            "double": "number_float",
+            "int64_t": "number_integer",
+            "std::map<std::string, std::string>": "object",
+            "std::string": "string",
+            "std::vector<std::string>": "array",
+        }[cxx_type]
+
+class Setting(Attribute):
+    """ Attribute of the Setting class. """
+
+    def __init__(self, cxx_type, key, value=None, mandatory=False, internal=False):
+        super().__init__(cxx_type, key, value)
+        self.mandatory = mandatory
+        self.internal = internal
+
+class Event(object):
+    """ Event emitted by FFI API while running tests. """
+
+    def __init__(self, key, *attributes):
+        self.key = key
+        self.cxx_class_name = "".join([e.capitalize() for e in key.replace(".", "_").split("_")])
+        self.attributes = list(attributes)
+
+class Nettest(object):
+    """ Network test runnable using the FFI API. """
+
+    def __init__(self, snake_case_name, *attributes):
+        self.snake_case_name = snake_case_name
+        self.name = "".join([e.capitalize() for e in snake_case_name.replace(".", "_").split("_")])
+        self.attributes = list(attributes)
+
+def main():
+    """ Main function """
+
+    events = [Event("failure.asn_lookup", Attribute("std::string", "failure")),
+              Event("failure.cc_lookup", Attribute("std::string", "failure")),
+              Event("failure.ip_lookup", Attribute("std::string", "failure")),
+              Event("failure.measurement", Attribute("std::string", "failure")),
+              Event("failure.measurement_submission", Attribute("std::string", "failure"),
+                                                      Attribute("int64_t", "idx"),
+                                                      Attribute("std::string", "json_str")),
+              Event("failure.report_create", Attribute("std::string", "failure")),
+              Event("failure.report_close", Attribute("std::string", "failure")),
+              Event("failure.resolver_lookup", Attribute("std::string", "failure")),
+              Event("failure.startup", Attribute("std::string", "failure")),
+              Event("log", Attribute("std::string", "log_level"),
+                           Attribute("std::string", "message")),
+              Event("measurement", Attribute("int64_t", "idx"),
+                                   Attribute("std::string", "json_str")),
+              Event("status.end", Attribute("double", "downloaded_kb"),
+                                  Attribute("double", "uploaded_kb"),
+                                  Attribute("std::string", "failure")),
+              Event("status.geoip_lookup", Attribute("std::string", "probe_ip"),
+                                           Attribute("std::string", "probe_asn"),
+                                           Attribute("std::string", "probe_cc"),
+                                           Attribute("std::string", "probe_network_name")),
+              Event("status.progress", Attribute("double", "percentage"),
+                                       Attribute("std::string", "message")),
+              Event("status.queued"),
+              Event("status.measurement_start", Attribute("int64_t", "idx"),
+                                                Attribute("std::string", "input")),
+              Event("status.measurement_submission", Attribute("int64_t", "idx")),
+              Event("status.measurement_done", Attribute("int64_t", "idx")),
+              Event("status.report_close", Attribute("std::string", "report_id")),
+              Event("status.report_create", Attribute("std::string", "report_id")),
+              Event("status.resolver_lookup", Attribute("std::string", "ip_address")),
+              Event("status.started"),
+              Event("status.update.performance", Attribute("std::string", "direction"),
+                                                 Attribute("double", "elapsed"),
+                                                 Attribute("int64_t", "num_streams"),
+                                                 Attribute("double", "speed_kbps")),
+              Event("status.update.websites", Attribute("std::string", "url"),
+                                              Attribute("std::string", "status")),
+              Event("task_terminated")]
+
+    log_levels = ["err", "warning", "info", "debug", "debug2"]
+
+    settings = [Setting("std::map<std::string, std::string>", "annotations"),
+                Setting("std::vector<std::string>", "disabled_events"),
+                Setting("std::vector<std::string>", "inputs"),
+                Setting("std::vector<std::string>", "input_filepaths"),
+                Setting("std::string", "log_filepath"),
+                Setting("std::string", "log_level", "log_level_err"),
+                Setting("std::string", "name", mandatory=True, internal=True),
+                Setting("Options", "options", internal=True),
+                Setting("std::string", "output_filepath")]
+
+    options = [Attribute("std::string", "bouncer_base_url", json.dumps("https://bouncer.ooni.io")),
+               Attribute("std::string", "collector_base_url"),
+               Attribute("std::string", "dns/nameserver"),
+               Attribute("std::string", "dns/engine", json.dumps("system")),
+               Attribute("std::string", "geoip_asn_path"),
+               Attribute("std::string", "geoip_country_path"),
+               Attribute("bool", "ignore_bouncer_error", "true"),
+               Attribute("bool", "ignore_open_report_error", "true"),
+               Attribute("double", "max_runtime", "-1.0"),
+               Attribute("std::string", "net/ca_bundle_path"),
+               Attribute("double", "net/timeout", "10.0"),
+               Attribute("bool", "no_bouncer", "false"),
+               Attribute("bool", "no_collector", "false"),
+               Attribute("bool", "no_asn_lookup", "false"),
+               Attribute("bool", "no_cc_lookup", "false"),
+               Attribute("bool", "no_ip_lookup", "false"),
+               Attribute("bool", "no_file_report", "false"),
+               Attribute("bool", "no_resolver_lookup", "false"),
+               Attribute("std::string", "probe_asn"),
+               Attribute("std::string", "probe_cc"),
+               Attribute("std::string", "probe_ip"),
+               Attribute("bool", "randomize_input", "true"),
+               Attribute("bool", "save_real_probe_asn", "true"),
+               Attribute("bool", "save_real_probe_cc", "true"),
+               Attribute("bool", "save_real_probe_ip", "false"),
+               Attribute("bool", "save_real_resolver_ip", "true"),
+               Attribute("std::string", "software_name"),
+               Attribute("std::string", "software_version")]
+
+    nettests = [Nettest("captive_portal"),
+                Nettest("dash"),
+                Nettest("dns_injection"),
+                Nettest("facebook_messenger"),
+                Nettest("http_header_field_manipulation"),
+                Nettest("http_invalid_request_line"),
+                Nettest("meek_fronted_requests"),
+                Nettest("multi_ndt"),
+                Nettest("ndt"),
+                Nettest("tcp_connect"),
+                Nettest("telegram"),
+                Nettest("web_connectivity"),
+                Nettest("whatsapp", Attribute("bool", "all_endpoints", "false"))]
+
+    with open("./script/autoapi/nettest.hpp.j2", "r") as sourcefp:
+        tpl = jinja2.Template(sourcefp.read())
+        render = tpl.render(events=events, log_levels=log_levels,
+                            settings=settings, options=options,
+                            nettests=nettests)
+        with open("./include/measurement_kit/nettest.hpp", "w") as destfp:
+            destfp.write(render)
+
+    with open("./script/autoapi/ffi_macros.h.j2", "r") as sourcefp:
+        tpl = jinja2.Template(sourcefp.read())
+        render = tpl.render(events=events, log_levels=log_levels,
+                            settings=settings, options=options,
+                            nettests=nettests)
+        with open("./include/measurement_kit/ffi_macros.h", "w") as destfp:
+            destfp.write(render)
+
+if __name__ == "__main__":
+    main()
