@@ -22,6 +22,7 @@ virtualenv venv
 source venv/bin/activate
 pip install jinja2
 ./script/autoapi/autoapi
+clang-format -i include/measurement_kit/nettest.hpp
 deactivate
 rm -rf venv
 ```
