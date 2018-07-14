@@ -2,6 +2,17 @@ language: cpp
 
 matrix:
   include:
+    # Verify that autoapi generated stuff is current
+    # ----------------------------------------------
+    #
+    # Just generate the files on travis and then make sure that no actual
+    # content has been changed into the work tree.
+    - env:
+      script:
+        - pip install --user jinja2
+        - ./script/autoapi/autoapi
+        - if test `git diff` != ""; then git diff; exit 1; fi
+
     # CMake builds
     # ------------
     #
