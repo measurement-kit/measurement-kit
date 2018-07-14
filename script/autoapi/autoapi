@@ -5,6 +5,7 @@
 
 import jinja2
 import json
+import subprocess
 import sys
 
 class Attribute(object):
@@ -176,6 +177,12 @@ def main():
                             nettests=nettests)
         with open("./src/libmeasurement_kit/engine.cpp", "w") as destfp:
             destfp.write(render)
+
+    for arg in sys.argv[1:]:
+        if arg == "-c":
+            result = subprocess.check_output(["git", "diff"])
+            if result != "":
+                raise RuntimeError("Need to commit changes\n\n%s" % result)
 
 if __name__ == "__main__":
     main()

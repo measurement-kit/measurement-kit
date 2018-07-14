@@ -10,7 +10,7 @@ matrix:
     - env:
       script:
         - pip install --user jinja2
-        - ./script/autoapi/autoapi --check
+        - ./script/autoapi/autoapi -c
 
     # CMake builds
     # ------------
