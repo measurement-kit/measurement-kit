@@ -11,7 +11,7 @@ matrix:
       script:
         - pip install --user jinja2
         - ./script/autoapi/autoapi
-        - if test "`git diff`" != ""; then git diff; exit 1; fi
+        - if test "`git diff`" != ""; then git diff > _autoapi.diff; cat _autoapi.diff; exit 1; fi
 
     # CMake builds
     # ------------
