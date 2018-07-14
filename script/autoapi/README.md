@@ -9,7 +9,7 @@ a simple specification of Measurement Kit's FFI API messages.
 
 - `autoapi`: message specification and autogen script
 
-- `ffi_macros.h.j2`: template for `include/measurement_kit/ffi_macros.h`
+- `engine.cpp.j2`: template for `src/libmeasurement_kit/engine.cpp`
 
 - `nettest.hpp.j2`: template for `include/measurement_kit/nettest.hpp`
 
@@ -22,7 +22,7 @@ virtualenv venv
 source venv/bin/activate
 pip install jinja2
 ./script/autoapi/autoapi
-clang-format -i include/measurement_kit/nettest.hpp
+clang-format -i include/measurement_kit/nettest.hpp src/libmeasurement_kit/engine.cpp
 deactivate
 rm -rf venv
 ```

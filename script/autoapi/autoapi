@@ -161,12 +161,12 @@ def main():
         with open("./include/measurement_kit/nettest.hpp", "w") as destfp:
             destfp.write(render)
 
-    with open("./script/autoapi/ffi_macros.h.j2", "r") as sourcefp:
+    with open("./script/autoapi/engine.cpp.j2", "r") as sourcefp:
         tpl = jinja2.Template(sourcefp.read())
         render = tpl.render(events=events, log_levels=log_levels,
                             settings=settings, options=options,
                             nettests=nettests)
-        with open("./include/measurement_kit/ffi_macros.h", "w") as destfp:
+        with open("./src/libmeasurement_kit/engine.cpp", "w") as destfp:
             destfp.write(render)
 
 if __name__ == "__main__":
