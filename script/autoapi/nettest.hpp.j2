@@ -66,10 +66,13 @@ class Runner {
   public:
     {% for event in events %}virtual void on_{{ event.key | replace(".", "_") }}(const {{ event.cxx_class_name }}Event &);{{ "\n    " if not loop.last }}{% endfor %}
 
-    void run(std::string str);
+    bool run(std::string str) noexcept;
 
     Runner() noexcept;
     virtual ~Runner() noexcept;
+
+  private:
+    void emit_warning(std::string s) noexcept;
 };
 
 /*-
@@ -129,25 +132,28 @@ std::string {{ nettest.name }}Settings::serialize() {
 }
 {% endfor %}
 
-void Runner::run(std::string str) {
+bool Runner::run(std::string str) noexcept {
     UniqueTask task;
 #ifdef MK_NETTEST_TRACE
     std::clog << "NETTEST: settings: " << str << std::endl;
 #endif
     task.reset(mk_task_start(str.c_str()));
     if (!task) {
-        throw std::runtime_error("mk_task_start() failed");
+        emit_warning("cannot start task");
+        return false;
     }
     while (!mk_task_is_done(task.get())) {
         nlohmann::json ev;
         {
             UniqueEvent event{mk_task_wait_for_next_event(task.get())};
             if (!event) {
-                throw std::runtime_error("mk_task_wait_for_next_event() failed");
+                emit_warning("cannot wait for next event");
+                return false;
             }
             auto str = mk_event_serialize(event.get());
             if (!str) {
-                throw std::runtime_error("mk_event_serialize() failed");
+                emit_warning("cannot serialize event");
+                return false;
             }
 #ifdef MK_NETTEST_TRACE
             std::clog << "NETTEST: event: " << str << std::endl;
@@ -155,9 +161,18 @@ void Runner::run(std::string str) {
             ev = nlohmann::json::parse(str);
         }
 
+        if (ev.count("key") <= 0 || !ev.at("key").is_string() || ev.count("value") <= 0 || !ev.at("value").is_object()) {
+            emit_warning("event has not event structure");
+            continue;
+        }
+
         {% for event in events %}if (ev.at("key") == {{ event.cxx_class_name }}Event::key) {
             {{ event.cxx_class_name}}Event event;
-            {% if event.attributes %}{% for attribute in event.attributes %}event.{{ attribute.key }} = {{ attribute.cxx_cast_from_json }}ev.at("value").at("{{ attribute.key }}");{{ "\n            " if not loop.last }}{% endfor %}{% else %}/* No attributes */{% endif %}
+            {% if event.attributes %}{% for attribute in event.attributes %}if (ev.count("{{ attribute.key }}") <= 0 || !ev.at("{{ attribute.key }}").is_{{ attribute.json_type }}()) {
+                emit_warning("event {{ event.key }} has missing or wrong {{ attribute.key }} field (fyi: field must have {{ attribute.json_type }} type)");
+                continue;
+            }
+            event.{{ attribute.key }} = {{ attribute.cxx_cast_from_json }}ev.at("value").at("{{ attribute.key }}");{{ "\n            " if not loop.last }}{% endfor %}{% else %}/* No attributes */{% endif %}
             on_{{ event.key | replace(".", "_") }}(event);
             continue;
         }{{ "\n        " if not loop.last }}{% endfor %}
@@ -165,8 +180,18 @@ void Runner::run(std::string str) {
 #ifdef MK_NETTEST_TRACE
         std::clog << "NETTEST: unhandled event: " << str << std::endl;
 #endif
-        throw std::runtime_error("unhandled_event");
+        std::stringstream ss;
+        ss << "unhandled event: " << str;
+        emit_warning(ss.str());
     }
+    return true;
+}
+
+void Runner::emit_warning(std::string s) noexcept {
+    LogEvent event;
+    event.log_level = CommonSettings::log_level_warning;
+    std::swap(event.message, s);
+    on_log(event);
 }
 
 // Misc

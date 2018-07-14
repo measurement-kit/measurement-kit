@@ -370,10 +370,13 @@ class Runner {
     virtual void on_status_update_websites(const StatusUpdateWebsitesEvent &);
     virtual void on_task_terminated(const TaskTerminatedEvent &);
 
-    void run(std::string str);
+    bool run(std::string str) noexcept;
 
     Runner() noexcept;
     virtual ~Runner() noexcept;
+
+  private:
+    void emit_warning(std::string s) noexcept;
 };
 
 /*-
@@ -574,25 +577,28 @@ std::string WhatsappSettings::serialize() {
 }
 
 
-void Runner::run(std::string str) {
+bool Runner::run(std::string str) noexcept {
     UniqueTask task;
 #ifdef MK_NETTEST_TRACE
     std::clog << "NETTEST: settings: " << str << std::endl;
 #endif
     task.reset(mk_task_start(str.c_str()));
     if (!task) {
-        throw std::runtime_error("mk_task_start() failed");
+        emit_warning("cannot start task");
+        return false;
     }
     while (!mk_task_is_done(task.get())) {
         nlohmann::json ev;
         {
             UniqueEvent event{mk_task_wait_for_next_event(task.get())};
             if (!event) {
-                throw std::runtime_error("mk_task_wait_for_next_event() failed");
+                emit_warning("cannot wait for next event");
+                return false;
             }
             auto str = mk_event_serialize(event.get());
             if (!str) {
-                throw std::runtime_error("mk_event_serialize() failed");
+                emit_warning("cannot serialize event");
+                return false;
             }
 #ifdef MK_NETTEST_TRACE
             std::clog << "NETTEST: event: " << str << std::endl;
@@ -600,96 +606,197 @@ void Runner::run(std::string str) {
             ev = nlohmann::json::parse(str);
         }
 
+        if (ev.count("key") <= 0 || !ev.at("key").is_string() || ev.count("value") <= 0 || !ev.at("value").is_object()) {
+            emit_warning("event has not event structure");
+            continue;
+        }
+
         if (ev.at("key") == FailureAsnLookupEvent::key) {
             FailureAsnLookupEvent event;
+            if (ev.count("failure") <= 0 || !ev.at("failure").is_string()) {
+                emit_warning("event failure.asn_lookup has missing or wrong failure field (fyi: field must have string type)");
+                continue;
+            }
             event.failure = ev.at("value").at("failure");
             on_failure_asn_lookup(event);
             continue;
         }
         if (ev.at("key") == FailureCcLookupEvent::key) {
             FailureCcLookupEvent event;
+            if (ev.count("failure") <= 0 || !ev.at("failure").is_string()) {
+                emit_warning("event failure.cc_lookup has missing or wrong failure field (fyi: field must have string type)");
+                continue;
+            }
             event.failure = ev.at("value").at("failure");
             on_failure_cc_lookup(event);
             continue;
         }
         if (ev.at("key") == FailureIpLookupEvent::key) {
             FailureIpLookupEvent event;
+            if (ev.count("failure") <= 0 || !ev.at("failure").is_string()) {
+                emit_warning("event failure.ip_lookup has missing or wrong failure field (fyi: field must have string type)");
+                continue;
+            }
             event.failure = ev.at("value").at("failure");
             on_failure_ip_lookup(event);
             continue;
         }
         if (ev.at("key") == FailureMeasurementEvent::key) {
             FailureMeasurementEvent event;
+            if (ev.count("failure") <= 0 || !ev.at("failure").is_string()) {
+                emit_warning("event failure.measurement has missing or wrong failure field (fyi: field must have string type)");
+                continue;
+            }
             event.failure = ev.at("value").at("failure");
             on_failure_measurement(event);
             continue;
         }
         if (ev.at("key") == FailureMeasurementSubmissionEvent::key) {
             FailureMeasurementSubmissionEvent event;
+            if (ev.count("failure") <= 0 || !ev.at("failure").is_string()) {
+                emit_warning("event failure.measurement_submission has missing or wrong failure field (fyi: field must have string type)");
+                continue;
+            }
             event.failure = ev.at("value").at("failure");
+            if (ev.count("idx") <= 0 || !ev.at("idx").is_number_integer()) {
+                emit_warning("event failure.measurement_submission has missing or wrong idx field (fyi: field must have number_integer type)");
+                continue;
+            }
             event.idx = ev.at("value").at("idx");
+            if (ev.count("json_str") <= 0 || !ev.at("json_str").is_string()) {
+                emit_warning("event failure.measurement_submission has missing or wrong json_str field (fyi: field must have string type)");
+                continue;
+            }
             event.json_str = ev.at("value").at("json_str");
             on_failure_measurement_submission(event);
             continue;
         }
         if (ev.at("key") == FailureReportCreateEvent::key) {
             FailureReportCreateEvent event;
+            if (ev.count("failure") <= 0 || !ev.at("failure").is_string()) {
+                emit_warning("event failure.report_create has missing or wrong failure field (fyi: field must have string type)");
+                continue;
+            }
             event.failure = ev.at("value").at("failure");
             on_failure_report_create(event);
             continue;
         }
         if (ev.at("key") == FailureReportCloseEvent::key) {
             FailureReportCloseEvent event;
+            if (ev.count("failure") <= 0 || !ev.at("failure").is_string()) {
+                emit_warning("event failure.report_close has missing or wrong failure field (fyi: field must have string type)");
+                continue;
+            }
             event.failure = ev.at("value").at("failure");
             on_failure_report_close(event);
             continue;
         }
         if (ev.at("key") == FailureResolverLookupEvent::key) {
             FailureResolverLookupEvent event;
+            if (ev.count("failure") <= 0 || !ev.at("failure").is_string()) {
+                emit_warning("event failure.resolver_lookup has missing or wrong failure field (fyi: field must have string type)");
+                continue;
+            }
             event.failure = ev.at("value").at("failure");
             on_failure_resolver_lookup(event);
             continue;
         }
         if (ev.at("key") == FailureStartupEvent::key) {
             FailureStartupEvent event;
+            if (ev.count("failure") <= 0 || !ev.at("failure").is_string()) {
+                emit_warning("event failure.startup has missing or wrong failure field (fyi: field must have string type)");
+                continue;
+            }
             event.failure = ev.at("value").at("failure");
             on_failure_startup(event);
             continue;
         }
         if (ev.at("key") == LogEvent::key) {
             LogEvent event;
+            if (ev.count("log_level") <= 0 || !ev.at("log_level").is_string()) {
+                emit_warning("event log has missing or wrong log_level field (fyi: field must have string type)");
+                continue;
+            }
             event.log_level = ev.at("value").at("log_level");
+            if (ev.count("message") <= 0 || !ev.at("message").is_string()) {
+                emit_warning("event log has missing or wrong message field (fyi: field must have string type)");
+                continue;
+            }
             event.message = ev.at("value").at("message");
             on_log(event);
             continue;
         }
         if (ev.at("key") == MeasurementEvent::key) {
             MeasurementEvent event;
+            if (ev.count("idx") <= 0 || !ev.at("idx").is_number_integer()) {
+                emit_warning("event measurement has missing or wrong idx field (fyi: field must have number_integer type)");
+                continue;
+            }
             event.idx = ev.at("value").at("idx");
+            if (ev.count("json_str") <= 0 || !ev.at("json_str").is_string()) {
+                emit_warning("event measurement has missing or wrong json_str field (fyi: field must have string type)");
+                continue;
+            }
             event.json_str = ev.at("value").at("json_str");
             on_measurement(event);
             continue;
         }
         if (ev.at("key") == StatusEndEvent::key) {
             StatusEndEvent event;
+            if (ev.count("downloaded_kb") <= 0 || !ev.at("downloaded_kb").is_number_float()) {
+                emit_warning("event status.end has missing or wrong downloaded_kb field (fyi: field must have number_float type)");
+                continue;
+            }
             event.downloaded_kb = ev.at("value").at("downloaded_kb");
+            if (ev.count("uploaded_kb") <= 0 || !ev.at("uploaded_kb").is_number_float()) {
+                emit_warning("event status.end has missing or wrong uploaded_kb field (fyi: field must have number_float type)");
+                continue;
+            }
             event.uploaded_kb = ev.at("value").at("uploaded_kb");
+            if (ev.count("failure") <= 0 || !ev.at("failure").is_string()) {
+                emit_warning("event status.end has missing or wrong failure field (fyi: field must have string type)");
+                continue;
+            }
             event.failure = ev.at("value").at("failure");
             on_status_end(event);
             continue;
         }
         if (ev.at("key") == StatusGeoipLookupEvent::key) {
             StatusGeoipLookupEvent event;
+            if (ev.count("probe_ip") <= 0 || !ev.at("probe_ip").is_string()) {
+                emit_warning("event status.geoip_lookup has missing or wrong probe_ip field (fyi: field must have string type)");
+                continue;
+            }
             event.probe_ip = ev.at("value").at("probe_ip");
+            if (ev.count("probe_asn") <= 0 || !ev.at("probe_asn").is_string()) {
+                emit_warning("event status.geoip_lookup has missing or wrong probe_asn field (fyi: field must have string type)");
+                continue;
+            }
             event.probe_asn = ev.at("value").at("probe_asn");
+            if (ev.count("probe_cc") <= 0 || !ev.at("probe_cc").is_string()) {
+                emit_warning("event status.geoip_lookup has missing or wrong probe_cc field (fyi: field must have string type)");
+                continue;
+            }
             event.probe_cc = ev.at("value").at("probe_cc");
+            if (ev.count("probe_network_name") <= 0 || !ev.at("probe_network_name").is_string()) {
+                emit_warning("event status.geoip_lookup has missing or wrong probe_network_name field (fyi: field must have string type)");
+                continue;
+            }
             event.probe_network_name = ev.at("value").at("probe_network_name");
             on_status_geoip_lookup(event);
             continue;
         }
         if (ev.at("key") == StatusProgressEvent::key) {
             StatusProgressEvent event;
+            if (ev.count("percentage") <= 0 || !ev.at("percentage").is_number_float()) {
+                emit_warning("event status.progress has missing or wrong percentage field (fyi: field must have number_float type)");
+                continue;
+            }
             event.percentage = ev.at("value").at("percentage");
+            if (ev.count("message") <= 0 || !ev.at("message").is_string()) {
+                emit_warning("event status.progress has missing or wrong message field (fyi: field must have string type)");
+                continue;
+            }
             event.message = ev.at("value").at("message");
             on_status_progress(event);
             continue;
@@ -702,37 +809,65 @@ void Runner::run(std::string str) {
         }
         if (ev.at("key") == StatusMeasurementStartEvent::key) {
             StatusMeasurementStartEvent event;
+            if (ev.count("idx") <= 0 || !ev.at("idx").is_number_integer()) {
+                emit_warning("event status.measurement_start has missing or wrong idx field (fyi: field must have number_integer type)");
+                continue;
+            }
             event.idx = ev.at("value").at("idx");
+            if (ev.count("input") <= 0 || !ev.at("input").is_string()) {
+                emit_warning("event status.measurement_start has missing or wrong input field (fyi: field must have string type)");
+                continue;
+            }
             event.input = ev.at("value").at("input");
             on_status_measurement_start(event);
             continue;
         }
         if (ev.at("key") == StatusMeasurementSubmissionEvent::key) {
             StatusMeasurementSubmissionEvent event;
+            if (ev.count("idx") <= 0 || !ev.at("idx").is_number_integer()) {
+                emit_warning("event status.measurement_submission has missing or wrong idx field (fyi: field must have number_integer type)");
+                continue;
+            }
             event.idx = ev.at("value").at("idx");
             on_status_measurement_submission(event);
             continue;
         }
         if (ev.at("key") == StatusMeasurementDoneEvent::key) {
             StatusMeasurementDoneEvent event;
+            if (ev.count("idx") <= 0 || !ev.at("idx").is_number_integer()) {
+                emit_warning("event status.measurement_done has missing or wrong idx field (fyi: field must have number_integer type)");
+                continue;
+            }
             event.idx = ev.at("value").at("idx");
             on_status_measurement_done(event);
             continue;
         }
         if (ev.at("key") == StatusReportCloseEvent::key) {
             StatusReportCloseEvent event;
+            if (ev.count("report_id") <= 0 || !ev.at("report_id").is_string()) {
+                emit_warning("event status.report_close has missing or wrong report_id field (fyi: field must have string type)");
+                continue;
+            }
             event.report_id = ev.at("value").at("report_id");
             on_status_report_close(event);
             continue;
         }
         if (ev.at("key") == StatusReportCreateEvent::key) {
             StatusReportCreateEvent event;
+            if (ev.count("report_id") <= 0 || !ev.at("report_id").is_string()) {
+                emit_warning("event status.report_create has missing or wrong report_id field (fyi: field must have string type)");
+                continue;
+            }
             event.report_id = ev.at("value").at("report_id");
             on_status_report_create(event);
             continue;
         }
         if (ev.at("key") == StatusResolverLookupEvent::key) {
             StatusResolverLookupEvent event;
+            if (ev.count("ip_address") <= 0 || !ev.at("ip_address").is_string()) {
+                emit_warning("event status.resolver_lookup has missing or wrong ip_address field (fyi: field must have string type)");
+                continue;
+            }
             event.ip_address = ev.at("value").at("ip_address");
             on_status_resolver_lookup(event);
             continue;
@@ -745,16 +880,40 @@ void Runner::run(std::string str) {
         }
         if (ev.at("key") == StatusUpdatePerformanceEvent::key) {
             StatusUpdatePerformanceEvent event;
+            if (ev.count("direction") <= 0 || !ev.at("direction").is_string()) {
+                emit_warning("event status.update.performance has missing or wrong direction field (fyi: field must have string type)");
+                continue;
+            }
             event.direction = ev.at("value").at("direction");
+            if (ev.count("elapsed") <= 0 || !ev.at("elapsed").is_number_float()) {
+                emit_warning("event status.update.performance has missing or wrong elapsed field (fyi: field must have number_float type)");
+                continue;
+            }
             event.elapsed = ev.at("value").at("elapsed");
+            if (ev.count("num_streams") <= 0 || !ev.at("num_streams").is_number_integer()) {
+                emit_warning("event status.update.performance has missing or wrong num_streams field (fyi: field must have number_integer type)");
+                continue;
+            }
             event.num_streams = ev.at("value").at("num_streams");
+            if (ev.count("speed_kbps") <= 0 || !ev.at("speed_kbps").is_number_float()) {
+                emit_warning("event status.update.performance has missing or wrong speed_kbps field (fyi: field must have number_float type)");
+                continue;
+            }
             event.speed_kbps = ev.at("value").at("speed_kbps");
             on_status_update_performance(event);
             continue;
         }
         if (ev.at("key") == StatusUpdateWebsitesEvent::key) {
             StatusUpdateWebsitesEvent event;
+            if (ev.count("url") <= 0 || !ev.at("url").is_string()) {
+                emit_warning("event status.update.websites has missing or wrong url field (fyi: field must have string type)");
+                continue;
+            }
             event.url = ev.at("value").at("url");
+            if (ev.count("status") <= 0 || !ev.at("status").is_string()) {
+                emit_warning("event status.update.websites has missing or wrong status field (fyi: field must have string type)");
+                continue;
+            }
             event.status = ev.at("value").at("status");
             on_status_update_websites(event);
             continue;
@@ -769,8 +928,18 @@ void Runner::run(std::string str) {
 #ifdef MK_NETTEST_TRACE
         std::clog << "NETTEST: unhandled event: " << str << std::endl;
 #endif
-        throw std::runtime_error("unhandled_event");
+        std::stringstream ss;
+        ss << "unhandled event: " << str;
+        emit_warning(ss.str());
     }
+    return true;
+}
+
+void Runner::emit_warning(std::string s) noexcept {
+    LogEvent event;
+    event.log_level = CommonSettings::log_level_warning;
+    std::swap(event.message, s);
+    on_log(event);
 }
 
 // Misc
