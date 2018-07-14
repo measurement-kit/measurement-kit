@@ -99,23 +99,22 @@ Task::Task(nlohmann::json &&settings) {
     // thread for running the test is up and running.
     std::promise<void> barrier;
     std::future<void> started = barrier.get_future();
-    pimpl_->thread = std::thread(
-            [this, &barrier, settings = std::move(settings)]() mutable {
-                pimpl_->running = true;
-                barrier.set_value();
-                static Semaphore semaphore;
-                {
-                    nlohmann::json event;
-                    event["key"] = "status.queued";
-                    event["value"] = nlohmann::json::object();
-                    emit(pimpl_.get(), std::move(event));
-                }
-                semaphore.acquire(); // prevent concurrent tasks
-                task_run(pimpl_.get(), settings);
-                pimpl_->running = false;
-                pimpl_->cond.notify_all(); // tell the readers we're done
-                semaphore.release();       // allow another task to run
-            });
+    pimpl_->thread = std::thread([this, &barrier, settings = std::move(settings)]() mutable {
+        pimpl_->running = true;
+        barrier.set_value();
+        static Semaphore semaphore;
+        {
+            nlohmann::json event;
+            event["key"] = "status.queued";
+            event["value"] = nlohmann::json::object();
+            emit(pimpl_.get(), std::move(event));
+        }
+        semaphore.acquire(); // prevent concurrent tasks
+        task_run(pimpl_.get(), settings);
+        pimpl_->running = false;
+        pimpl_->cond.notify_all(); // tell the readers we're done
+        semaphore.release();       // allow another task to run
+    });
     started.wait(); // guarantee Task() completes when the thread is running
 }
 
@@ -150,8 +149,8 @@ nlohmann::json Task::wait_for_next_event() {
     // this could break people code. So, to ease integrator's life, we now
     // return a dummy event structured exactly like other events.
     return possibly_validate_event(nlohmann::json{
-            {"key", "task_terminated"},
-            {"value", nlohmann::json::object()},
+        {"key", "task_terminated"},
+        {"value", nlohmann::json::object()},
     });
 }
 
@@ -220,21 +219,31 @@ static nlohmann::json make_failure_event(const Error &error) {
 }
 
 static bool is_event_key_valid(const std::string &str) {
-    return (str == "failure.asn_lookup") || (str == "failure.cc_lookup") ||
-           (str == "failure.ip_lookup") || (str == "failure.measurement") ||
-           (str == "failure.measurement_submission") ||
-           (str == "failure.report_create") ||
-           (str == "failure.report_close") ||
-           (str == "failure.resolver_lookup") || (str == "failure.startup") ||
-           (str == "log") || (str == "measurement") || (str == "status.end") ||
-           (str == "status.geoip_lookup") || (str == "status.progress") ||
-           (str == "status.queued") || (str == "status.measurement_start") ||
-           (str == "status.measurement_submission") ||
-           (str == "status.measurement_done") ||
-           (str == "status.report_close") || (str == "status.report_create") ||
-           (str == "status.resolver_lookup") || (str == "status.started") ||
-           (str == "status.update.performance") ||
-           (str == "status.update.websites") || (str == "task_terminated");
+    return (str == "failure.asn_lookup") ||
+        (str == "failure.cc_lookup") ||
+        (str == "failure.ip_lookup") ||
+        (str == "failure.measurement") ||
+        (str == "failure.measurement_submission") ||
+        (str == "failure.report_create") ||
+        (str == "failure.report_close") ||
+        (str == "failure.resolver_lookup") ||
+        (str == "failure.startup") ||
+        (str == "log") ||
+        (str == "measurement") ||
+        (str == "status.end") ||
+        (str == "status.geoip_lookup") ||
+        (str == "status.progress") ||
+        (str == "status.queued") ||
+        (str == "status.measurement_start") ||
+        (str == "status.measurement_submission") ||
+        (str == "status.measurement_done") ||
+        (str == "status.report_close") ||
+        (str == "status.report_create") ||
+        (str == "status.resolver_lookup") ||
+        (str == "status.started") ||
+        (str == "status.update.performance") ||
+        (str == "status.update.websites") ||
+        (str == "task_terminated");
 }
 
 static nlohmann::json possibly_validate_event(nlohmann::json &&event) {
@@ -524,65 +533,6 @@ static bool validate_known_settings_shallow(
     // This function does not short circuit failure so that we warn the user
     // about all the issues with the JSON that was provided to us.
 
-    // Make sure that annotations has the correct type
-    if (settings.count("annotations") > 0 &&
-            !settings.at("annotations").is_object()) {
-        std::stringstream ss;
-        ss << "found setting 'annotations' with invalid type (fyi: "
-           << "annotations should be a object)";
-        emit_settings_warning(pimpl, ss.str().data());
-        rv = false;
-    }
-
-    // Make sure that disabled_events has the correct type
-    if (settings.count("disabled_events") > 0 &&
-            !settings.at("disabled_events").is_array()) {
-        std::stringstream ss;
-        ss << "found setting 'disabled_events' with invalid type (fyi: "
-           << "disabled_events should be a array)";
-        emit_settings_warning(pimpl, ss.str().data());
-        rv = false;
-    }
-
-    // Make sure that inputs has the correct type
-    if (settings.count("inputs") > 0 && !settings.at("inputs").is_array()) {
-        std::stringstream ss;
-        ss << "found setting 'inputs' with invalid type (fyi: "
-           << "inputs should be a array)";
-        emit_settings_warning(pimpl, ss.str().data());
-        rv = false;
-    }
-
-    // Make sure that input_filepaths has the correct type
-    if (settings.count("input_filepaths") > 0 &&
-            !settings.at("input_filepaths").is_array()) {
-        std::stringstream ss;
-        ss << "found setting 'input_filepaths' with invalid type (fyi: "
-           << "input_filepaths should be a array)";
-        emit_settings_warning(pimpl, ss.str().data());
-        rv = false;
-    }
-
-    // Make sure that log_filepath has the correct type
-    if (settings.count("log_filepath") > 0 &&
-            !settings.at("log_filepath").is_string()) {
-        std::stringstream ss;
-        ss << "found setting 'log_filepath' with invalid type (fyi: "
-           << "log_filepath should be a string)";
-        emit_settings_warning(pimpl, ss.str().data());
-        rv = false;
-    }
-
-    // Make sure that log_level has the correct type
-    if (settings.count("log_level") > 0 &&
-            !settings.at("log_level").is_string()) {
-        std::stringstream ss;
-        ss << "found setting 'log_level' with invalid type (fyi: "
-           << "log_level should be a string)";
-        emit_settings_warning(pimpl, ss.str().data());
-        rv = false;
-    }
-
     // Ensure that name is present
     if (settings.count("name") <= 0) {
         std::stringstream ss;
@@ -592,6 +542,54 @@ static bool validate_known_settings_shallow(
         rv = false;
     }
 
+    // Make sure that annotations has the correct type
+    if (settings.count("annotations") > 0 && !settings.at("annotations").is_object()) {
+        std::stringstream ss;
+        ss << "found setting 'annotations' with invalid type (fyi: "
+           << "annotations should be a object)";
+        emit_settings_warning(pimpl, ss.str().data());
+        rv = false;
+    }
+    // Make sure that disabled_events has the correct type
+    if (settings.count("disabled_events") > 0 && !settings.at("disabled_events").is_array()) {
+        std::stringstream ss;
+        ss << "found setting 'disabled_events' with invalid type (fyi: "
+           << "disabled_events should be a array)";
+        emit_settings_warning(pimpl, ss.str().data());
+        rv = false;
+    }
+    // Make sure that inputs has the correct type
+    if (settings.count("inputs") > 0 && !settings.at("inputs").is_array()) {
+        std::stringstream ss;
+        ss << "found setting 'inputs' with invalid type (fyi: "
+           << "inputs should be a array)";
+        emit_settings_warning(pimpl, ss.str().data());
+        rv = false;
+    }
+    // Make sure that input_filepaths has the correct type
+    if (settings.count("input_filepaths") > 0 && !settings.at("input_filepaths").is_array()) {
+        std::stringstream ss;
+        ss << "found setting 'input_filepaths' with invalid type (fyi: "
+           << "input_filepaths should be a array)";
+        emit_settings_warning(pimpl, ss.str().data());
+        rv = false;
+    }
+    // Make sure that log_filepath has the correct type
+    if (settings.count("log_filepath") > 0 && !settings.at("log_filepath").is_string()) {
+        std::stringstream ss;
+        ss << "found setting 'log_filepath' with invalid type (fyi: "
+           << "log_filepath should be a string)";
+        emit_settings_warning(pimpl, ss.str().data());
+        rv = false;
+    }
+    // Make sure that log_level has the correct type
+    if (settings.count("log_level") > 0 && !settings.at("log_level").is_string()) {
+        std::stringstream ss;
+        ss << "found setting 'log_level' with invalid type (fyi: "
+           << "log_level should be a string)";
+        emit_settings_warning(pimpl, ss.str().data());
+        rv = false;
+    }
     // Make sure that name has the correct type
     if (settings.count("name") > 0 && !settings.at("name").is_string()) {
         std::stringstream ss;
@@ -600,7 +598,6 @@ static bool validate_known_settings_shallow(
         emit_settings_warning(pimpl, ss.str().data());
         rv = false;
     }
-
     // Make sure that options has the correct type
     if (settings.count("options") > 0 && !settings.at("options").is_object()) {
         std::stringstream ss;
@@ -609,10 +606,8 @@ static bool validate_known_settings_shallow(
         emit_settings_warning(pimpl, ss.str().data());
         rv = false;
     }
-
     // Make sure that output_filepath has the correct type
-    if (settings.count("output_filepath") > 0 &&
-            !settings.at("output_filepath").is_string()) {
+    if (settings.count("output_filepath") > 0 && !settings.at("output_filepath").is_string()) {
         std::stringstream ss;
         ss << "found setting 'output_filepath' with invalid type (fyi: "
            << "output_filepath should be a string)";
@@ -660,8 +655,8 @@ static void task_run(TaskImpl *pimpl, nlohmann::json &settings) {
     if (!settings.is_object()) {
         std::stringstream ss;
         ss << "invalid `settings` type: the `settings` JSON that you pass me "
-           << "should be a JSON object (i.e. '{\"type\": \"Ndt\"}') but "
-           << "instead you passed me this: '" << settings.dump() << "'";
+            << "should be a JSON object (i.e. '{\"type\": \"Ndt\"}') but "
+            << "instead you passed me this: '" << settings.dump() << "'";
         emit_settings_failure(pimpl, ss.str().data());
         return;
     }
@@ -680,7 +675,7 @@ static void task_run(TaskImpl *pimpl, nlohmann::json &settings) {
     if (!runnable) {
         std::stringstream ss;
         ss << "unknown task name '" << settings.at("name").get<std::string>()
-           << "' (fyi: known tasks are: " << known_tasks() << ")";
+            << "' (fyi: known tasks are: " << known_tasks() << ")";
         emit_settings_failure(pimpl, ss.str().data());
         return;
     }
@@ -1068,7 +1063,7 @@ static void task_run(TaskImpl *pimpl, nlohmann::json &settings) {
             } else {
                 std::stringstream ss;
                 ss << "Found option '" << key << "' to have an invalid type"
-                   << " (fyi: valid types are: int, double, string)";
+                    << " (fyi: valid types are: int, double, string)";
                 emit_settings_failure(pimpl, ss.str().data());
                 return;
             }
@@ -1098,7 +1093,7 @@ static void task_run(TaskImpl *pimpl, nlohmann::json &settings) {
             } else {
                 std::stringstream ss;
                 ss << "Found annotation '" << key << "' to have an invalid type"
-                   << " (fyi: valid types are: int, double, string)";
+                    << " (fyi: valid types are: int, double, string)";
                 emit_settings_failure(pimpl, ss.str().data());
                 return;
             }
@@ -1113,7 +1108,7 @@ static void task_run(TaskImpl *pimpl, nlohmann::json &settings) {
             } else {
                 std::stringstream ss;
                 ss << "Found input '" << value << "' to have an invalid type"
-                   << " (fyi: values inside 'inputs' must be strings)";
+                    << " (fyi: values inside 'inputs' must be strings)";
                 emit_settings_failure(pimpl, ss.str().data());
                 return;
             }
@@ -1160,8 +1155,8 @@ static void task_run(TaskImpl *pimpl, nlohmann::json &settings) {
             if (!okay) {
                 std::stringstream ss;
                 ss << "Unknown log_level level '" << log_level_string << "' "
-                   << "(fyi: known log_level levels are: "
-                   << known_log_level_levels() << ")";
+                    << "(fyi: known log_level levels are: " <<
+                    known_log_level_levels() << ")";
                 emit_settings_failure(pimpl, ss.str().data());
                 return;
             }
@@ -1177,8 +1172,8 @@ static void task_run(TaskImpl *pimpl, nlohmann::json &settings) {
             if (!entry.is_string()) {
                 std::stringstream ss;
                 ss << "Found invalid entry inside of disabled_events that "
-                   << "has value equal to <" << entry.dump() << "> (fyi: all "
-                   << "the entries in disabled_events must be strings)";
+                  << "has value equal to <" << entry.dump() << "> (fyi: all "
+                  << "the entries in disabled_events must be strings)";
                 emit_settings_failure(pimpl, ss.str().data());
                 return;
             }
@@ -1186,9 +1181,8 @@ static void task_run(TaskImpl *pimpl, nlohmann::json &settings) {
             if (!is_event_key_valid(s)) {
                 std::stringstream ss;
                 ss << "Found unknown event inside of disabled_events with "
-                   << "name '" << s
-                   << "' (fyi: all valid events are: " << known_events().dump()
-                   << "). Measurement Kit is going "
+                   << "name '" << s << "' (fyi: all valid events are: "
+                   << known_events().dump() << "). Measurement Kit is going "
                    << "to ignore this invalid event and continue";
                 emit_settings_warning(pimpl, ss.str().data());
                 continue;
@@ -1241,13 +1235,14 @@ static void task_run(TaskImpl *pimpl, nlohmann::json &settings) {
     });
 
     DataUsage du;
-    runnable->reactor->with_current_data_usage([&](DataUsage &x) { du = x; });
-    runnable->logger->emit_event_ex(
-            "status.end", {
-                                  {"downloaded_kb", du.down / 1024.0},
-                                  {"failure", error.reason},
-                                  {"uploaded_kb", du.up / 1024.0},
-                          });
+    runnable->reactor->with_current_data_usage([&](DataUsage &x) {
+        du = x;
+    });
+    runnable->logger->emit_event_ex("status.end", {
+        {"downloaded_kb", du.down / 1024.0},
+        {"failure", error.reason},
+        {"uploaded_kb", du.up / 1024.0},
+    });
 }
 
 } // namespace engine

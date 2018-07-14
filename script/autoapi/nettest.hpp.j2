@@ -25,8 +25,8 @@
 #include <utility>
 #include <vector>
 
-#include <measurement_kit/ffi.h>
 #include <measurement_kit/common/nlohmann/json.hpp>
+#include <measurement_kit/ffi.h>
 
 namespace mk {
 namespace nettest {
@@ -35,8 +35,9 @@ namespace nettest {
 // ------
 {% for event in events %}
 class {{ event.cxx_class_name }}Event {
- public:
-  static constexpr const char *key = "{{ event.key }}"; {% for attribute in event.attributes %} {{ attribute.cxx_type }} {{ attribute.key }} = {{ attribute.value }}; {% endfor %}
+  public:
+    static constexpr const char *key = "{{ event.key }}";
+    {% if event.attributes %}{% for attribute in event.attributes %}{{ attribute.cxx_type }} {{ attribute.key }} = {{ attribute.value }};{{ "\n    " if not loop.last }}{% endfor %}{% else %}/* No attributes */{% endif %}
 };
 {% endfor %}
 
@@ -44,30 +45,31 @@ class {{ event.cxx_class_name }}Event {
 // --------
 
 class CommonSettings {
- public:
-  {% for log_level in log_levels %} static constexpr const char *log_level_{{ log_level }} = "{{ log_level.upper() }}"; {% endfor %}
+  public:
+    {% for log_level in log_levels %}static constexpr const char *log_level_{{ log_level }} = "{{ log_level.upper() }}";{{ "\n    " if not loop.last }}{% endfor %}
 
-  {% for setting in settings if not setting.internal %} {{ setting.cxx_type }} {{ setting.key }} = {{ setting.value }}; {% endfor %}
+    {% for setting in settings if not setting.internal %}{{ setting.cxx_type }} {{ setting.key }} = {{ setting.value }};{{ "\n    " if not loop.last }}{% endfor %}
 
-  {% for option in options %} {{ option.cxx_type }} {{ option.key | replace("/", "_") }} = {{ option.value }}; {% endfor %}
+    {% for option in options %}{{ option.cxx_type }} {{ option.key | replace("/", "_") }} = {{ option.value }};{{ "\n    " if not loop.last }}{% endfor %}
 };
 
 {% for nettest in nettests %}
 class {{ nettest.name }}Settings : public CommonSettings {
- public:
-  static constexpr const char *name = "{{ nettest.name }}"; {% for attribute in nettest.attributes %} {{ attribute.cxx_type}} {{ attribute.key }} = {{ attribute.value }}; {% endfor %}
-  std::string serialize();
+  public:
+    static constexpr const char *name = "{{ nettest.name }}";
+    {% if nettest.attributes %}{% for attribute in nettest.attributes %}{{ attribute.cxx_type}} {{ attribute.key }} = {{ attribute.value }};{{ "\n    " if not loop.last }}{% endfor %}{% else %}/* No attributes */{% endif %}
+    std::string serialize();
 };
 {% endfor %}
 
 class Runner {
- public:
-  {% for event in events %} virtual void on_{{ event.key | replace(".", "_") }}(const {{ event.cxx_class_name }}Event &); {% endfor %}
+  public:
+    {% for event in events %}virtual void on_{{ event.key | replace(".", "_") }}(const {{ event.cxx_class_name }}Event &);{{ "\n    " if not loop.last }}{% endfor %}
 
-  void run(std::string str);
+    void run(std::string str);
 
-  Runner() noexcept;
-  virtual ~Runner() noexcept;
+    Runner() noexcept;
+    virtual ~Runner() noexcept;
 };
 
 /*-
@@ -90,80 +92,81 @@ class Runner {
 // ---------------
 
 class TaskDeleter {
- public:
-  void operator()(mk_task_t *task) noexcept { mk_task_destroy(task); }
+  public:
+    void operator()(mk_task_t *task) noexcept { mk_task_destroy(task); }
 };
 using UniqueTask = std::unique_ptr<mk_task_t, TaskDeleter>;
 
 class EventDeleter {
- public:
-  void operator()(mk_event_t *event) noexcept { mk_event_destroy(event); }
+  public:
+    void operator()(mk_event_t *event) noexcept { mk_event_destroy(event); }
 };
 using UniqueEvent = std::unique_ptr<mk_event_t, EventDeleter>;
 
 // Empty event handlers
 // --------------------
 
-{% for event in events %} void Runner::on_{{ event.key | replace(".", "_") }}(const {{ event.cxx_class_name }}Event &) {} {% endfor %}
+{% for event in events %}void Runner::on_{{ event.key | replace(".", "_") }}(const {{ event.cxx_class_name }}Event &) {}{{ "\n" if not loop.last }}{% endfor %}
 
 // Serializers
 // -----------
 
 static std::string serialize_common(nlohmann::json &&doc, const CommonSettings &cs) {
-  {% for setting in settings if not setting.internal %}doc["{{ setting.key }}"] = {{ setting.cxx_cast_to_json }}cs.{{ setting.key }};{% endfor %}
-  {
-    auto &o = doc["options"];
-    {% for option in options %}o["{{ option.key }}"] = {{ option.cxx_cast_to_json }}cs.{{ option.key | replace("/", "_") }};{% endfor %}
-  }
-  return doc.dump();
+    {% for setting in settings if not setting.internal %}doc["{{ setting.key }}"] = {{ setting.cxx_cast_to_json }}cs.{{ setting.key }};{{ "\n    " if not loop.last }}{% endfor %}
+    {
+        auto &o = doc["options"];
+        {% for option in options %}o["{{ option.key }}"] = {{ option.cxx_cast_to_json }}cs.{{ option.key | replace("/", "_") }};{{ "\n        " if not loop.last }}{% endfor %}
+    }
+    return doc.dump();
 }
 
 {% for nettest in nettests %}
 std::string {{ nettest.name }}Settings::serialize() {
-  nlohmann::json doc;
-  doc["name"] = "{{ nettest.name }}";{% for attribute in nettest.attributes %}doc["options"]["{{ attribute.key}}"] = {{ attribute.cxx_cast_to_json }}{{ attribute.key }};{% endfor %}
-  return serialize_common(std::move(doc), *this);
+    nlohmann::json doc;
+    doc["name"] = "{{ nettest.name }}";
+    {% if nettest.attributes %}{% for attribute in nettest.attributes %}doc["options"]["{{ attribute.key}}"] = {{ attribute.cxx_cast_to_json }}{{ attribute.key }};{{ "\n    " if not loop.last }}{% endfor %}{% else %}/* No attributes */{% endif %}
+    return serialize_common(std::move(doc), *this);
 }
 {% endfor %}
 
 void Runner::run(std::string str) {
-  UniqueTask task;
+    UniqueTask task;
 #ifdef MK_NETTEST_TRACE
-  std::clog << "NETTEST: settings: " << str << std::endl;
+    std::clog << "NETTEST: settings: " << str << std::endl;
 #endif
-  task.reset(mk_task_start(str.c_str()));
-  if (!task) {
-    throw std::runtime_error("mk_task_start() failed");
-  }
-  while (!mk_task_is_done(task.get())) {
-    nlohmann::json ev;
-    {
-      UniqueEvent event{mk_task_wait_for_next_event(task.get())};
-      if (!event) {
-        throw std::runtime_error("mk_task_wait_for_next_event() failed");
-      }
-      auto str = mk_event_serialize(event.get());
-      if (!str) {
-        throw std::runtime_error("mk_event_serialize() failed");
-      }
-#ifdef MK_NETTEST_TRACE
-      std::clog << "NETTEST: event: " << str << std::endl;
-#endif
-      ev = nlohmann::json::parse(str);
+    task.reset(mk_task_start(str.c_str()));
+    if (!task) {
+        throw std::runtime_error("mk_task_start() failed");
     }
+    while (!mk_task_is_done(task.get())) {
+        nlohmann::json ev;
+        {
+            UniqueEvent event{mk_task_wait_for_next_event(task.get())};
+            if (!event) {
+                throw std::runtime_error("mk_task_wait_for_next_event() failed");
+            }
+            auto str = mk_event_serialize(event.get());
+            if (!str) {
+                throw std::runtime_error("mk_event_serialize() failed");
+            }
+#ifdef MK_NETTEST_TRACE
+            std::clog << "NETTEST: event: " << str << std::endl;
+#endif
+            ev = nlohmann::json::parse(str);
+        }
 
-    {% for event in events %}
-    if (ev.at("key") == {{ event.cxx_class_name }}Event::key) {
-      {{ event.cxx_class_name}}Event event; {% for attribute in event.attributes %}event.{{ attribute.key }} = {{ attribute.cxx_cast_from_json }}ev.at("value").at("{{ attribute.key }}");{% endfor %}
-      on_{{ event.key | replace(".", "_") }}(event);
-      continue;
-    }
-    {% endfor %}
+        {% for event in events %}if (ev.at("key") == {{ event.cxx_class_name }}Event::key) {
+            {{ event.cxx_class_name}}Event event;
+            {% if event.attributes %}{% for attribute in event.attributes %}event.{{ attribute.key }} = {{ attribute.cxx_cast_from_json }}ev.at("value").at("{{ attribute.key }}");{{ "\n            " if not loop.last }}{% endfor %}{% else %}/* No attributes */{% endif %}
+            on_{{ event.key | replace(".", "_") }}(event);
+            continue;
+        }{{ "\n        " if not loop.last }}{% endfor %}
 
 #ifdef MK_NETTEST_TRACE
-      std::clog << "NETTEST: unhandled event: " << str << std::endl;
+        std::clog << "NETTEST: unhandled event: " << str << std::endl;
 #endif
-  }
+        throw std::runtime_error("unhandled_event");
+    }
 }
 
 // Misc
@@ -173,8 +176,8 @@ Runner::Runner() noexcept {}
 
 Runner::~Runner() noexcept {}
 
-#endif  // !MK_NETTEST_NO_INLINE_IMPL && !SWIG
-}  // namespace nettest
-}  // namespace mk
-#endif  // MEASUREMENT_KIT_NETTEST_HPP
+#endif // !MK_NETTEST_NO_INLINE_IMPL && !SWIG
+} // namespace nettest
+} // namespace mk
+#endif // MEASUREMENT_KIT_NETTEST_HPP
 

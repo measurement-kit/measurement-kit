@@ -15,14 +15,13 @@ a simple specification of Measurement Kit's FFI API messages.
 
 ## Usage
 
-Make sure Python3 is installed. Then run:
+Make sure Python is installed (both Python 2 and Python 3 are fine). Then run:
 
 ```
 virtualenv venv
 source venv/bin/activate
 pip install jinja2
 ./script/autoapi/autoapi
-clang-format -i include/measurement_kit/nettest.hpp src/libmeasurement_kit/engine.cpp
 deactivate
 rm -rf venv
 ```

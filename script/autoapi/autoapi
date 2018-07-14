@@ -34,7 +34,7 @@ class Setting(Attribute):
     """ Attribute of the Setting class. """
 
     def __init__(self, cxx_type, key, value=None, mandatory=False, internal=False):
-        super().__init__(cxx_type, key, value)
+        Attribute.__init__(self, cxx_type, key, value)
         self.mandatory = mandatory
         self.internal = internal
 

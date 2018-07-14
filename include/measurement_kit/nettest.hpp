@@ -131,6 +131,7 @@ class StatusProgressEvent {
 class StatusQueuedEvent {
   public:
     static constexpr const char *key = "status.queued";
+    /* No attributes */
 };
 
 class StatusMeasurementStartEvent {
@@ -173,6 +174,7 @@ class StatusResolverLookupEvent {
 class StatusStartedEvent {
   public:
     static constexpr const char *key = "status.started";
+    /* No attributes */
 };
 
 class StatusUpdatePerformanceEvent {
@@ -194,7 +196,9 @@ class StatusUpdateWebsitesEvent {
 class TaskTerminatedEvent {
   public:
     static constexpr const char *key = "task_terminated";
+    /* No attributes */
 };
+
 
 // Settings
 // --------
@@ -245,75 +249,88 @@ class CommonSettings {
     std::string software_version = {};
 };
 
+
 class CaptivePortalSettings : public CommonSettings {
   public:
     static constexpr const char *name = "CaptivePortal";
+    /* No attributes */
     std::string serialize();
 };
 
 class DashSettings : public CommonSettings {
   public:
     static constexpr const char *name = "Dash";
+    /* No attributes */
     std::string serialize();
 };
 
 class DnsInjectionSettings : public CommonSettings {
   public:
     static constexpr const char *name = "DnsInjection";
+    /* No attributes */
     std::string serialize();
 };
 
 class FacebookMessengerSettings : public CommonSettings {
   public:
     static constexpr const char *name = "FacebookMessenger";
+    /* No attributes */
     std::string serialize();
 };
 
 class HttpHeaderFieldManipulationSettings : public CommonSettings {
   public:
     static constexpr const char *name = "HttpHeaderFieldManipulation";
+    /* No attributes */
     std::string serialize();
 };
 
 class HttpInvalidRequestLineSettings : public CommonSettings {
   public:
     static constexpr const char *name = "HttpInvalidRequestLine";
+    /* No attributes */
     std::string serialize();
 };
 
 class MeekFrontedRequestsSettings : public CommonSettings {
   public:
     static constexpr const char *name = "MeekFrontedRequests";
+    /* No attributes */
     std::string serialize();
 };
 
 class MultiNdtSettings : public CommonSettings {
   public:
     static constexpr const char *name = "MultiNdt";
+    /* No attributes */
     std::string serialize();
 };
 
 class NdtSettings : public CommonSettings {
   public:
     static constexpr const char *name = "Ndt";
+    /* No attributes */
     std::string serialize();
 };
 
 class TcpConnectSettings : public CommonSettings {
   public:
     static constexpr const char *name = "TcpConnect";
+    /* No attributes */
     std::string serialize();
 };
 
 class TelegramSettings : public CommonSettings {
   public:
     static constexpr const char *name = "Telegram";
+    /* No attributes */
     std::string serialize();
 };
 
 class WebConnectivitySettings : public CommonSettings {
   public:
     static constexpr const char *name = "WebConnectivity";
+    /* No attributes */
     std::string serialize();
 };
 
@@ -324,14 +341,14 @@ class WhatsappSettings : public CommonSettings {
     std::string serialize();
 };
 
+
 class Runner {
   public:
     virtual void on_failure_asn_lookup(const FailureAsnLookupEvent &);
     virtual void on_failure_cc_lookup(const FailureCcLookupEvent &);
     virtual void on_failure_ip_lookup(const FailureIpLookupEvent &);
     virtual void on_failure_measurement(const FailureMeasurementEvent &);
-    virtual void on_failure_measurement_submission(
-            const FailureMeasurementSubmissionEvent &);
+    virtual void on_failure_measurement_submission(const FailureMeasurementSubmissionEvent &);
     virtual void on_failure_report_create(const FailureReportCreateEvent &);
     virtual void on_failure_report_close(const FailureReportCloseEvent &);
     virtual void on_failure_resolver_lookup(const FailureResolverLookupEvent &);
@@ -342,17 +359,14 @@ class Runner {
     virtual void on_status_geoip_lookup(const StatusGeoipLookupEvent &);
     virtual void on_status_progress(const StatusProgressEvent &);
     virtual void on_status_queued(const StatusQueuedEvent &);
-    virtual void on_status_measurement_start(
-            const StatusMeasurementStartEvent &);
-    virtual void on_status_measurement_submission(
-            const StatusMeasurementSubmissionEvent &);
+    virtual void on_status_measurement_start(const StatusMeasurementStartEvent &);
+    virtual void on_status_measurement_submission(const StatusMeasurementSubmissionEvent &);
     virtual void on_status_measurement_done(const StatusMeasurementDoneEvent &);
     virtual void on_status_report_close(const StatusReportCloseEvent &);
     virtual void on_status_report_create(const StatusReportCreateEvent &);
     virtual void on_status_resolver_lookup(const StatusResolverLookupEvent &);
     virtual void on_status_started(const StatusStartedEvent &);
-    virtual void on_status_update_performance(
-            const StatusUpdatePerformanceEvent &);
+    virtual void on_status_update_performance(const StatusUpdatePerformanceEvent &);
     virtual void on_status_update_websites(const StatusUpdateWebsitesEvent &);
     virtual void on_task_terminated(const TaskTerminatedEvent &);
 
@@ -400,8 +414,7 @@ void Runner::on_failure_asn_lookup(const FailureAsnLookupEvent &) {}
 void Runner::on_failure_cc_lookup(const FailureCcLookupEvent &) {}
 void Runner::on_failure_ip_lookup(const FailureIpLookupEvent &) {}
 void Runner::on_failure_measurement(const FailureMeasurementEvent &) {}
-void Runner::on_failure_measurement_submission(
-        const FailureMeasurementSubmissionEvent &) {}
+void Runner::on_failure_measurement_submission(const FailureMeasurementSubmissionEvent &) {}
 void Runner::on_failure_report_create(const FailureReportCreateEvent &) {}
 void Runner::on_failure_report_close(const FailureReportCloseEvent &) {}
 void Runner::on_failure_resolver_lookup(const FailureResolverLookupEvent &) {}
@@ -413,23 +426,20 @@ void Runner::on_status_geoip_lookup(const StatusGeoipLookupEvent &) {}
 void Runner::on_status_progress(const StatusProgressEvent &) {}
 void Runner::on_status_queued(const StatusQueuedEvent &) {}
 void Runner::on_status_measurement_start(const StatusMeasurementStartEvent &) {}
-void Runner::on_status_measurement_submission(
-        const StatusMeasurementSubmissionEvent &) {}
+void Runner::on_status_measurement_submission(const StatusMeasurementSubmissionEvent &) {}
 void Runner::on_status_measurement_done(const StatusMeasurementDoneEvent &) {}
 void Runner::on_status_report_close(const StatusReportCloseEvent &) {}
 void Runner::on_status_report_create(const StatusReportCreateEvent &) {}
 void Runner::on_status_resolver_lookup(const StatusResolverLookupEvent &) {}
 void Runner::on_status_started(const StatusStartedEvent &) {}
-void Runner::on_status_update_performance(
-        const StatusUpdatePerformanceEvent &) {}
+void Runner::on_status_update_performance(const StatusUpdatePerformanceEvent &) {}
 void Runner::on_status_update_websites(const StatusUpdateWebsitesEvent &) {}
 void Runner::on_task_terminated(const TaskTerminatedEvent &) {}
 
 // Serializers
 // -----------
 
-static std::string serialize_common(
-        nlohmann::json &&doc, const CommonSettings &cs) {
+static std::string serialize_common(nlohmann::json &&doc, const CommonSettings &cs) {
     doc["annotations"] = cs.annotations;
     doc["disabled_events"] = cs.disabled_events;
     doc["inputs"] = cs.inputs;
@@ -471,75 +481,88 @@ static std::string serialize_common(
     return doc.dump();
 }
 
+
 std::string CaptivePortalSettings::serialize() {
     nlohmann::json doc;
     doc["name"] = "CaptivePortal";
+    /* No attributes */
     return serialize_common(std::move(doc), *this);
 }
 
 std::string DashSettings::serialize() {
     nlohmann::json doc;
     doc["name"] = "Dash";
+    /* No attributes */
     return serialize_common(std::move(doc), *this);
 }
 
 std::string DnsInjectionSettings::serialize() {
     nlohmann::json doc;
     doc["name"] = "DnsInjection";
+    /* No attributes */
     return serialize_common(std::move(doc), *this);
 }
 
 std::string FacebookMessengerSettings::serialize() {
     nlohmann::json doc;
     doc["name"] = "FacebookMessenger";
+    /* No attributes */
     return serialize_common(std::move(doc), *this);
 }
 
 std::string HttpHeaderFieldManipulationSettings::serialize() {
     nlohmann::json doc;
     doc["name"] = "HttpHeaderFieldManipulation";
+    /* No attributes */
     return serialize_common(std::move(doc), *this);
 }
 
 std::string HttpInvalidRequestLineSettings::serialize() {
     nlohmann::json doc;
     doc["name"] = "HttpInvalidRequestLine";
+    /* No attributes */
     return serialize_common(std::move(doc), *this);
 }
 
 std::string MeekFrontedRequestsSettings::serialize() {
     nlohmann::json doc;
     doc["name"] = "MeekFrontedRequests";
+    /* No attributes */
     return serialize_common(std::move(doc), *this);
 }
 
 std::string MultiNdtSettings::serialize() {
     nlohmann::json doc;
     doc["name"] = "MultiNdt";
+    /* No attributes */
     return serialize_common(std::move(doc), *this);
 }
 
 std::string NdtSettings::serialize() {
     nlohmann::json doc;
     doc["name"] = "Ndt";
+    /* No attributes */
     return serialize_common(std::move(doc), *this);
 }
 
 std::string TcpConnectSettings::serialize() {
     nlohmann::json doc;
     doc["name"] = "TcpConnect";
+    /* No attributes */
     return serialize_common(std::move(doc), *this);
 }
 
 std::string TelegramSettings::serialize() {
     nlohmann::json doc;
     doc["name"] = "Telegram";
+    /* No attributes */
     return serialize_common(std::move(doc), *this);
 }
 
 std::string WebConnectivitySettings::serialize() {
     nlohmann::json doc;
     doc["name"] = "WebConnectivity";
+    /* No attributes */
     return serialize_common(std::move(doc), *this);
 }
 
@@ -549,6 +572,7 @@ std::string WhatsappSettings::serialize() {
     doc["options"]["all_endpoints"] = (int64_t)all_endpoints;
     return serialize_common(std::move(doc), *this);
 }
+
 
 void Runner::run(std::string str) {
     UniqueTask task;
@@ -564,8 +588,7 @@ void Runner::run(std::string str) {
         {
             UniqueEvent event{mk_task_wait_for_next_event(task.get())};
             if (!event) {
-                throw std::runtime_error(
-                        "mk_task_wait_for_next_event() failed");
+                throw std::runtime_error("mk_task_wait_for_next_event() failed");
             }
             auto str = mk_event_serialize(event.get());
             if (!str) {
@@ -583,28 +606,24 @@ void Runner::run(std::string str) {
             on_failure_asn_lookup(event);
             continue;
         }
-
         if (ev.at("key") == FailureCcLookupEvent::key) {
             FailureCcLookupEvent event;
             event.failure = ev.at("value").at("failure");
             on_failure_cc_lookup(event);
             continue;
         }
-
         if (ev.at("key") == FailureIpLookupEvent::key) {
             FailureIpLookupEvent event;
             event.failure = ev.at("value").at("failure");
             on_failure_ip_lookup(event);
             continue;
         }
-
         if (ev.at("key") == FailureMeasurementEvent::key) {
             FailureMeasurementEvent event;
             event.failure = ev.at("value").at("failure");
             on_failure_measurement(event);
             continue;
         }
-
         if (ev.at("key") == FailureMeasurementSubmissionEvent::key) {
             FailureMeasurementSubmissionEvent event;
             event.failure = ev.at("value").at("failure");
@@ -613,35 +632,30 @@ void Runner::run(std::string str) {
             on_failure_measurement_submission(event);
             continue;
         }
-
         if (ev.at("key") == FailureReportCreateEvent::key) {
             FailureReportCreateEvent event;
             event.failure = ev.at("value").at("failure");
             on_failure_report_create(event);
             continue;
         }
-
         if (ev.at("key") == FailureReportCloseEvent::key) {
             FailureReportCloseEvent event;
             event.failure = ev.at("value").at("failure");
             on_failure_report_close(event);
             continue;
         }
-
         if (ev.at("key") == FailureResolverLookupEvent::key) {
             FailureResolverLookupEvent event;
             event.failure = ev.at("value").at("failure");
             on_failure_resolver_lookup(event);
             continue;
         }
-
         if (ev.at("key") == FailureStartupEvent::key) {
             FailureStartupEvent event;
             event.failure = ev.at("value").at("failure");
             on_failure_startup(event);
             continue;
         }
-
         if (ev.at("key") == LogEvent::key) {
             LogEvent event;
             event.log_level = ev.at("value").at("log_level");
@@ -649,7 +663,6 @@ void Runner::run(std::string str) {
             on_log(event);
             continue;
         }
-
         if (ev.at("key") == MeasurementEvent::key) {
             MeasurementEvent event;
             event.idx = ev.at("value").at("idx");
@@ -657,7 +670,6 @@ void Runner::run(std::string str) {
             on_measurement(event);
             continue;
         }
-
         if (ev.at("key") == StatusEndEvent::key) {
             StatusEndEvent event;
             event.downloaded_kb = ev.at("value").at("downloaded_kb");
@@ -666,7 +678,6 @@ void Runner::run(std::string str) {
             on_status_end(event);
             continue;
         }
-
         if (ev.at("key") == StatusGeoipLookupEvent::key) {
             StatusGeoipLookupEvent event;
             event.probe_ip = ev.at("value").at("probe_ip");
@@ -676,7 +687,6 @@ void Runner::run(std::string str) {
             on_status_geoip_lookup(event);
             continue;
         }
-
         if (ev.at("key") == StatusProgressEvent::key) {
             StatusProgressEvent event;
             event.percentage = ev.at("value").at("percentage");
@@ -684,13 +694,12 @@ void Runner::run(std::string str) {
             on_status_progress(event);
             continue;
         }
-
         if (ev.at("key") == StatusQueuedEvent::key) {
             StatusQueuedEvent event;
+            /* No attributes */
             on_status_queued(event);
             continue;
         }
-
         if (ev.at("key") == StatusMeasurementStartEvent::key) {
             StatusMeasurementStartEvent event;
             event.idx = ev.at("value").at("idx");
@@ -698,48 +707,42 @@ void Runner::run(std::string str) {
             on_status_measurement_start(event);
             continue;
         }
-
         if (ev.at("key") == StatusMeasurementSubmissionEvent::key) {
             StatusMeasurementSubmissionEvent event;
             event.idx = ev.at("value").at("idx");
             on_status_measurement_submission(event);
             continue;
         }
-
         if (ev.at("key") == StatusMeasurementDoneEvent::key) {
             StatusMeasurementDoneEvent event;
             event.idx = ev.at("value").at("idx");
             on_status_measurement_done(event);
             continue;
         }
-
         if (ev.at("key") == StatusReportCloseEvent::key) {
             StatusReportCloseEvent event;
             event.report_id = ev.at("value").at("report_id");
             on_status_report_close(event);
             continue;
         }
-
         if (ev.at("key") == StatusReportCreateEvent::key) {
             StatusReportCreateEvent event;
             event.report_id = ev.at("value").at("report_id");
             on_status_report_create(event);
             continue;
         }
-
         if (ev.at("key") == StatusResolverLookupEvent::key) {
             StatusResolverLookupEvent event;
             event.ip_address = ev.at("value").at("ip_address");
             on_status_resolver_lookup(event);
             continue;
         }
-
         if (ev.at("key") == StatusStartedEvent::key) {
             StatusStartedEvent event;
+            /* No attributes */
             on_status_started(event);
             continue;
         }
-
         if (ev.at("key") == StatusUpdatePerformanceEvent::key) {
             StatusUpdatePerformanceEvent event;
             event.direction = ev.at("value").at("direction");
@@ -749,7 +752,6 @@ void Runner::run(std::string str) {
             on_status_update_performance(event);
             continue;
         }
-
         if (ev.at("key") == StatusUpdateWebsitesEvent::key) {
             StatusUpdateWebsitesEvent event;
             event.url = ev.at("value").at("url");
@@ -757,9 +759,9 @@ void Runner::run(std::string str) {
             on_status_update_websites(event);
             continue;
         }
-
         if (ev.at("key") == TaskTerminatedEvent::key) {
             TaskTerminatedEvent event;
+            /* No attributes */
             on_task_terminated(event);
             continue;
         }
@@ -767,6 +769,7 @@ void Runner::run(std::string str) {
 #ifdef MK_NETTEST_TRACE
         std::clog << "NETTEST: unhandled event: " << str << std::endl;
 #endif
+        throw std::runtime_error("unhandled_event");
     }
 }
 

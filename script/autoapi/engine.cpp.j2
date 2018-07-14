@@ -27,8 +27,8 @@
 #include <memory>
 #include <mutex>
 #include <set>
-#include <string>
 #include <sstream>
+#include <string>
 #include <thread>
 #include <tuple>
 #include <type_traits>
@@ -165,14 +165,14 @@ Task::~Task() {
 static std::tuple<int, bool> log_level_atoi(const std::string &str) {
     {% for log_level in log_levels %}if (str == "{{ log_level.upper() }}") {
         return std::make_tuple(MK_LOG_{{ log_level.upper() }}, true);
-    }{% endfor %}
+    }{{ "\n    " if not loop.last }}{% endfor %}
     return std::make_tuple(0, false);
 }
 
 static std::tuple<std::string, bool> log_level_itoa(int n) {
     {% for log_level in log_levels %}if (n == MK_LOG_{{ log_level.upper() }}) {
         return std::make_tuple(std::string{"{{ log_level.upper() }}"}, true);
-    }{% endfor %}
+    }{{ "\n    " if not loop.last }}{% endfor %}
     return std::make_tuple(std::string{}, false);
 }
 
@@ -195,7 +195,7 @@ static nlohmann::json make_failure_event(const Error &error) {
 }
 
 static bool is_event_key_valid(const std::string &str) {
-    return {% for event in events %}(str == "{{ event.key }}"){{ "||" if not loop.last }}{% endfor %};
+    return {% for event in events %}(str == "{{ event.key }}"){{ " ||\n        " if not loop.last }}{% endfor %};
 }
 
 static nlohmann::json possibly_validate_event(nlohmann::json &&event) {
@@ -207,32 +207,32 @@ static nlohmann::json possibly_validate_event(nlohmann::json &&event) {
     assert(event.count("value") != 0);
     assert(event.at("value").is_object());
     do {
-    	// Note: in the following we check the fields of events. As such, all
-	// the events with no fields of course do not appear in here.
+        // Note: in the following we check the fields of events. As such, all
+        // the events with no fields of course do not appear in here.
         {% for ev in events if ev.attributes %}if (event.at("key") == "{{ ev.key }}") {
             {% for attribute in ev.attributes %}assert(event.at("value").count("{{ attribute.key }}") == 1);
-            assert(event.at("value").at("{{ attribute.key }}").is_{{ attribute.json_type }}());{% endfor %}
+            assert(event.at("value").at("{{ attribute.key }}").is_{{ attribute.json_type }}());{{ "\n            " if not loop.last }}{% endfor %}
             break;
-        }{% endfor %}
+        }{{ "\n        " if not loop.last }}{% endfor %}
     } while (0);
     return event;
 }
 
 static nlohmann::json known_events() {
     nlohmann::json json;
-    {% for event in events %}json.push_back("{{ event.key }}");{% endfor %}
+    {% for event in events %}json.push_back("{{ event.key }}");{{ "\n    " if not loop.last }}{% endfor %}
     return json;
 }
 
 static std::string known_tasks() {
     nlohmann::json json;
-    {% for nettest in nettests %}json.push_back("{{ nettest.name }}");{% endfor %}
+    {% for nettest in nettests %}json.push_back("{{ nettest.name }}");{{ "\n    " if not loop.last }}{% endfor %}
     return json.dump();
 }
 
 static std::string known_log_level_levels() {
     nlohmann::json json;
-    {% for log_level in log_levels %}json.push_back("{{ log_level }}");{% endfor %}
+    {% for log_level in log_levels %}json.push_back("{{ log_level }}");{{ "\n    " if not loop.last }}{% endfor %}
     return json.dump();
 }
 
@@ -240,8 +240,8 @@ static std::unique_ptr<nettests::Runnable> make_runnable(const std::string &s) {
     std::unique_ptr<nettests::Runnable> runnable;
     {% for nettest in nettests %}if (s == "{{ nettest.name }}") {
         runnable.reset(new nettests::{{ nettest.name }}Runnable);
-	return runnable;
-    }{% endfor %}
+        return runnable;
+    }{{ "\n    " if not loop.last }}{% endfor %}
     // Note: it is okay for this function to return an empty unique_ptr.
     return runnable;
 }
@@ -262,26 +262,23 @@ static bool validate_known_settings_shallow(
     // This function does not short circuit failure so that we warn the user
     // about all the issues with the JSON that was provided to us.
 
-    {% for setting in settings %}{% if setting.mandatory %}
-    // Ensure that {{ setting.key }} is present
+    {% for setting in settings if setting.mandatory %}// Ensure that {{ setting.key }} is present
     if (settings.count("{{ setting.key }}") <= 0) {
         std::stringstream ss;
         ss << "missing required setting '{{ setting.key }}' (fyi: "
            << "{{ setting.key }} should be a {{ setting.json_type }})";
         emit_settings_warning(pimpl, ss.str().data());
         rv = false;
-    }{% endif %}
+    }{{ "\n    " if not loop.last }}{% endfor %}
 
-    // Make sure that {{ setting.key }} has the correct type
-    if (settings.count("{{ setting.key }}") > 0 &&
-        !settings.at("{{ setting.key }}").is_{{ setting.json_type }}()) {
+    {% for setting in settings %}// Make sure that {{ setting.key }} has the correct type
+    if (settings.count("{{ setting.key }}") > 0 && !settings.at("{{ setting.key }}").is_{{ setting.json_type }}()) {
         std::stringstream ss;
         ss << "found setting '{{ setting.key }}' with invalid type (fyi: "
            << "{{ setting.key }} should be a {{ setting.json_type }})";
         emit_settings_warning(pimpl, ss.str().data());
         rv = false;
-    }
-    {% endfor %}
+    }{{ "\n    " if not loop.last }}{% endfor %}
 
     return rv;
 }
@@ -291,7 +288,7 @@ static void remove_unknown_settings_and_warn(
         TaskImpl *pimpl, nlohmann::json &settings) {
     std::set<std::string> expected;
     std::set<std::string> unexpected;
-    {% for setting in settings %}expected.insert("{{ setting.key }}");{% endfor %}
+    {% for setting in settings %}expected.insert("{{ setting.key }}");{{ "\n    " if not loop.last }}{% endfor %}
     for (auto it : nlohmann::json::iterator_wrapper(settings)) {
         const auto &key = it.key();
         if (expected.count(key) <= 0) {
@@ -365,7 +362,7 @@ static void task_run(TaskImpl *pimpl, nlohmann::json &settings) {
                             return;
                         }
                         break;
-                    }{% endfor %}
+                    }{{ "\n                    " if not loop.last }}{% endfor %}
                 } while (0);
                 if (!found) {
                     std::stringstream ss;
