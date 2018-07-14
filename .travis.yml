@@ -10,8 +10,7 @@ matrix:
     - env:
       script:
         - pip install --user jinja2
-        - ./script/autoapi/autoapi
-        - if test "`git diff`" != ""; then echo "FATAL: re-run ./script/autoapi/autoapi and commit the changes."; exit 1; fi
+        - ./script/autoapi/autoapi --check
 
     # CMake builds
     # ------------
