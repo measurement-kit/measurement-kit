@@ -274,7 +274,7 @@ static bool validate_known_settings_shallow(
 
     // Make sure that {{ setting.key }} has the correct type
     if (settings.count("{{ setting.key }}") > 0 &&
-        !setting.at("{{ setting.key }}").is_{{ setting.json_type }}()) {
+        !settings.at("{{ setting.key }}").is_{{ setting.json_type }}()) {
         std::stringstream ss;
         ss << "found setting '{{ setting.key }}' with invalid type (fyi: "
            << "{{ setting.key }} should be a {{ setting.json_type }})";

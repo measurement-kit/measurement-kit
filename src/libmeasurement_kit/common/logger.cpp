@@ -213,18 +213,21 @@ class DefaultLogger : public Logger, public NonCopyable, public NonMovable {
             {"key", key},
             {"value", std::move(value)}
         };
+        std::string real_key;
         if (handlers_.count(key) <= 0) {
             // Even if the event has not registered handler, we pass them up
             // one layer to validate the event structure.
-            key = "__disabled";
+            real_key = "__disabled";
             assert(handlers_.count(key));
+        } else {
+            real_key = key;
         }
         std::unique_lock<std::recursive_mutex> _{mutex_};
         // TODO(bassosimone): other logging functions filter all the
         // exceptions. We cannot change this behavior until that is part
         // of our public API. But here we deliberately choose not to do
         // any exception handling. The callee must behave.
-        handlers_.at(key)(std::move(event));
+        handlers_.at(real_key)(std::move(event));
     }
 
     void progress_relative(double prog, const char *s) override {

@@ -526,7 +526,7 @@ static bool validate_known_settings_shallow(
 
     // Make sure that annotations has the correct type
     if (settings.count("annotations") > 0 &&
-            !setting.at("annotations").is_object()) {
+            !settings.at("annotations").is_object()) {
         std::stringstream ss;
         ss << "found setting 'annotations' with invalid type (fyi: "
            << "annotations should be a object)";
@@ -536,7 +536,7 @@ static bool validate_known_settings_shallow(
 
     // Make sure that disabled_events has the correct type
     if (settings.count("disabled_events") > 0 &&
-            !setting.at("disabled_events").is_array()) {
+            !settings.at("disabled_events").is_array()) {
         std::stringstream ss;
         ss << "found setting 'disabled_events' with invalid type (fyi: "
            << "disabled_events should be a array)";
@@ -545,7 +545,7 @@ static bool validate_known_settings_shallow(
     }
 
     // Make sure that inputs has the correct type
-    if (settings.count("inputs") > 0 && !setting.at("inputs").is_array()) {
+    if (settings.count("inputs") > 0 && !settings.at("inputs").is_array()) {
         std::stringstream ss;
         ss << "found setting 'inputs' with invalid type (fyi: "
            << "inputs should be a array)";
@@ -555,7 +555,7 @@ static bool validate_known_settings_shallow(
 
     // Make sure that input_filepaths has the correct type
     if (settings.count("input_filepaths") > 0 &&
-            !setting.at("input_filepaths").is_array()) {
+            !settings.at("input_filepaths").is_array()) {
         std::stringstream ss;
         ss << "found setting 'input_filepaths' with invalid type (fyi: "
            << "input_filepaths should be a array)";
@@ -565,7 +565,7 @@ static bool validate_known_settings_shallow(
 
     // Make sure that log_filepath has the correct type
     if (settings.count("log_filepath") > 0 &&
-            !setting.at("log_filepath").is_string()) {
+            !settings.at("log_filepath").is_string()) {
         std::stringstream ss;
         ss << "found setting 'log_filepath' with invalid type (fyi: "
            << "log_filepath should be a string)";
@@ -575,7 +575,7 @@ static bool validate_known_settings_shallow(
 
     // Make sure that log_level has the correct type
     if (settings.count("log_level") > 0 &&
-            !setting.at("log_level").is_string()) {
+            !settings.at("log_level").is_string()) {
         std::stringstream ss;
         ss << "found setting 'log_level' with invalid type (fyi: "
            << "log_level should be a string)";
@@ -593,7 +593,7 @@ static bool validate_known_settings_shallow(
     }
 
     // Make sure that name has the correct type
-    if (settings.count("name") > 0 && !setting.at("name").is_string()) {
+    if (settings.count("name") > 0 && !settings.at("name").is_string()) {
         std::stringstream ss;
         ss << "found setting 'name' with invalid type (fyi: "
            << "name should be a string)";
@@ -602,7 +602,7 @@ static bool validate_known_settings_shallow(
     }
 
     // Make sure that options has the correct type
-    if (settings.count("options") > 0 && !setting.at("options").is_object()) {
+    if (settings.count("options") > 0 && !settings.at("options").is_object()) {
         std::stringstream ss;
         ss << "found setting 'options' with invalid type (fyi: "
            << "options should be a object)";
@@ -612,7 +612,7 @@ static bool validate_known_settings_shallow(
 
     // Make sure that output_filepath has the correct type
     if (settings.count("output_filepath") > 0 &&
-            !setting.at("output_filepath").is_string()) {
+            !settings.at("output_filepath").is_string()) {
         std::stringstream ss;
         ss << "found setting 'output_filepath' with invalid type (fyi: "
            << "output_filepath should be a string)";
