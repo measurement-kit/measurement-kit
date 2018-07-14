@@ -773,7 +773,7 @@ void Runner::run(std::string str) {
     }
 }
 
-// Misc ~~~
+// Misc
 // ----
 
 Runner::Runner() noexcept {}
