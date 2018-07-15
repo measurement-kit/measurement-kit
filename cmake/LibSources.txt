@@ -27,12 +27,10 @@ include/measurement_kit/ndt.hpp
 include/measurement_kit/ndt/defs.hpp
 include/measurement_kit/nettest.hpp
 include/measurement_kit/nettests.hpp
-include/measurement_kit/nettests/ffi.hpp
 include/measurement_kit/ooni.hpp
 include/measurement_kit/ooni/error.hpp
 include/measurement_kit/ooni/orchestrate.hpp
 include/measurement_kit/ooni/utils.hpp
-include/measurement_kit/swig.hpp
 src/libmeasurement_kit/common/citrus_ctype.h
 src/libmeasurement_kit/common/citrus_utf8.c
 src/libmeasurement_kit/common/continuation.hpp
