@@ -35,7 +35,7 @@
 /// extern void set_more_common_settings(mk::nettest::settings::CommonSettings *);
 /// mk::nettest::settings::WhatsappSettings settings;
 /// settings.all_endpoints = true;
-/// settings.log_level = settings.log_level_info;
+/// settings.log_level = mk::nettest::log_levels::info;
 /// set_more_common_settings(&settings);
 /// ```
 ///
@@ -437,27 +437,30 @@ class TaskTerminatedEvent {
 
 } // namespace events
 
+/// Contains log levels constants.
+namespace log_levels {
+/// String representation of the "err" log level.
+constexpr const char *err = "ERR";
+
+    /// String representation of the "warning" log level.
+constexpr const char *warning = "WARNING";
+
+    /// String representation of the "info" log level.
+constexpr const char *info = "INFO";
+
+    /// String representation of the "debug" log level.
+constexpr const char *debug = "DEBUG";
+
+    /// String representation of the "debug2" log level.
+constexpr const char *debug2 = "DEBUG2";
+} // namespace log levels
+
 /// Contains settings classes.
 namespace settings {
 
 /// Settings common to all nettests.
 class CommonSettings {
   public:
-    /// String representation of the "err" log level.
-    static constexpr const char *log_level_err = "ERR";
-
-    /// String representation of the "warning" log level.
-    static constexpr const char *log_level_warning = "WARNING";
-
-    /// String representation of the "info" log level.
-    static constexpr const char *log_level_info = "INFO";
-
-    /// String representation of the "debug" log level.
-    static constexpr const char *log_level_debug = "DEBUG";
-
-    /// String representation of the "debug2" log level.
-    static constexpr const char *log_level_debug2 = "DEBUG2";
-
     /// The "annotations" setting.
     std::map<std::string, std::string> annotations = {};
 
@@ -474,7 +477,7 @@ class CommonSettings {
     std::string log_filepath = {};
 
     /// The "log_level" setting.
-    std::string log_level = log_level_err;
+    std::string log_level = log_levels::err;
 
     /// The "output_filepath" setting.
     std::string output_filepath = {};

@@ -35,7 +35,7 @@
 /// extern void set_more_common_settings(mk::nettest::settings::CommonSettings *);
 /// mk::nettest::settings::WhatsappSettings settings;
 /// settings.all_endpoints = true;
-/// settings.log_level = settings.log_level_info;
+/// settings.log_level = mk::nettest::log_levels::info;
 /// set_more_common_settings(&settings);
 /// ```
 ///
@@ -157,15 +157,18 @@ class {{ event.cxx_class_name }}Event {
 
 } // namespace events
 
+/// Contains log levels constants.
+namespace log_levels {
+{% for log_level in log_levels %}/// String representation of the "{{ log_level }}" log level.
+constexpr const char *{{ log_level }} = "{{ log_level.upper() }}";{{ "\n\n    " if not loop.last }}{% endfor %}
+} // namespace log levels
+
 /// Contains settings classes.
 namespace settings {
 
 /// Settings common to all nettests.
 class CommonSettings {
   public:
-    {% for log_level in log_levels %}/// String representation of the "{{ log_level }}" log level.
-    static constexpr const char *log_level_{{ log_level }} = "{{ log_level.upper() }}";{{ "\n\n    " if not loop.last }}{% endfor %}
-
     {% for setting in settings if not setting.internal %}/// The "{{ setting.key  }}" setting.
     {{ setting.cxx_type }} {{ setting.key }} = {{ setting.value }};{{ "\n\n    " if not loop.last }}{% endfor %}
 

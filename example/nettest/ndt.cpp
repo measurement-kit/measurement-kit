@@ -11,7 +11,7 @@
 int main() {
     mk::nettest::routers::NoisyRouter router;
     mk::nettest::settings::NdtSettings settings;
-    settings.log_level = settings.log_level_info;
+    settings.log_level = mk::nettest::log_levels::info;
     mk::nettest::Nettest nettest;
     if (!nettest.start_ndt(settings, &router)) {
         std::clog << "ERROR: cannot start nettest" << std::endl;

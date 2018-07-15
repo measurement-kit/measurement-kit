@@ -15,7 +15,7 @@ int main() {
         "https://slashdot.org/",
         "http://www.microsoft.com"
     };
-    settings.log_level = settings.log_level_info;
+    settings.log_level = mk::nettest::log_levels::info;
     mk::nettest::Nettest nettest;
     if (!nettest.start_web_connectivity(settings, &router)) {
         std::clog << "ERROR: cannot start nettest" << std::endl;

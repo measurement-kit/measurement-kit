@@ -107,7 +107,7 @@ def main():
                 Setting("std::vector<std::string>", "inputs"),
                 Setting("std::vector<std::string>", "input_filepaths"),
                 Setting("std::string", "log_filepath"),
-                Setting("std::string", "log_level", "log_level_err"),
+                Setting("std::string", "log_level", "log_levels::err"),
                 Setting("std::string", "name", mandatory=True, internal=True),
                 Setting("Options", "options", internal=True),
                 Setting("std::string", "output_filepath")]
