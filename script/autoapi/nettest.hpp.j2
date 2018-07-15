@@ -19,17 +19,37 @@
 ///
 /// \brief C++11 API for running nettests.
 ///
-/// The general concept of this API is that a network test (nettest) requires
-/// some configuration for running. While running, it emits events, that you
-/// may or may not want to handle. Nettests run in a background thread managed
-/// by a Runner class, which also allows you to interrupt a nettest. Within the
-/// same runner instance, nettests will run in FIFO order.
+/// This API is a C++11 adaptation of MK's FFI API. You should probably read
+/// about such API first. See https://github.com/measurement-kit/measurement-kit/blob/master/include/measurement_kit/README.md.
 ///
 /// Usage is as follows:
 ///
-/// 1. subclass Runner and implement the virtual methods representing the
-///    events that you would like to handle. Remember that callbacks are
-///    going to be called from the runner's background thread.
+/// 1. create an instance of the settings of the nettest that you want to run
+///    and set all the settings that you care about. You can pass around a
+///    pointer or reference to the base class if you have common code written
+///    to setup common options among different tests.
+///
+/// ```
+/// extern void set_more_common_settings(mk::nettest::CommonSettings *);
+/// mk::nettest::WhatsappSettings settings;
+/// settings.all_endpoints = true;
+/// settings.log_level = settings.log_level_info;
+/// set_more_common_settings(&settings);
+/// ```
+///
+/// 2. create an instance of the nettest, passing the settings created in
+///    the previous step to the proper factory method. You will get an
+///    instance of Nettest configured to run the selected nettest. Since
+///    this is a generic class, the code to run the nettest can be generic
+///    as well and does not need to be nettest specific.
+///
+/// ```
+/// auto nettest = mk::nettest::Nettest::new_whatsapp(std::move(settings));
+/// ```
+///
+/// 3. create a subclass of Router suitable for routing the events that
+///    the nettest will emit to overriden methods written by you. The default
+///    behavior of the router is to ignore all events.
 ///
 /// ```
 /// class MyRunner : public mk::nettest::Runner {
@@ -39,6 +59,9 @@
 ///   void on_log(const LogEvent &event) override {
 ///     // Your event handling code here. Remember that this is called
 ///     // in the context of the runner's background thread.
+///     //
+///     // In this example we emit log messages on the standard error.
+///     std::clog << event.log_level << ": " << event.message.
 ///   }
 ///
 ///  private:
@@ -46,56 +69,35 @@
 /// }
 /// ```
 ///
-/// 2. create an instance of your runner. You may either want to have an
-///    instance for each nettest or to have a global instance. When you
-///    create your runner, this will also create a thread for running tests
-///    in the context of such runner, and a queue where to queue tests if
-///    more than a single nettest is submitted to that runner concurrently.
-///
-///    If you are using multiple runners, MK will still guarantee that
-///    nettests will not run concurrently. However, in this case,
-///    there is no guarantee on the order with which each runner is going
-///    to run its nettests. The FFI API, in fact, internally use a semaphore
-///    that does not provide any FIFO guarantee.
+/// 4. create an instance of your router that will be used by this nettest. As
+///    the methods requiring a router actually take a pointer, you can always
+///    cast to the base class. Hence, the code for running a nettest does
+///    not need any nettest specific code for running a nettest.
 ///
 /// ```
-/// auto runner = std::make_shared<MyRunner>();
+/// MyRouter my_router;
 /// ```
 ///
-/// 3. to create a nettest, instantiate the corresponding settings class
-///    and set both the common and nettest-specific fields you need.
-///
-///    When manipulating settings from C++, you can use booleans. We will
-///    automatically convert them to integers for the FFI API.
+/// 5. start the nettest and run it until completion. Events emitted during
+///    startup or while the nettest is running will be routed.
 ///
 /// ```
-/// extern void set_more_common_settings(mk::nettest::CommonSettings *);
-///
-/// WhatsappSettings settings;
-/// settings.all_endpoints = true;
-/// settings.log_level = settings.log_level_info;
-/// set_more_common_settings(&settings);
+/// if (!nettest.start(&my_router)) {
+///   std::clog << "cannot start the nettest" << std::endl;
+///   return;
+/// }
+/// while (!nettest.is_done()) {
+///   nettest.route_next_event(&my_router);
+/// }
 /// ```
 ///
-/// 4. to run a nettest, pass the settings to the specific method of
-///    the runner. This will schedule the test for running in the internal
-///    queue in FIFO order in the context of the runner's thread.
+/// 6. if the nettest goes out of scope, it will not be interrupted, rather it
+///    will run until completion without routing events.
 ///
-/// ```
-/// runner->schedule_whatsapp(std::move(settings));
-/// ```
-///
-/// 5. the test will then be running (possibly waiting for other nettests
-///    scheduled on the same runner to terminate). Errors occuring when
-///    starting up and/or running the test will be routed as events. You
-///    can interrupt the currently running nettest, if you wish.
-///
-/// ```
-/// runner->interrupt();
-/// ```
-///
-/// 6. if the runner goes out of scope, the currently running nettest is
-///    interrupted and no further nettests will run.
+/// 7. a nettest instance has unique pointer semantics, is thread safe, and
+///    its methods do not change its internal state once the nettest has
+///    been constructed. This allows you to be quite flexible about using
+///    it, except that you are constrained by unique ownership.
 
 #include <assert.h>
 #include <stdint.h>
@@ -154,53 +156,82 @@ class {{ nettest.name }}Settings : public CommonSettings {
     {{ attribute.cxx_type}} {{ attribute.key }} = {{ attribute.value }};{{ "\n    " if not loop.last }}{% endfor %}{% else %}/* No nettest-specific settings */{% endif %}
 };{{ "\n\n" if not loop.last }}{% endfor %}
 
-// Runners
-// -------
+// Router
+// ------
 
-/// Runs nettests. Nettests are queued and run in FIFO order. They run on a
-/// background thread having the same lifecycle of this class.
-class Runner {
+/// Routes nettest events to virtual methods.
+class Router {
   public:
-    // Handlers
-    // ````````
     // Implementation note: virtual methods cannot be `noexcept` because the
     // task stable version of SWIG does not handle that correctly.
 
     {% for event in events %}/// Handles the "{{ event.key }}" event.
     virtual void on_{{ event.key | replace(".", "_") }}(const {{ event.cxx_class_name }}Event &event);{{ "\n\n    " if not loop.last }}{% endfor %}
 
-    // Runners
-    // ```````
+    virtual ~Router() noexcept;
+};
 
-    {% for nettest in nettests %}/// Schedules running the "{{ nettest.name }}" nettest in the background thread.
-    /// \param settings Nettest specific settings.
-    void schedule_{{ nettest.snake_case_name }}({{ nettest.name }}Settings settings) noexcept;{{ "\n\n    " if not loop.last }}{% endfor %}
+// Nettest
+// -------
 
-    // Other methods
-    // `````````````
+/// Manages the lifecycle of a nettest. This API mirrors as closely as
+/// possible to FFI API provided by <measurement_kit/ffi.h>.
+class Nettest {
+  public:
+    // Factory methods
+    // ```````````````
 
-    /// Interrupts the currently running nettest. \remark you can safely
-    /// call this method from any thread.
-    void interrupt() noexcept;
+    {% for nettest in nettests %}/// Creates a "{{ nettest.name }}" nettest with specific \p settings.
+    static Nettest new_{{ nettest.snake_case_name }}({{ nettest.name }}Settings settings) noexcept;{{ "\n\n    " if not loop.last }}{% endfor %}
 
-    /// Interrupts the currently running nettest and join its thread.
-    virtual ~Runner() noexcept;
+    // Nettest handling methods
+    // ````````````````````````
 
-    /// Creates a runner.
-    Runner() noexcept;
+    /// Start the nettest. \param router Router to handle events.
+    /// \return true if we can start the nettest, false otherwise. We will
+    /// not be able to start a nettest if it is already running or if we
+    /// cannot serialize the settings to a JSON because there are some
+    /// setting strings that are not valid UTF-8 strings.
+    bool start(Router *router) const noexcept;
+
+    /// Blocks until the next event occurs, then routes it.
+    /// \param router Router to handle events.
+    void route_next_event(Router *router) const noexcept;
+
+    /// Returns true if nettest is done, false otherwise.
+    bool is_done() const noexcept;
+
+    /// Interrupts the currently running nettest.
+    void interrupt() const noexcept;
+
+    // C++ object model
+    // ````````````````
+
+    /// Wait for nettest to terminate and destroy resources.
+    ~Nettest() noexcept;
+
+    /// Explicitly deleted copy constructor.
+    Nettest(const Nettest &) noexcept = delete;
+
+    /// Explicitly deleted copy assignment.
+    Nettest &operator=(const Nettest &) noexcept = delete;
+
+    /// Explicitly defaulted move constructor.
+    Nettest(Nettest &&) noexcept = default;
+
+    /// Explicitly defaulted move assignment.
+    Nettest &operator=(Nettest &&) noexcept = default;
 
   private:
-    // Common method to schedule a nettest.
-    void schedule(nlohmann::json, const CommonSettings &) noexcept;
+    Nettest(nlohmann::json) noexcept;
 
-    // Method that runs a nettest.
-    void run_one(nlohmann::json) noexcept;
+    static Router *default_router() noexcept;
 
-    // Implementation details of this class.
+    static Nettest new_common(nlohmann::json, const CommonSettings &) noexcept;
+
     class Impl;
 
-    // Unique pointer to the internals.
-    std::unique_ptr<Impl> impl_;
+    std::shared_ptr<Impl> impl_;
 };
 
 /*-
@@ -240,164 +271,134 @@ class EventDeleter {
 // Syntactic sugar for a unique mk_event_t pointer.
 using UniqueEvent = std::unique_ptr<mk_event_t, EventDeleter>;
 
-// Runner
+// Router
 // ------
 
-// Internal implementation of Runner
-class Runner::Impl {
+{% for event in events %}void Router::on_{{ event.key | replace(".", "_") }}(const {{ event.cxx_class_name }}Event &) {}{{ "\n\n" if not loop.last }}{% endfor %}
+
+Router::~Router() noexcept {}
+
+// Nettest
+// -------
+
+class Nettest::Impl {
   public:
-    std::condition_variable cond;       // We have cond nettests
-    std::deque<nlohmann::json> deque;   // Queue of deque nettests
-    std::atomic_bool dying{false};      // We are dying
-    std::mutex mutex;                   // Lock for thread safety
-    UniqueTask task;                    // Nettest that is currently running
-    std::thread thread;                 // Thread for running nettests
+    std::mutex mutex;
+    nlohmann::json settings;
+    UniqueTask task;
 };
 
-{% for event in events %}// Default handler of the "{{ event.key }}" event.
-void Runner::on_{{ event.key | replace(".", "_") }}(const {{ event.cxx_class_name }}Event &) {}{{ "\n\n" if not loop.last }}{% endfor %}
-
-{% for nettest in nettests %}// Schedule a "{{ nettest.name }}" nettest.
-void Runner::schedule_{{ nettest.snake_case_name }}({{ nettest.name }}Settings settings) noexcept {
+{% for nettest in nettests %}/* static */ Nettest Nettest::new_{{ nettest.snake_case_name }}({{ nettest.name }}Settings settings) noexcept {
     nlohmann::json doc;
     doc["name"] = "{{ nettest.name }}";
     {% if nettest.attributes %}{% for attribute in nettest.attributes %}doc["options"]["{{ attribute.key}}"] = {{ attribute.cxx_cast_to_json }}settings.{{ attribute.key }};{{ "\n    " if not loop.last }}{% endfor %}{% else %}/* No nettest specific settings */{% endif %}
-    schedule(std::move(doc), settings);
+    return Nettest::new_common(std::move(doc), settings);
 }{{ "\n\n" if not loop.last }}{% endfor %}
 
-void Runner::interrupt() noexcept {
-    // Implementation notes:
-    //
-    // 1. mk_task_interrupt() gracefully handles `nullptr` and can be
-    //    called from another thread context safely
-    //
-    // 2. we MUST NOT delete the task task because that is owned by
-    //    the background thread, which manages its lifecycle
-    //
-    // 3. locking is required to synchronize with the background thread
-    //    on the value contained inside of the unique_ptr
+bool Nettest::start(Router *router) const noexcept {
+    router = (router) ? router : default_router();
+    std::unique_lock<std::mutex> _{impl_->mutex};
+    if (impl_->task != nullptr) {
+        // TODO(bassosimone): route this error.
+        return false;
+    }
+    std::string str;
+    try {
+        str = impl_->settings.dump();
+    } catch (const std::exception &) {
+        // TODO(bassosimone): route this error.
+        return false;
+    }
+#ifdef MK_NETTEST_TRACE
+    std::clog << "NETTEST: settings: " << str << std::endl;
+#endif
+    impl_->task.reset(mk_task_start(str.c_str()));
+    if (impl_->task == nullptr) {
+        // TODO(bassosimone): route this error.
+        return false;
+    }
+    return true;
+}
+
+void Nettest::route_next_event(Router *router) const noexcept {
+    router = (router) ? router : default_router();
+    UniqueEvent eventptr;
+    nlohmann::json ev;
+    {
+        std::unique_lock<std::mutex> _{impl_->mutex};
+        eventptr.reset(mk_task_wait_for_next_event(impl_->task.get()));
+    }
+    if (eventptr == nullptr) {
+        // TODO(bassosimone): route this error.
+        interrupt();
+        return;
+    }
+    auto str = mk_event_serialize(eventptr.get());
+    if (!str) {
+        // TODO(bassosimone): route this error.
+        interrupt();
+        return;
+    }
+#ifdef MK_NETTEST_TRACE
+    std::clog << "NETTEST: event: " << str << std::endl;
+#endif
+    try {
+        ev = nlohmann::json::parse(str);
+    } catch (const std::exception &) {
+        // TODO(bassosimone): route this error.
+        interrupt();
+        return;
+    }
+    if (ev.count("key") <= 0 || !ev.at("key").is_string() || ev.count("value") <= 0 || !ev.at("value").is_object()) {
+        // TODO(bassosimone): route this error.
+        interrupt();
+        return;
+    }
+    {% for event in events %}if (ev.at("key") == {{ event.cxx_class_name }}Event::key) {
+        {{ event.cxx_class_name}}Event event;
+        {% if event.attributes %}{% for attribute in event.attributes %}if (ev.count("{{ attribute.key }}") <= 0 || !ev.at("{{ attribute.key }}").is_{{ attribute.json_type }}()) {
+            // TODO(bassosimone): route this error.
+            interrupt();
+            return;
+        }
+        event.{{ attribute.key }} = {{ attribute.cxx_cast_from_json }}ev.at("value").at("{{ attribute.key }}");{{ "\n        " if not loop.last }}{% endfor %}{% else %}/* No attributes */{% endif %}
+        router->on_{{ event.key | replace(".", "_") }}(event);
+        return;
+    }{{ "\n    " if not loop.last }}{% endfor %}
+#ifdef MK_NETTEST_TRACE
+    std::clog << "NETTEST: unhandled event: " << str << std::endl;
+#endif
+    // TODO(bassosimone): route this error.
+    interrupt();
+}
+
+bool Nettest::is_done() const noexcept {
+    std::unique_lock<std::mutex> _{impl_->mutex};
+    return mk_task_is_done(impl_->task.get());
+}
+
+void Nettest::interrupt() const noexcept {
     std::unique_lock<std::mutex> _{impl_->mutex};
     mk_task_interrupt(impl_->task.get());
 }
 
-Runner::~Runner() noexcept {
-    // Implementation note: no need for locking because all the operations
-    // we perform here are either thread safe or already locked.
-    impl_->dying = true;
-    interrupt();
-    impl_->cond.notify_one();
-    impl_->thread.join();
+Nettest::Nettest(nlohmann::json doc) noexcept {
+    impl_.reset(new Nettest::Impl);
+    std::swap(impl_->settings, doc);
 }
 
-Runner::Runner() noexcept {
-    impl_.reset(new Runner::Impl);
-    impl_->thread = std::thread{[this]() {
-        for (;;) {
-            nlohmann::json doc;
-            {
-                std::unique_lock<std::mutex> lck{impl_->mutex};
-                impl_->cond.wait(lck, [this]() { //
-                    return impl_->dying || !impl_->deque.empty();
-                });
-                if (impl_->dying) {
-                    return;
-                }
-                assert(!impl_->deque.empty());
-                std::swap(impl_->deque.front(), doc);
-                impl_->deque.pop_front();
-            }
-            run_one(std::move(doc));
-        }
-    }};
+/* static */ Router *Nettest::default_router() noexcept {
+    static Router router;
+    return &router;
 }
 
-void Runner::schedule(nlohmann::json doc, const CommonSettings &cs) noexcept {
+/* static */ Nettest Nettest::new_common(nlohmann::json doc, const CommonSettings &cs) noexcept {
     {% for setting in settings if not setting.internal %}doc["{{ setting.key }}"] = {{ setting.cxx_cast_to_json }}cs.{{ setting.key }};{{ "\n    " if not loop.last }}{% endfor %}
     {
         auto &o = doc["options"];
         {% for option in options %}o["{{ option.key }}"] = {{ option.cxx_cast_to_json }}cs.{{ option.key | replace("/", "_") }};{{ "\n        " if not loop.last }}{% endfor %}
     }
-    {
-        std::unique_lock<std::mutex> _{impl_->mutex};
-        impl_->deque.push_back(std::move(doc));
-    }
-    impl_->cond.notify_one();
-}
-
-void Runner::run_one(nlohmann::json doc) noexcept {
-    std::string str;
-    try {
-        str = doc.dump();
-    } catch (const std::exception &) {
-        // TODO(bassosimone): route this error.
-        return;
-    }
-#ifdef MK_NETTEST_TRACE
-    std::clog << "NETTEST: settings: " << str << std::endl;
-#endif
-    {
-        // Implementation note: when we're changing the `task` field we need
-        // to do so in a synchronized way because of interrupt().
-        std::unique_lock<std::mutex> _{impl_->mutex};
-        impl_->task.reset(mk_task_start(str.c_str()));
-    }
-    if (!impl_->task) {
-        // TODO(bassosimone): route this error.
-        return;
-    }
-
-    while (!mk_task_is_done(impl_->task.get())) {
-        nlohmann::json ev;
-        {
-            UniqueEvent event{mk_task_wait_for_next_event(impl_->task.get())};
-            if (!event) {
-                // TODO(bassosimone): route this error.
-                break;
-            }
-            auto str = mk_event_serialize(event.get());
-            if (!str) {
-                // TODO(bassosimone): route this error.
-                break;
-            }
-#ifdef MK_NETTEST_TRACE
-            std::clog << "NETTEST: event: " << str << std::endl;
-#endif
-            try {
-                ev = nlohmann::json::parse(str);
-            } catch (const std::exception &) {
-                // TODO(bassosimone): route this error.
-                break;
-            }
-        }
-
-        if (ev.count("key") <= 0 || !ev.at("key").is_string() || ev.count("value") <= 0 || !ev.at("value").is_object()) {
-            // TODO(bassosimone): route this error.
-            break;
-        }
-
-        {% for event in events %}if (ev.at("key") == {{ event.cxx_class_name }}Event::key) {
-            {{ event.cxx_class_name}}Event event;
-            {% if event.attributes %}{% for attribute in event.attributes %}if (ev.count("{{ attribute.key }}") <= 0 || !ev.at("{{ attribute.key }}").is_{{ attribute.json_type }}()) {
-                // TODO(bassosimone): route this error.
-                break;
-            }
-            event.{{ attribute.key }} = {{ attribute.cxx_cast_from_json }}ev.at("value").at("{{ attribute.key }}");{{ "\n            " if not loop.last }}{% endfor %}{% else %}/* No attributes */{% endif %}
-            on_{{ event.key | replace(".", "_") }}(event);
-            continue;
-        }{{ "\n        " if not loop.last }}{% endfor %}
-
-#ifdef MK_NETTEST_TRACE
-        std::clog << "NETTEST: unhandled event: " << str << std::endl;
-#endif
-        // TODO(bassosimone): route this error.
-        break;
-    }
-
-    // Implementation note: if we leave this function early because of any
-    // error, we also want to stop the nettest as soon as possible.
-    if (!mk_task_is_done(impl_->task.get())) {
-        mk_task_interrupt(impl_->task.get());
-    }
+    return Nettest{std::move(doc)};
 }
 
 #endif // !MK_NETTEST_NO_INLINE_IMPL && !SWIG

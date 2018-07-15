@@ -19,17 +19,37 @@
 ///
 /// \brief C++11 API for running nettests.
 ///
-/// The general concept of this API is that a network test (nettest) requires
-/// some configuration for running. While running, it emits events, that you
-/// may or may not want to handle. Nettests run in a background thread managed
-/// by a Runner class, which also allows you to interrupt a nettest. Within the
-/// same runner instance, nettests will run in FIFO order.
+/// This API is a C++11 adaptation of MK's FFI API. You should probably read
+/// about such API first. See https://github.com/measurement-kit/measurement-kit/blob/master/include/measurement_kit/README.md.
 ///
 /// Usage is as follows:
 ///
-/// 1. subclass Runner and implement the virtual methods representing the
-///    events that you would like to handle. Remember that callbacks are
-///    going to be called from the runner's background thread.
+/// 1. create an instance of the settings of the nettest that you want to run
+///    and set all the settings that you care about. You can pass around a
+///    pointer or reference to the base class if you have common code written
+///    to setup common options among different tests.
+///
+/// ```
+/// extern void set_more_common_settings(mk::nettest::CommonSettings *);
+/// mk::nettest::WhatsappSettings settings;
+/// settings.all_endpoints = true;
+/// settings.log_level = settings.log_level_info;
+/// set_more_common_settings(&settings);
+/// ```
+///
+/// 2. create an instance of the nettest, passing the settings created in
+///    the previous step to the proper factory method. You will get an
+///    instance of Nettest configured to run the selected nettest. Since
+///    this is a generic class, the code to run the nettest can be generic
+///    as well and does not need to be nettest specific.
+///
+/// ```
+/// auto nettest = mk::nettest::Nettest::new_whatsapp(std::move(settings));
+/// ```
+///
+/// 3. create a subclass of Router suitable for routing the events that
+///    the nettest will emit to overriden methods written by you. The default
+///    behavior of the router is to ignore all events.
 ///
 /// ```
 /// class MyRunner : public mk::nettest::Runner {
@@ -39,6 +59,9 @@
 ///   void on_log(const LogEvent &event) override {
 ///     // Your event handling code here. Remember that this is called
 ///     // in the context of the runner's background thread.
+///     //
+///     // In this example we emit log messages on the standard error.
+///     std::clog << event.log_level << ": " << event.message.
 ///   }
 ///
 ///  private:
@@ -46,56 +69,35 @@
 /// }
 /// ```
 ///
-/// 2. create an instance of your runner. You may either want to have an
-///    instance for each nettest or to have a global instance. When you
-///    create your runner, this will also create a thread for running tests
-///    in the context of such runner, and a queue where to queue tests if
-///    more than a single nettest is submitted to that runner concurrently.
-///
-///    If you are using multiple runners, MK will still guarantee that
-///    nettests will not run concurrently. However, in this case,
-///    there is no guarantee on the order with which each runner is going
-///    to run its nettests. The FFI API, in fact, internally use a semaphore
-///    that does not provide any FIFO guarantee.
+/// 4. create an instance of your router that will be used by this nettest. As
+///    the methods requiring a router actually take a pointer, you can always
+///    cast to the base class. Hence, the code for running a nettest does
+///    not need any nettest specific code for running a nettest.
 ///
 /// ```
-/// auto runner = std::make_shared<MyRunner>();
+/// MyRouter my_router;
 /// ```
 ///
-/// 3. to create a nettest, instantiate the corresponding settings class
-///    and set both the common and nettest-specific fields you need.
-///
-///    When manipulating settings from C++, you can use booleans. We will
-///    automatically convert them to integers for the FFI API.
+/// 5. start the nettest and run it until completion. Events emitted during
+///    startup or while the nettest is running will be routed.
 ///
 /// ```
-/// extern void set_more_common_settings(mk::nettest::CommonSettings *);
-///
-/// WhatsappSettings settings;
-/// settings.all_endpoints = true;
-/// settings.log_level = settings.log_level_info;
-/// set_more_common_settings(&settings);
+/// if (!nettest.start(&my_router)) {
+///   std::clog << "cannot start the nettest" << std::endl;
+///   return;
+/// }
+/// while (!nettest.is_done()) {
+///   nettest.route_next_event(&my_router);
+/// }
 /// ```
 ///
-/// 4. to run a nettest, pass the settings to the specific method of
-///    the runner. This will schedule the test for running in the internal
-///    queue in FIFO order in the context of the runner's thread.
+/// 6. if the nettest goes out of scope, it will not be interrupted, rather it
+///    will run until completion without routing events.
 ///
-/// ```
-/// runner->schedule_whatsapp(std::move(settings));
-/// ```
-///
-/// 5. the test will then be running (possibly waiting for other nettests
-///    scheduled on the same runner to terminate). Errors occuring when
-///    starting up and/or running the test will be routed as events. You
-///    can interrupt the currently running nettest, if you wish.
-///
-/// ```
-/// runner->interrupt();
-/// ```
-///
-/// 6. if the runner goes out of scope, the currently running nettest is
-///    interrupted and no further nettests will run.
+/// 7. a nettest instance has unique pointer semantics, is thread safe, and
+///    its methods do not change its internal state once the nettest has
+///    been constructed. This allows you to be quite flexible about using
+///    it, except that you are constrained by unique ownership.
 
 #include <assert.h>
 #include <stdint.h>
@@ -642,15 +644,12 @@ class WhatsappSettings : public CommonSettings {
     bool all_endpoints = false;
 };
 
-// Runners
-// -------
+// Router
+// ------
 
-/// Runs nettests. Nettests are queued and run in FIFO order. They run on a
-/// background thread having the same lifecycle of this class.
-class Runner {
+/// Routes nettest events to virtual methods.
+class Router {
   public:
-    // Handlers
-    // ````````
     // Implementation note: virtual methods cannot be `noexcept` because the
     // task stable version of SWIG does not handle that correctly.
 
@@ -729,86 +728,106 @@ class Runner {
     /// Handles the "task_terminated" event.
     virtual void on_task_terminated(const TaskTerminatedEvent &event);
 
-    // Runners
-    // ```````
+    virtual ~Router() noexcept;
+};
 
-    /// Schedules running the "CaptivePortal" nettest in the background thread.
-    /// \param settings Nettest specific settings.
-    void schedule_captive_portal(CaptivePortalSettings settings) noexcept;
+// Nettest
+// -------
 
-    /// Schedules running the "Dash" nettest in the background thread.
-    /// \param settings Nettest specific settings.
-    void schedule_dash(DashSettings settings) noexcept;
+/// Manages the lifecycle of a nettest. This API mirrors as closely as
+/// possible to FFI API provided by <measurement_kit/ffi.h>.
+class Nettest {
+  public:
+    // Factory methods
+    // ```````````````
 
-    /// Schedules running the "DnsInjection" nettest in the background thread.
-    /// \param settings Nettest specific settings.
-    void schedule_dns_injection(DnsInjectionSettings settings) noexcept;
+    /// Creates a "CaptivePortal" nettest with specific \p settings.
+    static Nettest new_captive_portal(CaptivePortalSettings settings) noexcept;
 
-    /// Schedules running the "FacebookMessenger" nettest in the background thread.
-    /// \param settings Nettest specific settings.
-    void schedule_facebook_messenger(FacebookMessengerSettings settings) noexcept;
+    /// Creates a "Dash" nettest with specific \p settings.
+    static Nettest new_dash(DashSettings settings) noexcept;
 
-    /// Schedules running the "HttpHeaderFieldManipulation" nettest in the background thread.
-    /// \param settings Nettest specific settings.
-    void schedule_http_header_field_manipulation(HttpHeaderFieldManipulationSettings settings) noexcept;
+    /// Creates a "DnsInjection" nettest with specific \p settings.
+    static Nettest new_dns_injection(DnsInjectionSettings settings) noexcept;
 
-    /// Schedules running the "HttpInvalidRequestLine" nettest in the background thread.
-    /// \param settings Nettest specific settings.
-    void schedule_http_invalid_request_line(HttpInvalidRequestLineSettings settings) noexcept;
+    /// Creates a "FacebookMessenger" nettest with specific \p settings.
+    static Nettest new_facebook_messenger(FacebookMessengerSettings settings) noexcept;
 
-    /// Schedules running the "MeekFrontedRequests" nettest in the background thread.
-    /// \param settings Nettest specific settings.
-    void schedule_meek_fronted_requests(MeekFrontedRequestsSettings settings) noexcept;
+    /// Creates a "HttpHeaderFieldManipulation" nettest with specific \p settings.
+    static Nettest new_http_header_field_manipulation(HttpHeaderFieldManipulationSettings settings) noexcept;
 
-    /// Schedules running the "MultiNdt" nettest in the background thread.
-    /// \param settings Nettest specific settings.
-    void schedule_multi_ndt(MultiNdtSettings settings) noexcept;
+    /// Creates a "HttpInvalidRequestLine" nettest with specific \p settings.
+    static Nettest new_http_invalid_request_line(HttpInvalidRequestLineSettings settings) noexcept;
 
-    /// Schedules running the "Ndt" nettest in the background thread.
-    /// \param settings Nettest specific settings.
-    void schedule_ndt(NdtSettings settings) noexcept;
+    /// Creates a "MeekFrontedRequests" nettest with specific \p settings.
+    static Nettest new_meek_fronted_requests(MeekFrontedRequestsSettings settings) noexcept;
 
-    /// Schedules running the "TcpConnect" nettest in the background thread.
-    /// \param settings Nettest specific settings.
-    void schedule_tcp_connect(TcpConnectSettings settings) noexcept;
+    /// Creates a "MultiNdt" nettest with specific \p settings.
+    static Nettest new_multi_ndt(MultiNdtSettings settings) noexcept;
 
-    /// Schedules running the "Telegram" nettest in the background thread.
-    /// \param settings Nettest specific settings.
-    void schedule_telegram(TelegramSettings settings) noexcept;
+    /// Creates a "Ndt" nettest with specific \p settings.
+    static Nettest new_ndt(NdtSettings settings) noexcept;
 
-    /// Schedules running the "WebConnectivity" nettest in the background thread.
-    /// \param settings Nettest specific settings.
-    void schedule_web_connectivity(WebConnectivitySettings settings) noexcept;
+    /// Creates a "TcpConnect" nettest with specific \p settings.
+    static Nettest new_tcp_connect(TcpConnectSettings settings) noexcept;
 
-    /// Schedules running the "Whatsapp" nettest in the background thread.
-    /// \param settings Nettest specific settings.
-    void schedule_whatsapp(WhatsappSettings settings) noexcept;
+    /// Creates a "Telegram" nettest with specific \p settings.
+    static Nettest new_telegram(TelegramSettings settings) noexcept;
 
-    // Other methods
-    // `````````````
+    /// Creates a "WebConnectivity" nettest with specific \p settings.
+    static Nettest new_web_connectivity(WebConnectivitySettings settings) noexcept;
 
-    /// Interrupts the currently running nettest. \remark you can safely
-    /// call this method from any thread.
-    void interrupt() noexcept;
+    /// Creates a "Whatsapp" nettest with specific \p settings.
+    static Nettest new_whatsapp(WhatsappSettings settings) noexcept;
 
-    /// Interrupts the currently running nettest and join its thread.
-    virtual ~Runner() noexcept;
+    // Nettest handling methods
+    // ````````````````````````
 
-    /// Creates a runner.
-    Runner() noexcept;
+    /// Start the nettest. \param router Router to handle events.
+    /// \return true if we can start the nettest, false otherwise. We will
+    /// not be able to start a nettest if it is already running or if we
+    /// cannot serialize the settings to a JSON because there are some
+    /// setting strings that are not valid UTF-8 strings.
+    bool start(Router *router) const noexcept;
+
+    /// Blocks until the next event occurs, then routes it.
+    /// \param router Router to handle events.
+    void route_next_event(Router *router) const noexcept;
+
+    /// Returns true if nettest is done, false otherwise.
+    bool is_done() const noexcept;
+
+    /// Interrupts the currently running nettest.
+    void interrupt() const noexcept;
+
+    // C++ object model
+    // ````````````````
+
+    /// Wait for nettest to terminate and destroy resources.
+    ~Nettest() noexcept;
+
+    /// Explicitly deleted copy constructor.
+    Nettest(const Nettest &) noexcept = delete;
+
+    /// Explicitly deleted copy assignment.
+    Nettest &operator=(const Nettest &) noexcept = delete;
+
+    /// Explicitly defaulted move constructor.
+    Nettest(Nettest &&) noexcept = default;
+
+    /// Explicitly defaulted move assignment.
+    Nettest &operator=(Nettest &&) noexcept = default;
 
   private:
-    // Common method to schedule a nettest.
-    void schedule(nlohmann::json, const CommonSettings &) noexcept;
+    Nettest(nlohmann::json) noexcept;
 
-    // Method that runs a nettest.
-    void run_one(nlohmann::json) noexcept;
+    static Router *default_router() noexcept;
 
-    // Implementation details of this class.
+    static Nettest new_common(nlohmann::json, const CommonSettings &) noexcept;
+
     class Impl;
 
-    // Unique pointer to the internals.
-    std::unique_ptr<Impl> impl_;
+    std::shared_ptr<Impl> impl_;
 };
 
 /*-
@@ -848,246 +867,599 @@ class EventDeleter {
 // Syntactic sugar for a unique mk_event_t pointer.
 using UniqueEvent = std::unique_ptr<mk_event_t, EventDeleter>;
 
-// Runner
+// Router
 // ------
 
-// Internal implementation of Runner
-class Runner::Impl {
+void Router::on_failure_asn_lookup(const FailureAsnLookupEvent &) {}
+
+void Router::on_failure_cc_lookup(const FailureCcLookupEvent &) {}
+
+void Router::on_failure_ip_lookup(const FailureIpLookupEvent &) {}
+
+void Router::on_failure_measurement(const FailureMeasurementEvent &) {}
+
+void Router::on_failure_measurement_submission(const FailureMeasurementSubmissionEvent &) {}
+
+void Router::on_failure_report_create(const FailureReportCreateEvent &) {}
+
+void Router::on_failure_report_close(const FailureReportCloseEvent &) {}
+
+void Router::on_failure_resolver_lookup(const FailureResolverLookupEvent &) {}
+
+void Router::on_failure_startup(const FailureStartupEvent &) {}
+
+void Router::on_log(const LogEvent &) {}
+
+void Router::on_measurement(const MeasurementEvent &) {}
+
+void Router::on_status_end(const StatusEndEvent &) {}
+
+void Router::on_status_geoip_lookup(const StatusGeoipLookupEvent &) {}
+
+void Router::on_status_progress(const StatusProgressEvent &) {}
+
+void Router::on_status_queued(const StatusQueuedEvent &) {}
+
+void Router::on_status_measurement_start(const StatusMeasurementStartEvent &) {}
+
+void Router::on_status_measurement_submission(const StatusMeasurementSubmissionEvent &) {}
+
+void Router::on_status_measurement_done(const StatusMeasurementDoneEvent &) {}
+
+void Router::on_status_report_close(const StatusReportCloseEvent &) {}
+
+void Router::on_status_report_create(const StatusReportCreateEvent &) {}
+
+void Router::on_status_resolver_lookup(const StatusResolverLookupEvent &) {}
+
+void Router::on_status_started(const StatusStartedEvent &) {}
+
+void Router::on_status_update_performance(const StatusUpdatePerformanceEvent &) {}
+
+void Router::on_status_update_websites(const StatusUpdateWebsitesEvent &) {}
+
+void Router::on_task_terminated(const TaskTerminatedEvent &) {}
+
+Router::~Router() noexcept {}
+
+// Nettest
+// -------
+
+class Nettest::Impl {
   public:
-    std::condition_variable cond;       // We have cond nettests
-    std::deque<nlohmann::json> deque;   // Queue of deque nettests
-    std::atomic_bool dying{false};      // We are dying
-    std::mutex mutex;                   // Lock for thread safety
-    UniqueTask task;                    // Nettest that is currently running
-    std::thread thread;                 // Thread for running nettests
+    std::mutex mutex;
+    nlohmann::json settings;
+    UniqueTask task;
 };
 
-// Default handler of the "failure.asn_lookup" event.
-void Runner::on_failure_asn_lookup(const FailureAsnLookupEvent &) {}
-
-// Default handler of the "failure.cc_lookup" event.
-void Runner::on_failure_cc_lookup(const FailureCcLookupEvent &) {}
-
-// Default handler of the "failure.ip_lookup" event.
-void Runner::on_failure_ip_lookup(const FailureIpLookupEvent &) {}
-
-// Default handler of the "failure.measurement" event.
-void Runner::on_failure_measurement(const FailureMeasurementEvent &) {}
-
-// Default handler of the "failure.measurement_submission" event.
-void Runner::on_failure_measurement_submission(const FailureMeasurementSubmissionEvent &) {}
-
-// Default handler of the "failure.report_create" event.
-void Runner::on_failure_report_create(const FailureReportCreateEvent &) {}
-
-// Default handler of the "failure.report_close" event.
-void Runner::on_failure_report_close(const FailureReportCloseEvent &) {}
-
-// Default handler of the "failure.resolver_lookup" event.
-void Runner::on_failure_resolver_lookup(const FailureResolverLookupEvent &) {}
-
-// Default handler of the "failure.startup" event.
-void Runner::on_failure_startup(const FailureStartupEvent &) {}
-
-// Default handler of the "log" event.
-void Runner::on_log(const LogEvent &) {}
-
-// Default handler of the "measurement" event.
-void Runner::on_measurement(const MeasurementEvent &) {}
-
-// Default handler of the "status.end" event.
-void Runner::on_status_end(const StatusEndEvent &) {}
-
-// Default handler of the "status.geoip_lookup" event.
-void Runner::on_status_geoip_lookup(const StatusGeoipLookupEvent &) {}
-
-// Default handler of the "status.progress" event.
-void Runner::on_status_progress(const StatusProgressEvent &) {}
-
-// Default handler of the "status.queued" event.
-void Runner::on_status_queued(const StatusQueuedEvent &) {}
-
-// Default handler of the "status.measurement_start" event.
-void Runner::on_status_measurement_start(const StatusMeasurementStartEvent &) {}
-
-// Default handler of the "status.measurement_submission" event.
-void Runner::on_status_measurement_submission(const StatusMeasurementSubmissionEvent &) {}
-
-// Default handler of the "status.measurement_done" event.
-void Runner::on_status_measurement_done(const StatusMeasurementDoneEvent &) {}
-
-// Default handler of the "status.report_close" event.
-void Runner::on_status_report_close(const StatusReportCloseEvent &) {}
-
-// Default handler of the "status.report_create" event.
-void Runner::on_status_report_create(const StatusReportCreateEvent &) {}
-
-// Default handler of the "status.resolver_lookup" event.
-void Runner::on_status_resolver_lookup(const StatusResolverLookupEvent &) {}
-
-// Default handler of the "status.started" event.
-void Runner::on_status_started(const StatusStartedEvent &) {}
-
-// Default handler of the "status.update.performance" event.
-void Runner::on_status_update_performance(const StatusUpdatePerformanceEvent &) {}
-
-// Default handler of the "status.update.websites" event.
-void Runner::on_status_update_websites(const StatusUpdateWebsitesEvent &) {}
-
-// Default handler of the "task_terminated" event.
-void Runner::on_task_terminated(const TaskTerminatedEvent &) {}
-
-// Schedule a "CaptivePortal" nettest.
-void Runner::schedule_captive_portal(CaptivePortalSettings settings) noexcept {
+/* static */ Nettest Nettest::new_captive_portal(CaptivePortalSettings settings) noexcept {
     nlohmann::json doc;
     doc["name"] = "CaptivePortal";
     /* No nettest specific settings */
-    schedule(std::move(doc), settings);
+    return Nettest::new_common(std::move(doc), settings);
 }
 
-// Schedule a "Dash" nettest.
-void Runner::schedule_dash(DashSettings settings) noexcept {
+/* static */ Nettest Nettest::new_dash(DashSettings settings) noexcept {
     nlohmann::json doc;
     doc["name"] = "Dash";
     /* No nettest specific settings */
-    schedule(std::move(doc), settings);
+    return Nettest::new_common(std::move(doc), settings);
 }
 
-// Schedule a "DnsInjection" nettest.
-void Runner::schedule_dns_injection(DnsInjectionSettings settings) noexcept {
+/* static */ Nettest Nettest::new_dns_injection(DnsInjectionSettings settings) noexcept {
     nlohmann::json doc;
     doc["name"] = "DnsInjection";
     /* No nettest specific settings */
-    schedule(std::move(doc), settings);
+    return Nettest::new_common(std::move(doc), settings);
 }
 
-// Schedule a "FacebookMessenger" nettest.
-void Runner::schedule_facebook_messenger(FacebookMessengerSettings settings) noexcept {
+/* static */ Nettest Nettest::new_facebook_messenger(FacebookMessengerSettings settings) noexcept {
     nlohmann::json doc;
     doc["name"] = "FacebookMessenger";
     /* No nettest specific settings */
-    schedule(std::move(doc), settings);
+    return Nettest::new_common(std::move(doc), settings);
 }
 
-// Schedule a "HttpHeaderFieldManipulation" nettest.
-void Runner::schedule_http_header_field_manipulation(HttpHeaderFieldManipulationSettings settings) noexcept {
+/* static */ Nettest Nettest::new_http_header_field_manipulation(HttpHeaderFieldManipulationSettings settings) noexcept {
     nlohmann::json doc;
     doc["name"] = "HttpHeaderFieldManipulation";
     /* No nettest specific settings */
-    schedule(std::move(doc), settings);
+    return Nettest::new_common(std::move(doc), settings);
 }
 
-// Schedule a "HttpInvalidRequestLine" nettest.
-void Runner::schedule_http_invalid_request_line(HttpInvalidRequestLineSettings settings) noexcept {
+/* static */ Nettest Nettest::new_http_invalid_request_line(HttpInvalidRequestLineSettings settings) noexcept {
     nlohmann::json doc;
     doc["name"] = "HttpInvalidRequestLine";
     /* No nettest specific settings */
-    schedule(std::move(doc), settings);
+    return Nettest::new_common(std::move(doc), settings);
 }
 
-// Schedule a "MeekFrontedRequests" nettest.
-void Runner::schedule_meek_fronted_requests(MeekFrontedRequestsSettings settings) noexcept {
+/* static */ Nettest Nettest::new_meek_fronted_requests(MeekFrontedRequestsSettings settings) noexcept {
     nlohmann::json doc;
     doc["name"] = "MeekFrontedRequests";
     /* No nettest specific settings */
-    schedule(std::move(doc), settings);
+    return Nettest::new_common(std::move(doc), settings);
 }
 
-// Schedule a "MultiNdt" nettest.
-void Runner::schedule_multi_ndt(MultiNdtSettings settings) noexcept {
+/* static */ Nettest Nettest::new_multi_ndt(MultiNdtSettings settings) noexcept {
     nlohmann::json doc;
     doc["name"] = "MultiNdt";
     /* No nettest specific settings */
-    schedule(std::move(doc), settings);
+    return Nettest::new_common(std::move(doc), settings);
 }
 
-// Schedule a "Ndt" nettest.
-void Runner::schedule_ndt(NdtSettings settings) noexcept {
+/* static */ Nettest Nettest::new_ndt(NdtSettings settings) noexcept {
     nlohmann::json doc;
     doc["name"] = "Ndt";
     /* No nettest specific settings */
-    schedule(std::move(doc), settings);
+    return Nettest::new_common(std::move(doc), settings);
 }
 
-// Schedule a "TcpConnect" nettest.
-void Runner::schedule_tcp_connect(TcpConnectSettings settings) noexcept {
+/* static */ Nettest Nettest::new_tcp_connect(TcpConnectSettings settings) noexcept {
     nlohmann::json doc;
     doc["name"] = "TcpConnect";
     /* No nettest specific settings */
-    schedule(std::move(doc), settings);
+    return Nettest::new_common(std::move(doc), settings);
 }
 
-// Schedule a "Telegram" nettest.
-void Runner::schedule_telegram(TelegramSettings settings) noexcept {
+/* static */ Nettest Nettest::new_telegram(TelegramSettings settings) noexcept {
     nlohmann::json doc;
     doc["name"] = "Telegram";
     /* No nettest specific settings */
-    schedule(std::move(doc), settings);
+    return Nettest::new_common(std::move(doc), settings);
 }
 
-// Schedule a "WebConnectivity" nettest.
-void Runner::schedule_web_connectivity(WebConnectivitySettings settings) noexcept {
+/* static */ Nettest Nettest::new_web_connectivity(WebConnectivitySettings settings) noexcept {
     nlohmann::json doc;
     doc["name"] = "WebConnectivity";
     /* No nettest specific settings */
-    schedule(std::move(doc), settings);
+    return Nettest::new_common(std::move(doc), settings);
 }
 
-// Schedule a "Whatsapp" nettest.
-void Runner::schedule_whatsapp(WhatsappSettings settings) noexcept {
+/* static */ Nettest Nettest::new_whatsapp(WhatsappSettings settings) noexcept {
     nlohmann::json doc;
     doc["name"] = "Whatsapp";
     doc["options"]["all_endpoints"] = (int64_t)settings.all_endpoints;
-    schedule(std::move(doc), settings);
+    return Nettest::new_common(std::move(doc), settings);
 }
 
-void Runner::interrupt() noexcept {
-    // Implementation notes:
-    //
-    // 1. mk_task_interrupt() gracefully handles `nullptr` and can be
-    //    called from another thread context safely
-    //
-    // 2. we MUST NOT delete the task task because that is owned by
-    //    the background thread, which manages its lifecycle
-    //
-    // 3. locking is required to synchronize with the background thread
-    //    on the value contained inside of the unique_ptr
+bool Nettest::start(Router *router) const noexcept {
+    router = (router) ? router : default_router();
+    std::unique_lock<std::mutex> _{impl_->mutex};
+    if (impl_->task != nullptr) {
+        // TODO(bassosimone): route this error.
+        return false;
+    }
+    std::string str;
+    try {
+        str = impl_->settings.dump();
+    } catch (const std::exception &) {
+        // TODO(bassosimone): route this error.
+        return false;
+    }
+#ifdef MK_NETTEST_TRACE
+    std::clog << "NETTEST: settings: " << str << std::endl;
+#endif
+    impl_->task.reset(mk_task_start(str.c_str()));
+    if (impl_->task == nullptr) {
+        // TODO(bassosimone): route this error.
+        return false;
+    }
+    return true;
+}
+
+void Nettest::route_next_event(Router *router) const noexcept {
+    router = (router) ? router : default_router();
+    UniqueEvent eventptr;
+    nlohmann::json ev;
+    {
+        std::unique_lock<std::mutex> _{impl_->mutex};
+        eventptr.reset(mk_task_wait_for_next_event(impl_->task.get()));
+    }
+    if (eventptr == nullptr) {
+        // TODO(bassosimone): route this error.
+        interrupt();
+        return;
+    }
+    auto str = mk_event_serialize(eventptr.get());
+    if (!str) {
+        // TODO(bassosimone): route this error.
+        interrupt();
+        return;
+    }
+#ifdef MK_NETTEST_TRACE
+    std::clog << "NETTEST: event: " << str << std::endl;
+#endif
+    try {
+        ev = nlohmann::json::parse(str);
+    } catch (const std::exception &) {
+        // TODO(bassosimone): route this error.
+        interrupt();
+        return;
+    }
+    if (ev.count("key") <= 0 || !ev.at("key").is_string() || ev.count("value") <= 0 || !ev.at("value").is_object()) {
+        // TODO(bassosimone): route this error.
+        interrupt();
+        return;
+    }
+    if (ev.at("key") == FailureAsnLookupEvent::key) {
+        FailureAsnLookupEvent event;
+        if (ev.count("failure") <= 0 || !ev.at("failure").is_string()) {
+            // TODO(bassosimone): route this error.
+            interrupt();
+            return;
+        }
+        event.failure = ev.at("value").at("failure");
+        router->on_failure_asn_lookup(event);
+        return;
+    }
+    if (ev.at("key") == FailureCcLookupEvent::key) {
+        FailureCcLookupEvent event;
+        if (ev.count("failure") <= 0 || !ev.at("failure").is_string()) {
+            // TODO(bassosimone): route this error.
+            interrupt();
+            return;
+        }
+        event.failure = ev.at("value").at("failure");
+        router->on_failure_cc_lookup(event);
+        return;
+    }
+    if (ev.at("key") == FailureIpLookupEvent::key) {
+        FailureIpLookupEvent event;
+        if (ev.count("failure") <= 0 || !ev.at("failure").is_string()) {
+            // TODO(bassosimone): route this error.
+            interrupt();
+            return;
+        }
+        event.failure = ev.at("value").at("failure");
+        router->on_failure_ip_lookup(event);
+        return;
+    }
+    if (ev.at("key") == FailureMeasurementEvent::key) {
+        FailureMeasurementEvent event;
+        if (ev.count("failure") <= 0 || !ev.at("failure").is_string()) {
+            // TODO(bassosimone): route this error.
+            interrupt();
+            return;
+        }
+        event.failure = ev.at("value").at("failure");
+        router->on_failure_measurement(event);
+        return;
+    }
+    if (ev.at("key") == FailureMeasurementSubmissionEvent::key) {
+        FailureMeasurementSubmissionEvent event;
+        if (ev.count("failure") <= 0 || !ev.at("failure").is_string()) {
+            // TODO(bassosimone): route this error.
+            interrupt();
+            return;
+        }
+        event.failure = ev.at("value").at("failure");
+        if (ev.count("idx") <= 0 || !ev.at("idx").is_number_integer()) {
+            // TODO(bassosimone): route this error.
+            interrupt();
+            return;
+        }
+        event.idx = ev.at("value").at("idx");
+        if (ev.count("json_str") <= 0 || !ev.at("json_str").is_string()) {
+            // TODO(bassosimone): route this error.
+            interrupt();
+            return;
+        }
+        event.json_str = ev.at("value").at("json_str");
+        router->on_failure_measurement_submission(event);
+        return;
+    }
+    if (ev.at("key") == FailureReportCreateEvent::key) {
+        FailureReportCreateEvent event;
+        if (ev.count("failure") <= 0 || !ev.at("failure").is_string()) {
+            // TODO(bassosimone): route this error.
+            interrupt();
+            return;
+        }
+        event.failure = ev.at("value").at("failure");
+        router->on_failure_report_create(event);
+        return;
+    }
+    if (ev.at("key") == FailureReportCloseEvent::key) {
+        FailureReportCloseEvent event;
+        if (ev.count("failure") <= 0 || !ev.at("failure").is_string()) {
+            // TODO(bassosimone): route this error.
+            interrupt();
+            return;
+        }
+        event.failure = ev.at("value").at("failure");
+        router->on_failure_report_close(event);
+        return;
+    }
+    if (ev.at("key") == FailureResolverLookupEvent::key) {
+        FailureResolverLookupEvent event;
+        if (ev.count("failure") <= 0 || !ev.at("failure").is_string()) {
+            // TODO(bassosimone): route this error.
+            interrupt();
+            return;
+        }
+        event.failure = ev.at("value").at("failure");
+        router->on_failure_resolver_lookup(event);
+        return;
+    }
+    if (ev.at("key") == FailureStartupEvent::key) {
+        FailureStartupEvent event;
+        if (ev.count("failure") <= 0 || !ev.at("failure").is_string()) {
+            // TODO(bassosimone): route this error.
+            interrupt();
+            return;
+        }
+        event.failure = ev.at("value").at("failure");
+        router->on_failure_startup(event);
+        return;
+    }
+    if (ev.at("key") == LogEvent::key) {
+        LogEvent event;
+        if (ev.count("log_level") <= 0 || !ev.at("log_level").is_string()) {
+            // TODO(bassosimone): route this error.
+            interrupt();
+            return;
+        }
+        event.log_level = ev.at("value").at("log_level");
+        if (ev.count("message") <= 0 || !ev.at("message").is_string()) {
+            // TODO(bassosimone): route this error.
+            interrupt();
+            return;
+        }
+        event.message = ev.at("value").at("message");
+        router->on_log(event);
+        return;
+    }
+    if (ev.at("key") == MeasurementEvent::key) {
+        MeasurementEvent event;
+        if (ev.count("idx") <= 0 || !ev.at("idx").is_number_integer()) {
+            // TODO(bassosimone): route this error.
+            interrupt();
+            return;
+        }
+        event.idx = ev.at("value").at("idx");
+        if (ev.count("json_str") <= 0 || !ev.at("json_str").is_string()) {
+            // TODO(bassosimone): route this error.
+            interrupt();
+            return;
+        }
+        event.json_str = ev.at("value").at("json_str");
+        router->on_measurement(event);
+        return;
+    }
+    if (ev.at("key") == StatusEndEvent::key) {
+        StatusEndEvent event;
+        if (ev.count("downloaded_kb") <= 0 || !ev.at("downloaded_kb").is_number_float()) {
+            // TODO(bassosimone): route this error.
+            interrupt();
+            return;
+        }
+        event.downloaded_kb = ev.at("value").at("downloaded_kb");
+        if (ev.count("uploaded_kb") <= 0 || !ev.at("uploaded_kb").is_number_float()) {
+            // TODO(bassosimone): route this error.
+            interrupt();
+            return;
+        }
+        event.uploaded_kb = ev.at("value").at("uploaded_kb");
+        if (ev.count("failure") <= 0 || !ev.at("failure").is_string()) {
+            // TODO(bassosimone): route this error.
+            interrupt();
+            return;
+        }
+        event.failure = ev.at("value").at("failure");
+        router->on_status_end(event);
+        return;
+    }
+    if (ev.at("key") == StatusGeoipLookupEvent::key) {
+        StatusGeoipLookupEvent event;
+        if (ev.count("probe_ip") <= 0 || !ev.at("probe_ip").is_string()) {
+            // TODO(bassosimone): route this error.
+            interrupt();
+            return;
+        }
+        event.probe_ip = ev.at("value").at("probe_ip");
+        if (ev.count("probe_asn") <= 0 || !ev.at("probe_asn").is_string()) {
+            // TODO(bassosimone): route this error.
+            interrupt();
+            return;
+        }
+        event.probe_asn = ev.at("value").at("probe_asn");
+        if (ev.count("probe_cc") <= 0 || !ev.at("probe_cc").is_string()) {
+            // TODO(bassosimone): route this error.
+            interrupt();
+            return;
+        }
+        event.probe_cc = ev.at("value").at("probe_cc");
+        if (ev.count("probe_network_name") <= 0 || !ev.at("probe_network_name").is_string()) {
+            // TODO(bassosimone): route this error.
+            interrupt();
+            return;
+        }
+        event.probe_network_name = ev.at("value").at("probe_network_name");
+        router->on_status_geoip_lookup(event);
+        return;
+    }
+    if (ev.at("key") == StatusProgressEvent::key) {
+        StatusProgressEvent event;
+        if (ev.count("percentage") <= 0 || !ev.at("percentage").is_number_float()) {
+            // TODO(bassosimone): route this error.
+            interrupt();
+            return;
+        }
+        event.percentage = ev.at("value").at("percentage");
+        if (ev.count("message") <= 0 || !ev.at("message").is_string()) {
+            // TODO(bassosimone): route this error.
+            interrupt();
+            return;
+        }
+        event.message = ev.at("value").at("message");
+        router->on_status_progress(event);
+        return;
+    }
+    if (ev.at("key") == StatusQueuedEvent::key) {
+        StatusQueuedEvent event;
+        /* No attributes */
+        router->on_status_queued(event);
+        return;
+    }
+    if (ev.at("key") == StatusMeasurementStartEvent::key) {
+        StatusMeasurementStartEvent event;
+        if (ev.count("idx") <= 0 || !ev.at("idx").is_number_integer()) {
+            // TODO(bassosimone): route this error.
+            interrupt();
+            return;
+        }
+        event.idx = ev.at("value").at("idx");
+        if (ev.count("input") <= 0 || !ev.at("input").is_string()) {
+            // TODO(bassosimone): route this error.
+            interrupt();
+            return;
+        }
+        event.input = ev.at("value").at("input");
+        router->on_status_measurement_start(event);
+        return;
+    }
+    if (ev.at("key") == StatusMeasurementSubmissionEvent::key) {
+        StatusMeasurementSubmissionEvent event;
+        if (ev.count("idx") <= 0 || !ev.at("idx").is_number_integer()) {
+            // TODO(bassosimone): route this error.
+            interrupt();
+            return;
+        }
+        event.idx = ev.at("value").at("idx");
+        router->on_status_measurement_submission(event);
+        return;
+    }
+    if (ev.at("key") == StatusMeasurementDoneEvent::key) {
+        StatusMeasurementDoneEvent event;
+        if (ev.count("idx") <= 0 || !ev.at("idx").is_number_integer()) {
+            // TODO(bassosimone): route this error.
+            interrupt();
+            return;
+        }
+        event.idx = ev.at("value").at("idx");
+        router->on_status_measurement_done(event);
+        return;
+    }
+    if (ev.at("key") == StatusReportCloseEvent::key) {
+        StatusReportCloseEvent event;
+        if (ev.count("report_id") <= 0 || !ev.at("report_id").is_string()) {
+            // TODO(bassosimone): route this error.
+            interrupt();
+            return;
+        }
+        event.report_id = ev.at("value").at("report_id");
+        router->on_status_report_close(event);
+        return;
+    }
+    if (ev.at("key") == StatusReportCreateEvent::key) {
+        StatusReportCreateEvent event;
+        if (ev.count("report_id") <= 0 || !ev.at("report_id").is_string()) {
+            // TODO(bassosimone): route this error.
+            interrupt();
+            return;
+        }
+        event.report_id = ev.at("value").at("report_id");
+        router->on_status_report_create(event);
+        return;
+    }
+    if (ev.at("key") == StatusResolverLookupEvent::key) {
+        StatusResolverLookupEvent event;
+        if (ev.count("ip_address") <= 0 || !ev.at("ip_address").is_string()) {
+            // TODO(bassosimone): route this error.
+            interrupt();
+            return;
+        }
+        event.ip_address = ev.at("value").at("ip_address");
+        router->on_status_resolver_lookup(event);
+        return;
+    }
+    if (ev.at("key") == StatusStartedEvent::key) {
+        StatusStartedEvent event;
+        /* No attributes */
+        router->on_status_started(event);
+        return;
+    }
+    if (ev.at("key") == StatusUpdatePerformanceEvent::key) {
+        StatusUpdatePerformanceEvent event;
+        if (ev.count("direction") <= 0 || !ev.at("direction").is_string()) {
+            // TODO(bassosimone): route this error.
+            interrupt();
+            return;
+        }
+        event.direction = ev.at("value").at("direction");
+        if (ev.count("elapsed") <= 0 || !ev.at("elapsed").is_number_float()) {
+            // TODO(bassosimone): route this error.
+            interrupt();
+            return;
+        }
+        event.elapsed = ev.at("value").at("elapsed");
+        if (ev.count("num_streams") <= 0 || !ev.at("num_streams").is_number_integer()) {
+            // TODO(bassosimone): route this error.
+            interrupt();
+            return;
+        }
+        event.num_streams = ev.at("value").at("num_streams");
+        if (ev.count("speed_kbps") <= 0 || !ev.at("speed_kbps").is_number_float()) {
+            // TODO(bassosimone): route this error.
+            interrupt();
+            return;
+        }
+        event.speed_kbps = ev.at("value").at("speed_kbps");
+        router->on_status_update_performance(event);
+        return;
+    }
+    if (ev.at("key") == StatusUpdateWebsitesEvent::key) {
+        StatusUpdateWebsitesEvent event;
+        if (ev.count("url") <= 0 || !ev.at("url").is_string()) {
+            // TODO(bassosimone): route this error.
+            interrupt();
+            return;
+        }
+        event.url = ev.at("value").at("url");
+        if (ev.count("status") <= 0 || !ev.at("status").is_string()) {
+            // TODO(bassosimone): route this error.
+            interrupt();
+            return;
+        }
+        event.status = ev.at("value").at("status");
+        router->on_status_update_websites(event);
+        return;
+    }
+    if (ev.at("key") == TaskTerminatedEvent::key) {
+        TaskTerminatedEvent event;
+        /* No attributes */
+        router->on_task_terminated(event);
+        return;
+    }
+#ifdef MK_NETTEST_TRACE
+    std::clog << "NETTEST: unhandled event: " << str << std::endl;
+#endif
+    // TODO(bassosimone): route this error.
+    interrupt();
+}
+
+bool Nettest::is_done() const noexcept {
+    std::unique_lock<std::mutex> _{impl_->mutex};
+    return mk_task_is_done(impl_->task.get());
+}
+
+void Nettest::interrupt() const noexcept {
     std::unique_lock<std::mutex> _{impl_->mutex};
     mk_task_interrupt(impl_->task.get());
 }
 
-Runner::~Runner() noexcept {
-    // Implementation note: no need for locking because all the operations
-    // we perform here are either thread safe or already locked.
-    impl_->dying = true;
-    interrupt();
-    impl_->cond.notify_one();
-    impl_->thread.join();
+Nettest::Nettest(nlohmann::json doc) noexcept {
+    impl_.reset(new Nettest::Impl);
+    std::swap(impl_->settings, doc);
 }
 
-Runner::Runner() noexcept {
-    impl_.reset(new Runner::Impl);
-    impl_->thread = std::thread{[this]() {
-        for (;;) {
-            nlohmann::json doc;
-            {
-                std::unique_lock<std::mutex> lck{impl_->mutex};
-                impl_->cond.wait(lck, [this]() { //
-                    return impl_->dying || !impl_->deque.empty();
-                });
-                if (impl_->dying) {
-                    return;
-                }
-                assert(!impl_->deque.empty());
-                std::swap(impl_->deque.front(), doc);
-                impl_->deque.pop_front();
-            }
-            run_one(std::move(doc));
-        }
-    }};
+/* static */ Router *Nettest::default_router() noexcept {
+    static Router router;
+    return &router;
 }
 
-void Runner::schedule(nlohmann::json doc, const CommonSettings &cs) noexcept {
+/* static */ Nettest Nettest::new_common(nlohmann::json doc, const CommonSettings &cs) noexcept {
     doc["annotations"] = cs.annotations;
     doc["disabled_events"] = cs.disabled_events;
     doc["inputs"] = cs.inputs;
@@ -1126,390 +1498,7 @@ void Runner::schedule(nlohmann::json doc, const CommonSettings &cs) noexcept {
         o["software_name"] = cs.software_name;
         o["software_version"] = cs.software_version;
     }
-    {
-        std::unique_lock<std::mutex> _{impl_->mutex};
-        impl_->deque.push_back(std::move(doc));
-    }
-    impl_->cond.notify_one();
-}
-
-void Runner::run_one(nlohmann::json doc) noexcept {
-    std::string str;
-    try {
-        str = doc.dump();
-    } catch (const std::exception &) {
-        // TODO(bassosimone): route this error.
-        return;
-    }
-#ifdef MK_NETTEST_TRACE
-    std::clog << "NETTEST: settings: " << str << std::endl;
-#endif
-    {
-        // Implementation note: when we're changing the `task` field we need
-        // to do so in a synchronized way because of interrupt().
-        std::unique_lock<std::mutex> _{impl_->mutex};
-        impl_->task.reset(mk_task_start(str.c_str()));
-    }
-    if (!impl_->task) {
-        // TODO(bassosimone): route this error.
-        return;
-    }
-
-    while (!mk_task_is_done(impl_->task.get())) {
-        nlohmann::json ev;
-        {
-            UniqueEvent event{mk_task_wait_for_next_event(impl_->task.get())};
-            if (!event) {
-                // TODO(bassosimone): route this error.
-                break;
-            }
-            auto str = mk_event_serialize(event.get());
-            if (!str) {
-                // TODO(bassosimone): route this error.
-                break;
-            }
-#ifdef MK_NETTEST_TRACE
-            std::clog << "NETTEST: event: " << str << std::endl;
-#endif
-            try {
-                ev = nlohmann::json::parse(str);
-            } catch (const std::exception &) {
-                // TODO(bassosimone): route this error.
-                break;
-            }
-        }
-
-        if (ev.count("key") <= 0 || !ev.at("key").is_string() || ev.count("value") <= 0 || !ev.at("value").is_object()) {
-            // TODO(bassosimone): route this error.
-            break;
-        }
-
-        if (ev.at("key") == FailureAsnLookupEvent::key) {
-            FailureAsnLookupEvent event;
-            if (ev.count("failure") <= 0 || !ev.at("failure").is_string()) {
-                // TODO(bassosimone): route this error.
-                break;
-            }
-            event.failure = ev.at("value").at("failure");
-            on_failure_asn_lookup(event);
-            continue;
-        }
-        if (ev.at("key") == FailureCcLookupEvent::key) {
-            FailureCcLookupEvent event;
-            if (ev.count("failure") <= 0 || !ev.at("failure").is_string()) {
-                // TODO(bassosimone): route this error.
-                break;
-            }
-            event.failure = ev.at("value").at("failure");
-            on_failure_cc_lookup(event);
-            continue;
-        }
-        if (ev.at("key") == FailureIpLookupEvent::key) {
-            FailureIpLookupEvent event;
-            if (ev.count("failure") <= 0 || !ev.at("failure").is_string()) {
-                // TODO(bassosimone): route this error.
-                break;
-            }
-            event.failure = ev.at("value").at("failure");
-            on_failure_ip_lookup(event);
-            continue;
-        }
-        if (ev.at("key") == FailureMeasurementEvent::key) {
-            FailureMeasurementEvent event;
-            if (ev.count("failure") <= 0 || !ev.at("failure").is_string()) {
-                // TODO(bassosimone): route this error.
-                break;
-            }
-            event.failure = ev.at("value").at("failure");
-            on_failure_measurement(event);
-            continue;
-        }
-        if (ev.at("key") == FailureMeasurementSubmissionEvent::key) {
-            FailureMeasurementSubmissionEvent event;
-            if (ev.count("failure") <= 0 || !ev.at("failure").is_string()) {
-                // TODO(bassosimone): route this error.
-                break;
-            }
-            event.failure = ev.at("value").at("failure");
-            if (ev.count("idx") <= 0 || !ev.at("idx").is_number_integer()) {
-                // TODO(bassosimone): route this error.
-                break;
-            }
-            event.idx = ev.at("value").at("idx");
-            if (ev.count("json_str") <= 0 || !ev.at("json_str").is_string()) {
-                // TODO(bassosimone): route this error.
-                break;
-            }
-            event.json_str = ev.at("value").at("json_str");
-            on_failure_measurement_submission(event);
-            continue;
-        }
-        if (ev.at("key") == FailureReportCreateEvent::key) {
-            FailureReportCreateEvent event;
-            if (ev.count("failure") <= 0 || !ev.at("failure").is_string()) {
-                // TODO(bassosimone): route this error.
-                break;
-            }
-            event.failure = ev.at("value").at("failure");
-            on_failure_report_create(event);
-            continue;
-        }
-        if (ev.at("key") == FailureReportCloseEvent::key) {
-            FailureReportCloseEvent event;
-            if (ev.count("failure") <= 0 || !ev.at("failure").is_string()) {
-                // TODO(bassosimone): route this error.
-                break;
-            }
-            event.failure = ev.at("value").at("failure");
-            on_failure_report_close(event);
-            continue;
-        }
-        if (ev.at("key") == FailureResolverLookupEvent::key) {
-            FailureResolverLookupEvent event;
-            if (ev.count("failure") <= 0 || !ev.at("failure").is_string()) {
-                // TODO(bassosimone): route this error.
-                break;
-            }
-            event.failure = ev.at("value").at("failure");
-            on_failure_resolver_lookup(event);
-            continue;
-        }
-        if (ev.at("key") == FailureStartupEvent::key) {
-            FailureStartupEvent event;
-            if (ev.count("failure") <= 0 || !ev.at("failure").is_string()) {
-                // TODO(bassosimone): route this error.
-                break;
-            }
-            event.failure = ev.at("value").at("failure");
-            on_failure_startup(event);
-            continue;
-        }
-        if (ev.at("key") == LogEvent::key) {
-            LogEvent event;
-            if (ev.count("log_level") <= 0 || !ev.at("log_level").is_string()) {
-                // TODO(bassosimone): route this error.
-                break;
-            }
-            event.log_level = ev.at("value").at("log_level");
-            if (ev.count("message") <= 0 || !ev.at("message").is_string()) {
-                // TODO(bassosimone): route this error.
-                break;
-            }
-            event.message = ev.at("value").at("message");
-            on_log(event);
-            continue;
-        }
-        if (ev.at("key") == MeasurementEvent::key) {
-            MeasurementEvent event;
-            if (ev.count("idx") <= 0 || !ev.at("idx").is_number_integer()) {
-                // TODO(bassosimone): route this error.
-                break;
-            }
-            event.idx = ev.at("value").at("idx");
-            if (ev.count("json_str") <= 0 || !ev.at("json_str").is_string()) {
-                // TODO(bassosimone): route this error.
-                break;
-            }
-            event.json_str = ev.at("value").at("json_str");
-            on_measurement(event);
-            continue;
-        }
-        if (ev.at("key") == StatusEndEvent::key) {
-            StatusEndEvent event;
-            if (ev.count("downloaded_kb") <= 0 || !ev.at("downloaded_kb").is_number_float()) {
-                // TODO(bassosimone): route this error.
-                break;
-            }
-            event.downloaded_kb = ev.at("value").at("downloaded_kb");
-            if (ev.count("uploaded_kb") <= 0 || !ev.at("uploaded_kb").is_number_float()) {
-                // TODO(bassosimone): route this error.
-                break;
-            }
-            event.uploaded_kb = ev.at("value").at("uploaded_kb");
-            if (ev.count("failure") <= 0 || !ev.at("failure").is_string()) {
-                // TODO(bassosimone): route this error.
-                break;
-            }
-            event.failure = ev.at("value").at("failure");
-            on_status_end(event);
-            continue;
-        }
-        if (ev.at("key") == StatusGeoipLookupEvent::key) {
-            StatusGeoipLookupEvent event;
-            if (ev.count("probe_ip") <= 0 || !ev.at("probe_ip").is_string()) {
-                // TODO(bassosimone): route this error.
-                break;
-            }
-            event.probe_ip = ev.at("value").at("probe_ip");
-            if (ev.count("probe_asn") <= 0 || !ev.at("probe_asn").is_string()) {
-                // TODO(bassosimone): route this error.
-                break;
-            }
-            event.probe_asn = ev.at("value").at("probe_asn");
-            if (ev.count("probe_cc") <= 0 || !ev.at("probe_cc").is_string()) {
-                // TODO(bassosimone): route this error.
-                break;
-            }
-            event.probe_cc = ev.at("value").at("probe_cc");
-            if (ev.count("probe_network_name") <= 0 || !ev.at("probe_network_name").is_string()) {
-                // TODO(bassosimone): route this error.
-                break;
-            }
-            event.probe_network_name = ev.at("value").at("probe_network_name");
-            on_status_geoip_lookup(event);
-            continue;
-        }
-        if (ev.at("key") == StatusProgressEvent::key) {
-            StatusProgressEvent event;
-            if (ev.count("percentage") <= 0 || !ev.at("percentage").is_number_float()) {
-                // TODO(bassosimone): route this error.
-                break;
-            }
-            event.percentage = ev.at("value").at("percentage");
-            if (ev.count("message") <= 0 || !ev.at("message").is_string()) {
-                // TODO(bassosimone): route this error.
-                break;
-            }
-            event.message = ev.at("value").at("message");
-            on_status_progress(event);
-            continue;
-        }
-        if (ev.at("key") == StatusQueuedEvent::key) {
-            StatusQueuedEvent event;
-            /* No attributes */
-            on_status_queued(event);
-            continue;
-        }
-        if (ev.at("key") == StatusMeasurementStartEvent::key) {
-            StatusMeasurementStartEvent event;
-            if (ev.count("idx") <= 0 || !ev.at("idx").is_number_integer()) {
-                // TODO(bassosimone): route this error.
-                break;
-            }
-            event.idx = ev.at("value").at("idx");
-            if (ev.count("input") <= 0 || !ev.at("input").is_string()) {
-                // TODO(bassosimone): route this error.
-                break;
-            }
-            event.input = ev.at("value").at("input");
-            on_status_measurement_start(event);
-            continue;
-        }
-        if (ev.at("key") == StatusMeasurementSubmissionEvent::key) {
-            StatusMeasurementSubmissionEvent event;
-            if (ev.count("idx") <= 0 || !ev.at("idx").is_number_integer()) {
-                // TODO(bassosimone): route this error.
-                break;
-            }
-            event.idx = ev.at("value").at("idx");
-            on_status_measurement_submission(event);
-            continue;
-        }
-        if (ev.at("key") == StatusMeasurementDoneEvent::key) {
-            StatusMeasurementDoneEvent event;
-            if (ev.count("idx") <= 0 || !ev.at("idx").is_number_integer()) {
-                // TODO(bassosimone): route this error.
-                break;
-            }
-            event.idx = ev.at("value").at("idx");
-            on_status_measurement_done(event);
-            continue;
-        }
-        if (ev.at("key") == StatusReportCloseEvent::key) {
-            StatusReportCloseEvent event;
-            if (ev.count("report_id") <= 0 || !ev.at("report_id").is_string()) {
-                // TODO(bassosimone): route this error.
-                break;
-            }
-            event.report_id = ev.at("value").at("report_id");
-            on_status_report_close(event);
-            continue;
-        }
-        if (ev.at("key") == StatusReportCreateEvent::key) {
-            StatusReportCreateEvent event;
-            if (ev.count("report_id") <= 0 || !ev.at("report_id").is_string()) {
-                // TODO(bassosimone): route this error.
-                break;
-            }
-            event.report_id = ev.at("value").at("report_id");
-            on_status_report_create(event);
-            continue;
-        }
-        if (ev.at("key") == StatusResolverLookupEvent::key) {
-            StatusResolverLookupEvent event;
-            if (ev.count("ip_address") <= 0 || !ev.at("ip_address").is_string()) {
-                // TODO(bassosimone): route this error.
-                break;
-            }
-            event.ip_address = ev.at("value").at("ip_address");
-            on_status_resolver_lookup(event);
-            continue;
-        }
-        if (ev.at("key") == StatusStartedEvent::key) {
-            StatusStartedEvent event;
-            /* No attributes */
-            on_status_started(event);
-            continue;
-        }
-        if (ev.at("key") == StatusUpdatePerformanceEvent::key) {
-            StatusUpdatePerformanceEvent event;
-            if (ev.count("direction") <= 0 || !ev.at("direction").is_string()) {
-                // TODO(bassosimone): route this error.
-                break;
-            }
-            event.direction = ev.at("value").at("direction");
-            if (ev.count("elapsed") <= 0 || !ev.at("elapsed").is_number_float()) {
-                // TODO(bassosimone): route this error.
-                break;
-            }
-            event.elapsed = ev.at("value").at("elapsed");
-            if (ev.count("num_streams") <= 0 || !ev.at("num_streams").is_number_integer()) {
-                // TODO(bassosimone): route this error.
-                break;
-            }
-            event.num_streams = ev.at("value").at("num_streams");
-            if (ev.count("speed_kbps") <= 0 || !ev.at("speed_kbps").is_number_float()) {
-                // TODO(bassosimone): route this error.
-                break;
-            }
-            event.speed_kbps = ev.at("value").at("speed_kbps");
-            on_status_update_performance(event);
-            continue;
-        }
-        if (ev.at("key") == StatusUpdateWebsitesEvent::key) {
-            StatusUpdateWebsitesEvent event;
-            if (ev.count("url") <= 0 || !ev.at("url").is_string()) {
-                // TODO(bassosimone): route this error.
-                break;
-            }
-            event.url = ev.at("value").at("url");
-            if (ev.count("status") <= 0 || !ev.at("status").is_string()) {
-                // TODO(bassosimone): route this error.
-                break;
-            }
-            event.status = ev.at("value").at("status");
-            on_status_update_websites(event);
-            continue;
-        }
-        if (ev.at("key") == TaskTerminatedEvent::key) {
-            TaskTerminatedEvent event;
-            /* No attributes */
-            on_task_terminated(event);
-            continue;
-        }
-
-#ifdef MK_NETTEST_TRACE
-        std::clog << "NETTEST: unhandled event: " << str << std::endl;
-#endif
-        // TODO(bassosimone): route this error.
-        break;
-    }
-
-    // Implementation note: if we leave this function early because of any
-    // error, we also want to stop the nettest as soon as possible.
-    if (!mk_task_is_done(impl_->task.get())) {
-        mk_task_interrupt(impl_->task.get());
-    }
+    return Nettest{std::move(doc)};
 }
 
 #endif // !MK_NETTEST_NO_INLINE_IMPL && !SWIG
