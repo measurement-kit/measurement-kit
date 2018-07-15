@@ -9,6 +9,8 @@ a simple specification of Measurement Kit's FFI API messages.
 
 - `autoapi`: message specification and autogen script
 
+- `nettests-ffi.hpp.j2`: template for `include/measurement_kit/nettests/ffi.hpp`
+
 - `engine.cpp.j2`: template for `src/libmeasurement_kit/engine.cpp`
 
 - `nettest.hpp.j2`: template for `include/measurement_kit/nettest.hpp`
