@@ -20,14 +20,16 @@
 /// \brief C++11 API for running nettests.
 ///
 /// This API is a C++11 adaptation of MK's FFI API. You should probably read
-/// about such API first. See https://github.com/measurement-kit/measurement-kit/blob/master/include/measurement_kit/README.md.
+/// about such API first. \see https://github.com/measurement-kit/measurement-kit/blob/master/include/measurement_kit/README.md.
 ///
 /// Usage is as follows:
 ///
-/// 1. create an instance of the settings of the nettest that you want to run
-///    and set all the settings that you care about. You can pass around a
-///    pointer or reference to the base class if you have common code written
-///    to setup common options among different tests.
+/// ### 1. Instantiate settings
+///
+/// Create an instance of the settings of the nettest that you want to run
+/// and set all the settings that you care about. You can pass around a
+/// pointer or reference to the base class if you have common code written
+/// to setup common options among different tests.
 ///
 /// ```
 /// extern void set_more_common_settings(mk::nettest::CommonSettings *);
@@ -37,28 +39,30 @@
 /// set_more_common_settings(&settings);
 /// ```
 ///
-/// 2. create an instance of the nettest, passing the settings created in
-///    the previous step to the proper factory method. You will get an
-///    instance of Nettest configured to run the selected nettest. Since
-///    this is a generic class, the code to run the nettest can be generic
-///    as well and does not need to be nettest specific.
+/// ### 2. Instatiate Nettest
+///
+/// Create an instance of the Nettest class. This class is non copyable
+/// and non movable. If you want unique or shared ownership, you can
+/// instantiate it either using `std::make_unique` or `std::make_shared`.
 ///
 /// ```
-/// auto nettest = mk::nettest::Nettest::new_whatsapp(std::move(settings));
+/// Nettest nettest;
 /// ```
 ///
-/// 3. create a subclass of Router suitable for routing the events that
-///    the nettest will emit to overriden methods written by you. The default
-///    behavior of the router is to ignore all events.
+/// ### 3. Subclass Router
+///
+/// Create a subclass of Router suitable for routing the events that
+/// the nettest will emit to overriden methods written by you. The default
+/// behavior of the router is to ignore all events.
 ///
 /// ```
-/// class MyRunner : public mk::nettest::Runner {
+/// class MyRouter : public mk::nettest::Router {
 ///  public:
-///   using mk::nettest::Runner::Runner;
+///   using mk::nettest::Router::Router;
 ///
-///   void on_log(const LogEvent &event) override {
+///   void on_log(const mk::nettest::LogEvent &event) override {
 ///     // Your event handling code here. Remember that this is called
-///     // in the context of the runner's background thread.
+///     // in the context of the FFI API's background thread.
 ///     //
 ///     // In this example we emit log messages on the standard error.
 ///     std::clog << event.log_level << ": " << event.message.
@@ -69,35 +73,52 @@
 /// }
 /// ```
 ///
-/// 4. create an instance of your router that will be used by this nettest. As
-///    the methods requiring a router actually take a pointer, you can always
-///    cast to the base class. Hence, the code for running a nettest does
-///    not need any nettest specific code for running a nettest.
+/// ### 4. Instantiate your router specialization
+///
+/// Create an instance of your router that will be used by this nettest. You
+/// will later pass a pointer to this instance to methods emitting events.
 ///
 /// ```
 /// MyRouter my_router;
 /// ```
 ///
-/// 5. start the nettest and run it until completion. Events emitted during
-///    startup or while the nettest is running will be routed.
+/// ### 5. Start the Nettest
+///
+/// Start the nettest using the specific start method for the nettest
+/// that you want to run. After this nettest specific method is called,
+/// all the other methods are nettest-agnostic, so you can have a lot
+/// of common nettest-processing code. Make sure you check the value
+/// returned by the nettest-specific start method. In case of error log
+/// messages will be emitted through the router.
 ///
 /// ```
-/// if (!nettest.start(&my_router)) {
-///   std::clog << "cannot start the nettest" << std::endl;
+/// if (!nettest.start_whatsapp(&my_router)) {
+///   // TODO: your code for handling this failure here.
 ///   return;
 /// }
+/// ```
+///
+/// ### 6. Dispatch nettest events
+///
+/// Dispatch nettest events. This is nettest-agnostic code. Calling the
+/// Nettest::route_next_event() method will cause any pending events
+/// to be extracted from the events queue and emitted through the router.
+///
+/// ```
 /// while (!nettest.is_done()) {
 ///   nettest.route_next_event(&my_router);
 /// }
 /// ```
 ///
-/// 6. if the nettest goes out of scope, it will not be interrupted, rather it
-///    will run until completion without routing events.
+/// ### 7. Final remarks
 ///
-/// 7. a nettest instance has unique pointer semantics, is thread safe, and
-///    its methods do not change its internal state once the nettest has
-///    been constructed. This allows you to be quite flexible about using
-///    it, except that you are constrained by unique ownership.
+/// If the nettest goes out of scope, it will not be interrupted, rather it
+/// will run until completion without routing events. To interrupt a nettest,
+/// use Nettest::interrupt(). When you need to share a Nettest instance
+/// between different threads for the purpose of interrupting a test, your
+/// best option is to use `new` or `std::make_shared`.
+///
+/// \see https://github.com/measurement-kit/measurement-kit/tree/master/example/nettest for usage examples.
 
 #include <assert.h>
 #include <stdint.h>
@@ -116,11 +137,14 @@
 #include <measurement_kit/common/nlohmann/json.hpp>
 #include <measurement_kit/ffi.h>
 
+/// Measurement Kit namespace.
 namespace mk {
+
+/// Namespace containing the nettest API.
 namespace nettest {
 
-// Events
-// ------
+/// Contains events definitions.
+namespace events {
 
 {% for event in events %}/// C++ representation of the "{{ event.key }}" event.
 class {{ event.cxx_class_name }}Event {
@@ -131,8 +155,10 @@ class {{ event.cxx_class_name }}Event {
     {{ attribute.cxx_type }} {{ attribute.key }} = {{ attribute.value }};{{ "\n    " if not loop.last }}{% endfor %}{% else %}/* No attributes */{% endif %}
 };{{ "\n\n" if not loop.last }}{% endfor %}
 
-// Settings
-// --------
+} // namespace events
+
+/// Contains settings classes.
+namespace settings {
 
 /// Settings common to all nettests.
 class CommonSettings {
@@ -156,8 +182,7 @@ class {{ nettest.name }}Settings : public CommonSettings {
     {{ attribute.cxx_type}} {{ attribute.key }} = {{ attribute.value }};{{ "\n    " if not loop.last }}{% endfor %}{% else %}/* No nettest-specific settings */{% endif %}
 };{{ "\n\n" if not loop.last }}{% endfor %}
 
-// Router
-// ------
+} // namespace settings
 
 /// Routes nettest events to virtual methods.
 class Router {
@@ -166,49 +191,21 @@ class Router {
     // task stable version of SWIG does not handle that correctly.
 
     {% for event in events %}/// Handles the "{{ event.key }}" event.
-    virtual void on_{{ event.key | replace(".", "_") }}(const {{ event.cxx_class_name }}Event &event);{{ "\n\n    " if not loop.last }}{% endfor %}
+    virtual void on_{{ event.key | replace(".", "_") }}(const events::{{ event.cxx_class_name }}Event &event);{{ "\n\n    " if not loop.last }}{% endfor %}
 
     virtual ~Router() noexcept;
 };
-
-// Nettest
-// -------
 
 /// Manages the lifecycle of a nettest. This API mirrors as closely as
 /// possible to FFI API provided by <measurement_kit/ffi.h>.
 class Nettest {
   public:
-    // Factory methods
-    // ```````````````
-
-    {% for nettest in nettests %}/// Creates a "{{ nettest.name }}" nettest with specific \p settings.
-    static Nettest new_{{ nettest.snake_case_name }}({{ nettest.name }}Settings settings) noexcept;{{ "\n\n    " if not loop.last }}{% endfor %}
-
-    // Nettest handling methods
-    // ````````````````````````
-
-    /// Start the nettest. \param router Router to handle events.
-    /// \return true if we can start the nettest, false otherwise. We will
-    /// not be able to start a nettest if it is already running or if we
-    /// cannot serialize the settings to a JSON because there are some
-    /// setting strings that are not valid UTF-8 strings.
-    bool start(Router *router) const noexcept;
-
-    /// Blocks until the next event occurs, then routes it.
-    /// \param router Router to handle events.
-    void route_next_event(Router *router) const noexcept;
-
-    /// Returns true if nettest is done, false otherwise.
-    bool is_done() const noexcept;
-
-    /// Interrupts the currently running nettest.
-    void interrupt() const noexcept;
-
     // C++ object model
     // ````````````````
 
-    /// Wait for nettest to terminate and destroy resources.
-    ~Nettest() noexcept;
+    /// Creates a nettest instance. This will not start the actual test. You
+    /// need to use one of the start_XXX() methods to do that.
+    Nettest() noexcept;
 
     /// Explicitly deleted copy constructor.
     Nettest(const Nettest &) noexcept = delete;
@@ -216,22 +213,82 @@ class Nettest {
     /// Explicitly deleted copy assignment.
     Nettest &operator=(const Nettest &) noexcept = delete;
 
-    /// Explicitly defaulted move constructor.
-    Nettest(Nettest &&) noexcept = default;
+    /// Explicitly deleted move constructor.
+    Nettest(Nettest &&) noexcept = delete;
 
-    /// Explicitly defaulted move assignment.
-    Nettest &operator=(Nettest &&) noexcept = default;
+    /// Explicitly deleted move assignment.
+    Nettest &operator=(Nettest &&) noexcept = delete;
+
+    /// Wait for nettest to terminate and destroy resources.
+    ~Nettest() noexcept;
+
+    // Starting a nettest
+    // ``````````````````
+
+    {% for nettest in nettests %}/// Starts a "{{ nettest.name }}" nettest.
+    /// \param settings contains the settings configuring this nettest.
+    /// \param router is the router used to route nettest events. If the
+    /// router is `nullptr`, we'll use an internal dummy router.
+    /// \return true on success, false on failure. There are two reasons why
+    /// this method could fail. Either the provided settings are not JSON
+    /// serializable because there was a string that was not valid UTF-8, or
+    /// you already used this class to start a nettest. In both cases, log
+    /// messages will be routed, so you will know what happened.
+    bool start_{{ nettest.snake_case_name }}(settings::{{ nettest.name }}Settings settings, Router *router) noexcept;{{ "\n\n    " if not loop.last }}{% endfor %}
+
+    // Event processing methods
+    // ````````````````````````
+
+    /// Blocks until the next event occurs, then routes it.
+    /// \param router Router to handle events. If the router is null, we'll
+    /// use an internal dummy router.
+    void route_next_event(Router *router) noexcept;
+
+    /// Returns true if nettest is done, false otherwise.
+    bool is_done() noexcept;
+
+    /// Interrupts the currently running nettest.
+    void interrupt() noexcept;
 
   private:
-    Nettest(nlohmann::json) noexcept;
+    // Private methods
+    // ```````````````
 
+    // The default router used when no other router is available.
     static Router *default_router() noexcept;
 
-    static Nettest new_common(nlohmann::json, const CommonSettings &) noexcept;
+    // Internal method called to start any nettest.
+    bool start_common(nlohmann::json, const settings::CommonSettings &, Router *router) noexcept;
 
-    class Impl;
+    // Private definitions
+    // ```````````````````
 
-    std::shared_ptr<Impl> impl_;
+    // Deleter for mk_task_t.
+    class TaskDeleter {
+      public:
+        void operator()(mk_task_t *task) noexcept { mk_task_destroy(task); }
+    };
+
+    // Syntactic sugar of a unique mk_task_t pointer.
+    using UniqueTask = std::unique_ptr<mk_task_t, TaskDeleter>;
+
+    // Deleter for mk_event_t.
+    class EventDeleter {
+      public:
+        void operator()(mk_event_t *event) noexcept { mk_event_destroy(event); }
+    };
+
+    // Syntactic sugar for a unique mk_event_t pointer.
+    using UniqueEvent = std::unique_ptr<mk_event_t, EventDeleter>;
+
+    // Private attributes
+    // ``````````````````
+
+    // Mutex used to protect the task_ attribute.
+    std::mutex mutex_;
+
+    // Unique pointer to the FFI task.
+    UniqueTask task_;
 };
 
 /*-
@@ -250,83 +307,35 @@ class Nettest {
  */
 #if !defined MK_NETTEST_NO_INLINE_IMPL && !defined SWIG
 
-// Utility classes
-// ---------------
-
-// Deleter for mk_task_t.
-class TaskDeleter {
-  public:
-    void operator()(mk_task_t *task) noexcept { mk_task_destroy(task); }
-};
-
-// Syntactic sugar of a unique mk_task_t pointer.
-using UniqueTask = std::unique_ptr<mk_task_t, TaskDeleter>;
-
-// Deleter for mk_event_t.
-class EventDeleter {
-  public:
-    void operator()(mk_event_t *event) noexcept { mk_event_destroy(event); }
-};
-
-// Syntactic sugar for a unique mk_event_t pointer.
-using UniqueEvent = std::unique_ptr<mk_event_t, EventDeleter>;
-
 // Router
 // ------
 
-{% for event in events %}void Router::on_{{ event.key | replace(".", "_") }}(const {{ event.cxx_class_name }}Event &) {}{{ "\n\n" if not loop.last }}{% endfor %}
+{% for event in events %}void Router::on_{{ event.key | replace(".", "_") }}(const events::{{ event.cxx_class_name }}Event &) {}{{ "\n\n" if not loop.last }}{% endfor %}
 
 Router::~Router() noexcept {}
 
 // Nettest
 // -------
 
-class Nettest::Impl {
-  public:
-    std::mutex mutex;
-    nlohmann::json settings;
-    UniqueTask task;
-};
+Nettest::Nettest() noexcept {}
 
-{% for nettest in nettests %}/* static */ Nettest Nettest::new_{{ nettest.snake_case_name }}({{ nettest.name }}Settings settings) noexcept {
+Nettest::~Nettest() noexcept {}
+
+{% for nettest in nettests %}bool Nettest::start_{{ nettest.snake_case_name }}(settings::{{ nettest.name }}Settings settings, Router *router) noexcept {
+    router = (router) ? router : default_router();
     nlohmann::json doc;
     doc["name"] = "{{ nettest.name }}";
     {% if nettest.attributes %}{% for attribute in nettest.attributes %}doc["options"]["{{ attribute.key}}"] = {{ attribute.cxx_cast_to_json }}settings.{{ attribute.key }};{{ "\n    " if not loop.last }}{% endfor %}{% else %}/* No nettest specific settings */{% endif %}
-    return Nettest::new_common(std::move(doc), settings);
+    return start_common(std::move(doc), settings, router);
 }{{ "\n\n" if not loop.last }}{% endfor %}
 
-bool Nettest::start(Router *router) const noexcept {
-    router = (router) ? router : default_router();
-    std::unique_lock<std::mutex> _{impl_->mutex};
-    if (impl_->task != nullptr) {
-        // TODO(bassosimone): route this error.
-        return false;
-    }
-    std::string str;
-    try {
-        str = impl_->settings.dump();
-    } catch (const std::exception &) {
-        // TODO(bassosimone): route this error.
-        return false;
-    }
-#ifdef MK_NETTEST_TRACE
-    std::clog << "NETTEST: settings: " << str << std::endl;
-#endif
-    impl_->task.reset(mk_task_start(str.c_str()));
-    if (impl_->task == nullptr) {
-        // TODO(bassosimone): route this error.
-        return false;
-    }
-    return true;
-}
-
-void Nettest::route_next_event(Router *router) const noexcept {
+void Nettest::route_next_event(Router *router) noexcept {
     router = (router) ? router : default_router();
     UniqueEvent eventptr;
     nlohmann::json ev;
     {
-        std::unique_lock<std::mutex> _{impl_->mutex};
-        eventptr.reset(mk_task_wait_for_next_event(impl_->task.get()));
+        std::unique_lock<std::mutex> _{mutex_};
+        eventptr.reset(mk_task_wait_for_next_event(task_.get()));
     }
     if (eventptr == nullptr) {
         // TODO(bassosimone): route this error.
@@ -354,8 +363,8 @@ void Nettest::route_next_event(Router *router) const noexcept {
         interrupt();
         return;
     }
-    {% for event in events %}if (ev.at("key") == {{ event.cxx_class_name }}Event::key) {
-        {{ event.cxx_class_name}}Event event;
+    {% for event in events %}if (ev.at("key") == events::{{ event.cxx_class_name }}Event::key) {
+        events::{{ event.cxx_class_name}}Event event;
         {% if event.attributes %}{% for attribute in event.attributes %}if (ev.count("{{ attribute.key }}") <= 0 || !ev.at("{{ attribute.key }}").is_{{ attribute.json_type }}()) {
             // TODO(bassosimone): route this error.
             interrupt();
@@ -372,19 +381,14 @@ void Nettest::route_next_event(Router *router) const noexcept {
     interrupt();
 }
 
-bool Nettest::is_done() const noexcept {
-    std::unique_lock<std::mutex> _{impl_->mutex};
-    return mk_task_is_done(impl_->task.get());
+bool Nettest::is_done() noexcept {
+    std::unique_lock<std::mutex> _{mutex_};
+    return mk_task_is_done(task_.get());
 }
 
-void Nettest::interrupt() const noexcept {
-    std::unique_lock<std::mutex> _{impl_->mutex};
-    mk_task_interrupt(impl_->task.get());
-}
-
-Nettest::Nettest(nlohmann::json doc) noexcept {
-    impl_.reset(new Nettest::Impl);
-    std::swap(impl_->settings, doc);
+void Nettest::interrupt() noexcept {
+    std::unique_lock<std::mutex> _{mutex_};
+    mk_task_interrupt(task_.get());
 }
 
 /* static */ Router *Nettest::default_router() noexcept {
@@ -392,13 +396,37 @@ Nettest::Nettest(nlohmann::json doc) noexcept {
     return &router;
 }
 
-/* static */ Nettest Nettest::new_common(nlohmann::json doc, const CommonSettings &cs) noexcept {
+bool Nettest::start_common(nlohmann::json doc, const settings::CommonSettings &cs, Router *router) noexcept {
+    assert(router != nullptr);
+
     {% for setting in settings if not setting.internal %}doc["{{ setting.key }}"] = {{ setting.cxx_cast_to_json }}cs.{{ setting.key }};{{ "\n    " if not loop.last }}{% endfor %}
     {
         auto &o = doc["options"];
         {% for option in options %}o["{{ option.key }}"] = {{ option.cxx_cast_to_json }}cs.{{ option.key | replace("/", "_") }};{{ "\n        " if not loop.last }}{% endfor %}
     }
-    return Nettest{std::move(doc)};
+
+    std::unique_lock<std::mutex> _{mutex_};
+    if (task_ != nullptr) {
+        // TODO(bassosimone): route this error.
+        return false;
+    }
+    std::string str;
+    try {
+        str = doc.dump();
+    } catch (const std::exception &) {
+        // TODO(bassosimone): route this error.
+        return false;
+    }
+#ifdef MK_NETTEST_TRACE
+    std::clog << "NETTEST: settings: " << str << std::endl;
+#endif
+
+    task_.reset(mk_task_start(str.c_str()));
+    if (task_ == nullptr) {
+        // TODO(bassosimone): route this error.
+        return false;
+    }
+    return true;
 }
 
 #endif // !MK_NETTEST_NO_INLINE_IMPL && !SWIG

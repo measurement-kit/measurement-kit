@@ -4,15 +4,17 @@
 #ifndef MEASUREMENT_KIT_FFI_H
 #define MEASUREMENT_KIT_FFI_H
 
-/*
+/**
+ * \file include/measurement_kit/ffi.h
+ *
  * Measurement Kit Foreign-Function-Interface (FFI) API. As a general remark,
  * all function that can take a NULL argument should behave correctly when
  * passed a NULL argument; all functions that may return a NULL pointer can
  * do that, so code defensively!
  *
- * See include/measurement_kit/engine.h for more documentation.
+ * \see https://github.com/measurement-kit/measurement-kit/tree/master/example/ffi for usage examples.
  *
- * See example/ffi/ndt.cpp for example usage.
+ * \see https://github.com/measurement-kit/measurement-kit/blob/master/include/measurement_kit/README.md for event-specific documentation.
  */
 
 #include <stddef.h>
