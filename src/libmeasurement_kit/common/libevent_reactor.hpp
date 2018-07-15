@@ -101,11 +101,17 @@ class LibeventReactor : public Reactor, public NonCopyable, public NonMovable {
 
     event_base *get_event_base() override { return evbase.get(); }
 
+    std::atomic_bool stopped{false};
+
     void run() override {
         do {
             auto ev_status = event_base_dispatch(evbase.get());
             if (ev_status < 0) {
                 throw std::runtime_error("event_base_dispatch");
+            }
+            if (stopped) {
+                stopped = false;
+                break;
             }
             /*
                 Explanation: event_base_loop() returns one when there are no
@@ -133,6 +139,7 @@ class LibeventReactor : public Reactor, public NonCopyable, public NonMovable {
         if (event_base_loopbreak(evbase.get()) != 0) {
             throw std::runtime_error("event_base_loopbreak");
         }
+        stopped = true;
     }
 
     // ## Call later
