@@ -208,26 +208,27 @@ class DefaultLogger : public Logger, public NonCopyable, public NonMovable {
     }
 
     void emit_event_ex(
-            const std::string &key, nlohmann::json &&value) override {
+            std::string key, nlohmann::json &&value) override {
         nlohmann::json event{
             {"key", key},
             {"value", std::move(value)}
         };
-        std::string real_key;
         if (handlers_.count(key) <= 0) {
             // Even if the event has not registered handler, we pass them up
-            // one layer to validate the event structure.
-            real_key = "__disabled";
-            assert(handlers_.count(key));
-        } else {
-            real_key = key;
+            // one layer to validate the event structure. However, we can't
+            // really assert() here, because there are several places inside
+            // MK where we do not set handlers for extended events.
+            key = "__disabled";
+            if (handlers_.count(key) <= 0) {
+                return;
+            }
         }
         std::unique_lock<std::recursive_mutex> _{mutex_};
         // TODO(bassosimone): other logging functions filter all the
         // exceptions. We cannot change this behavior until that is part
         // of our public API. But here we deliberately choose not to do
         // any exception handling. The callee must behave.
-        handlers_.at(real_key)(std::move(event));
+        handlers_.at(key)(std::move(event));
     }
 
     void progress_relative(double prog, const char *s) override {

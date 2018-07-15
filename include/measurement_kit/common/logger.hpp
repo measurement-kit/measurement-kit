@@ -185,8 +185,7 @@ class Logger {
     virtual void set_logfile(std::string fpath) = 0;
 
     /// `emit_event_ex()` emits an event as a JSON.
-    virtual void emit_event_ex(const std::string &key,
-                               nlohmann::json &&value) = 0;
+    virtual void emit_event_ex(std::string key, nlohmann::json &&value) = 0;
 
     /// \brief `progress()` emits a progress event. \param percent is the
     /// percentage of completion of the current test. \param message is the
