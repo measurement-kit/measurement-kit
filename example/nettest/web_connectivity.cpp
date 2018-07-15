@@ -10,7 +10,7 @@
 
 int main() {
     mk::nettest::routers::NoisyRouter router;
-    mk::nettest::settings::NdtSettings settings;
+    mk::nettest::settings::WebConnectivitySettings settings;
     settings.inputs = {
         "https://slashdot.org/",
         "http://www.microsoft.com"

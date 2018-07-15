@@ -1143,31 +1143,36 @@ void Router::on_task_terminated(const events::TaskTerminatedEvent &) {}
 Router::~Router() noexcept {}
 
 void NoisyRouter::on_failure_asn_lookup(const events::FailureAsnLookupEvent &event) {
-    std::clog << "failure.asn_lookup:";
+    std::clog << "failure.asn_lookup";
+    std::clog << ":";
     std::clog << " failure='" << event.failure << "'";
     std::clog << std::endl;
 }
 
 void NoisyRouter::on_failure_cc_lookup(const events::FailureCcLookupEvent &event) {
-    std::clog << "failure.cc_lookup:";
+    std::clog << "failure.cc_lookup";
+    std::clog << ":";
     std::clog << " failure='" << event.failure << "'";
     std::clog << std::endl;
 }
 
 void NoisyRouter::on_failure_ip_lookup(const events::FailureIpLookupEvent &event) {
-    std::clog << "failure.ip_lookup:";
+    std::clog << "failure.ip_lookup";
+    std::clog << ":";
     std::clog << " failure='" << event.failure << "'";
     std::clog << std::endl;
 }
 
 void NoisyRouter::on_failure_measurement(const events::FailureMeasurementEvent &event) {
-    std::clog << "failure.measurement:";
+    std::clog << "failure.measurement";
+    std::clog << ":";
     std::clog << " failure='" << event.failure << "'";
     std::clog << std::endl;
 }
 
 void NoisyRouter::on_failure_measurement_submission(const events::FailureMeasurementSubmissionEvent &event) {
-    std::clog << "failure.measurement_submission:";
+    std::clog << "failure.measurement_submission";
+    std::clog << ":";
     std::clog << " failure='" << event.failure << "'";
     std::clog << " idx='" << event.idx << "'";
     std::clog << " json_str='" << event.json_str << "'";
@@ -1175,45 +1180,52 @@ void NoisyRouter::on_failure_measurement_submission(const events::FailureMeasure
 }
 
 void NoisyRouter::on_failure_report_create(const events::FailureReportCreateEvent &event) {
-    std::clog << "failure.report_create:";
+    std::clog << "failure.report_create";
+    std::clog << ":";
     std::clog << " failure='" << event.failure << "'";
     std::clog << std::endl;
 }
 
 void NoisyRouter::on_failure_report_close(const events::FailureReportCloseEvent &event) {
-    std::clog << "failure.report_close:";
+    std::clog << "failure.report_close";
+    std::clog << ":";
     std::clog << " failure='" << event.failure << "'";
     std::clog << std::endl;
 }
 
 void NoisyRouter::on_failure_resolver_lookup(const events::FailureResolverLookupEvent &event) {
-    std::clog << "failure.resolver_lookup:";
+    std::clog << "failure.resolver_lookup";
+    std::clog << ":";
     std::clog << " failure='" << event.failure << "'";
     std::clog << std::endl;
 }
 
 void NoisyRouter::on_failure_startup(const events::FailureStartupEvent &event) {
-    std::clog << "failure.startup:";
+    std::clog << "failure.startup";
+    std::clog << ":";
     std::clog << " failure='" << event.failure << "'";
     std::clog << std::endl;
 }
 
 void NoisyRouter::on_log(const events::LogEvent &event) {
-    std::clog << "log:";
+    std::clog << "log";
+    std::clog << ":";
     std::clog << " log_level='" << event.log_level << "'";
     std::clog << " message='" << event.message << "'";
     std::clog << std::endl;
 }
 
 void NoisyRouter::on_measurement(const events::MeasurementEvent &event) {
-    std::clog << "measurement:";
+    std::clog << "measurement";
+    std::clog << ":";
     std::clog << " idx='" << event.idx << "'";
     std::clog << " json_str='" << event.json_str << "'";
     std::clog << std::endl;
 }
 
 void NoisyRouter::on_status_end(const events::StatusEndEvent &event) {
-    std::clog << "status.end:";
+    std::clog << "status.end";
+    std::clog << ":";
     std::clog << " downloaded_kb='" << event.downloaded_kb << "'";
     std::clog << " uploaded_kb='" << event.uploaded_kb << "'";
     std::clog << " failure='" << event.failure << "'";
@@ -1221,7 +1233,8 @@ void NoisyRouter::on_status_end(const events::StatusEndEvent &event) {
 }
 
 void NoisyRouter::on_status_geoip_lookup(const events::StatusGeoipLookupEvent &event) {
-    std::clog << "status.geoip_lookup:";
+    std::clog << "status.geoip_lookup";
+    std::clog << ":";
     std::clog << " probe_ip='" << event.probe_ip << "'";
     std::clog << " probe_asn='" << event.probe_asn << "'";
     std::clog << " probe_cc='" << event.probe_cc << "'";
@@ -1230,63 +1243,71 @@ void NoisyRouter::on_status_geoip_lookup(const events::StatusGeoipLookupEvent &e
 }
 
 void NoisyRouter::on_status_progress(const events::StatusProgressEvent &event) {
-    std::clog << "status.progress:";
+    std::clog << "status.progress";
+    std::clog << ":";
     std::clog << " percentage='" << event.percentage << "'";
     std::clog << " message='" << event.message << "'";
     std::clog << std::endl;
 }
 
 void NoisyRouter::on_status_queued(const events::StatusQueuedEvent &event) {
-    std::clog << "status.queued:";
+    std::clog << "status.queued";
     (void)event; /* No event attributes */
     std::clog << std::endl;
 }
 
 void NoisyRouter::on_status_measurement_start(const events::StatusMeasurementStartEvent &event) {
-    std::clog << "status.measurement_start:";
+    std::clog << "status.measurement_start";
+    std::clog << ":";
     std::clog << " idx='" << event.idx << "'";
     std::clog << " input='" << event.input << "'";
     std::clog << std::endl;
 }
 
 void NoisyRouter::on_status_measurement_submission(const events::StatusMeasurementSubmissionEvent &event) {
-    std::clog << "status.measurement_submission:";
+    std::clog << "status.measurement_submission";
+    std::clog << ":";
     std::clog << " idx='" << event.idx << "'";
     std::clog << std::endl;
 }
 
 void NoisyRouter::on_status_measurement_done(const events::StatusMeasurementDoneEvent &event) {
-    std::clog << "status.measurement_done:";
+    std::clog << "status.measurement_done";
+    std::clog << ":";
     std::clog << " idx='" << event.idx << "'";
     std::clog << std::endl;
 }
 
 void NoisyRouter::on_status_report_close(const events::StatusReportCloseEvent &event) {
-    std::clog << "status.report_close:";
+    std::clog << "status.report_close";
+    std::clog << ":";
     std::clog << " report_id='" << event.report_id << "'";
     std::clog << std::endl;
 }
 
 void NoisyRouter::on_status_report_create(const events::StatusReportCreateEvent &event) {
-    std::clog << "status.report_create:";
+    std::clog << "status.report_create";
+    std::clog << ":";
     std::clog << " report_id='" << event.report_id << "'";
     std::clog << std::endl;
 }
 
 void NoisyRouter::on_status_resolver_lookup(const events::StatusResolverLookupEvent &event) {
-    std::clog << "status.resolver_lookup:";
+    std::clog << "status.resolver_lookup";
+    std::clog << ":";
     std::clog << " ip_address='" << event.ip_address << "'";
     std::clog << std::endl;
 }
 
 void NoisyRouter::on_status_started(const events::StatusStartedEvent &event) {
-    std::clog << "status.started:";
+    std::clog << "status.started";
     (void)event; /* No event attributes */
     std::clog << std::endl;
 }
 
 void NoisyRouter::on_status_update_performance(const events::StatusUpdatePerformanceEvent &event) {
-    std::clog << "status.update.performance:";
+    std::clog << "status.update.performance";
+    std::clog << ":";
     std::clog << " direction='" << event.direction << "'";
     std::clog << " elapsed='" << event.elapsed << "'";
     std::clog << " num_streams='" << event.num_streams << "'";
@@ -1295,14 +1316,15 @@ void NoisyRouter::on_status_update_performance(const events::StatusUpdatePerform
 }
 
 void NoisyRouter::on_status_update_websites(const events::StatusUpdateWebsitesEvent &event) {
-    std::clog << "status.update.websites:";
+    std::clog << "status.update.websites";
+    std::clog << ":";
     std::clog << " url='" << event.url << "'";
     std::clog << " status='" << event.status << "'";
     std::clog << std::endl;
 }
 
 void NoisyRouter::on_task_terminated(const events::TaskTerminatedEvent &event) {
-    std::clog << "task_terminated:";
+    std::clog << "task_terminated";
     (void)event; /* No event attributes */
     std::clog << std::endl;
 }
@@ -1458,7 +1480,7 @@ void Nettest::route_next_event(routers::Router *router) noexcept {
     }
     if (ev.at("key") == events::FailureAsnLookupEvent::key) {
         events::FailureAsnLookupEvent event;
-        if (ev.count("failure") <= 0 || !ev.at("failure").is_string()) {
+        if (ev.at("value").count("failure") <= 0 || !ev.at("value").at("failure").is_string()) {
             // TODO(bassosimone): route this error.
             interrupt();
             return;
@@ -1469,7 +1491,7 @@ void Nettest::route_next_event(routers::Router *router) noexcept {
     }
     if (ev.at("key") == events::FailureCcLookupEvent::key) {
         events::FailureCcLookupEvent event;
-        if (ev.count("failure") <= 0 || !ev.at("failure").is_string()) {
+        if (ev.at("value").count("failure") <= 0 || !ev.at("value").at("failure").is_string()) {
             // TODO(bassosimone): route this error.
             interrupt();
             return;
@@ -1480,7 +1502,7 @@ void Nettest::route_next_event(routers::Router *router) noexcept {
     }
     if (ev.at("key") == events::FailureIpLookupEvent::key) {
         events::FailureIpLookupEvent event;
-        if (ev.count("failure") <= 0 || !ev.at("failure").is_string()) {
+        if (ev.at("value").count("failure") <= 0 || !ev.at("value").at("failure").is_string()) {
             // TODO(bassosimone): route this error.
             interrupt();
             return;
@@ -1491,7 +1513,7 @@ void Nettest::route_next_event(routers::Router *router) noexcept {
     }
     if (ev.at("key") == events::FailureMeasurementEvent::key) {
         events::FailureMeasurementEvent event;
-        if (ev.count("failure") <= 0 || !ev.at("failure").is_string()) {
+        if (ev.at("value").count("failure") <= 0 || !ev.at("value").at("failure").is_string()) {
             // TODO(bassosimone): route this error.
             interrupt();
             return;
@@ -1502,19 +1524,19 @@ void Nettest::route_next_event(routers::Router *router) noexcept {
     }
     if (ev.at("key") == events::FailureMeasurementSubmissionEvent::key) {
         events::FailureMeasurementSubmissionEvent event;
-        if (ev.count("failure") <= 0 || !ev.at("failure").is_string()) {
+        if (ev.at("value").count("failure") <= 0 || !ev.at("value").at("failure").is_string()) {
             // TODO(bassosimone): route this error.
             interrupt();
             return;
         }
         event.failure = ev.at("value").at("failure");
-        if (ev.count("idx") <= 0 || !ev.at("idx").is_number_integer()) {
+        if (ev.at("value").count("idx") <= 0 || !ev.at("value").at("idx").is_number_integer()) {
             // TODO(bassosimone): route this error.
             interrupt();
             return;
         }
         event.idx = ev.at("value").at("idx");
-        if (ev.count("json_str") <= 0 || !ev.at("json_str").is_string()) {
+        if (ev.at("value").count("json_str") <= 0 || !ev.at("value").at("json_str").is_string()) {
             // TODO(bassosimone): route this error.
             interrupt();
             return;
@@ -1525,7 +1547,7 @@ void Nettest::route_next_event(routers::Router *router) noexcept {
     }
     if (ev.at("key") == events::FailureReportCreateEvent::key) {
         events::FailureReportCreateEvent event;
-        if (ev.count("failure") <= 0 || !ev.at("failure").is_string()) {
+        if (ev.at("value").count("failure") <= 0 || !ev.at("value").at("failure").is_string()) {
             // TODO(bassosimone): route this error.
             interrupt();
             return;
@@ -1536,7 +1558,7 @@ void Nettest::route_next_event(routers::Router *router) noexcept {
     }
     if (ev.at("key") == events::FailureReportCloseEvent::key) {
         events::FailureReportCloseEvent event;
-        if (ev.count("failure") <= 0 || !ev.at("failure").is_string()) {
+        if (ev.at("value").count("failure") <= 0 || !ev.at("value").at("failure").is_string()) {
             // TODO(bassosimone): route this error.
             interrupt();
             return;
@@ -1547,7 +1569,7 @@ void Nettest::route_next_event(routers::Router *router) noexcept {
     }
     if (ev.at("key") == events::FailureResolverLookupEvent::key) {
         events::FailureResolverLookupEvent event;
-        if (ev.count("failure") <= 0 || !ev.at("failure").is_string()) {
+        if (ev.at("value").count("failure") <= 0 || !ev.at("value").at("failure").is_string()) {
             // TODO(bassosimone): route this error.
             interrupt();
             return;
@@ -1558,7 +1580,7 @@ void Nettest::route_next_event(routers::Router *router) noexcept {
     }
     if (ev.at("key") == events::FailureStartupEvent::key) {
         events::FailureStartupEvent event;
-        if (ev.count("failure") <= 0 || !ev.at("failure").is_string()) {
+        if (ev.at("value").count("failure") <= 0 || !ev.at("value").at("failure").is_string()) {
             // TODO(bassosimone): route this error.
             interrupt();
             return;
@@ -1569,13 +1591,13 @@ void Nettest::route_next_event(routers::Router *router) noexcept {
     }
     if (ev.at("key") == events::LogEvent::key) {
         events::LogEvent event;
-        if (ev.count("log_level") <= 0 || !ev.at("log_level").is_string()) {
+        if (ev.at("value").count("log_level") <= 0 || !ev.at("value").at("log_level").is_string()) {
             // TODO(bassosimone): route this error.
             interrupt();
             return;
         }
         event.log_level = ev.at("value").at("log_level");
-        if (ev.count("message") <= 0 || !ev.at("message").is_string()) {
+        if (ev.at("value").count("message") <= 0 || !ev.at("value").at("message").is_string()) {
             // TODO(bassosimone): route this error.
             interrupt();
             return;
@@ -1586,13 +1608,13 @@ void Nettest::route_next_event(routers::Router *router) noexcept {
     }
     if (ev.at("key") == events::MeasurementEvent::key) {
         events::MeasurementEvent event;
-        if (ev.count("idx") <= 0 || !ev.at("idx").is_number_integer()) {
+        if (ev.at("value").count("idx") <= 0 || !ev.at("value").at("idx").is_number_integer()) {
             // TODO(bassosimone): route this error.
             interrupt();
             return;
         }
         event.idx = ev.at("value").at("idx");
-        if (ev.count("json_str") <= 0 || !ev.at("json_str").is_string()) {
+        if (ev.at("value").count("json_str") <= 0 || !ev.at("value").at("json_str").is_string()) {
             // TODO(bassosimone): route this error.
             interrupt();
             return;
@@ -1603,19 +1625,19 @@ void Nettest::route_next_event(routers::Router *router) noexcept {
     }
     if (ev.at("key") == events::StatusEndEvent::key) {
         events::StatusEndEvent event;
-        if (ev.count("downloaded_kb") <= 0 || !ev.at("downloaded_kb").is_number_float()) {
+        if (ev.at("value").count("downloaded_kb") <= 0 || !ev.at("value").at("downloaded_kb").is_number_float()) {
             // TODO(bassosimone): route this error.
             interrupt();
             return;
         }
         event.downloaded_kb = ev.at("value").at("downloaded_kb");
-        if (ev.count("uploaded_kb") <= 0 || !ev.at("uploaded_kb").is_number_float()) {
+        if (ev.at("value").count("uploaded_kb") <= 0 || !ev.at("value").at("uploaded_kb").is_number_float()) {
             // TODO(bassosimone): route this error.
             interrupt();
             return;
         }
         event.uploaded_kb = ev.at("value").at("uploaded_kb");
-        if (ev.count("failure") <= 0 || !ev.at("failure").is_string()) {
+        if (ev.at("value").count("failure") <= 0 || !ev.at("value").at("failure").is_string()) {
             // TODO(bassosimone): route this error.
             interrupt();
             return;
@@ -1626,25 +1648,25 @@ void Nettest::route_next_event(routers::Router *router) noexcept {
     }
     if (ev.at("key") == events::StatusGeoipLookupEvent::key) {
         events::StatusGeoipLookupEvent event;
-        if (ev.count("probe_ip") <= 0 || !ev.at("probe_ip").is_string()) {
+        if (ev.at("value").count("probe_ip") <= 0 || !ev.at("value").at("probe_ip").is_string()) {
             // TODO(bassosimone): route this error.
             interrupt();
             return;
         }
         event.probe_ip = ev.at("value").at("probe_ip");
-        if (ev.count("probe_asn") <= 0 || !ev.at("probe_asn").is_string()) {
+        if (ev.at("value").count("probe_asn") <= 0 || !ev.at("value").at("probe_asn").is_string()) {
             // TODO(bassosimone): route this error.
             interrupt();
             return;
         }
         event.probe_asn = ev.at("value").at("probe_asn");
-        if (ev.count("probe_cc") <= 0 || !ev.at("probe_cc").is_string()) {
+        if (ev.at("value").count("probe_cc") <= 0 || !ev.at("value").at("probe_cc").is_string()) {
             // TODO(bassosimone): route this error.
             interrupt();
             return;
         }
         event.probe_cc = ev.at("value").at("probe_cc");
-        if (ev.count("probe_network_name") <= 0 || !ev.at("probe_network_name").is_string()) {
+        if (ev.at("value").count("probe_network_name") <= 0 || !ev.at("value").at("probe_network_name").is_string()) {
             // TODO(bassosimone): route this error.
             interrupt();
             return;
@@ -1655,13 +1677,13 @@ void Nettest::route_next_event(routers::Router *router) noexcept {
     }
     if (ev.at("key") == events::StatusProgressEvent::key) {
         events::StatusProgressEvent event;
-        if (ev.count("percentage") <= 0 || !ev.at("percentage").is_number_float()) {
+        if (ev.at("value").count("percentage") <= 0 || !ev.at("value").at("percentage").is_number_float()) {
             // TODO(bassosimone): route this error.
             interrupt();
             return;
         }
         event.percentage = ev.at("value").at("percentage");
-        if (ev.count("message") <= 0 || !ev.at("message").is_string()) {
+        if (ev.at("value").count("message") <= 0 || !ev.at("value").at("message").is_string()) {
             // TODO(bassosimone): route this error.
             interrupt();
             return;
@@ -1678,13 +1700,13 @@ void Nettest::route_next_event(routers::Router *router) noexcept {
     }
     if (ev.at("key") == events::StatusMeasurementStartEvent::key) {
         events::StatusMeasurementStartEvent event;
-        if (ev.count("idx") <= 0 || !ev.at("idx").is_number_integer()) {
+        if (ev.at("value").count("idx") <= 0 || !ev.at("value").at("idx").is_number_integer()) {
             // TODO(bassosimone): route this error.
             interrupt();
             return;
         }
         event.idx = ev.at("value").at("idx");
-        if (ev.count("input") <= 0 || !ev.at("input").is_string()) {
+        if (ev.at("value").count("input") <= 0 || !ev.at("value").at("input").is_string()) {
             // TODO(bassosimone): route this error.
             interrupt();
             return;
@@ -1695,7 +1717,7 @@ void Nettest::route_next_event(routers::Router *router) noexcept {
     }
     if (ev.at("key") == events::StatusMeasurementSubmissionEvent::key) {
         events::StatusMeasurementSubmissionEvent event;
-        if (ev.count("idx") <= 0 || !ev.at("idx").is_number_integer()) {
+        if (ev.at("value").count("idx") <= 0 || !ev.at("value").at("idx").is_number_integer()) {
             // TODO(bassosimone): route this error.
             interrupt();
             return;
@@ -1706,7 +1728,7 @@ void Nettest::route_next_event(routers::Router *router) noexcept {
     }
     if (ev.at("key") == events::StatusMeasurementDoneEvent::key) {
         events::StatusMeasurementDoneEvent event;
-        if (ev.count("idx") <= 0 || !ev.at("idx").is_number_integer()) {
+        if (ev.at("value").count("idx") <= 0 || !ev.at("value").at("idx").is_number_integer()) {
             // TODO(bassosimone): route this error.
             interrupt();
             return;
@@ -1717,7 +1739,7 @@ void Nettest::route_next_event(routers::Router *router) noexcept {
     }
     if (ev.at("key") == events::StatusReportCloseEvent::key) {
         events::StatusReportCloseEvent event;
-        if (ev.count("report_id") <= 0 || !ev.at("report_id").is_string()) {
+        if (ev.at("value").count("report_id") <= 0 || !ev.at("value").at("report_id").is_string()) {
             // TODO(bassosimone): route this error.
             interrupt();
             return;
@@ -1728,7 +1750,7 @@ void Nettest::route_next_event(routers::Router *router) noexcept {
     }
     if (ev.at("key") == events::StatusReportCreateEvent::key) {
         events::StatusReportCreateEvent event;
-        if (ev.count("report_id") <= 0 || !ev.at("report_id").is_string()) {
+        if (ev.at("value").count("report_id") <= 0 || !ev.at("value").at("report_id").is_string()) {
             // TODO(bassosimone): route this error.
             interrupt();
             return;
@@ -1739,7 +1761,7 @@ void Nettest::route_next_event(routers::Router *router) noexcept {
     }
     if (ev.at("key") == events::StatusResolverLookupEvent::key) {
         events::StatusResolverLookupEvent event;
-        if (ev.count("ip_address") <= 0 || !ev.at("ip_address").is_string()) {
+        if (ev.at("value").count("ip_address") <= 0 || !ev.at("value").at("ip_address").is_string()) {
             // TODO(bassosimone): route this error.
             interrupt();
             return;
@@ -1756,25 +1778,25 @@ void Nettest::route_next_event(routers::Router *router) noexcept {
     }
     if (ev.at("key") == events::StatusUpdatePerformanceEvent::key) {
         events::StatusUpdatePerformanceEvent event;
-        if (ev.count("direction") <= 0 || !ev.at("direction").is_string()) {
+        if (ev.at("value").count("direction") <= 0 || !ev.at("value").at("direction").is_string()) {
             // TODO(bassosimone): route this error.
             interrupt();
             return;
         }
         event.direction = ev.at("value").at("direction");
-        if (ev.count("elapsed") <= 0 || !ev.at("elapsed").is_number_float()) {
+        if (ev.at("value").count("elapsed") <= 0 || !ev.at("value").at("elapsed").is_number_float()) {
             // TODO(bassosimone): route this error.
             interrupt();
             return;
         }
         event.elapsed = ev.at("value").at("elapsed");
-        if (ev.count("num_streams") <= 0 || !ev.at("num_streams").is_number_integer()) {
+        if (ev.at("value").count("num_streams") <= 0 || !ev.at("value").at("num_streams").is_number_integer()) {
             // TODO(bassosimone): route this error.
             interrupt();
             return;
         }
         event.num_streams = ev.at("value").at("num_streams");
-        if (ev.count("speed_kbps") <= 0 || !ev.at("speed_kbps").is_number_float()) {
+        if (ev.at("value").count("speed_kbps") <= 0 || !ev.at("value").at("speed_kbps").is_number_float()) {
             // TODO(bassosimone): route this error.
             interrupt();
             return;
@@ -1785,13 +1807,13 @@ void Nettest::route_next_event(routers::Router *router) noexcept {
     }
     if (ev.at("key") == events::StatusUpdateWebsitesEvent::key) {
         events::StatusUpdateWebsitesEvent event;
-        if (ev.count("url") <= 0 || !ev.at("url").is_string()) {
+        if (ev.at("value").count("url") <= 0 || !ev.at("value").at("url").is_string()) {
             // TODO(bassosimone): route this error.
             interrupt();
             return;
         }
         event.url = ev.at("value").at("url");
-        if (ev.count("status") <= 0 || !ev.at("status").is_string()) {
+        if (ev.at("value").count("status") <= 0 || !ev.at("value").at("status").is_string()) {
             // TODO(bassosimone): route this error.
             interrupt();
             return;

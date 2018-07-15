@@ -331,8 +331,9 @@ namespace routers {
 Router::~Router() noexcept {}
 
 {% for event in events %}void NoisyRouter::on_{{ event.key | replace(".", "_") }}(const events::{{ event.cxx_class_name }}Event &event) {
-    std::clog << "{{ event.key }}:";
-    {% if event.attributes %}{% for attribute in event.attributes %}std::clog << " {{ attribute.key }}='" << event.{{ attribute.key }} << "'";{{ "\n    " if not loop.last }}{% endfor %}{% else %}(void)event; /* No event attributes */{% endif %}
+    std::clog << "{{ event.key }}";
+    {% if event.attributes %}std::clog << ":";
+    {% for attribute in event.attributes %}std::clog << " {{ attribute.key }}='" << event.{{ attribute.key }} << "'";{{ "\n    " if not loop.last }}{% endfor %}{% else %}(void)event; /* No event attributes */{% endif %}
     std::clog << std::endl;
 }{{ "\n\n" if not loop.last }}{% endfor %}
 
@@ -391,7 +392,7 @@ void Nettest::route_next_event(routers::Router *router) noexcept {
     }
     {% for event in events %}if (ev.at("key") == events::{{ event.cxx_class_name }}Event::key) {
         events::{{ event.cxx_class_name}}Event event;
-        {% if event.attributes %}{% for attribute in event.attributes %}if (ev.count("{{ attribute.key }}") <= 0 || !ev.at("{{ attribute.key }}").is_{{ attribute.json_type }}()) {
+        {% if event.attributes %}{% for attribute in event.attributes %}if (ev.at("value").count("{{ attribute.key }}") <= 0 || !ev.at("value").at("{{ attribute.key }}").is_{{ attribute.json_type }}()) {
             // TODO(bassosimone): route this error.
             interrupt();
             return;
