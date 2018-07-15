@@ -32,8 +32,8 @@
 /// to setup common options among different tests.
 ///
 /// ```
-/// extern void set_more_common_settings(mk::nettest::CommonSettings *);
-/// mk::nettest::WhatsappSettings settings;
+/// extern void set_more_common_settings(mk::nettest::settings::CommonSettings *);
+/// mk::nettest::settings::WhatsappSettings settings;
 /// settings.all_endpoints = true;
 /// settings.log_level = settings.log_level_info;
 /// set_more_common_settings(&settings);
@@ -46,7 +46,7 @@
 /// instantiate it either using `std::make_unique` or `std::make_shared`.
 ///
 /// ```
-/// Nettest nettest;
+/// mk::nettest::Nettest nettest;
 /// ```
 ///
 /// ### 3. Subclass Router
@@ -56,11 +56,11 @@
 /// behavior of the router is to ignore all events.
 ///
 /// ```
-/// class MyRouter : public mk::nettest::Router {
+/// class MyRouter : public mk::nettest::routers::Router {
 ///  public:
-///   using mk::nettest::Router::Router;
+///   using mk::nettest::routers::Router::Router;
 ///
-///   void on_log(const mk::nettest::LogEvent &event) override {
+///   void on_log(const mk::nettest::event::LogEvent &event) override {
 ///     // Your event handling code here. Remember that this is called
 ///     // in the context of the FFI API's background thread.
 ///     //
@@ -672,6 +672,9 @@ class WhatsappSettings : public CommonSettings {
 
 } // namespace settings
 
+// Contains the routers
+namespace routers {
+
 /// Routes nettest events to virtual methods.
 class Router {
   public:
@@ -756,6 +759,89 @@ class Router {
     virtual ~Router() noexcept;
 };
 
+/// Router that logs everything on std::clog.
+class NoisyRouter : public Router {
+  public:
+    /// Logs the "failure.asn_lookup" event on std::clog.
+    void on_failure_asn_lookup(const events::FailureAsnLookupEvent &event) override;
+
+    /// Logs the "failure.cc_lookup" event on std::clog.
+    void on_failure_cc_lookup(const events::FailureCcLookupEvent &event) override;
+
+    /// Logs the "failure.ip_lookup" event on std::clog.
+    void on_failure_ip_lookup(const events::FailureIpLookupEvent &event) override;
+
+    /// Logs the "failure.measurement" event on std::clog.
+    void on_failure_measurement(const events::FailureMeasurementEvent &event) override;
+
+    /// Logs the "failure.measurement_submission" event on std::clog.
+    void on_failure_measurement_submission(const events::FailureMeasurementSubmissionEvent &event) override;
+
+    /// Logs the "failure.report_create" event on std::clog.
+    void on_failure_report_create(const events::FailureReportCreateEvent &event) override;
+
+    /// Logs the "failure.report_close" event on std::clog.
+    void on_failure_report_close(const events::FailureReportCloseEvent &event) override;
+
+    /// Logs the "failure.resolver_lookup" event on std::clog.
+    void on_failure_resolver_lookup(const events::FailureResolverLookupEvent &event) override;
+
+    /// Logs the "failure.startup" event on std::clog.
+    void on_failure_startup(const events::FailureStartupEvent &event) override;
+
+    /// Logs the "log" event on std::clog.
+    void on_log(const events::LogEvent &event) override;
+
+    /// Logs the "measurement" event on std::clog.
+    void on_measurement(const events::MeasurementEvent &event) override;
+
+    /// Logs the "status.end" event on std::clog.
+    void on_status_end(const events::StatusEndEvent &event) override;
+
+    /// Logs the "status.geoip_lookup" event on std::clog.
+    void on_status_geoip_lookup(const events::StatusGeoipLookupEvent &event) override;
+
+    /// Logs the "status.progress" event on std::clog.
+    void on_status_progress(const events::StatusProgressEvent &event) override;
+
+    /// Logs the "status.queued" event on std::clog.
+    void on_status_queued(const events::StatusQueuedEvent &event) override;
+
+    /// Logs the "status.measurement_start" event on std::clog.
+    void on_status_measurement_start(const events::StatusMeasurementStartEvent &event) override;
+
+    /// Logs the "status.measurement_submission" event on std::clog.
+    void on_status_measurement_submission(const events::StatusMeasurementSubmissionEvent &event) override;
+
+    /// Logs the "status.measurement_done" event on std::clog.
+    void on_status_measurement_done(const events::StatusMeasurementDoneEvent &event) override;
+
+    /// Logs the "status.report_close" event on std::clog.
+    void on_status_report_close(const events::StatusReportCloseEvent &event) override;
+
+    /// Logs the "status.report_create" event on std::clog.
+    void on_status_report_create(const events::StatusReportCreateEvent &event) override;
+
+    /// Logs the "status.resolver_lookup" event on std::clog.
+    void on_status_resolver_lookup(const events::StatusResolverLookupEvent &event) override;
+
+    /// Logs the "status.started" event on std::clog.
+    void on_status_started(const events::StatusStartedEvent &event) override;
+
+    /// Logs the "status.update.performance" event on std::clog.
+    void on_status_update_performance(const events::StatusUpdatePerformanceEvent &event) override;
+
+    /// Logs the "status.update.websites" event on std::clog.
+    void on_status_update_websites(const events::StatusUpdateWebsitesEvent &event) override;
+
+    /// Logs the "task_terminated" event on std::clog.
+    void on_task_terminated(const events::TaskTerminatedEvent &event) override;
+
+    ~NoisyRouter() noexcept override;
+};
+
+} // namespace routers
+
 /// Manages the lifecycle of a nettest. This API mirrors as closely as
 /// possible to FFI API provided by <measurement_kit/ffi.h>.
 class Nettest {
@@ -794,7 +880,7 @@ class Nettest {
     /// serializable because there was a string that was not valid UTF-8, or
     /// you already used this class to start a nettest. In both cases, log
     /// messages will be routed, so you will know what happened.
-    bool start_captive_portal(settings::CaptivePortalSettings settings, Router *router) noexcept;
+    bool start_captive_portal(settings::CaptivePortalSettings settings, routers::Router *router) noexcept;
 
     /// Starts a "Dash" nettest.
     /// \param settings contains the settings configuring this nettest.
@@ -805,7 +891,7 @@ class Nettest {
     /// serializable because there was a string that was not valid UTF-8, or
     /// you already used this class to start a nettest. In both cases, log
     /// messages will be routed, so you will know what happened.
-    bool start_dash(settings::DashSettings settings, Router *router) noexcept;
+    bool start_dash(settings::DashSettings settings, routers::Router *router) noexcept;
 
     /// Starts a "DnsInjection" nettest.
     /// \param settings contains the settings configuring this nettest.
@@ -816,7 +902,7 @@ class Nettest {
     /// serializable because there was a string that was not valid UTF-8, or
     /// you already used this class to start a nettest. In both cases, log
     /// messages will be routed, so you will know what happened.
-    bool start_dns_injection(settings::DnsInjectionSettings settings, Router *router) noexcept;
+    bool start_dns_injection(settings::DnsInjectionSettings settings, routers::Router *router) noexcept;
 
     /// Starts a "FacebookMessenger" nettest.
     /// \param settings contains the settings configuring this nettest.
@@ -827,7 +913,7 @@ class Nettest {
     /// serializable because there was a string that was not valid UTF-8, or
     /// you already used this class to start a nettest. In both cases, log
     /// messages will be routed, so you will know what happened.
-    bool start_facebook_messenger(settings::FacebookMessengerSettings settings, Router *router) noexcept;
+    bool start_facebook_messenger(settings::FacebookMessengerSettings settings, routers::Router *router) noexcept;
 
     /// Starts a "HttpHeaderFieldManipulation" nettest.
     /// \param settings contains the settings configuring this nettest.
@@ -838,7 +924,7 @@ class Nettest {
     /// serializable because there was a string that was not valid UTF-8, or
     /// you already used this class to start a nettest. In both cases, log
     /// messages will be routed, so you will know what happened.
-    bool start_http_header_field_manipulation(settings::HttpHeaderFieldManipulationSettings settings, Router *router) noexcept;
+    bool start_http_header_field_manipulation(settings::HttpHeaderFieldManipulationSettings settings, routers::Router *router) noexcept;
 
     /// Starts a "HttpInvalidRequestLine" nettest.
     /// \param settings contains the settings configuring this nettest.
@@ -849,7 +935,7 @@ class Nettest {
     /// serializable because there was a string that was not valid UTF-8, or
     /// you already used this class to start a nettest. In both cases, log
     /// messages will be routed, so you will know what happened.
-    bool start_http_invalid_request_line(settings::HttpInvalidRequestLineSettings settings, Router *router) noexcept;
+    bool start_http_invalid_request_line(settings::HttpInvalidRequestLineSettings settings, routers::Router *router) noexcept;
 
     /// Starts a "MeekFrontedRequests" nettest.
     /// \param settings contains the settings configuring this nettest.
@@ -860,7 +946,7 @@ class Nettest {
     /// serializable because there was a string that was not valid UTF-8, or
     /// you already used this class to start a nettest. In both cases, log
     /// messages will be routed, so you will know what happened.
-    bool start_meek_fronted_requests(settings::MeekFrontedRequestsSettings settings, Router *router) noexcept;
+    bool start_meek_fronted_requests(settings::MeekFrontedRequestsSettings settings, routers::Router *router) noexcept;
 
     /// Starts a "MultiNdt" nettest.
     /// \param settings contains the settings configuring this nettest.
@@ -871,7 +957,7 @@ class Nettest {
     /// serializable because there was a string that was not valid UTF-8, or
     /// you already used this class to start a nettest. In both cases, log
     /// messages will be routed, so you will know what happened.
-    bool start_multi_ndt(settings::MultiNdtSettings settings, Router *router) noexcept;
+    bool start_multi_ndt(settings::MultiNdtSettings settings, routers::Router *router) noexcept;
 
     /// Starts a "Ndt" nettest.
     /// \param settings contains the settings configuring this nettest.
@@ -882,7 +968,7 @@ class Nettest {
     /// serializable because there was a string that was not valid UTF-8, or
     /// you already used this class to start a nettest. In both cases, log
     /// messages will be routed, so you will know what happened.
-    bool start_ndt(settings::NdtSettings settings, Router *router) noexcept;
+    bool start_ndt(settings::NdtSettings settings, routers::Router *router) noexcept;
 
     /// Starts a "TcpConnect" nettest.
     /// \param settings contains the settings configuring this nettest.
@@ -893,7 +979,7 @@ class Nettest {
     /// serializable because there was a string that was not valid UTF-8, or
     /// you already used this class to start a nettest. In both cases, log
     /// messages will be routed, so you will know what happened.
-    bool start_tcp_connect(settings::TcpConnectSettings settings, Router *router) noexcept;
+    bool start_tcp_connect(settings::TcpConnectSettings settings, routers::Router *router) noexcept;
 
     /// Starts a "Telegram" nettest.
     /// \param settings contains the settings configuring this nettest.
@@ -904,7 +990,7 @@ class Nettest {
     /// serializable because there was a string that was not valid UTF-8, or
     /// you already used this class to start a nettest. In both cases, log
     /// messages will be routed, so you will know what happened.
-    bool start_telegram(settings::TelegramSettings settings, Router *router) noexcept;
+    bool start_telegram(settings::TelegramSettings settings, routers::Router *router) noexcept;
 
     /// Starts a "WebConnectivity" nettest.
     /// \param settings contains the settings configuring this nettest.
@@ -915,7 +1001,7 @@ class Nettest {
     /// serializable because there was a string that was not valid UTF-8, or
     /// you already used this class to start a nettest. In both cases, log
     /// messages will be routed, so you will know what happened.
-    bool start_web_connectivity(settings::WebConnectivitySettings settings, Router *router) noexcept;
+    bool start_web_connectivity(settings::WebConnectivitySettings settings, routers::Router *router) noexcept;
 
     /// Starts a "Whatsapp" nettest.
     /// \param settings contains the settings configuring this nettest.
@@ -926,7 +1012,7 @@ class Nettest {
     /// serializable because there was a string that was not valid UTF-8, or
     /// you already used this class to start a nettest. In both cases, log
     /// messages will be routed, so you will know what happened.
-    bool start_whatsapp(settings::WhatsappSettings settings, Router *router) noexcept;
+    bool start_whatsapp(settings::WhatsappSettings settings, routers::Router *router) noexcept;
 
     // Event processing methods
     // ````````````````````````
@@ -934,7 +1020,7 @@ class Nettest {
     /// Blocks until the next event occurs, then routes it.
     /// \param router Router to handle events. If the router is null, we'll
     /// use an internal dummy router.
-    void route_next_event(Router *router) noexcept;
+    void route_next_event(routers::Router *router) noexcept;
 
     /// Returns true if nettest is done, false otherwise.
     bool is_done() noexcept;
@@ -947,10 +1033,10 @@ class Nettest {
     // ```````````````
 
     // The default router used when no other router is available.
-    static Router *default_router() noexcept;
+    static routers::Router *default_router() noexcept;
 
     // Internal method called to start any nettest.
-    bool start_common(nlohmann::json, const settings::CommonSettings &, Router *router) noexcept;
+    bool start_common(nlohmann::json, const settings::CommonSettings &, routers::Router *router) noexcept;
 
     // Private definitions
     // ```````````````````
@@ -999,8 +1085,10 @@ class Nettest {
  */
 #if !defined MK_NETTEST_NO_INLINE_IMPL && !defined SWIG
 
-// Router
-// ------
+// Routers
+// -------
+
+namespace routers {
 
 void Router::on_failure_asn_lookup(const events::FailureAsnLookupEvent &) {}
 
@@ -1054,6 +1142,175 @@ void Router::on_task_terminated(const events::TaskTerminatedEvent &) {}
 
 Router::~Router() noexcept {}
 
+void NoisyRouter::on_failure_asn_lookup(const events::FailureAsnLookupEvent &event) {
+    std::clog << "failure.asn_lookup:";
+    std::clog << " failure='" << event.failure << "'";
+    std::clog << std::endl;
+}
+
+void NoisyRouter::on_failure_cc_lookup(const events::FailureCcLookupEvent &event) {
+    std::clog << "failure.cc_lookup:";
+    std::clog << " failure='" << event.failure << "'";
+    std::clog << std::endl;
+}
+
+void NoisyRouter::on_failure_ip_lookup(const events::FailureIpLookupEvent &event) {
+    std::clog << "failure.ip_lookup:";
+    std::clog << " failure='" << event.failure << "'";
+    std::clog << std::endl;
+}
+
+void NoisyRouter::on_failure_measurement(const events::FailureMeasurementEvent &event) {
+    std::clog << "failure.measurement:";
+    std::clog << " failure='" << event.failure << "'";
+    std::clog << std::endl;
+}
+
+void NoisyRouter::on_failure_measurement_submission(const events::FailureMeasurementSubmissionEvent &event) {
+    std::clog << "failure.measurement_submission:";
+    std::clog << " failure='" << event.failure << "'";
+    std::clog << " idx='" << event.idx << "'";
+    std::clog << " json_str='" << event.json_str << "'";
+    std::clog << std::endl;
+}
+
+void NoisyRouter::on_failure_report_create(const events::FailureReportCreateEvent &event) {
+    std::clog << "failure.report_create:";
+    std::clog << " failure='" << event.failure << "'";
+    std::clog << std::endl;
+}
+
+void NoisyRouter::on_failure_report_close(const events::FailureReportCloseEvent &event) {
+    std::clog << "failure.report_close:";
+    std::clog << " failure='" << event.failure << "'";
+    std::clog << std::endl;
+}
+
+void NoisyRouter::on_failure_resolver_lookup(const events::FailureResolverLookupEvent &event) {
+    std::clog << "failure.resolver_lookup:";
+    std::clog << " failure='" << event.failure << "'";
+    std::clog << std::endl;
+}
+
+void NoisyRouter::on_failure_startup(const events::FailureStartupEvent &event) {
+    std::clog << "failure.startup:";
+    std::clog << " failure='" << event.failure << "'";
+    std::clog << std::endl;
+}
+
+void NoisyRouter::on_log(const events::LogEvent &event) {
+    std::clog << "log:";
+    std::clog << " log_level='" << event.log_level << "'";
+    std::clog << " message='" << event.message << "'";
+    std::clog << std::endl;
+}
+
+void NoisyRouter::on_measurement(const events::MeasurementEvent &event) {
+    std::clog << "measurement:";
+    std::clog << " idx='" << event.idx << "'";
+    std::clog << " json_str='" << event.json_str << "'";
+    std::clog << std::endl;
+}
+
+void NoisyRouter::on_status_end(const events::StatusEndEvent &event) {
+    std::clog << "status.end:";
+    std::clog << " downloaded_kb='" << event.downloaded_kb << "'";
+    std::clog << " uploaded_kb='" << event.uploaded_kb << "'";
+    std::clog << " failure='" << event.failure << "'";
+    std::clog << std::endl;
+}
+
+void NoisyRouter::on_status_geoip_lookup(const events::StatusGeoipLookupEvent &event) {
+    std::clog << "status.geoip_lookup:";
+    std::clog << " probe_ip='" << event.probe_ip << "'";
+    std::clog << " probe_asn='" << event.probe_asn << "'";
+    std::clog << " probe_cc='" << event.probe_cc << "'";
+    std::clog << " probe_network_name='" << event.probe_network_name << "'";
+    std::clog << std::endl;
+}
+
+void NoisyRouter::on_status_progress(const events::StatusProgressEvent &event) {
+    std::clog << "status.progress:";
+    std::clog << " percentage='" << event.percentage << "'";
+    std::clog << " message='" << event.message << "'";
+    std::clog << std::endl;
+}
+
+void NoisyRouter::on_status_queued(const events::StatusQueuedEvent &event) {
+    std::clog << "status.queued:";
+    (void)event; /* No event attributes */
+    std::clog << std::endl;
+}
+
+void NoisyRouter::on_status_measurement_start(const events::StatusMeasurementStartEvent &event) {
+    std::clog << "status.measurement_start:";
+    std::clog << " idx='" << event.idx << "'";
+    std::clog << " input='" << event.input << "'";
+    std::clog << std::endl;
+}
+
+void NoisyRouter::on_status_measurement_submission(const events::StatusMeasurementSubmissionEvent &event) {
+    std::clog << "status.measurement_submission:";
+    std::clog << " idx='" << event.idx << "'";
+    std::clog << std::endl;
+}
+
+void NoisyRouter::on_status_measurement_done(const events::StatusMeasurementDoneEvent &event) {
+    std::clog << "status.measurement_done:";
+    std::clog << " idx='" << event.idx << "'";
+    std::clog << std::endl;
+}
+
+void NoisyRouter::on_status_report_close(const events::StatusReportCloseEvent &event) {
+    std::clog << "status.report_close:";
+    std::clog << " report_id='" << event.report_id << "'";
+    std::clog << std::endl;
+}
+
+void NoisyRouter::on_status_report_create(const events::StatusReportCreateEvent &event) {
+    std::clog << "status.report_create:";
+    std::clog << " report_id='" << event.report_id << "'";
+    std::clog << std::endl;
+}
+
+void NoisyRouter::on_status_resolver_lookup(const events::StatusResolverLookupEvent &event) {
+    std::clog << "status.resolver_lookup:";
+    std::clog << " ip_address='" << event.ip_address << "'";
+    std::clog << std::endl;
+}
+
+void NoisyRouter::on_status_started(const events::StatusStartedEvent &event) {
+    std::clog << "status.started:";
+    (void)event; /* No event attributes */
+    std::clog << std::endl;
+}
+
+void NoisyRouter::on_status_update_performance(const events::StatusUpdatePerformanceEvent &event) {
+    std::clog << "status.update.performance:";
+    std::clog << " direction='" << event.direction << "'";
+    std::clog << " elapsed='" << event.elapsed << "'";
+    std::clog << " num_streams='" << event.num_streams << "'";
+    std::clog << " speed_kbps='" << event.speed_kbps << "'";
+    std::clog << std::endl;
+}
+
+void NoisyRouter::on_status_update_websites(const events::StatusUpdateWebsitesEvent &event) {
+    std::clog << "status.update.websites:";
+    std::clog << " url='" << event.url << "'";
+    std::clog << " status='" << event.status << "'";
+    std::clog << std::endl;
+}
+
+void NoisyRouter::on_task_terminated(const events::TaskTerminatedEvent &event) {
+    std::clog << "task_terminated:";
+    (void)event; /* No event attributes */
+    std::clog << std::endl;
+}
+
+NoisyRouter::~NoisyRouter() noexcept {}
+
+} // namespace routers
+
 // Nettest
 // -------
 
@@ -1061,7 +1318,7 @@ Nettest::Nettest() noexcept {}
 
 Nettest::~Nettest() noexcept {}
 
-bool Nettest::start_captive_portal(settings::CaptivePortalSettings settings, Router *router) noexcept {
+bool Nettest::start_captive_portal(settings::CaptivePortalSettings settings, routers::Router *router) noexcept {
     router = (router) ? router : default_router();
     nlohmann::json doc;
     doc["name"] = "CaptivePortal";
@@ -1069,7 +1326,7 @@ bool Nettest::start_captive_portal(settings::CaptivePortalSettings settings, Rou
     return start_common(std::move(doc), settings, router);
 }
 
-bool Nettest::start_dash(settings::DashSettings settings, Router *router) noexcept {
+bool Nettest::start_dash(settings::DashSettings settings, routers::Router *router) noexcept {
     router = (router) ? router : default_router();
     nlohmann::json doc;
     doc["name"] = "Dash";
@@ -1077,7 +1334,7 @@ bool Nettest::start_dash(settings::DashSettings settings, Router *router) noexce
     return start_common(std::move(doc), settings, router);
 }
 
-bool Nettest::start_dns_injection(settings::DnsInjectionSettings settings, Router *router) noexcept {
+bool Nettest::start_dns_injection(settings::DnsInjectionSettings settings, routers::Router *router) noexcept {
     router = (router) ? router : default_router();
     nlohmann::json doc;
     doc["name"] = "DnsInjection";
@@ -1085,7 +1342,7 @@ bool Nettest::start_dns_injection(settings::DnsInjectionSettings settings, Route
     return start_common(std::move(doc), settings, router);
 }
 
-bool Nettest::start_facebook_messenger(settings::FacebookMessengerSettings settings, Router *router) noexcept {
+bool Nettest::start_facebook_messenger(settings::FacebookMessengerSettings settings, routers::Router *router) noexcept {
     router = (router) ? router : default_router();
     nlohmann::json doc;
     doc["name"] = "FacebookMessenger";
@@ -1093,7 +1350,7 @@ bool Nettest::start_facebook_messenger(settings::FacebookMessengerSettings setti
     return start_common(std::move(doc), settings, router);
 }
 
-bool Nettest::start_http_header_field_manipulation(settings::HttpHeaderFieldManipulationSettings settings, Router *router) noexcept {
+bool Nettest::start_http_header_field_manipulation(settings::HttpHeaderFieldManipulationSettings settings, routers::Router *router) noexcept {
     router = (router) ? router : default_router();
     nlohmann::json doc;
     doc["name"] = "HttpHeaderFieldManipulation";
@@ -1101,7 +1358,7 @@ bool Nettest::start_http_header_field_manipulation(settings::HttpHeaderFieldMani
     return start_common(std::move(doc), settings, router);
 }
 
-bool Nettest::start_http_invalid_request_line(settings::HttpInvalidRequestLineSettings settings, Router *router) noexcept {
+bool Nettest::start_http_invalid_request_line(settings::HttpInvalidRequestLineSettings settings, routers::Router *router) noexcept {
     router = (router) ? router : default_router();
     nlohmann::json doc;
     doc["name"] = "HttpInvalidRequestLine";
@@ -1109,7 +1366,7 @@ bool Nettest::start_http_invalid_request_line(settings::HttpInvalidRequestLineSe
     return start_common(std::move(doc), settings, router);
 }
 
-bool Nettest::start_meek_fronted_requests(settings::MeekFrontedRequestsSettings settings, Router *router) noexcept {
+bool Nettest::start_meek_fronted_requests(settings::MeekFrontedRequestsSettings settings, routers::Router *router) noexcept {
     router = (router) ? router : default_router();
     nlohmann::json doc;
     doc["name"] = "MeekFrontedRequests";
@@ -1117,7 +1374,7 @@ bool Nettest::start_meek_fronted_requests(settings::MeekFrontedRequestsSettings 
     return start_common(std::move(doc), settings, router);
 }
 
-bool Nettest::start_multi_ndt(settings::MultiNdtSettings settings, Router *router) noexcept {
+bool Nettest::start_multi_ndt(settings::MultiNdtSettings settings, routers::Router *router) noexcept {
     router = (router) ? router : default_router();
     nlohmann::json doc;
     doc["name"] = "MultiNdt";
@@ -1125,7 +1382,7 @@ bool Nettest::start_multi_ndt(settings::MultiNdtSettings settings, Router *route
     return start_common(std::move(doc), settings, router);
 }
 
-bool Nettest::start_ndt(settings::NdtSettings settings, Router *router) noexcept {
+bool Nettest::start_ndt(settings::NdtSettings settings, routers::Router *router) noexcept {
     router = (router) ? router : default_router();
     nlohmann::json doc;
     doc["name"] = "Ndt";
@@ -1133,7 +1390,7 @@ bool Nettest::start_ndt(settings::NdtSettings settings, Router *router) noexcept
     return start_common(std::move(doc), settings, router);
 }
 
-bool Nettest::start_tcp_connect(settings::TcpConnectSettings settings, Router *router) noexcept {
+bool Nettest::start_tcp_connect(settings::TcpConnectSettings settings, routers::Router *router) noexcept {
     router = (router) ? router : default_router();
     nlohmann::json doc;
     doc["name"] = "TcpConnect";
@@ -1141,7 +1398,7 @@ bool Nettest::start_tcp_connect(settings::TcpConnectSettings settings, Router *r
     return start_common(std::move(doc), settings, router);
 }
 
-bool Nettest::start_telegram(settings::TelegramSettings settings, Router *router) noexcept {
+bool Nettest::start_telegram(settings::TelegramSettings settings, routers::Router *router) noexcept {
     router = (router) ? router : default_router();
     nlohmann::json doc;
     doc["name"] = "Telegram";
@@ -1149,7 +1406,7 @@ bool Nettest::start_telegram(settings::TelegramSettings settings, Router *router
     return start_common(std::move(doc), settings, router);
 }
 
-bool Nettest::start_web_connectivity(settings::WebConnectivitySettings settings, Router *router) noexcept {
+bool Nettest::start_web_connectivity(settings::WebConnectivitySettings settings, routers::Router *router) noexcept {
     router = (router) ? router : default_router();
     nlohmann::json doc;
     doc["name"] = "WebConnectivity";
@@ -1157,7 +1414,7 @@ bool Nettest::start_web_connectivity(settings::WebConnectivitySettings settings,
     return start_common(std::move(doc), settings, router);
 }
 
-bool Nettest::start_whatsapp(settings::WhatsappSettings settings, Router *router) noexcept {
+bool Nettest::start_whatsapp(settings::WhatsappSettings settings, routers::Router *router) noexcept {
     router = (router) ? router : default_router();
     nlohmann::json doc;
     doc["name"] = "Whatsapp";
@@ -1165,7 +1422,7 @@ bool Nettest::start_whatsapp(settings::WhatsappSettings settings, Router *router
     return start_common(std::move(doc), settings, router);
 }
 
-void Nettest::route_next_event(Router *router) noexcept {
+void Nettest::route_next_event(routers::Router *router) noexcept {
     router = (router) ? router : default_router();
     UniqueEvent eventptr;
     nlohmann::json ev;
@@ -1566,12 +1823,12 @@ void Nettest::interrupt() noexcept {
     mk_task_interrupt(task_.get());
 }
 
-/* static */ Router *Nettest::default_router() noexcept {
-    static Router router;
+/* static */ routers::Router *Nettest::default_router() noexcept {
+    static routers::Router router;
     return &router;
 }
 
-bool Nettest::start_common(nlohmann::json doc, const settings::CommonSettings &cs, Router *router) noexcept {
+bool Nettest::start_common(nlohmann::json doc, const settings::CommonSettings &cs, routers::Router *router) noexcept {
     assert(router != nullptr);
 
     doc["annotations"] = cs.annotations;

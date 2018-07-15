@@ -32,8 +32,8 @@
 /// to setup common options among different tests.
 ///
 /// ```
-/// extern void set_more_common_settings(mk::nettest::CommonSettings *);
-/// mk::nettest::WhatsappSettings settings;
+/// extern void set_more_common_settings(mk::nettest::settings::CommonSettings *);
+/// mk::nettest::settings::WhatsappSettings settings;
 /// settings.all_endpoints = true;
 /// settings.log_level = settings.log_level_info;
 /// set_more_common_settings(&settings);
@@ -46,7 +46,7 @@
 /// instantiate it either using `std::make_unique` or `std::make_shared`.
 ///
 /// ```
-/// Nettest nettest;
+/// mk::nettest::Nettest nettest;
 /// ```
 ///
 /// ### 3. Subclass Router
@@ -56,11 +56,11 @@
 /// behavior of the router is to ignore all events.
 ///
 /// ```
-/// class MyRouter : public mk::nettest::Router {
+/// class MyRouter : public mk::nettest::routers::Router {
 ///  public:
-///   using mk::nettest::Router::Router;
+///   using mk::nettest::routers::Router::Router;
 ///
-///   void on_log(const mk::nettest::LogEvent &event) override {
+///   void on_log(const mk::nettest::event::LogEvent &event) override {
 ///     // Your event handling code here. Remember that this is called
 ///     // in the context of the FFI API's background thread.
 ///     //
@@ -184,6 +184,9 @@ class {{ nettest.name }}Settings : public CommonSettings {
 
 } // namespace settings
 
+// Contains the routers
+namespace routers {
+
 /// Routes nettest events to virtual methods.
 class Router {
   public:
@@ -195,6 +198,17 @@ class Router {
 
     virtual ~Router() noexcept;
 };
+
+/// Router that logs everything on std::clog.
+class NoisyRouter : public Router {
+  public:
+    {% for event in events %}/// Logs the "{{ event.key }}" event on std::clog.
+    void on_{{ event.key | replace(".", "_") }}(const events::{{ event.cxx_class_name }}Event &event) override;{{ "\n\n    " if not loop.last }}{% endfor %}
+
+    ~NoisyRouter() noexcept override;
+};
+
+} // namespace routers
 
 /// Manages the lifecycle of a nettest. This API mirrors as closely as
 /// possible to FFI API provided by <measurement_kit/ffi.h>.
@@ -234,7 +248,7 @@ class Nettest {
     /// serializable because there was a string that was not valid UTF-8, or
     /// you already used this class to start a nettest. In both cases, log
     /// messages will be routed, so you will know what happened.
-    bool start_{{ nettest.snake_case_name }}(settings::{{ nettest.name }}Settings settings, Router *router) noexcept;{{ "\n\n    " if not loop.last }}{% endfor %}
+    bool start_{{ nettest.snake_case_name }}(settings::{{ nettest.name }}Settings settings, routers::Router *router) noexcept;{{ "\n\n    " if not loop.last }}{% endfor %}
 
     // Event processing methods
     // ````````````````````````
@@ -242,7 +256,7 @@ class Nettest {
     /// Blocks until the next event occurs, then routes it.
     /// \param router Router to handle events. If the router is null, we'll
     /// use an internal dummy router.
-    void route_next_event(Router *router) noexcept;
+    void route_next_event(routers::Router *router) noexcept;
 
     /// Returns true if nettest is done, false otherwise.
     bool is_done() noexcept;
@@ -255,10 +269,10 @@ class Nettest {
     // ```````````````
 
     // The default router used when no other router is available.
-    static Router *default_router() noexcept;
+    static routers::Router *default_router() noexcept;
 
     // Internal method called to start any nettest.
-    bool start_common(nlohmann::json, const settings::CommonSettings &, Router *router) noexcept;
+    bool start_common(nlohmann::json, const settings::CommonSettings &, routers::Router *router) noexcept;
 
     // Private definitions
     // ```````````````````
@@ -307,12 +321,24 @@ class Nettest {
  */
 #if !defined MK_NETTEST_NO_INLINE_IMPL && !defined SWIG
 
-// Router
-// ------
+// Routers
+// -------
+
+namespace routers {
 
 {% for event in events %}void Router::on_{{ event.key | replace(".", "_") }}(const events::{{ event.cxx_class_name }}Event &) {}{{ "\n\n" if not loop.last }}{% endfor %}
 
 Router::~Router() noexcept {}
+
+{% for event in events %}void NoisyRouter::on_{{ event.key | replace(".", "_") }}(const events::{{ event.cxx_class_name }}Event &event) {
+    std::clog << "{{ event.key }}:";
+    {% if event.attributes %}{% for attribute in event.attributes %}std::clog << " {{ attribute.key }}='" << event.{{ attribute.key }} << "'";{{ "\n    " if not loop.last }}{% endfor %}{% else %}(void)event; /* No event attributes */{% endif %}
+    std::clog << std::endl;
+}{{ "\n\n" if not loop.last }}{% endfor %}
+
+NoisyRouter::~NoisyRouter() noexcept {}
+
+} // namespace routers
 
 // Nettest
 // -------
@@ -321,7 +347,7 @@ Nettest::Nettest() noexcept {}
 
 Nettest::~Nettest() noexcept {}
 
-{% for nettest in nettests %}bool Nettest::start_{{ nettest.snake_case_name }}(settings::{{ nettest.name }}Settings settings, Router *router) noexcept {
+{% for nettest in nettests %}bool Nettest::start_{{ nettest.snake_case_name }}(settings::{{ nettest.name }}Settings settings, routers::Router *router) noexcept {
     router = (router) ? router : default_router();
     nlohmann::json doc;
     doc["name"] = "{{ nettest.name }}";
@@ -329,7 +355,7 @@ Nettest::~Nettest() noexcept {}
     return start_common(std::move(doc), settings, router);
 }{{ "\n\n" if not loop.last }}{% endfor %}
 
-void Nettest::route_next_event(Router *router) noexcept {
+void Nettest::route_next_event(routers::Router *router) noexcept {
     router = (router) ? router : default_router();
     UniqueEvent eventptr;
     nlohmann::json ev;
@@ -391,12 +417,12 @@ void Nettest::interrupt() noexcept {
     mk_task_interrupt(task_.get());
 }
 
-/* static */ Router *Nettest::default_router() noexcept {
-    static Router router;
+/* static */ routers::Router *Nettest::default_router() noexcept {
+    static routers::Router router;
     return &router;
 }
 
-bool Nettest::start_common(nlohmann::json doc, const settings::CommonSettings &cs, Router *router) noexcept {
+bool Nettest::start_common(nlohmann::json doc, const settings::CommonSettings &cs, routers::Router *router) noexcept {
     assert(router != nullptr);
 
     {% for setting in settings if not setting.internal %}doc["{{ setting.key }}"] = {{ setting.cxx_cast_to_json }}cs.{{ setting.key }};{{ "\n    " if not loop.last }}{% endfor %}
