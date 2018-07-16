@@ -32,7 +32,7 @@
 /// to setup common options among different tests.
 ///
 /// ```
-/// extern void set_more_common_settings(mk::nettest::Settings *);
+/// extern void set_more_common_settings(mk::nettest::common::Settings *);
 /// mk::nettest::WhatsappSettings settings;
 /// settings.all_endpoints = true;
 /// settings.log_level = mk::nettest::log_level_info;
@@ -49,7 +49,7 @@
 ///  public:
 ///   using mk::nettest::WhatsappNettest::WhatsappNettest;
 ///
-///   void on_log(mk::nettest::LogEvent event) override {
+///   void on_log(mk::nettest::events::LogEvent event) override {
 ///     // Your event handling code here. Remember that this is called
 ///     // in the context of the FFI API's background thread.
 ///     //
