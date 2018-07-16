@@ -2,6 +2,7 @@
 
 #include "test/winsock.hpp"
 
+#define MK_NETTEST_VERBOSE_DEFAULT_HANDLERS  // print events in handlers
 #include <measurement_kit/nettest.hpp>
 
 #include <stdlib.h>
@@ -9,19 +10,15 @@
 #include <iostream>
 
 int main() {
-    mk::nettest::routers::NoisyRouter router;
-    mk::nettest::settings::WebConnectivitySettings settings;
+    mk::nettest::WebConnectivitySettings settings;
     settings.inputs = {
         "https://slashdot.org/",
         "http://www.microsoft.com"
     };
-    settings.log_level = mk::nettest::log_levels::info;
-    mk::nettest::Nettest nettest;
-    if (!nettest.start_web_connectivity(settings, &router)) {
-        std::clog << "ERROR: cannot start nettest" << std::endl;
+    settings.log_level = mk::nettest::log_level_info;
+    mk::nettest::WebConnectivityNettest nettest{std::move(settings)};
+    if (!nettest.run()) {
+        std::clog << "ERROR: running nettest failed" << std::endl;
         exit(1);
-    }
-    while (!nettest.is_done()) {
-        nettest.route_next_event(&router);
     }
 }

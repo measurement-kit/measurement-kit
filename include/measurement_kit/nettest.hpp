@@ -32,35 +32,24 @@
 /// to setup common options among different tests.
 ///
 /// ```
-/// extern void set_more_common_settings(mk::nettest::settings::CommonSettings *);
-/// mk::nettest::settings::WhatsappSettings settings;
+/// extern void set_more_common_settings(mk::nettest::Settings *);
+/// mk::nettest::WhatsappSettings settings;
 /// settings.all_endpoints = true;
-/// settings.log_level = mk::nettest::log_levels::info;
+/// settings.log_level = mk::nettest::log_level_info;
 /// set_more_common_settings(&settings);
 /// ```
 ///
-/// ### 2. Instatiate Nettest
+/// ### 2. Optional: subclass your nettest
 ///
-/// Create an instance of the Nettest class. This class is non copyable
-/// and non movable. If you want unique or shared ownership, you can
-/// instantiate it either using `std::make_unique` or `std::make_shared`.
-///
-/// ```
-/// mk::nettest::Nettest nettest;
-/// ```
-///
-/// ### 3. Subclass Router
-///
-/// Create a subclass of Router suitable for routing the events that
-/// the nettest will emit to overriden methods written by you. The default
-/// behavior of the router is to ignore all events.
+/// Create a subclass of the nettest you want to run, where you override
+/// all the events that you would like to handle.
 ///
 /// ```
-/// class MyRouter : public mk::nettest::routers::Router {
+/// class MyWhatsapp : public mk::nettest::WhatsappNettest {
 ///  public:
-///   using mk::nettest::routers::Router::Router;
+///   using mk::nettest::WhatsappNettest::WhatsappNettest;
 ///
-///   void on_log(const mk::nettest::event::LogEvent &event) override {
+///   void on_log(mk::nettest::LogEvent event) override {
 ///     // Your event handling code here. Remember that this is called
 ///     // in the context of the FFI API's background thread.
 ///     //
@@ -73,50 +62,33 @@
 /// }
 /// ```
 ///
-/// ### 4. Instantiate your router specialization
+/// ### 3. Instantiate the nettest
 ///
-/// Create an instance of your router that will be used by this nettest. You
-/// will later pass a pointer to this instance to methods emitting events.
-///
-/// ```
-/// MyRouter my_router;
-/// ```
-///
-/// ### 5. Start the Nettest
-///
-/// Start the nettest using the specific start method for the nettest
-/// that you want to run. After this nettest specific method is called,
-/// all the other methods are nettest-agnostic, so you can have a lot
-/// of common nettest-processing code. Make sure you check the value
-/// returned by the nettest-specific start method. In case of error log
-/// messages will be emitted through the router.
+/// Create an instance of the nettest (or of a derived class) passing to
+/// the constructor the settings you created in step 1.
 ///
 /// ```
-/// if (!nettest.start_whatsapp(&my_router)) {
+/// MyWhatsapp nettest{std::move(settings)};
+/// ```
+///
+/// ### 4. Call run()
+///
+/// Start the nettest by calling run(). This method will return true if the
+/// nettest was executed correctly and false on errors. In such case, you
+/// will find more information by looking at the emitted "log" events.
+///
+/// ```
+/// if (!nettest.run()) {
 ///   // TODO: your code for handling this failure here.
 ///   return;
 /// }
 /// ```
 ///
-/// ### 6. Dispatch nettest events
+/// ### 5. Final remarks
 ///
-/// Dispatch nettest events. This is nettest-agnostic code. Calling the
-/// Nettest::route_next_event() method will cause any pending events
-/// to be extracted from the events queue and emitted through the router.
-///
-/// ```
-/// while (!nettest.is_done()) {
-///   nettest.route_next_event(&my_router);
-/// }
-/// ```
-///
-/// ### 7. Final remarks
-///
-/// If the nettest goes out of scope, it will not be interrupted, rather it
-/// will run until completion without routing events. To interrupt a nettest,
-/// use Nettest::interrupt(). When you need to share a Nettest instance
-/// between different threads for the purpose of interrupting a test, your
-/// best option is to use `new` or `std::make_shared`.
+/// To interrupt a nettest, use Nettest::interrupt(). When you need to share
+/// a Nettest instance between different threads for the purpose of interrupting
+/// it, use `new` or, event better, `std::make_shared`.
 ///
 /// \see https://github.com/measurement-kit/measurement-kit/tree/master/example/nettest for usage examples.
 
@@ -143,7 +115,22 @@ namespace mk {
 /// Namespace containing the nettest API.
 namespace nettest {
 
-/// Contains events definitions.
+/// String representation of the "err" log level.
+constexpr const char *log_level_err = "ERR";
+
+/// String representation of the "warning" log level.
+constexpr const char *log_level_warning = "WARNING";
+
+/// String representation of the "info" log level.
+constexpr const char *log_level_info = "INFO";
+
+/// String representation of the "debug" log level.
+constexpr const char *log_level_debug = "DEBUG";
+
+/// String representation of the "debug2" log level.
+constexpr const char *log_level_debug2 = "DEBUG2";
+
+/// Groups all events together.
 namespace events {
 
 /// C++ representation of the "failure.asn_lookup" event.
@@ -153,7 +140,7 @@ class FailureAsnLookupEvent {
     static constexpr const char *key = "failure.asn_lookup";
     
     /// The "failure" attribute of this event.
-    std::string failure = {};
+    std::string failure = "";
 };
 
 /// C++ representation of the "failure.cc_lookup" event.
@@ -163,7 +150,7 @@ class FailureCcLookupEvent {
     static constexpr const char *key = "failure.cc_lookup";
     
     /// The "failure" attribute of this event.
-    std::string failure = {};
+    std::string failure = "";
 };
 
 /// C++ representation of the "failure.ip_lookup" event.
@@ -173,7 +160,7 @@ class FailureIpLookupEvent {
     static constexpr const char *key = "failure.ip_lookup";
     
     /// The "failure" attribute of this event.
-    std::string failure = {};
+    std::string failure = "";
 };
 
 /// C++ representation of the "failure.measurement" event.
@@ -183,7 +170,7 @@ class FailureMeasurementEvent {
     static constexpr const char *key = "failure.measurement";
     
     /// The "failure" attribute of this event.
-    std::string failure = {};
+    std::string failure = "";
 };
 
 /// C++ representation of the "failure.measurement_submission" event.
@@ -193,13 +180,13 @@ class FailureMeasurementSubmissionEvent {
     static constexpr const char *key = "failure.measurement_submission";
     
     /// The "failure" attribute of this event.
-    std::string failure = {};
+    std::string failure = "";
     
     /// The "idx" attribute of this event.
-    int64_t idx = {};
+    int64_t idx = 0;
     
     /// The "json_str" attribute of this event.
-    std::string json_str = {};
+    std::string json_str = "";
 };
 
 /// C++ representation of the "failure.report_create" event.
@@ -209,7 +196,7 @@ class FailureReportCreateEvent {
     static constexpr const char *key = "failure.report_create";
     
     /// The "failure" attribute of this event.
-    std::string failure = {};
+    std::string failure = "";
 };
 
 /// C++ representation of the "failure.report_close" event.
@@ -219,7 +206,7 @@ class FailureReportCloseEvent {
     static constexpr const char *key = "failure.report_close";
     
     /// The "failure" attribute of this event.
-    std::string failure = {};
+    std::string failure = "";
 };
 
 /// C++ representation of the "failure.resolver_lookup" event.
@@ -229,7 +216,7 @@ class FailureResolverLookupEvent {
     static constexpr const char *key = "failure.resolver_lookup";
     
     /// The "failure" attribute of this event.
-    std::string failure = {};
+    std::string failure = "";
 };
 
 /// C++ representation of the "failure.startup" event.
@@ -239,7 +226,7 @@ class FailureStartupEvent {
     static constexpr const char *key = "failure.startup";
     
     /// The "failure" attribute of this event.
-    std::string failure = {};
+    std::string failure = "";
 };
 
 /// C++ representation of the "log" event.
@@ -249,10 +236,10 @@ class LogEvent {
     static constexpr const char *key = "log";
     
     /// The "log_level" attribute of this event.
-    std::string log_level = {};
+    std::string log_level = "";
     
     /// The "message" attribute of this event.
-    std::string message = {};
+    std::string message = "";
 };
 
 /// C++ representation of the "measurement" event.
@@ -262,10 +249,10 @@ class MeasurementEvent {
     static constexpr const char *key = "measurement";
     
     /// The "idx" attribute of this event.
-    int64_t idx = {};
+    int64_t idx = 0;
     
     /// The "json_str" attribute of this event.
-    std::string json_str = {};
+    std::string json_str = "";
 };
 
 /// C++ representation of the "status.end" event.
@@ -275,13 +262,13 @@ class StatusEndEvent {
     static constexpr const char *key = "status.end";
     
     /// The "downloaded_kb" attribute of this event.
-    double downloaded_kb = {};
+    double downloaded_kb = 0.0;
     
     /// The "uploaded_kb" attribute of this event.
-    double uploaded_kb = {};
+    double uploaded_kb = 0.0;
     
     /// The "failure" attribute of this event.
-    std::string failure = {};
+    std::string failure = "";
 };
 
 /// C++ representation of the "status.geoip_lookup" event.
@@ -291,16 +278,16 @@ class StatusGeoipLookupEvent {
     static constexpr const char *key = "status.geoip_lookup";
     
     /// The "probe_ip" attribute of this event.
-    std::string probe_ip = {};
+    std::string probe_ip = "";
     
     /// The "probe_asn" attribute of this event.
-    std::string probe_asn = {};
+    std::string probe_asn = "";
     
     /// The "probe_cc" attribute of this event.
-    std::string probe_cc = {};
+    std::string probe_cc = "";
     
     /// The "probe_network_name" attribute of this event.
-    std::string probe_network_name = {};
+    std::string probe_network_name = "";
 };
 
 /// C++ representation of the "status.progress" event.
@@ -310,10 +297,10 @@ class StatusProgressEvent {
     static constexpr const char *key = "status.progress";
     
     /// The "percentage" attribute of this event.
-    double percentage = {};
+    double percentage = 0.0;
     
     /// The "message" attribute of this event.
-    std::string message = {};
+    std::string message = "";
 };
 
 /// C++ representation of the "status.queued" event.
@@ -331,10 +318,10 @@ class StatusMeasurementStartEvent {
     static constexpr const char *key = "status.measurement_start";
     
     /// The "idx" attribute of this event.
-    int64_t idx = {};
+    int64_t idx = 0;
     
     /// The "input" attribute of this event.
-    std::string input = {};
+    std::string input = "";
 };
 
 /// C++ representation of the "status.measurement_submission" event.
@@ -344,7 +331,7 @@ class StatusMeasurementSubmissionEvent {
     static constexpr const char *key = "status.measurement_submission";
     
     /// The "idx" attribute of this event.
-    int64_t idx = {};
+    int64_t idx = 0;
 };
 
 /// C++ representation of the "status.measurement_done" event.
@@ -354,7 +341,7 @@ class StatusMeasurementDoneEvent {
     static constexpr const char *key = "status.measurement_done";
     
     /// The "idx" attribute of this event.
-    int64_t idx = {};
+    int64_t idx = 0;
 };
 
 /// C++ representation of the "status.report_close" event.
@@ -364,7 +351,7 @@ class StatusReportCloseEvent {
     static constexpr const char *key = "status.report_close";
     
     /// The "report_id" attribute of this event.
-    std::string report_id = {};
+    std::string report_id = "";
 };
 
 /// C++ representation of the "status.report_create" event.
@@ -374,7 +361,7 @@ class StatusReportCreateEvent {
     static constexpr const char *key = "status.report_create";
     
     /// The "report_id" attribute of this event.
-    std::string report_id = {};
+    std::string report_id = "";
 };
 
 /// C++ representation of the "status.resolver_lookup" event.
@@ -384,7 +371,7 @@ class StatusResolverLookupEvent {
     static constexpr const char *key = "status.resolver_lookup";
     
     /// The "ip_address" attribute of this event.
-    std::string ip_address = {};
+    std::string ip_address = "";
 };
 
 /// C++ representation of the "status.started" event.
@@ -402,16 +389,16 @@ class StatusUpdatePerformanceEvent {
     static constexpr const char *key = "status.update.performance";
     
     /// The "direction" attribute of this event.
-    std::string direction = {};
+    std::string direction = "";
     
     /// The "elapsed" attribute of this event.
-    double elapsed = {};
+    double elapsed = 0.0;
     
     /// The "num_streams" attribute of this event.
-    int64_t num_streams = {};
+    int64_t num_streams = 0;
     
     /// The "speed_kbps" attribute of this event.
-    double speed_kbps = {};
+    double speed_kbps = 0.0;
 };
 
 /// C++ representation of the "status.update.websites" event.
@@ -421,10 +408,10 @@ class StatusUpdateWebsitesEvent {
     static constexpr const char *key = "status.update.websites";
     
     /// The "url" attribute of this event.
-    std::string url = {};
+    std::string url = "";
     
     /// The "status" attribute of this event.
-    std::string status = {};
+    std::string status = "";
 };
 
 /// C++ representation of the "task_terminated" event.
@@ -437,68 +424,65 @@ class TaskTerminatedEvent {
 
 } // namespace events
 
-/// Contains log levels constants.
-namespace log_levels {
-/// String representation of the "err" log level.
-constexpr const char *err = "ERR";
+#if !defined SWIG && !defined DOXYGEN
+namespace detail {
 
-    /// String representation of the "warning" log level.
-constexpr const char *warning = "WARNING";
+// Deleter for mk_task_t.
+class TaskDeleter {
+  public:
+    void operator()(mk_task_t *task) noexcept;
+};
 
-    /// String representation of the "info" log level.
-constexpr const char *info = "INFO";
+// Syntactic sugar of a unique mk_task_t pointer.
+using UniqueTask = std::unique_ptr<mk_task_t, TaskDeleter>;
 
-    /// String representation of the "debug" log level.
-constexpr const char *debug = "DEBUG";
+// Deleter for mk_event_t.
+class EventDeleter {
+  public:
+    void operator()(mk_event_t *event) noexcept;
+};
 
-    /// String representation of the "debug2" log level.
-constexpr const char *debug2 = "DEBUG2";
-} // namespace log levels
+// Syntactic sugar for a unique mk_event_t pointer.
+using UniqueEvent = std::unique_ptr<mk_event_t, EventDeleter>;
 
-/// Contains settings classes.
-namespace settings {
+} // namespace detail
+#endif // !SWIG && !DOXYGEN
+
+/// Common generic code.
+namespace common {
 
 /// Settings common to all nettests.
-class CommonSettings {
+class Settings {
   public:
     /// The "annotations" setting.
     std::map<std::string, std::string> annotations = {};
 
-    /// The "disabled_events" setting.
-    std::vector<std::string> disabled_events = {};
-
-    /// The "inputs" setting.
-    std::vector<std::string> inputs = {};
-
-    /// The "input_filepaths" setting.
-    std::vector<std::string> input_filepaths = {};
-
     /// The "log_filepath" setting.
-    std::string log_filepath = {};
+    std::string log_filepath = "";
 
     /// The "log_level" setting.
-    std::string log_level = log_levels::err;
+    std::string log_level = log_level_err;
 
     /// The "output_filepath" setting.
-    std::string output_filepath = {};
+    std::string output_filepath = "";
 
     /// The "bouncer_base_url" setting.
     std::string bouncer_base_url = "https://bouncer.ooni.io";
 
     /// The "collector_base_url" setting.
-    std::string collector_base_url = {};
+    std::string collector_base_url = "";
 
     /// The "dns/nameserver" setting.
-    std::string dns_nameserver = {};
+    std::string dns_nameserver = "";
 
     /// The "dns/engine" setting.
     std::string dns_engine = "system";
 
     /// The "geoip_asn_path" setting.
-    std::string geoip_asn_path = {};
+    std::string geoip_asn_path = "";
 
     /// The "geoip_country_path" setting.
-    std::string geoip_country_path = {};
+    std::string geoip_country_path = "";
 
     /// The "ignore_bouncer_error" setting.
     bool ignore_bouncer_error = true;
@@ -510,7 +494,7 @@ class CommonSettings {
     double max_runtime = -1.0;
 
     /// The "net/ca_bundle_path" setting.
-    std::string net_ca_bundle_path = {};
+    std::string net_ca_bundle_path = "";
 
     /// The "net/timeout" setting.
     double net_timeout = 10.0;
@@ -537,13 +521,13 @@ class CommonSettings {
     bool no_resolver_lookup = false;
 
     /// The "probe_asn" setting.
-    std::string probe_asn = {};
+    std::string probe_asn = "";
 
     /// The "probe_cc" setting.
-    std::string probe_cc = {};
+    std::string probe_cc = "";
 
     /// The "probe_ip" setting.
-    std::string probe_ip = {};
+    std::string probe_ip = "";
 
     /// The "randomize_input" setting.
     bool randomize_input = true;
@@ -561,299 +545,45 @@ class CommonSettings {
     bool save_real_resolver_ip = true;
 
     /// The "software_name" setting.
-    std::string software_name = {};
+    std::string software_name = "";
 
     /// The "software_version" setting.
-    std::string software_version = {};
+    std::string software_version = "";
+
+#ifdef SWIG
+  private:
+#endif
+    // Serialize common settings into a JSON document.
+    bool serialize_into(nlohmann::json *) noexcept;
 };
 
-/// Settings of the "CaptivePortal" nettest.
-class CaptivePortalSettings : public CommonSettings {
+/// Settings common to all nettests that need input.
+class NeedsInputSettings : public Settings {
   public:
-    /// Unique name of this nettest.
-    static constexpr const char *name = "CaptivePortal";
-    /* No nettest-specific settings */
+    /// The "inputs" setting.
+    std::vector<std::string> inputs = {};
+
+    /// The "input_filepaths" setting.
+    std::vector<std::string> input_filepaths = {};
+
+#ifdef SWIG
+  private:
+#endif
+    // Serialize needs-input nettests settings into a JSON document.
+    bool serialize_into(nlohmann::json *) noexcept;
 };
 
-/// Settings of the "Dash" nettest.
-class DashSettings : public CommonSettings {
-  public:
-    /// Unique name of this nettest.
-    static constexpr const char *name = "Dash";
-    /* No nettest-specific settings */
-};
-
-/// Settings of the "DnsInjection" nettest.
-class DnsInjectionSettings : public CommonSettings {
-  public:
-    /// Unique name of this nettest.
-    static constexpr const char *name = "DnsInjection";
-    /* No nettest-specific settings */
-};
-
-/// Settings of the "FacebookMessenger" nettest.
-class FacebookMessengerSettings : public CommonSettings {
-  public:
-    /// Unique name of this nettest.
-    static constexpr const char *name = "FacebookMessenger";
-    /* No nettest-specific settings */
-};
-
-/// Settings of the "HttpHeaderFieldManipulation" nettest.
-class HttpHeaderFieldManipulationSettings : public CommonSettings {
-  public:
-    /// Unique name of this nettest.
-    static constexpr const char *name = "HttpHeaderFieldManipulation";
-    /* No nettest-specific settings */
-};
-
-/// Settings of the "HttpInvalidRequestLine" nettest.
-class HttpInvalidRequestLineSettings : public CommonSettings {
-  public:
-    /// Unique name of this nettest.
-    static constexpr const char *name = "HttpInvalidRequestLine";
-    /* No nettest-specific settings */
-};
-
-/// Settings of the "MeekFrontedRequests" nettest.
-class MeekFrontedRequestsSettings : public CommonSettings {
-  public:
-    /// Unique name of this nettest.
-    static constexpr const char *name = "MeekFrontedRequests";
-    /* No nettest-specific settings */
-};
-
-/// Settings of the "MultiNdt" nettest.
-class MultiNdtSettings : public CommonSettings {
-  public:
-    /// Unique name of this nettest.
-    static constexpr const char *name = "MultiNdt";
-    /* No nettest-specific settings */
-};
-
-/// Settings of the "Ndt" nettest.
-class NdtSettings : public CommonSettings {
-  public:
-    /// Unique name of this nettest.
-    static constexpr const char *name = "Ndt";
-    /* No nettest-specific settings */
-};
-
-/// Settings of the "TcpConnect" nettest.
-class TcpConnectSettings : public CommonSettings {
-  public:
-    /// Unique name of this nettest.
-    static constexpr const char *name = "TcpConnect";
-    /* No nettest-specific settings */
-};
-
-/// Settings of the "Telegram" nettest.
-class TelegramSettings : public CommonSettings {
-  public:
-    /// Unique name of this nettest.
-    static constexpr const char *name = "Telegram";
-    /* No nettest-specific settings */
-};
-
-/// Settings of the "WebConnectivity" nettest.
-class WebConnectivitySettings : public CommonSettings {
-  public:
-    /// Unique name of this nettest.
-    static constexpr const char *name = "WebConnectivity";
-    /* No nettest-specific settings */
-};
-
-/// Settings of the "Whatsapp" nettest.
-class WhatsappSettings : public CommonSettings {
-  public:
-    /// Unique name of this nettest.
-    static constexpr const char *name = "Whatsapp";
-    
-    /// The "all_endpoints" setting of this nettest.
-    bool all_endpoints = false;
-};
-
-} // namespace settings
-
-// Contains the routers
-namespace routers {
-
-/// Routes nettest events to virtual methods.
-class Router {
-  public:
-    // Implementation note: virtual methods cannot be `noexcept` because the
-    // task stable version of SWIG does not handle that correctly.
-
-    /// Handles the "failure.asn_lookup" event.
-    virtual void on_failure_asn_lookup(const events::FailureAsnLookupEvent &event);
-
-    /// Handles the "failure.cc_lookup" event.
-    virtual void on_failure_cc_lookup(const events::FailureCcLookupEvent &event);
-
-    /// Handles the "failure.ip_lookup" event.
-    virtual void on_failure_ip_lookup(const events::FailureIpLookupEvent &event);
-
-    /// Handles the "failure.measurement" event.
-    virtual void on_failure_measurement(const events::FailureMeasurementEvent &event);
-
-    /// Handles the "failure.measurement_submission" event.
-    virtual void on_failure_measurement_submission(const events::FailureMeasurementSubmissionEvent &event);
-
-    /// Handles the "failure.report_create" event.
-    virtual void on_failure_report_create(const events::FailureReportCreateEvent &event);
-
-    /// Handles the "failure.report_close" event.
-    virtual void on_failure_report_close(const events::FailureReportCloseEvent &event);
-
-    /// Handles the "failure.resolver_lookup" event.
-    virtual void on_failure_resolver_lookup(const events::FailureResolverLookupEvent &event);
-
-    /// Handles the "failure.startup" event.
-    virtual void on_failure_startup(const events::FailureStartupEvent &event);
-
-    /// Handles the "log" event.
-    virtual void on_log(const events::LogEvent &event);
-
-    /// Handles the "measurement" event.
-    virtual void on_measurement(const events::MeasurementEvent &event);
-
-    /// Handles the "status.end" event.
-    virtual void on_status_end(const events::StatusEndEvent &event);
-
-    /// Handles the "status.geoip_lookup" event.
-    virtual void on_status_geoip_lookup(const events::StatusGeoipLookupEvent &event);
-
-    /// Handles the "status.progress" event.
-    virtual void on_status_progress(const events::StatusProgressEvent &event);
-
-    /// Handles the "status.queued" event.
-    virtual void on_status_queued(const events::StatusQueuedEvent &event);
-
-    /// Handles the "status.measurement_start" event.
-    virtual void on_status_measurement_start(const events::StatusMeasurementStartEvent &event);
-
-    /// Handles the "status.measurement_submission" event.
-    virtual void on_status_measurement_submission(const events::StatusMeasurementSubmissionEvent &event);
-
-    /// Handles the "status.measurement_done" event.
-    virtual void on_status_measurement_done(const events::StatusMeasurementDoneEvent &event);
-
-    /// Handles the "status.report_close" event.
-    virtual void on_status_report_close(const events::StatusReportCloseEvent &event);
-
-    /// Handles the "status.report_create" event.
-    virtual void on_status_report_create(const events::StatusReportCreateEvent &event);
-
-    /// Handles the "status.resolver_lookup" event.
-    virtual void on_status_resolver_lookup(const events::StatusResolverLookupEvent &event);
-
-    /// Handles the "status.started" event.
-    virtual void on_status_started(const events::StatusStartedEvent &event);
-
-    /// Handles the "status.update.performance" event.
-    virtual void on_status_update_performance(const events::StatusUpdatePerformanceEvent &event);
-
-    /// Handles the "status.update.websites" event.
-    virtual void on_status_update_websites(const events::StatusUpdateWebsitesEvent &event);
-
-    /// Handles the "task_terminated" event.
-    virtual void on_task_terminated(const events::TaskTerminatedEvent &event);
-
-    virtual ~Router() noexcept;
-};
-
-/// Router that logs everything on std::clog.
-class NoisyRouter : public Router {
-  public:
-    /// Logs the "failure.asn_lookup" event on std::clog.
-    void on_failure_asn_lookup(const events::FailureAsnLookupEvent &event) override;
-
-    /// Logs the "failure.cc_lookup" event on std::clog.
-    void on_failure_cc_lookup(const events::FailureCcLookupEvent &event) override;
-
-    /// Logs the "failure.ip_lookup" event on std::clog.
-    void on_failure_ip_lookup(const events::FailureIpLookupEvent &event) override;
-
-    /// Logs the "failure.measurement" event on std::clog.
-    void on_failure_measurement(const events::FailureMeasurementEvent &event) override;
-
-    /// Logs the "failure.measurement_submission" event on std::clog.
-    void on_failure_measurement_submission(const events::FailureMeasurementSubmissionEvent &event) override;
-
-    /// Logs the "failure.report_create" event on std::clog.
-    void on_failure_report_create(const events::FailureReportCreateEvent &event) override;
-
-    /// Logs the "failure.report_close" event on std::clog.
-    void on_failure_report_close(const events::FailureReportCloseEvent &event) override;
-
-    /// Logs the "failure.resolver_lookup" event on std::clog.
-    void on_failure_resolver_lookup(const events::FailureResolverLookupEvent &event) override;
-
-    /// Logs the "failure.startup" event on std::clog.
-    void on_failure_startup(const events::FailureStartupEvent &event) override;
-
-    /// Logs the "log" event on std::clog.
-    void on_log(const events::LogEvent &event) override;
-
-    /// Logs the "measurement" event on std::clog.
-    void on_measurement(const events::MeasurementEvent &event) override;
-
-    /// Logs the "status.end" event on std::clog.
-    void on_status_end(const events::StatusEndEvent &event) override;
-
-    /// Logs the "status.geoip_lookup" event on std::clog.
-    void on_status_geoip_lookup(const events::StatusGeoipLookupEvent &event) override;
-
-    /// Logs the "status.progress" event on std::clog.
-    void on_status_progress(const events::StatusProgressEvent &event) override;
-
-    /// Logs the "status.queued" event on std::clog.
-    void on_status_queued(const events::StatusQueuedEvent &event) override;
-
-    /// Logs the "status.measurement_start" event on std::clog.
-    void on_status_measurement_start(const events::StatusMeasurementStartEvent &event) override;
-
-    /// Logs the "status.measurement_submission" event on std::clog.
-    void on_status_measurement_submission(const events::StatusMeasurementSubmissionEvent &event) override;
-
-    /// Logs the "status.measurement_done" event on std::clog.
-    void on_status_measurement_done(const events::StatusMeasurementDoneEvent &event) override;
-
-    /// Logs the "status.report_close" event on std::clog.
-    void on_status_report_close(const events::StatusReportCloseEvent &event) override;
-
-    /// Logs the "status.report_create" event on std::clog.
-    void on_status_report_create(const events::StatusReportCreateEvent &event) override;
-
-    /// Logs the "status.resolver_lookup" event on std::clog.
-    void on_status_resolver_lookup(const events::StatusResolverLookupEvent &event) override;
-
-    /// Logs the "status.started" event on std::clog.
-    void on_status_started(const events::StatusStartedEvent &event) override;
-
-    /// Logs the "status.update.performance" event on std::clog.
-    void on_status_update_performance(const events::StatusUpdatePerformanceEvent &event) override;
-
-    /// Logs the "status.update.websites" event on std::clog.
-    void on_status_update_websites(const events::StatusUpdateWebsitesEvent &event) override;
-
-    /// Logs the "task_terminated" event on std::clog.
-    void on_task_terminated(const events::TaskTerminatedEvent &event) override;
-
-    ~NoisyRouter() noexcept override;
-};
-
-} // namespace routers
-
-/// Manages the lifecycle of a nettest. This API mirrors as closely as
-/// possible to FFI API provided by <measurement_kit/ffi.h>.
+/// Base class for all nettests.
 class Nettest {
   public:
+    // Implementation note: we cannot have `noexcept` in virtual methods to be
+    // overriden using SWIG because the current stable version of SWIG does not
+    // correctly handle `noexcept` (but this seems to be fixed in master).
+
     // C++ object model
     // ````````````````
 
-    /// Creates a nettest instance. This will not start the actual test. You
-    /// need to use one of the start_XXX() methods to do that.
+    /// Empty default constructor.
     Nettest() noexcept;
 
     /// Explicitly deleted copy constructor.
@@ -869,208 +599,574 @@ class Nettest {
     Nettest &operator=(Nettest &&) noexcept = delete;
 
     /// Wait for nettest to terminate and destroy resources.
-    ~Nettest() noexcept;
+    virtual ~Nettest() noexcept;
 
-    // Starting a nettest
-    // ``````````````````
+    // Lifecycle
+    // `````````
 
-    /// Starts a "CaptivePortal" nettest.
-    /// \param settings contains the settings configuring this nettest.
-    /// \param router is the router used to route nettest events. If the
-    /// router is `nullptr`, we'll use an internal dummy router.
-    /// \return true on success, false on failure. There are two reasons why
-    /// this method could fail. Either the provided settings are not JSON
-    /// serializable because there was a string that was not valid UTF-8, or
-    /// you already used this class to start a nettest. In both cases, log
-    /// messages will be routed, so you will know what happened.
-    bool start_captive_portal(settings::CaptivePortalSettings settings, routers::Router *router) noexcept;
+    /// Runs the nettest.
+    virtual bool run() noexcept { return false; }
 
-    /// Starts a "Dash" nettest.
-    /// \param settings contains the settings configuring this nettest.
-    /// \param router is the router used to route nettest events. If the
-    /// router is `nullptr`, we'll use an internal dummy router.
-    /// \return true on success, false on failure. There are two reasons why
-    /// this method could fail. Either the provided settings are not JSON
-    /// serializable because there was a string that was not valid UTF-8, or
-    /// you already used this class to start a nettest. In both cases, log
-    /// messages will be routed, so you will know what happened.
-    bool start_dash(settings::DashSettings settings, routers::Router *router) noexcept;
-
-    /// Starts a "DnsInjection" nettest.
-    /// \param settings contains the settings configuring this nettest.
-    /// \param router is the router used to route nettest events. If the
-    /// router is `nullptr`, we'll use an internal dummy router.
-    /// \return true on success, false on failure. There are two reasons why
-    /// this method could fail. Either the provided settings are not JSON
-    /// serializable because there was a string that was not valid UTF-8, or
-    /// you already used this class to start a nettest. In both cases, log
-    /// messages will be routed, so you will know what happened.
-    bool start_dns_injection(settings::DnsInjectionSettings settings, routers::Router *router) noexcept;
-
-    /// Starts a "FacebookMessenger" nettest.
-    /// \param settings contains the settings configuring this nettest.
-    /// \param router is the router used to route nettest events. If the
-    /// router is `nullptr`, we'll use an internal dummy router.
-    /// \return true on success, false on failure. There are two reasons why
-    /// this method could fail. Either the provided settings are not JSON
-    /// serializable because there was a string that was not valid UTF-8, or
-    /// you already used this class to start a nettest. In both cases, log
-    /// messages will be routed, so you will know what happened.
-    bool start_facebook_messenger(settings::FacebookMessengerSettings settings, routers::Router *router) noexcept;
-
-    /// Starts a "HttpHeaderFieldManipulation" nettest.
-    /// \param settings contains the settings configuring this nettest.
-    /// \param router is the router used to route nettest events. If the
-    /// router is `nullptr`, we'll use an internal dummy router.
-    /// \return true on success, false on failure. There are two reasons why
-    /// this method could fail. Either the provided settings are not JSON
-    /// serializable because there was a string that was not valid UTF-8, or
-    /// you already used this class to start a nettest. In both cases, log
-    /// messages will be routed, so you will know what happened.
-    bool start_http_header_field_manipulation(settings::HttpHeaderFieldManipulationSettings settings, routers::Router *router) noexcept;
-
-    /// Starts a "HttpInvalidRequestLine" nettest.
-    /// \param settings contains the settings configuring this nettest.
-    /// \param router is the router used to route nettest events. If the
-    /// router is `nullptr`, we'll use an internal dummy router.
-    /// \return true on success, false on failure. There are two reasons why
-    /// this method could fail. Either the provided settings are not JSON
-    /// serializable because there was a string that was not valid UTF-8, or
-    /// you already used this class to start a nettest. In both cases, log
-    /// messages will be routed, so you will know what happened.
-    bool start_http_invalid_request_line(settings::HttpInvalidRequestLineSettings settings, routers::Router *router) noexcept;
-
-    /// Starts a "MeekFrontedRequests" nettest.
-    /// \param settings contains the settings configuring this nettest.
-    /// \param router is the router used to route nettest events. If the
-    /// router is `nullptr`, we'll use an internal dummy router.
-    /// \return true on success, false on failure. There are two reasons why
-    /// this method could fail. Either the provided settings are not JSON
-    /// serializable because there was a string that was not valid UTF-8, or
-    /// you already used this class to start a nettest. In both cases, log
-    /// messages will be routed, so you will know what happened.
-    bool start_meek_fronted_requests(settings::MeekFrontedRequestsSettings settings, routers::Router *router) noexcept;
-
-    /// Starts a "MultiNdt" nettest.
-    /// \param settings contains the settings configuring this nettest.
-    /// \param router is the router used to route nettest events. If the
-    /// router is `nullptr`, we'll use an internal dummy router.
-    /// \return true on success, false on failure. There are two reasons why
-    /// this method could fail. Either the provided settings are not JSON
-    /// serializable because there was a string that was not valid UTF-8, or
-    /// you already used this class to start a nettest. In both cases, log
-    /// messages will be routed, so you will know what happened.
-    bool start_multi_ndt(settings::MultiNdtSettings settings, routers::Router *router) noexcept;
-
-    /// Starts a "Ndt" nettest.
-    /// \param settings contains the settings configuring this nettest.
-    /// \param router is the router used to route nettest events. If the
-    /// router is `nullptr`, we'll use an internal dummy router.
-    /// \return true on success, false on failure. There are two reasons why
-    /// this method could fail. Either the provided settings are not JSON
-    /// serializable because there was a string that was not valid UTF-8, or
-    /// you already used this class to start a nettest. In both cases, log
-    /// messages will be routed, so you will know what happened.
-    bool start_ndt(settings::NdtSettings settings, routers::Router *router) noexcept;
-
-    /// Starts a "TcpConnect" nettest.
-    /// \param settings contains the settings configuring this nettest.
-    /// \param router is the router used to route nettest events. If the
-    /// router is `nullptr`, we'll use an internal dummy router.
-    /// \return true on success, false on failure. There are two reasons why
-    /// this method could fail. Either the provided settings are not JSON
-    /// serializable because there was a string that was not valid UTF-8, or
-    /// you already used this class to start a nettest. In both cases, log
-    /// messages will be routed, so you will know what happened.
-    bool start_tcp_connect(settings::TcpConnectSettings settings, routers::Router *router) noexcept;
-
-    /// Starts a "Telegram" nettest.
-    /// \param settings contains the settings configuring this nettest.
-    /// \param router is the router used to route nettest events. If the
-    /// router is `nullptr`, we'll use an internal dummy router.
-    /// \return true on success, false on failure. There are two reasons why
-    /// this method could fail. Either the provided settings are not JSON
-    /// serializable because there was a string that was not valid UTF-8, or
-    /// you already used this class to start a nettest. In both cases, log
-    /// messages will be routed, so you will know what happened.
-    bool start_telegram(settings::TelegramSettings settings, routers::Router *router) noexcept;
-
-    /// Starts a "WebConnectivity" nettest.
-    /// \param settings contains the settings configuring this nettest.
-    /// \param router is the router used to route nettest events. If the
-    /// router is `nullptr`, we'll use an internal dummy router.
-    /// \return true on success, false on failure. There are two reasons why
-    /// this method could fail. Either the provided settings are not JSON
-    /// serializable because there was a string that was not valid UTF-8, or
-    /// you already used this class to start a nettest. In both cases, log
-    /// messages will be routed, so you will know what happened.
-    bool start_web_connectivity(settings::WebConnectivitySettings settings, routers::Router *router) noexcept;
-
-    /// Starts a "Whatsapp" nettest.
-    /// \param settings contains the settings configuring this nettest.
-    /// \param router is the router used to route nettest events. If the
-    /// router is `nullptr`, we'll use an internal dummy router.
-    /// \return true on success, false on failure. There are two reasons why
-    /// this method could fail. Either the provided settings are not JSON
-    /// serializable because there was a string that was not valid UTF-8, or
-    /// you already used this class to start a nettest. In both cases, log
-    /// messages will be routed, so you will know what happened.
-    bool start_whatsapp(settings::WhatsappSettings settings, routers::Router *router) noexcept;
-
-    // Event processing methods
-    // ````````````````````````
-
-    /// Blocks until the next event occurs, then routes it.
-    /// \param router Router to handle events. If the router is null, we'll
-    /// use an internal dummy router.
-    void route_next_event(routers::Router *router) noexcept;
-
-    /// Returns true if nettest is done, false otherwise.
-    bool is_done() noexcept;
-
-    /// Interrupts the currently running nettest.
+    /// Interrupts a running nettest.
     void interrupt() noexcept;
 
+    // Event handlers
+    // ``````````````
+
+    /// Handles the "failure.asn_lookup" event.
+    virtual void on_failure_asn_lookup(events::FailureAsnLookupEvent);
+
+    /// Handles the "failure.cc_lookup" event.
+    virtual void on_failure_cc_lookup(events::FailureCcLookupEvent);
+
+    /// Handles the "failure.ip_lookup" event.
+    virtual void on_failure_ip_lookup(events::FailureIpLookupEvent);
+
+    /// Handles the "failure.measurement" event.
+    virtual void on_failure_measurement(events::FailureMeasurementEvent);
+
+    /// Handles the "failure.measurement_submission" event.
+    virtual void on_failure_measurement_submission(events::FailureMeasurementSubmissionEvent);
+
+    /// Handles the "failure.report_create" event.
+    virtual void on_failure_report_create(events::FailureReportCreateEvent);
+
+    /// Handles the "failure.report_close" event.
+    virtual void on_failure_report_close(events::FailureReportCloseEvent);
+
+    /// Handles the "failure.resolver_lookup" event.
+    virtual void on_failure_resolver_lookup(events::FailureResolverLookupEvent);
+
+    /// Handles the "failure.startup" event.
+    virtual void on_failure_startup(events::FailureStartupEvent);
+
+    /// Handles the "log" event.
+    virtual void on_log(events::LogEvent);
+
+    /// Handles the "measurement" event.
+    virtual void on_measurement(events::MeasurementEvent);
+
+    /// Handles the "status.end" event.
+    virtual void on_status_end(events::StatusEndEvent);
+
+    /// Handles the "status.geoip_lookup" event.
+    virtual void on_status_geoip_lookup(events::StatusGeoipLookupEvent);
+
+    /// Handles the "status.progress" event.
+    virtual void on_status_progress(events::StatusProgressEvent);
+
+    /// Handles the "status.queued" event.
+    virtual void on_status_queued(events::StatusQueuedEvent);
+
+    /// Handles the "status.measurement_start" event.
+    virtual void on_status_measurement_start(events::StatusMeasurementStartEvent);
+
+    /// Handles the "status.measurement_submission" event.
+    virtual void on_status_measurement_submission(events::StatusMeasurementSubmissionEvent);
+
+    /// Handles the "status.measurement_done" event.
+    virtual void on_status_measurement_done(events::StatusMeasurementDoneEvent);
+
+    /// Handles the "status.report_close" event.
+    virtual void on_status_report_close(events::StatusReportCloseEvent);
+
+    /// Handles the "status.report_create" event.
+    virtual void on_status_report_create(events::StatusReportCreateEvent);
+
+    /// Handles the "status.resolver_lookup" event.
+    virtual void on_status_resolver_lookup(events::StatusResolverLookupEvent);
+
+    /// Handles the "status.started" event.
+    virtual void on_status_started(events::StatusStartedEvent);
+
+    /// Handles the "task_terminated" event.
+    virtual void on_task_terminated(events::TaskTerminatedEvent);
+
+  protected:
+    // Start a nettest given JSON settings
+    bool run_with_json_settings(nlohmann::json doc) noexcept;
+
+    // Dispatch the JSON event to the proper handler
+    virtual bool dispatch_event(nlohmann::json doc) noexcept;
+
   private:
-    // Private methods
-    // ```````````````
-
-    // The default router used when no other router is available.
-    static routers::Router *default_router() noexcept;
-
-    // Internal method called to start any nettest.
-    bool start_common(nlohmann::json, const settings::CommonSettings &, routers::Router *router) noexcept;
-
-    // Private definitions
-    // ```````````````````
-
-    // Deleter for mk_task_t.
-    class TaskDeleter {
-      public:
-        void operator()(mk_task_t *task) noexcept { mk_task_destroy(task); }
-    };
-
-    // Syntactic sugar of a unique mk_task_t pointer.
-    using UniqueTask = std::unique_ptr<mk_task_t, TaskDeleter>;
-
-    // Deleter for mk_event_t.
-    class EventDeleter {
-      public:
-        void operator()(mk_event_t *event) noexcept { mk_event_destroy(event); }
-    };
-
-    // Syntactic sugar for a unique mk_event_t pointer.
-    using UniqueEvent = std::unique_ptr<mk_event_t, EventDeleter>;
-
-    // Private attributes
-    // ``````````````````
-
-    // Mutex used to protect the task_ attribute.
     std::mutex mutex_;
-
-    // Unique pointer to the FFI task.
-    UniqueTask task_;
+    detail::UniqueTask task_;
 };
+
+/// Base class for nettests measuring performance.
+class PerformanceNettest : public Nettest {
+  public:
+    /// Wait for nettest to terminate and destroy resources.
+    ~PerformanceNettest() noexcept override {}
+
+    /// Handles the "status.update.performance" event.
+    virtual void on_status_update_performance(events::StatusUpdatePerformanceEvent);
+
+  protected:
+    // Dispatch the JSON event to the proper handler
+    bool dispatch_event(nlohmann::json doc) noexcept override;
+};
+
+/// Base class for nettest measuring websites blocking.
+class WebsitesNettest : public Nettest {
+  public:
+    /// Wait for nettest to terminate and destroy resources.
+    ~WebsitesNettest() noexcept override {}
+
+    /// Handles the "status.update.websites" event.
+    virtual void on_status_update_websites(events::StatusUpdateWebsitesEvent);
+
+  protected:
+    // Dispatch the JSON event to the proper handler
+    bool dispatch_event(nlohmann::json doc) noexcept override;
+};
+
+} // namespace common
+
+#ifndef MK_NETTEST_NO_CAPTIVE_PORTAL
+
+/// Settings for CaptivePortal
+class CaptivePortalSettings : public common::Settings {
+  public:
+    /// Unique name of this nettest.
+    static constexpr const char *name = "CaptivePortal";
+    /* No nettest-specific settings */
+
+#ifdef SWIG
+  private:
+#endif
+    // Serialize CaptivePortal settings into a JSON document.
+    bool serialize_into(nlohmann::json *) noexcept;
+};
+
+/// The CaptivePortal nettest.
+class CaptivePortalNettest : public common::Nettest {
+  public:
+    /// Constructor with explicit settings.
+    explicit CaptivePortalNettest(CaptivePortalSettings) noexcept;
+
+    /// Wait for nettest to terminate and destroy resources.
+    ~CaptivePortalNettest() noexcept override;
+
+    /// Runs the nettest.
+    bool run() noexcept override;
+
+  private:
+    CaptivePortalSettings settings_;
+};
+
+#endif // !MK_NETTEST_NO_CAPTIVE_PORTAL
+
+#ifndef MK_NETTEST_NO_DASH
+
+/// Settings for Dash
+class DashSettings : public common::Settings {
+  public:
+    /// Unique name of this nettest.
+    static constexpr const char *name = "Dash";
+    /* No nettest-specific settings */
+
+#ifdef SWIG
+  private:
+#endif
+    // Serialize Dash settings into a JSON document.
+    bool serialize_into(nlohmann::json *) noexcept;
+};
+
+/// The Dash nettest.
+class DashNettest : public common::PerformanceNettest {
+  public:
+    /// Constructor with explicit settings.
+    explicit DashNettest(DashSettings) noexcept;
+
+    /// Wait for nettest to terminate and destroy resources.
+    ~DashNettest() noexcept override;
+
+    /// Runs the nettest.
+    bool run() noexcept override;
+
+  private:
+    DashSettings settings_;
+};
+
+#endif // !MK_NETTEST_NO_DASH
+
+#ifndef MK_NETTEST_NO_DNS_INJECTION
+
+/// Settings for DnsInjection
+class DnsInjectionSettings : public common::NeedsInputSettings {
+  public:
+    /// Unique name of this nettest.
+    static constexpr const char *name = "DnsInjection";
+    /* No nettest-specific settings */
+
+#ifdef SWIG
+  private:
+#endif
+    // Serialize DnsInjection settings into a JSON document.
+    bool serialize_into(nlohmann::json *) noexcept;
+};
+
+/// The DnsInjection nettest.
+class DnsInjectionNettest : public common::Nettest {
+  public:
+    /// Constructor with explicit settings.
+    explicit DnsInjectionNettest(DnsInjectionSettings) noexcept;
+
+    /// Wait for nettest to terminate and destroy resources.
+    ~DnsInjectionNettest() noexcept override;
+
+    /// Runs the nettest.
+    bool run() noexcept override;
+
+  private:
+    DnsInjectionSettings settings_;
+};
+
+#endif // !MK_NETTEST_NO_DNS_INJECTION
+
+#ifndef MK_NETTEST_NO_FACEBOOK_MESSENGER
+
+/// Settings for FacebookMessenger
+class FacebookMessengerSettings : public common::Settings {
+  public:
+    /// Unique name of this nettest.
+    static constexpr const char *name = "FacebookMessenger";
+    /* No nettest-specific settings */
+
+#ifdef SWIG
+  private:
+#endif
+    // Serialize FacebookMessenger settings into a JSON document.
+    bool serialize_into(nlohmann::json *) noexcept;
+};
+
+/// The FacebookMessenger nettest.
+class FacebookMessengerNettest : public common::Nettest {
+  public:
+    /// Constructor with explicit settings.
+    explicit FacebookMessengerNettest(FacebookMessengerSettings) noexcept;
+
+    /// Wait for nettest to terminate and destroy resources.
+    ~FacebookMessengerNettest() noexcept override;
+
+    /// Runs the nettest.
+    bool run() noexcept override;
+
+  private:
+    FacebookMessengerSettings settings_;
+};
+
+#endif // !MK_NETTEST_NO_FACEBOOK_MESSENGER
+
+#ifndef MK_NETTEST_NO_HTTP_HEADER_FIELD_MANIPULATION
+
+/// Settings for HttpHeaderFieldManipulation
+class HttpHeaderFieldManipulationSettings : public common::Settings {
+  public:
+    /// Unique name of this nettest.
+    static constexpr const char *name = "HttpHeaderFieldManipulation";
+    /* No nettest-specific settings */
+
+#ifdef SWIG
+  private:
+#endif
+    // Serialize HttpHeaderFieldManipulation settings into a JSON document.
+    bool serialize_into(nlohmann::json *) noexcept;
+};
+
+/// The HttpHeaderFieldManipulation nettest.
+class HttpHeaderFieldManipulationNettest : public common::Nettest {
+  public:
+    /// Constructor with explicit settings.
+    explicit HttpHeaderFieldManipulationNettest(HttpHeaderFieldManipulationSettings) noexcept;
+
+    /// Wait for nettest to terminate and destroy resources.
+    ~HttpHeaderFieldManipulationNettest() noexcept override;
+
+    /// Runs the nettest.
+    bool run() noexcept override;
+
+  private:
+    HttpHeaderFieldManipulationSettings settings_;
+};
+
+#endif // !MK_NETTEST_NO_HTTP_HEADER_FIELD_MANIPULATION
+
+#ifndef MK_NETTEST_NO_HTTP_INVALID_REQUEST_LINE
+
+/// Settings for HttpInvalidRequestLine
+class HttpInvalidRequestLineSettings : public common::Settings {
+  public:
+    /// Unique name of this nettest.
+    static constexpr const char *name = "HttpInvalidRequestLine";
+    /* No nettest-specific settings */
+
+#ifdef SWIG
+  private:
+#endif
+    // Serialize HttpInvalidRequestLine settings into a JSON document.
+    bool serialize_into(nlohmann::json *) noexcept;
+};
+
+/// The HttpInvalidRequestLine nettest.
+class HttpInvalidRequestLineNettest : public common::Nettest {
+  public:
+    /// Constructor with explicit settings.
+    explicit HttpInvalidRequestLineNettest(HttpInvalidRequestLineSettings) noexcept;
+
+    /// Wait for nettest to terminate and destroy resources.
+    ~HttpInvalidRequestLineNettest() noexcept override;
+
+    /// Runs the nettest.
+    bool run() noexcept override;
+
+  private:
+    HttpInvalidRequestLineSettings settings_;
+};
+
+#endif // !MK_NETTEST_NO_HTTP_INVALID_REQUEST_LINE
+
+#ifndef MK_NETTEST_NO_MEEK_FRONTED_REQUESTS
+
+/// Settings for MeekFrontedRequests
+class MeekFrontedRequestsSettings : public common::NeedsInputSettings {
+  public:
+    /// Unique name of this nettest.
+    static constexpr const char *name = "MeekFrontedRequests";
+    /* No nettest-specific settings */
+
+#ifdef SWIG
+  private:
+#endif
+    // Serialize MeekFrontedRequests settings into a JSON document.
+    bool serialize_into(nlohmann::json *) noexcept;
+};
+
+/// The MeekFrontedRequests nettest.
+class MeekFrontedRequestsNettest : public common::Nettest {
+  public:
+    /// Constructor with explicit settings.
+    explicit MeekFrontedRequestsNettest(MeekFrontedRequestsSettings) noexcept;
+
+    /// Wait for nettest to terminate and destroy resources.
+    ~MeekFrontedRequestsNettest() noexcept override;
+
+    /// Runs the nettest.
+    bool run() noexcept override;
+
+  private:
+    MeekFrontedRequestsSettings settings_;
+};
+
+#endif // !MK_NETTEST_NO_MEEK_FRONTED_REQUESTS
+
+#ifndef MK_NETTEST_NO_MULTI_NDT
+
+/// Settings for MultiNdt
+class MultiNdtSettings : public common::Settings {
+  public:
+    /// Unique name of this nettest.
+    static constexpr const char *name = "MultiNdt";
+    /* No nettest-specific settings */
+
+#ifdef SWIG
+  private:
+#endif
+    // Serialize MultiNdt settings into a JSON document.
+    bool serialize_into(nlohmann::json *) noexcept;
+};
+
+/// The MultiNdt nettest.
+class MultiNdtNettest : public common::PerformanceNettest {
+  public:
+    /// Constructor with explicit settings.
+    explicit MultiNdtNettest(MultiNdtSettings) noexcept;
+
+    /// Wait for nettest to terminate and destroy resources.
+    ~MultiNdtNettest() noexcept override;
+
+    /// Runs the nettest.
+    bool run() noexcept override;
+
+  private:
+    MultiNdtSettings settings_;
+};
+
+#endif // !MK_NETTEST_NO_MULTI_NDT
+
+#ifndef MK_NETTEST_NO_NDT
+
+/// Settings for Ndt
+class NdtSettings : public common::Settings {
+  public:
+    /// Unique name of this nettest.
+    static constexpr const char *name = "Ndt";
+    /* No nettest-specific settings */
+
+#ifdef SWIG
+  private:
+#endif
+    // Serialize Ndt settings into a JSON document.
+    bool serialize_into(nlohmann::json *) noexcept;
+};
+
+/// The Ndt nettest.
+class NdtNettest : public common::PerformanceNettest {
+  public:
+    /// Constructor with explicit settings.
+    explicit NdtNettest(NdtSettings) noexcept;
+
+    /// Wait for nettest to terminate and destroy resources.
+    ~NdtNettest() noexcept override;
+
+    /// Runs the nettest.
+    bool run() noexcept override;
+
+  private:
+    NdtSettings settings_;
+};
+
+#endif // !MK_NETTEST_NO_NDT
+
+#ifndef MK_NETTEST_NO_TCP_CONNECT
+
+/// Settings for TcpConnect
+class TcpConnectSettings : public common::NeedsInputSettings {
+  public:
+    /// Unique name of this nettest.
+    static constexpr const char *name = "TcpConnect";
+    /* No nettest-specific settings */
+
+#ifdef SWIG
+  private:
+#endif
+    // Serialize TcpConnect settings into a JSON document.
+    bool serialize_into(nlohmann::json *) noexcept;
+};
+
+/// The TcpConnect nettest.
+class TcpConnectNettest : public common::Nettest {
+  public:
+    /// Constructor with explicit settings.
+    explicit TcpConnectNettest(TcpConnectSettings) noexcept;
+
+    /// Wait for nettest to terminate and destroy resources.
+    ~TcpConnectNettest() noexcept override;
+
+    /// Runs the nettest.
+    bool run() noexcept override;
+
+  private:
+    TcpConnectSettings settings_;
+};
+
+#endif // !MK_NETTEST_NO_TCP_CONNECT
+
+#ifndef MK_NETTEST_NO_TELEGRAM
+
+/// Settings for Telegram
+class TelegramSettings : public common::Settings {
+  public:
+    /// Unique name of this nettest.
+    static constexpr const char *name = "Telegram";
+    /* No nettest-specific settings */
+
+#ifdef SWIG
+  private:
+#endif
+    // Serialize Telegram settings into a JSON document.
+    bool serialize_into(nlohmann::json *) noexcept;
+};
+
+/// The Telegram nettest.
+class TelegramNettest : public common::Nettest {
+  public:
+    /// Constructor with explicit settings.
+    explicit TelegramNettest(TelegramSettings) noexcept;
+
+    /// Wait for nettest to terminate and destroy resources.
+    ~TelegramNettest() noexcept override;
+
+    /// Runs the nettest.
+    bool run() noexcept override;
+
+  private:
+    TelegramSettings settings_;
+};
+
+#endif // !MK_NETTEST_NO_TELEGRAM
+
+#ifndef MK_NETTEST_NO_WEB_CONNECTIVITY
+
+/// Settings for WebConnectivity
+class WebConnectivitySettings : public common::NeedsInputSettings {
+  public:
+    /// Unique name of this nettest.
+    static constexpr const char *name = "WebConnectivity";
+    /* No nettest-specific settings */
+
+#ifdef SWIG
+  private:
+#endif
+    // Serialize WebConnectivity settings into a JSON document.
+    bool serialize_into(nlohmann::json *) noexcept;
+};
+
+/// The WebConnectivity nettest.
+class WebConnectivityNettest : public common::WebsitesNettest {
+  public:
+    /// Constructor with explicit settings.
+    explicit WebConnectivityNettest(WebConnectivitySettings) noexcept;
+
+    /// Wait for nettest to terminate and destroy resources.
+    ~WebConnectivityNettest() noexcept override;
+
+    /// Runs the nettest.
+    bool run() noexcept override;
+
+  private:
+    WebConnectivitySettings settings_;
+};
+
+#endif // !MK_NETTEST_NO_WEB_CONNECTIVITY
+
+#ifndef MK_NETTEST_NO_WHATSAPP
+
+/// Settings for Whatsapp
+class WhatsappSettings : public common::Settings {
+  public:
+    /// Unique name of this nettest.
+    static constexpr const char *name = "Whatsapp";
+    
+    /// The "all_endpoints" setting of this nettest.
+    bool all_endpoints = false;
+
+#ifdef SWIG
+  private:
+#endif
+    // Serialize Whatsapp settings into a JSON document.
+    bool serialize_into(nlohmann::json *) noexcept;
+};
+
+/// The Whatsapp nettest.
+class WhatsappNettest : public common::Nettest {
+  public:
+    /// Constructor with explicit settings.
+    explicit WhatsappNettest(WhatsappSettings) noexcept;
+
+    /// Wait for nettest to terminate and destroy resources.
+    ~WhatsappNettest() noexcept override;
+
+    /// Runs the nettest.
+    bool run() noexcept override;
+
+  private:
+    WhatsappSettings settings_;
+};
+
+#endif // !MK_NETTEST_NO_WHATSAPP
 
 /*-
  * __________        .__               __
@@ -1088,154 +1184,226 @@ class Nettest {
  */
 #if !defined MK_NETTEST_NO_INLINE_IMPL && !defined SWIG
 
-// Routers
-// -------
+namespace detail {
 
-namespace routers {
+void TaskDeleter::operator()(mk_task_t *task) noexcept {
+    mk_task_destroy(task);
+}
 
-void Router::on_failure_asn_lookup(const events::FailureAsnLookupEvent &) {}
+void EventDeleter::operator()(mk_event_t *event) noexcept {
+    mk_event_destroy(event);
+}
 
-void Router::on_failure_cc_lookup(const events::FailureCcLookupEvent &) {}
+} // namespace detail
 
-void Router::on_failure_ip_lookup(const events::FailureIpLookupEvent &) {}
+namespace common {
 
-void Router::on_failure_measurement(const events::FailureMeasurementEvent &) {}
+// # Settings
 
-void Router::on_failure_measurement_submission(const events::FailureMeasurementSubmissionEvent &) {}
+bool Settings::serialize_into(nlohmann::json *doc) noexcept {
+    if (doc == nullptr) {
+        return false;
+    }
+    (*doc)["annotations"] = annotations;
+    (*doc)["log_filepath"] = log_filepath;
+    (*doc)["log_level"] = log_level;
+    (*doc)["output_filepath"] = output_filepath;
+    {
+        auto &o = (*doc)["options"];
+        o["bouncer_base_url"] = bouncer_base_url;
+        o["collector_base_url"] = collector_base_url;
+        o["dns/nameserver"] = dns_nameserver;
+        o["dns/engine"] = dns_engine;
+        o["geoip_asn_path"] = geoip_asn_path;
+        o["geoip_country_path"] = geoip_country_path;
+        o["ignore_bouncer_error"] = (int64_t)ignore_bouncer_error;
+        o["ignore_open_report_error"] = (int64_t)ignore_open_report_error;
+        o["max_runtime"] = max_runtime;
+        o["net/ca_bundle_path"] = net_ca_bundle_path;
+        o["net/timeout"] = net_timeout;
+        o["no_bouncer"] = (int64_t)no_bouncer;
+        o["no_collector"] = (int64_t)no_collector;
+        o["no_asn_lookup"] = (int64_t)no_asn_lookup;
+        o["no_cc_lookup"] = (int64_t)no_cc_lookup;
+        o["no_ip_lookup"] = (int64_t)no_ip_lookup;
+        o["no_file_report"] = (int64_t)no_file_report;
+        o["no_resolver_lookup"] = (int64_t)no_resolver_lookup;
+        o["probe_asn"] = probe_asn;
+        o["probe_cc"] = probe_cc;
+        o["probe_ip"] = probe_ip;
+        o["randomize_input"] = (int64_t)randomize_input;
+        o["save_real_probe_asn"] = (int64_t)save_real_probe_asn;
+        o["save_real_probe_cc"] = (int64_t)save_real_probe_cc;
+        o["save_real_probe_ip"] = (int64_t)save_real_probe_ip;
+        o["save_real_resolver_ip"] = (int64_t)save_real_resolver_ip;
+        o["software_name"] = software_name;
+        o["software_version"] = software_version;
+    }
+    return true;
+}
 
-void Router::on_failure_report_create(const events::FailureReportCreateEvent &) {}
+// # NeedsInputSettings
 
-void Router::on_failure_report_close(const events::FailureReportCloseEvent &) {}
+bool NeedsInputSettings::serialize_into(nlohmann::json *doc) noexcept {
+    if (doc == nullptr) {
+        return false;
+    }
+    (*doc)["inputs"] = inputs;
+    (*doc)["input_filepaths"] = input_filepaths;
+    return Settings::serialize_into(doc);
+}
 
-void Router::on_failure_resolver_lookup(const events::FailureResolverLookupEvent &) {}
+// # Nettest
 
-void Router::on_failure_startup(const events::FailureStartupEvent &) {}
+Nettest::Nettest() noexcept {}
 
-void Router::on_log(const events::LogEvent &) {}
+Nettest::~Nettest() noexcept {}
 
-void Router::on_measurement(const events::MeasurementEvent &) {}
+void Nettest::interrupt() noexcept {
+    std::unique_lock<std::mutex> _{mutex_};
+    mk_task_interrupt(task_.get());
+}
 
-void Router::on_status_end(const events::StatusEndEvent &) {}
-
-void Router::on_status_geoip_lookup(const events::StatusGeoipLookupEvent &) {}
-
-void Router::on_status_progress(const events::StatusProgressEvent &) {}
-
-void Router::on_status_queued(const events::StatusQueuedEvent &) {}
-
-void Router::on_status_measurement_start(const events::StatusMeasurementStartEvent &) {}
-
-void Router::on_status_measurement_submission(const events::StatusMeasurementSubmissionEvent &) {}
-
-void Router::on_status_measurement_done(const events::StatusMeasurementDoneEvent &) {}
-
-void Router::on_status_report_close(const events::StatusReportCloseEvent &) {}
-
-void Router::on_status_report_create(const events::StatusReportCreateEvent &) {}
-
-void Router::on_status_resolver_lookup(const events::StatusResolverLookupEvent &) {}
-
-void Router::on_status_started(const events::StatusStartedEvent &) {}
-
-void Router::on_status_update_performance(const events::StatusUpdatePerformanceEvent &) {}
-
-void Router::on_status_update_websites(const events::StatusUpdateWebsitesEvent &) {}
-
-void Router::on_task_terminated(const events::TaskTerminatedEvent &) {}
-
-Router::~Router() noexcept {}
-
-void NoisyRouter::on_failure_asn_lookup(const events::FailureAsnLookupEvent &event) {
+void Nettest::on_failure_asn_lookup(events::FailureAsnLookupEvent event) {
+#ifdef MK_NETTEST_VERBOSE_DEFAULT_HANDLERS
     std::clog << "failure.asn_lookup";
     std::clog << ":";
     std::clog << " failure='" << event.failure << "'";
     std::clog << std::endl;
+#else
+    (void)event;
+#endif
 }
 
-void NoisyRouter::on_failure_cc_lookup(const events::FailureCcLookupEvent &event) {
+void Nettest::on_failure_cc_lookup(events::FailureCcLookupEvent event) {
+#ifdef MK_NETTEST_VERBOSE_DEFAULT_HANDLERS
     std::clog << "failure.cc_lookup";
     std::clog << ":";
     std::clog << " failure='" << event.failure << "'";
     std::clog << std::endl;
+#else
+    (void)event;
+#endif
 }
 
-void NoisyRouter::on_failure_ip_lookup(const events::FailureIpLookupEvent &event) {
+void Nettest::on_failure_ip_lookup(events::FailureIpLookupEvent event) {
+#ifdef MK_NETTEST_VERBOSE_DEFAULT_HANDLERS
     std::clog << "failure.ip_lookup";
     std::clog << ":";
     std::clog << " failure='" << event.failure << "'";
     std::clog << std::endl;
+#else
+    (void)event;
+#endif
 }
 
-void NoisyRouter::on_failure_measurement(const events::FailureMeasurementEvent &event) {
+void Nettest::on_failure_measurement(events::FailureMeasurementEvent event) {
+#ifdef MK_NETTEST_VERBOSE_DEFAULT_HANDLERS
     std::clog << "failure.measurement";
     std::clog << ":";
     std::clog << " failure='" << event.failure << "'";
     std::clog << std::endl;
+#else
+    (void)event;
+#endif
 }
 
-void NoisyRouter::on_failure_measurement_submission(const events::FailureMeasurementSubmissionEvent &event) {
+void Nettest::on_failure_measurement_submission(events::FailureMeasurementSubmissionEvent event) {
+#ifdef MK_NETTEST_VERBOSE_DEFAULT_HANDLERS
     std::clog << "failure.measurement_submission";
     std::clog << ":";
     std::clog << " failure='" << event.failure << "'";
     std::clog << " idx='" << event.idx << "'";
     std::clog << " json_str='" << event.json_str << "'";
     std::clog << std::endl;
+#else
+    (void)event;
+#endif
 }
 
-void NoisyRouter::on_failure_report_create(const events::FailureReportCreateEvent &event) {
+void Nettest::on_failure_report_create(events::FailureReportCreateEvent event) {
+#ifdef MK_NETTEST_VERBOSE_DEFAULT_HANDLERS
     std::clog << "failure.report_create";
     std::clog << ":";
     std::clog << " failure='" << event.failure << "'";
     std::clog << std::endl;
+#else
+    (void)event;
+#endif
 }
 
-void NoisyRouter::on_failure_report_close(const events::FailureReportCloseEvent &event) {
+void Nettest::on_failure_report_close(events::FailureReportCloseEvent event) {
+#ifdef MK_NETTEST_VERBOSE_DEFAULT_HANDLERS
     std::clog << "failure.report_close";
     std::clog << ":";
     std::clog << " failure='" << event.failure << "'";
     std::clog << std::endl;
+#else
+    (void)event;
+#endif
 }
 
-void NoisyRouter::on_failure_resolver_lookup(const events::FailureResolverLookupEvent &event) {
+void Nettest::on_failure_resolver_lookup(events::FailureResolverLookupEvent event) {
+#ifdef MK_NETTEST_VERBOSE_DEFAULT_HANDLERS
     std::clog << "failure.resolver_lookup";
     std::clog << ":";
     std::clog << " failure='" << event.failure << "'";
     std::clog << std::endl;
+#else
+    (void)event;
+#endif
 }
 
-void NoisyRouter::on_failure_startup(const events::FailureStartupEvent &event) {
+void Nettest::on_failure_startup(events::FailureStartupEvent event) {
+#ifdef MK_NETTEST_VERBOSE_DEFAULT_HANDLERS
     std::clog << "failure.startup";
     std::clog << ":";
     std::clog << " failure='" << event.failure << "'";
     std::clog << std::endl;
+#else
+    (void)event;
+#endif
 }
 
-void NoisyRouter::on_log(const events::LogEvent &event) {
+void Nettest::on_log(events::LogEvent event) {
+#ifdef MK_NETTEST_VERBOSE_DEFAULT_HANDLERS
     std::clog << "log";
     std::clog << ":";
     std::clog << " log_level='" << event.log_level << "'";
     std::clog << " message='" << event.message << "'";
     std::clog << std::endl;
+#else
+    (void)event;
+#endif
 }
 
-void NoisyRouter::on_measurement(const events::MeasurementEvent &event) {
+void Nettest::on_measurement(events::MeasurementEvent event) {
+#ifdef MK_NETTEST_VERBOSE_DEFAULT_HANDLERS
     std::clog << "measurement";
     std::clog << ":";
     std::clog << " idx='" << event.idx << "'";
     std::clog << " json_str='" << event.json_str << "'";
     std::clog << std::endl;
+#else
+    (void)event;
+#endif
 }
 
-void NoisyRouter::on_status_end(const events::StatusEndEvent &event) {
+void Nettest::on_status_end(events::StatusEndEvent event) {
+#ifdef MK_NETTEST_VERBOSE_DEFAULT_HANDLERS
     std::clog << "status.end";
     std::clog << ":";
     std::clog << " downloaded_kb='" << event.downloaded_kb << "'";
     std::clog << " uploaded_kb='" << event.uploaded_kb << "'";
     std::clog << " failure='" << event.failure << "'";
     std::clog << std::endl;
+#else
+    (void)event;
+#endif
 }
 
-void NoisyRouter::on_status_geoip_lookup(const events::StatusGeoipLookupEvent &event) {
+void Nettest::on_status_geoip_lookup(events::StatusGeoipLookupEvent event) {
+#ifdef MK_NETTEST_VERBOSE_DEFAULT_HANDLERS
     std::clog << "status.geoip_lookup";
     std::clog << ":";
     std::clog << " probe_ip='" << event.probe_ip << "'";
@@ -1243,72 +1411,775 @@ void NoisyRouter::on_status_geoip_lookup(const events::StatusGeoipLookupEvent &e
     std::clog << " probe_cc='" << event.probe_cc << "'";
     std::clog << " probe_network_name='" << event.probe_network_name << "'";
     std::clog << std::endl;
+#else
+    (void)event;
+#endif
 }
 
-void NoisyRouter::on_status_progress(const events::StatusProgressEvent &event) {
+void Nettest::on_status_progress(events::StatusProgressEvent event) {
+#ifdef MK_NETTEST_VERBOSE_DEFAULT_HANDLERS
     std::clog << "status.progress";
     std::clog << ":";
     std::clog << " percentage='" << event.percentage << "'";
     std::clog << " message='" << event.message << "'";
     std::clog << std::endl;
+#else
+    (void)event;
+#endif
 }
 
-void NoisyRouter::on_status_queued(const events::StatusQueuedEvent &event) {
+void Nettest::on_status_queued(events::StatusQueuedEvent event) {
+#ifdef MK_NETTEST_VERBOSE_DEFAULT_HANDLERS
     std::clog << "status.queued";
     (void)event; /* No event attributes */
     std::clog << std::endl;
+#else
+    (void)event;
+#endif
 }
 
-void NoisyRouter::on_status_measurement_start(const events::StatusMeasurementStartEvent &event) {
+void Nettest::on_status_measurement_start(events::StatusMeasurementStartEvent event) {
+#ifdef MK_NETTEST_VERBOSE_DEFAULT_HANDLERS
     std::clog << "status.measurement_start";
     std::clog << ":";
     std::clog << " idx='" << event.idx << "'";
     std::clog << " input='" << event.input << "'";
     std::clog << std::endl;
+#else
+    (void)event;
+#endif
 }
 
-void NoisyRouter::on_status_measurement_submission(const events::StatusMeasurementSubmissionEvent &event) {
+void Nettest::on_status_measurement_submission(events::StatusMeasurementSubmissionEvent event) {
+#ifdef MK_NETTEST_VERBOSE_DEFAULT_HANDLERS
     std::clog << "status.measurement_submission";
     std::clog << ":";
     std::clog << " idx='" << event.idx << "'";
     std::clog << std::endl;
+#else
+    (void)event;
+#endif
 }
 
-void NoisyRouter::on_status_measurement_done(const events::StatusMeasurementDoneEvent &event) {
+void Nettest::on_status_measurement_done(events::StatusMeasurementDoneEvent event) {
+#ifdef MK_NETTEST_VERBOSE_DEFAULT_HANDLERS
     std::clog << "status.measurement_done";
     std::clog << ":";
     std::clog << " idx='" << event.idx << "'";
     std::clog << std::endl;
+#else
+    (void)event;
+#endif
 }
 
-void NoisyRouter::on_status_report_close(const events::StatusReportCloseEvent &event) {
+void Nettest::on_status_report_close(events::StatusReportCloseEvent event) {
+#ifdef MK_NETTEST_VERBOSE_DEFAULT_HANDLERS
     std::clog << "status.report_close";
     std::clog << ":";
     std::clog << " report_id='" << event.report_id << "'";
     std::clog << std::endl;
+#else
+    (void)event;
+#endif
 }
 
-void NoisyRouter::on_status_report_create(const events::StatusReportCreateEvent &event) {
+void Nettest::on_status_report_create(events::StatusReportCreateEvent event) {
+#ifdef MK_NETTEST_VERBOSE_DEFAULT_HANDLERS
     std::clog << "status.report_create";
     std::clog << ":";
     std::clog << " report_id='" << event.report_id << "'";
     std::clog << std::endl;
+#else
+    (void)event;
+#endif
 }
 
-void NoisyRouter::on_status_resolver_lookup(const events::StatusResolverLookupEvent &event) {
+void Nettest::on_status_resolver_lookup(events::StatusResolverLookupEvent event) {
+#ifdef MK_NETTEST_VERBOSE_DEFAULT_HANDLERS
     std::clog << "status.resolver_lookup";
     std::clog << ":";
     std::clog << " ip_address='" << event.ip_address << "'";
     std::clog << std::endl;
+#else
+    (void)event;
+#endif
 }
 
-void NoisyRouter::on_status_started(const events::StatusStartedEvent &event) {
+void Nettest::on_status_started(events::StatusStartedEvent event) {
+#ifdef MK_NETTEST_VERBOSE_DEFAULT_HANDLERS
     std::clog << "status.started";
     (void)event; /* No event attributes */
     std::clog << std::endl;
+#else
+    (void)event;
+#endif
 }
 
-void NoisyRouter::on_status_update_performance(const events::StatusUpdatePerformanceEvent &event) {
+void Nettest::on_task_terminated(events::TaskTerminatedEvent event) {
+#ifdef MK_NETTEST_VERBOSE_DEFAULT_HANDLERS
+    std::clog << "task_terminated";
+    (void)event; /* No event attributes */
+    std::clog << std::endl;
+#else
+    (void)event;
+#endif
+}
+
+bool Nettest::run_with_json_settings(nlohmann::json settingsdoc) noexcept {
+    {
+        std::unique_lock<std::mutex> _{mutex_};
+        if (task_ != nullptr) {
+            // TODO(bassosimone): route this error.
+            return false;
+        }
+        std::string str;
+        try {
+            str = settingsdoc.dump();
+        } catch (const std::exception &) {
+            // TODO(bassosimone): route this error.
+            return false;
+        }
+#ifdef MK_NETTEST_TRACE
+        std::clog << "NETTEST: settings: " << str << std::endl;
+#endif
+        task_.reset(mk_task_start(str.c_str()));
+        if (task_ == nullptr) {
+            // TODO(bassosimone): route this error.
+            return false;
+        }
+    }
+    for (;;) {
+        nlohmann::json eventdoc;
+        {
+            detail::UniqueEvent eventptr;
+            {
+                std::unique_lock<std::mutex> _{mutex_};
+                if (mk_task_is_done(task_.get())) {
+                    break;
+                }
+                eventptr.reset(mk_task_wait_for_next_event(task_.get()));
+            }
+            if (eventptr == nullptr) {
+                // TODO(bassosimone): route this error.
+                interrupt();
+                return false;
+            }
+            auto str = mk_event_serialize(eventptr.get());
+            if (!str) {
+                // TODO(bassosimone): route this error.
+                interrupt();
+                return false;
+            }
+#ifdef MK_NETTEST_TRACE
+            std::clog << "NETTEST: event: " << str << std::endl;
+#endif
+            try {
+                eventdoc = nlohmann::json::parse(str);
+            } catch (const std::exception &) {
+                // TODO(bassosimone): route this error.
+                interrupt();
+                return false;
+            }
+        }
+        if (eventdoc.count("key") != 1 || !eventdoc.at("key").is_string() ||
+                eventdoc.count("value") != 1 ||
+                !eventdoc.at("value").is_object()) {
+            // TODO(bassosimone): route this error.
+            interrupt();
+            return false;
+        }
+        if (eventdoc.at("key") == events::FailureAsnLookupEvent::key) {
+            if (eventdoc.at("value").count("failure") != 1 ||
+                    !eventdoc.at("value").at("failure").is_string()) {
+                // TODO(bassosimone): route this error.
+                interrupt();
+                return false;
+            }
+            if (!dispatch_event(std::move(eventdoc))) {
+                // TODO(bassosimone): route this error.
+                interrupt();
+                return false;
+            }
+            continue;
+        }
+        if (eventdoc.at("key") == events::FailureCcLookupEvent::key) {
+            if (eventdoc.at("value").count("failure") != 1 ||
+                    !eventdoc.at("value").at("failure").is_string()) {
+                // TODO(bassosimone): route this error.
+                interrupt();
+                return false;
+            }
+            if (!dispatch_event(std::move(eventdoc))) {
+                // TODO(bassosimone): route this error.
+                interrupt();
+                return false;
+            }
+            continue;
+        }
+        if (eventdoc.at("key") == events::FailureIpLookupEvent::key) {
+            if (eventdoc.at("value").count("failure") != 1 ||
+                    !eventdoc.at("value").at("failure").is_string()) {
+                // TODO(bassosimone): route this error.
+                interrupt();
+                return false;
+            }
+            if (!dispatch_event(std::move(eventdoc))) {
+                // TODO(bassosimone): route this error.
+                interrupt();
+                return false;
+            }
+            continue;
+        }
+        if (eventdoc.at("key") == events::FailureMeasurementEvent::key) {
+            if (eventdoc.at("value").count("failure") != 1 ||
+                    !eventdoc.at("value").at("failure").is_string()) {
+                // TODO(bassosimone): route this error.
+                interrupt();
+                return false;
+            }
+            if (!dispatch_event(std::move(eventdoc))) {
+                // TODO(bassosimone): route this error.
+                interrupt();
+                return false;
+            }
+            continue;
+        }
+        if (eventdoc.at("key") == events::FailureMeasurementSubmissionEvent::key) {
+            if (eventdoc.at("value").count("failure") != 1 ||
+                    !eventdoc.at("value").at("failure").is_string()) {
+                // TODO(bassosimone): route this error.
+                interrupt();
+                return false;
+            }
+            if (eventdoc.at("value").count("idx") != 1 ||
+                    !eventdoc.at("value").at("idx").is_number_integer()) {
+                // TODO(bassosimone): route this error.
+                interrupt();
+                return false;
+            }
+            if (eventdoc.at("value").count("json_str") != 1 ||
+                    !eventdoc.at("value").at("json_str").is_string()) {
+                // TODO(bassosimone): route this error.
+                interrupt();
+                return false;
+            }
+            if (!dispatch_event(std::move(eventdoc))) {
+                // TODO(bassosimone): route this error.
+                interrupt();
+                return false;
+            }
+            continue;
+        }
+        if (eventdoc.at("key") == events::FailureReportCreateEvent::key) {
+            if (eventdoc.at("value").count("failure") != 1 ||
+                    !eventdoc.at("value").at("failure").is_string()) {
+                // TODO(bassosimone): route this error.
+                interrupt();
+                return false;
+            }
+            if (!dispatch_event(std::move(eventdoc))) {
+                // TODO(bassosimone): route this error.
+                interrupt();
+                return false;
+            }
+            continue;
+        }
+        if (eventdoc.at("key") == events::FailureReportCloseEvent::key) {
+            if (eventdoc.at("value").count("failure") != 1 ||
+                    !eventdoc.at("value").at("failure").is_string()) {
+                // TODO(bassosimone): route this error.
+                interrupt();
+                return false;
+            }
+            if (!dispatch_event(std::move(eventdoc))) {
+                // TODO(bassosimone): route this error.
+                interrupt();
+                return false;
+            }
+            continue;
+        }
+        if (eventdoc.at("key") == events::FailureResolverLookupEvent::key) {
+            if (eventdoc.at("value").count("failure") != 1 ||
+                    !eventdoc.at("value").at("failure").is_string()) {
+                // TODO(bassosimone): route this error.
+                interrupt();
+                return false;
+            }
+            if (!dispatch_event(std::move(eventdoc))) {
+                // TODO(bassosimone): route this error.
+                interrupt();
+                return false;
+            }
+            continue;
+        }
+        if (eventdoc.at("key") == events::FailureStartupEvent::key) {
+            if (eventdoc.at("value").count("failure") != 1 ||
+                    !eventdoc.at("value").at("failure").is_string()) {
+                // TODO(bassosimone): route this error.
+                interrupt();
+                return false;
+            }
+            if (!dispatch_event(std::move(eventdoc))) {
+                // TODO(bassosimone): route this error.
+                interrupt();
+                return false;
+            }
+            continue;
+        }
+        if (eventdoc.at("key") == events::LogEvent::key) {
+            if (eventdoc.at("value").count("log_level") != 1 ||
+                    !eventdoc.at("value").at("log_level").is_string()) {
+                // TODO(bassosimone): route this error.
+                interrupt();
+                return false;
+            }
+            if (eventdoc.at("value").count("message") != 1 ||
+                    !eventdoc.at("value").at("message").is_string()) {
+                // TODO(bassosimone): route this error.
+                interrupt();
+                return false;
+            }
+            if (!dispatch_event(std::move(eventdoc))) {
+                // TODO(bassosimone): route this error.
+                interrupt();
+                return false;
+            }
+            continue;
+        }
+        if (eventdoc.at("key") == events::MeasurementEvent::key) {
+            if (eventdoc.at("value").count("idx") != 1 ||
+                    !eventdoc.at("value").at("idx").is_number_integer()) {
+                // TODO(bassosimone): route this error.
+                interrupt();
+                return false;
+            }
+            if (eventdoc.at("value").count("json_str") != 1 ||
+                    !eventdoc.at("value").at("json_str").is_string()) {
+                // TODO(bassosimone): route this error.
+                interrupt();
+                return false;
+            }
+            if (!dispatch_event(std::move(eventdoc))) {
+                // TODO(bassosimone): route this error.
+                interrupt();
+                return false;
+            }
+            continue;
+        }
+        if (eventdoc.at("key") == events::StatusEndEvent::key) {
+            if (eventdoc.at("value").count("downloaded_kb") != 1 ||
+                    !eventdoc.at("value").at("downloaded_kb").is_number_float()) {
+                // TODO(bassosimone): route this error.
+                interrupt();
+                return false;
+            }
+            if (eventdoc.at("value").count("uploaded_kb") != 1 ||
+                    !eventdoc.at("value").at("uploaded_kb").is_number_float()) {
+                // TODO(bassosimone): route this error.
+                interrupt();
+                return false;
+            }
+            if (eventdoc.at("value").count("failure") != 1 ||
+                    !eventdoc.at("value").at("failure").is_string()) {
+                // TODO(bassosimone): route this error.
+                interrupt();
+                return false;
+            }
+            if (!dispatch_event(std::move(eventdoc))) {
+                // TODO(bassosimone): route this error.
+                interrupt();
+                return false;
+            }
+            continue;
+        }
+        if (eventdoc.at("key") == events::StatusGeoipLookupEvent::key) {
+            if (eventdoc.at("value").count("probe_ip") != 1 ||
+                    !eventdoc.at("value").at("probe_ip").is_string()) {
+                // TODO(bassosimone): route this error.
+                interrupt();
+                return false;
+            }
+            if (eventdoc.at("value").count("probe_asn") != 1 ||
+                    !eventdoc.at("value").at("probe_asn").is_string()) {
+                // TODO(bassosimone): route this error.
+                interrupt();
+                return false;
+            }
+            if (eventdoc.at("value").count("probe_cc") != 1 ||
+                    !eventdoc.at("value").at("probe_cc").is_string()) {
+                // TODO(bassosimone): route this error.
+                interrupt();
+                return false;
+            }
+            if (eventdoc.at("value").count("probe_network_name") != 1 ||
+                    !eventdoc.at("value").at("probe_network_name").is_string()) {
+                // TODO(bassosimone): route this error.
+                interrupt();
+                return false;
+            }
+            if (!dispatch_event(std::move(eventdoc))) {
+                // TODO(bassosimone): route this error.
+                interrupt();
+                return false;
+            }
+            continue;
+        }
+        if (eventdoc.at("key") == events::StatusProgressEvent::key) {
+            if (eventdoc.at("value").count("percentage") != 1 ||
+                    !eventdoc.at("value").at("percentage").is_number_float()) {
+                // TODO(bassosimone): route this error.
+                interrupt();
+                return false;
+            }
+            if (eventdoc.at("value").count("message") != 1 ||
+                    !eventdoc.at("value").at("message").is_string()) {
+                // TODO(bassosimone): route this error.
+                interrupt();
+                return false;
+            }
+            if (!dispatch_event(std::move(eventdoc))) {
+                // TODO(bassosimone): route this error.
+                interrupt();
+                return false;
+            }
+            continue;
+        }
+        if (eventdoc.at("key") == events::StatusQueuedEvent::key) {
+            /* No event attributes */
+            if (!dispatch_event(std::move(eventdoc))) {
+                // TODO(bassosimone): route this error.
+                interrupt();
+                return false;
+            }
+            continue;
+        }
+        if (eventdoc.at("key") == events::StatusMeasurementStartEvent::key) {
+            if (eventdoc.at("value").count("idx") != 1 ||
+                    !eventdoc.at("value").at("idx").is_number_integer()) {
+                // TODO(bassosimone): route this error.
+                interrupt();
+                return false;
+            }
+            if (eventdoc.at("value").count("input") != 1 ||
+                    !eventdoc.at("value").at("input").is_string()) {
+                // TODO(bassosimone): route this error.
+                interrupt();
+                return false;
+            }
+            if (!dispatch_event(std::move(eventdoc))) {
+                // TODO(bassosimone): route this error.
+                interrupt();
+                return false;
+            }
+            continue;
+        }
+        if (eventdoc.at("key") == events::StatusMeasurementSubmissionEvent::key) {
+            if (eventdoc.at("value").count("idx") != 1 ||
+                    !eventdoc.at("value").at("idx").is_number_integer()) {
+                // TODO(bassosimone): route this error.
+                interrupt();
+                return false;
+            }
+            if (!dispatch_event(std::move(eventdoc))) {
+                // TODO(bassosimone): route this error.
+                interrupt();
+                return false;
+            }
+            continue;
+        }
+        if (eventdoc.at("key") == events::StatusMeasurementDoneEvent::key) {
+            if (eventdoc.at("value").count("idx") != 1 ||
+                    !eventdoc.at("value").at("idx").is_number_integer()) {
+                // TODO(bassosimone): route this error.
+                interrupt();
+                return false;
+            }
+            if (!dispatch_event(std::move(eventdoc))) {
+                // TODO(bassosimone): route this error.
+                interrupt();
+                return false;
+            }
+            continue;
+        }
+        if (eventdoc.at("key") == events::StatusReportCloseEvent::key) {
+            if (eventdoc.at("value").count("report_id") != 1 ||
+                    !eventdoc.at("value").at("report_id").is_string()) {
+                // TODO(bassosimone): route this error.
+                interrupt();
+                return false;
+            }
+            if (!dispatch_event(std::move(eventdoc))) {
+                // TODO(bassosimone): route this error.
+                interrupt();
+                return false;
+            }
+            continue;
+        }
+        if (eventdoc.at("key") == events::StatusReportCreateEvent::key) {
+            if (eventdoc.at("value").count("report_id") != 1 ||
+                    !eventdoc.at("value").at("report_id").is_string()) {
+                // TODO(bassosimone): route this error.
+                interrupt();
+                return false;
+            }
+            if (!dispatch_event(std::move(eventdoc))) {
+                // TODO(bassosimone): route this error.
+                interrupt();
+                return false;
+            }
+            continue;
+        }
+        if (eventdoc.at("key") == events::StatusResolverLookupEvent::key) {
+            if (eventdoc.at("value").count("ip_address") != 1 ||
+                    !eventdoc.at("value").at("ip_address").is_string()) {
+                // TODO(bassosimone): route this error.
+                interrupt();
+                return false;
+            }
+            if (!dispatch_event(std::move(eventdoc))) {
+                // TODO(bassosimone): route this error.
+                interrupt();
+                return false;
+            }
+            continue;
+        }
+        if (eventdoc.at("key") == events::StatusStartedEvent::key) {
+            /* No event attributes */
+            if (!dispatch_event(std::move(eventdoc))) {
+                // TODO(bassosimone): route this error.
+                interrupt();
+                return false;
+            }
+            continue;
+        }
+        if (eventdoc.at("key") == events::StatusUpdatePerformanceEvent::key) {
+            if (eventdoc.at("value").count("direction") != 1 ||
+                    !eventdoc.at("value").at("direction").is_string()) {
+                // TODO(bassosimone): route this error.
+                interrupt();
+                return false;
+            }
+            if (eventdoc.at("value").count("elapsed") != 1 ||
+                    !eventdoc.at("value").at("elapsed").is_number_float()) {
+                // TODO(bassosimone): route this error.
+                interrupt();
+                return false;
+            }
+            if (eventdoc.at("value").count("num_streams") != 1 ||
+                    !eventdoc.at("value").at("num_streams").is_number_integer()) {
+                // TODO(bassosimone): route this error.
+                interrupt();
+                return false;
+            }
+            if (eventdoc.at("value").count("speed_kbps") != 1 ||
+                    !eventdoc.at("value").at("speed_kbps").is_number_float()) {
+                // TODO(bassosimone): route this error.
+                interrupt();
+                return false;
+            }
+            if (!dispatch_event(std::move(eventdoc))) {
+                // TODO(bassosimone): route this error.
+                interrupt();
+                return false;
+            }
+            continue;
+        }
+        if (eventdoc.at("key") == events::StatusUpdateWebsitesEvent::key) {
+            if (eventdoc.at("value").count("url") != 1 ||
+                    !eventdoc.at("value").at("url").is_string()) {
+                // TODO(bassosimone): route this error.
+                interrupt();
+                return false;
+            }
+            if (eventdoc.at("value").count("status") != 1 ||
+                    !eventdoc.at("value").at("status").is_string()) {
+                // TODO(bassosimone): route this error.
+                interrupt();
+                return false;
+            }
+            if (!dispatch_event(std::move(eventdoc))) {
+                // TODO(bassosimone): route this error.
+                interrupt();
+                return false;
+            }
+            continue;
+        }
+        if (eventdoc.at("key") == events::TaskTerminatedEvent::key) {
+            /* No event attributes */
+            if (!dispatch_event(std::move(eventdoc))) {
+                // TODO(bassosimone): route this error.
+                interrupt();
+                return false;
+            }
+            continue;
+        }
+#ifdef MK_NETTEST_TRACE
+        std::clog << "NETTEST: unhandled event: " << str << std::endl;
+#endif
+        // TODO(bassosimone): route this error.
+        interrupt();
+        return false;
+    }
+    return true;
+}
+
+bool Nettest::dispatch_event(nlohmann::json doc) noexcept {
+    if (doc.at("key") == events::FailureAsnLookupEvent::key) {
+        events::FailureAsnLookupEvent event;
+        event.failure = doc.at("value").at("failure");
+        on_failure_asn_lookup(std::move(event));
+        return true;
+    }
+    if (doc.at("key") == events::FailureCcLookupEvent::key) {
+        events::FailureCcLookupEvent event;
+        event.failure = doc.at("value").at("failure");
+        on_failure_cc_lookup(std::move(event));
+        return true;
+    }
+    if (doc.at("key") == events::FailureIpLookupEvent::key) {
+        events::FailureIpLookupEvent event;
+        event.failure = doc.at("value").at("failure");
+        on_failure_ip_lookup(std::move(event));
+        return true;
+    }
+    if (doc.at("key") == events::FailureMeasurementEvent::key) {
+        events::FailureMeasurementEvent event;
+        event.failure = doc.at("value").at("failure");
+        on_failure_measurement(std::move(event));
+        return true;
+    }
+    if (doc.at("key") == events::FailureMeasurementSubmissionEvent::key) {
+        events::FailureMeasurementSubmissionEvent event;
+        event.failure = doc.at("value").at("failure");
+        event.idx = doc.at("value").at("idx");
+        event.json_str = doc.at("value").at("json_str");
+        on_failure_measurement_submission(std::move(event));
+        return true;
+    }
+    if (doc.at("key") == events::FailureReportCreateEvent::key) {
+        events::FailureReportCreateEvent event;
+        event.failure = doc.at("value").at("failure");
+        on_failure_report_create(std::move(event));
+        return true;
+    }
+    if (doc.at("key") == events::FailureReportCloseEvent::key) {
+        events::FailureReportCloseEvent event;
+        event.failure = doc.at("value").at("failure");
+        on_failure_report_close(std::move(event));
+        return true;
+    }
+    if (doc.at("key") == events::FailureResolverLookupEvent::key) {
+        events::FailureResolverLookupEvent event;
+        event.failure = doc.at("value").at("failure");
+        on_failure_resolver_lookup(std::move(event));
+        return true;
+    }
+    if (doc.at("key") == events::FailureStartupEvent::key) {
+        events::FailureStartupEvent event;
+        event.failure = doc.at("value").at("failure");
+        on_failure_startup(std::move(event));
+        return true;
+    }
+    if (doc.at("key") == events::LogEvent::key) {
+        events::LogEvent event;
+        event.log_level = doc.at("value").at("log_level");
+        event.message = doc.at("value").at("message");
+        on_log(std::move(event));
+        return true;
+    }
+    if (doc.at("key") == events::MeasurementEvent::key) {
+        events::MeasurementEvent event;
+        event.idx = doc.at("value").at("idx");
+        event.json_str = doc.at("value").at("json_str");
+        on_measurement(std::move(event));
+        return true;
+    }
+    if (doc.at("key") == events::StatusEndEvent::key) {
+        events::StatusEndEvent event;
+        event.downloaded_kb = doc.at("value").at("downloaded_kb");
+        event.uploaded_kb = doc.at("value").at("uploaded_kb");
+        event.failure = doc.at("value").at("failure");
+        on_status_end(std::move(event));
+        return true;
+    }
+    if (doc.at("key") == events::StatusGeoipLookupEvent::key) {
+        events::StatusGeoipLookupEvent event;
+        event.probe_ip = doc.at("value").at("probe_ip");
+        event.probe_asn = doc.at("value").at("probe_asn");
+        event.probe_cc = doc.at("value").at("probe_cc");
+        event.probe_network_name = doc.at("value").at("probe_network_name");
+        on_status_geoip_lookup(std::move(event));
+        return true;
+    }
+    if (doc.at("key") == events::StatusProgressEvent::key) {
+        events::StatusProgressEvent event;
+        event.percentage = doc.at("value").at("percentage");
+        event.message = doc.at("value").at("message");
+        on_status_progress(std::move(event));
+        return true;
+    }
+    if (doc.at("key") == events::StatusQueuedEvent::key) {
+        events::StatusQueuedEvent event;
+        /* No attributes */
+        on_status_queued(std::move(event));
+        return true;
+    }
+    if (doc.at("key") == events::StatusMeasurementStartEvent::key) {
+        events::StatusMeasurementStartEvent event;
+        event.idx = doc.at("value").at("idx");
+        event.input = doc.at("value").at("input");
+        on_status_measurement_start(std::move(event));
+        return true;
+    }
+    if (doc.at("key") == events::StatusMeasurementSubmissionEvent::key) {
+        events::StatusMeasurementSubmissionEvent event;
+        event.idx = doc.at("value").at("idx");
+        on_status_measurement_submission(std::move(event));
+        return true;
+    }
+    if (doc.at("key") == events::StatusMeasurementDoneEvent::key) {
+        events::StatusMeasurementDoneEvent event;
+        event.idx = doc.at("value").at("idx");
+        on_status_measurement_done(std::move(event));
+        return true;
+    }
+    if (doc.at("key") == events::StatusReportCloseEvent::key) {
+        events::StatusReportCloseEvent event;
+        event.report_id = doc.at("value").at("report_id");
+        on_status_report_close(std::move(event));
+        return true;
+    }
+    if (doc.at("key") == events::StatusReportCreateEvent::key) {
+        events::StatusReportCreateEvent event;
+        event.report_id = doc.at("value").at("report_id");
+        on_status_report_create(std::move(event));
+        return true;
+    }
+    if (doc.at("key") == events::StatusResolverLookupEvent::key) {
+        events::StatusResolverLookupEvent event;
+        event.ip_address = doc.at("value").at("ip_address");
+        on_status_resolver_lookup(std::move(event));
+        return true;
+    }
+    if (doc.at("key") == events::StatusStartedEvent::key) {
+        events::StatusStartedEvent event;
+        /* No attributes */
+        on_status_started(std::move(event));
+        return true;
+    }
+    if (doc.at("key") == events::TaskTerminatedEvent::key) {
+        events::TaskTerminatedEvent event;
+        /* No attributes */
+        on_task_terminated(std::move(event));
+        return true;
+    }
+    return false;
+}
+
+// # PerformanceNettest
+
+void PerformanceNettest::on_status_update_performance(events::StatusUpdatePerformanceEvent event) {
+#ifdef MK_NETTEST_VERBOSE_DEFAULT_HANDLERS
     std::clog << "status.update.performance";
     std::clog << ":";
     std::clog << " direction='" << event.direction << "'";
@@ -1316,608 +2187,401 @@ void NoisyRouter::on_status_update_performance(const events::StatusUpdatePerform
     std::clog << " num_streams='" << event.num_streams << "'";
     std::clog << " speed_kbps='" << event.speed_kbps << "'";
     std::clog << std::endl;
+#else
+    (void)event;
+#endif
 }
 
-void NoisyRouter::on_status_update_websites(const events::StatusUpdateWebsitesEvent &event) {
+bool PerformanceNettest::dispatch_event(nlohmann::json doc) noexcept {
+    if (doc.at("key") == events::StatusUpdatePerformanceEvent::key) {
+        events::StatusUpdatePerformanceEvent event;
+        event.direction = doc.at("value").at("direction");
+        event.elapsed = doc.at("value").at("elapsed");
+        event.num_streams = doc.at("value").at("num_streams");
+        event.speed_kbps = doc.at("value").at("speed_kbps");
+        on_status_update_performance(std::move(event));
+        return true;
+    }
+    return Nettest::dispatch_event(std::move(doc));
+}
+
+// # WebsitesNettest
+
+void WebsitesNettest::on_status_update_websites(events::StatusUpdateWebsitesEvent event) {
+#ifdef MK_NETTEST_VERBOSE_DEFAULT_HANDLERS
     std::clog << "status.update.websites";
     std::clog << ":";
     std::clog << " url='" << event.url << "'";
     std::clog << " status='" << event.status << "'";
     std::clog << std::endl;
-}
-
-void NoisyRouter::on_task_terminated(const events::TaskTerminatedEvent &event) {
-    std::clog << "task_terminated";
-    (void)event; /* No event attributes */
-    std::clog << std::endl;
-}
-
-NoisyRouter::~NoisyRouter() noexcept {}
-
-} // namespace routers
-
-// Nettest
-// -------
-
-Nettest::Nettest() noexcept {}
-
-Nettest::~Nettest() noexcept {}
-
-bool Nettest::start_captive_portal(settings::CaptivePortalSettings settings, routers::Router *router) noexcept {
-    router = (router) ? router : default_router();
-    nlohmann::json doc;
-    doc["name"] = "CaptivePortal";
-    /* No nettest specific settings */
-    return start_common(std::move(doc), settings, router);
-}
-
-bool Nettest::start_dash(settings::DashSettings settings, routers::Router *router) noexcept {
-    router = (router) ? router : default_router();
-    nlohmann::json doc;
-    doc["name"] = "Dash";
-    /* No nettest specific settings */
-    return start_common(std::move(doc), settings, router);
-}
-
-bool Nettest::start_dns_injection(settings::DnsInjectionSettings settings, routers::Router *router) noexcept {
-    router = (router) ? router : default_router();
-    nlohmann::json doc;
-    doc["name"] = "DnsInjection";
-    /* No nettest specific settings */
-    return start_common(std::move(doc), settings, router);
-}
-
-bool Nettest::start_facebook_messenger(settings::FacebookMessengerSettings settings, routers::Router *router) noexcept {
-    router = (router) ? router : default_router();
-    nlohmann::json doc;
-    doc["name"] = "FacebookMessenger";
-    /* No nettest specific settings */
-    return start_common(std::move(doc), settings, router);
-}
-
-bool Nettest::start_http_header_field_manipulation(settings::HttpHeaderFieldManipulationSettings settings, routers::Router *router) noexcept {
-    router = (router) ? router : default_router();
-    nlohmann::json doc;
-    doc["name"] = "HttpHeaderFieldManipulation";
-    /* No nettest specific settings */
-    return start_common(std::move(doc), settings, router);
-}
-
-bool Nettest::start_http_invalid_request_line(settings::HttpInvalidRequestLineSettings settings, routers::Router *router) noexcept {
-    router = (router) ? router : default_router();
-    nlohmann::json doc;
-    doc["name"] = "HttpInvalidRequestLine";
-    /* No nettest specific settings */
-    return start_common(std::move(doc), settings, router);
-}
-
-bool Nettest::start_meek_fronted_requests(settings::MeekFrontedRequestsSettings settings, routers::Router *router) noexcept {
-    router = (router) ? router : default_router();
-    nlohmann::json doc;
-    doc["name"] = "MeekFrontedRequests";
-    /* No nettest specific settings */
-    return start_common(std::move(doc), settings, router);
-}
-
-bool Nettest::start_multi_ndt(settings::MultiNdtSettings settings, routers::Router *router) noexcept {
-    router = (router) ? router : default_router();
-    nlohmann::json doc;
-    doc["name"] = "MultiNdt";
-    /* No nettest specific settings */
-    return start_common(std::move(doc), settings, router);
-}
-
-bool Nettest::start_ndt(settings::NdtSettings settings, routers::Router *router) noexcept {
-    router = (router) ? router : default_router();
-    nlohmann::json doc;
-    doc["name"] = "Ndt";
-    /* No nettest specific settings */
-    return start_common(std::move(doc), settings, router);
-}
-
-bool Nettest::start_tcp_connect(settings::TcpConnectSettings settings, routers::Router *router) noexcept {
-    router = (router) ? router : default_router();
-    nlohmann::json doc;
-    doc["name"] = "TcpConnect";
-    /* No nettest specific settings */
-    return start_common(std::move(doc), settings, router);
-}
-
-bool Nettest::start_telegram(settings::TelegramSettings settings, routers::Router *router) noexcept {
-    router = (router) ? router : default_router();
-    nlohmann::json doc;
-    doc["name"] = "Telegram";
-    /* No nettest specific settings */
-    return start_common(std::move(doc), settings, router);
-}
-
-bool Nettest::start_web_connectivity(settings::WebConnectivitySettings settings, routers::Router *router) noexcept {
-    router = (router) ? router : default_router();
-    nlohmann::json doc;
-    doc["name"] = "WebConnectivity";
-    /* No nettest specific settings */
-    return start_common(std::move(doc), settings, router);
-}
-
-bool Nettest::start_whatsapp(settings::WhatsappSettings settings, routers::Router *router) noexcept {
-    router = (router) ? router : default_router();
-    nlohmann::json doc;
-    doc["name"] = "Whatsapp";
-    doc["options"]["all_endpoints"] = (int64_t)settings.all_endpoints;
-    return start_common(std::move(doc), settings, router);
-}
-
-void Nettest::route_next_event(routers::Router *router) noexcept {
-    router = (router) ? router : default_router();
-    UniqueEvent eventptr;
-    nlohmann::json ev;
-    {
-        std::unique_lock<std::mutex> _{mutex_};
-        eventptr.reset(mk_task_wait_for_next_event(task_.get()));
-    }
-    if (eventptr == nullptr) {
-        // TODO(bassosimone): route this error.
-        interrupt();
-        return;
-    }
-    auto str = mk_event_serialize(eventptr.get());
-    if (!str) {
-        // TODO(bassosimone): route this error.
-        interrupt();
-        return;
-    }
-#ifdef MK_NETTEST_TRACE
-    std::clog << "NETTEST: event: " << str << std::endl;
+#else
+    (void)event;
 #endif
-    try {
-        ev = nlohmann::json::parse(str);
-    } catch (const std::exception &) {
-        // TODO(bassosimone): route this error.
-        interrupt();
-        return;
-    }
-    if (ev.count("key") <= 0 || !ev.at("key").is_string() || ev.count("value") <= 0 || !ev.at("value").is_object()) {
-        // TODO(bassosimone): route this error.
-        interrupt();
-        return;
-    }
-    if (ev.at("key") == events::FailureAsnLookupEvent::key) {
-        events::FailureAsnLookupEvent event;
-        if (ev.at("value").count("failure") <= 0 || !ev.at("value").at("failure").is_string()) {
-            // TODO(bassosimone): route this error.
-            interrupt();
-            return;
-        }
-        event.failure = ev.at("value").at("failure");
-        router->on_failure_asn_lookup(event);
-        return;
-    }
-    if (ev.at("key") == events::FailureCcLookupEvent::key) {
-        events::FailureCcLookupEvent event;
-        if (ev.at("value").count("failure") <= 0 || !ev.at("value").at("failure").is_string()) {
-            // TODO(bassosimone): route this error.
-            interrupt();
-            return;
-        }
-        event.failure = ev.at("value").at("failure");
-        router->on_failure_cc_lookup(event);
-        return;
-    }
-    if (ev.at("key") == events::FailureIpLookupEvent::key) {
-        events::FailureIpLookupEvent event;
-        if (ev.at("value").count("failure") <= 0 || !ev.at("value").at("failure").is_string()) {
-            // TODO(bassosimone): route this error.
-            interrupt();
-            return;
-        }
-        event.failure = ev.at("value").at("failure");
-        router->on_failure_ip_lookup(event);
-        return;
-    }
-    if (ev.at("key") == events::FailureMeasurementEvent::key) {
-        events::FailureMeasurementEvent event;
-        if (ev.at("value").count("failure") <= 0 || !ev.at("value").at("failure").is_string()) {
-            // TODO(bassosimone): route this error.
-            interrupt();
-            return;
-        }
-        event.failure = ev.at("value").at("failure");
-        router->on_failure_measurement(event);
-        return;
-    }
-    if (ev.at("key") == events::FailureMeasurementSubmissionEvent::key) {
-        events::FailureMeasurementSubmissionEvent event;
-        if (ev.at("value").count("failure") <= 0 || !ev.at("value").at("failure").is_string()) {
-            // TODO(bassosimone): route this error.
-            interrupt();
-            return;
-        }
-        event.failure = ev.at("value").at("failure");
-        if (ev.at("value").count("idx") <= 0 || !ev.at("value").at("idx").is_number_integer()) {
-            // TODO(bassosimone): route this error.
-            interrupt();
-            return;
-        }
-        event.idx = ev.at("value").at("idx");
-        if (ev.at("value").count("json_str") <= 0 || !ev.at("value").at("json_str").is_string()) {
-            // TODO(bassosimone): route this error.
-            interrupt();
-            return;
-        }
-        event.json_str = ev.at("value").at("json_str");
-        router->on_failure_measurement_submission(event);
-        return;
-    }
-    if (ev.at("key") == events::FailureReportCreateEvent::key) {
-        events::FailureReportCreateEvent event;
-        if (ev.at("value").count("failure") <= 0 || !ev.at("value").at("failure").is_string()) {
-            // TODO(bassosimone): route this error.
-            interrupt();
-            return;
-        }
-        event.failure = ev.at("value").at("failure");
-        router->on_failure_report_create(event);
-        return;
-    }
-    if (ev.at("key") == events::FailureReportCloseEvent::key) {
-        events::FailureReportCloseEvent event;
-        if (ev.at("value").count("failure") <= 0 || !ev.at("value").at("failure").is_string()) {
-            // TODO(bassosimone): route this error.
-            interrupt();
-            return;
-        }
-        event.failure = ev.at("value").at("failure");
-        router->on_failure_report_close(event);
-        return;
-    }
-    if (ev.at("key") == events::FailureResolverLookupEvent::key) {
-        events::FailureResolverLookupEvent event;
-        if (ev.at("value").count("failure") <= 0 || !ev.at("value").at("failure").is_string()) {
-            // TODO(bassosimone): route this error.
-            interrupt();
-            return;
-        }
-        event.failure = ev.at("value").at("failure");
-        router->on_failure_resolver_lookup(event);
-        return;
-    }
-    if (ev.at("key") == events::FailureStartupEvent::key) {
-        events::FailureStartupEvent event;
-        if (ev.at("value").count("failure") <= 0 || !ev.at("value").at("failure").is_string()) {
-            // TODO(bassosimone): route this error.
-            interrupt();
-            return;
-        }
-        event.failure = ev.at("value").at("failure");
-        router->on_failure_startup(event);
-        return;
-    }
-    if (ev.at("key") == events::LogEvent::key) {
-        events::LogEvent event;
-        if (ev.at("value").count("log_level") <= 0 || !ev.at("value").at("log_level").is_string()) {
-            // TODO(bassosimone): route this error.
-            interrupt();
-            return;
-        }
-        event.log_level = ev.at("value").at("log_level");
-        if (ev.at("value").count("message") <= 0 || !ev.at("value").at("message").is_string()) {
-            // TODO(bassosimone): route this error.
-            interrupt();
-            return;
-        }
-        event.message = ev.at("value").at("message");
-        router->on_log(event);
-        return;
-    }
-    if (ev.at("key") == events::MeasurementEvent::key) {
-        events::MeasurementEvent event;
-        if (ev.at("value").count("idx") <= 0 || !ev.at("value").at("idx").is_number_integer()) {
-            // TODO(bassosimone): route this error.
-            interrupt();
-            return;
-        }
-        event.idx = ev.at("value").at("idx");
-        if (ev.at("value").count("json_str") <= 0 || !ev.at("value").at("json_str").is_string()) {
-            // TODO(bassosimone): route this error.
-            interrupt();
-            return;
-        }
-        event.json_str = ev.at("value").at("json_str");
-        router->on_measurement(event);
-        return;
-    }
-    if (ev.at("key") == events::StatusEndEvent::key) {
-        events::StatusEndEvent event;
-        if (ev.at("value").count("downloaded_kb") <= 0 || !ev.at("value").at("downloaded_kb").is_number_float()) {
-            // TODO(bassosimone): route this error.
-            interrupt();
-            return;
-        }
-        event.downloaded_kb = ev.at("value").at("downloaded_kb");
-        if (ev.at("value").count("uploaded_kb") <= 0 || !ev.at("value").at("uploaded_kb").is_number_float()) {
-            // TODO(bassosimone): route this error.
-            interrupt();
-            return;
-        }
-        event.uploaded_kb = ev.at("value").at("uploaded_kb");
-        if (ev.at("value").count("failure") <= 0 || !ev.at("value").at("failure").is_string()) {
-            // TODO(bassosimone): route this error.
-            interrupt();
-            return;
-        }
-        event.failure = ev.at("value").at("failure");
-        router->on_status_end(event);
-        return;
-    }
-    if (ev.at("key") == events::StatusGeoipLookupEvent::key) {
-        events::StatusGeoipLookupEvent event;
-        if (ev.at("value").count("probe_ip") <= 0 || !ev.at("value").at("probe_ip").is_string()) {
-            // TODO(bassosimone): route this error.
-            interrupt();
-            return;
-        }
-        event.probe_ip = ev.at("value").at("probe_ip");
-        if (ev.at("value").count("probe_asn") <= 0 || !ev.at("value").at("probe_asn").is_string()) {
-            // TODO(bassosimone): route this error.
-            interrupt();
-            return;
-        }
-        event.probe_asn = ev.at("value").at("probe_asn");
-        if (ev.at("value").count("probe_cc") <= 0 || !ev.at("value").at("probe_cc").is_string()) {
-            // TODO(bassosimone): route this error.
-            interrupt();
-            return;
-        }
-        event.probe_cc = ev.at("value").at("probe_cc");
-        if (ev.at("value").count("probe_network_name") <= 0 || !ev.at("value").at("probe_network_name").is_string()) {
-            // TODO(bassosimone): route this error.
-            interrupt();
-            return;
-        }
-        event.probe_network_name = ev.at("value").at("probe_network_name");
-        router->on_status_geoip_lookup(event);
-        return;
-    }
-    if (ev.at("key") == events::StatusProgressEvent::key) {
-        events::StatusProgressEvent event;
-        if (ev.at("value").count("percentage") <= 0 || !ev.at("value").at("percentage").is_number_float()) {
-            // TODO(bassosimone): route this error.
-            interrupt();
-            return;
-        }
-        event.percentage = ev.at("value").at("percentage");
-        if (ev.at("value").count("message") <= 0 || !ev.at("value").at("message").is_string()) {
-            // TODO(bassosimone): route this error.
-            interrupt();
-            return;
-        }
-        event.message = ev.at("value").at("message");
-        router->on_status_progress(event);
-        return;
-    }
-    if (ev.at("key") == events::StatusQueuedEvent::key) {
-        events::StatusQueuedEvent event;
-        /* No attributes */
-        router->on_status_queued(event);
-        return;
-    }
-    if (ev.at("key") == events::StatusMeasurementStartEvent::key) {
-        events::StatusMeasurementStartEvent event;
-        if (ev.at("value").count("idx") <= 0 || !ev.at("value").at("idx").is_number_integer()) {
-            // TODO(bassosimone): route this error.
-            interrupt();
-            return;
-        }
-        event.idx = ev.at("value").at("idx");
-        if (ev.at("value").count("input") <= 0 || !ev.at("value").at("input").is_string()) {
-            // TODO(bassosimone): route this error.
-            interrupt();
-            return;
-        }
-        event.input = ev.at("value").at("input");
-        router->on_status_measurement_start(event);
-        return;
-    }
-    if (ev.at("key") == events::StatusMeasurementSubmissionEvent::key) {
-        events::StatusMeasurementSubmissionEvent event;
-        if (ev.at("value").count("idx") <= 0 || !ev.at("value").at("idx").is_number_integer()) {
-            // TODO(bassosimone): route this error.
-            interrupt();
-            return;
-        }
-        event.idx = ev.at("value").at("idx");
-        router->on_status_measurement_submission(event);
-        return;
-    }
-    if (ev.at("key") == events::StatusMeasurementDoneEvent::key) {
-        events::StatusMeasurementDoneEvent event;
-        if (ev.at("value").count("idx") <= 0 || !ev.at("value").at("idx").is_number_integer()) {
-            // TODO(bassosimone): route this error.
-            interrupt();
-            return;
-        }
-        event.idx = ev.at("value").at("idx");
-        router->on_status_measurement_done(event);
-        return;
-    }
-    if (ev.at("key") == events::StatusReportCloseEvent::key) {
-        events::StatusReportCloseEvent event;
-        if (ev.at("value").count("report_id") <= 0 || !ev.at("value").at("report_id").is_string()) {
-            // TODO(bassosimone): route this error.
-            interrupt();
-            return;
-        }
-        event.report_id = ev.at("value").at("report_id");
-        router->on_status_report_close(event);
-        return;
-    }
-    if (ev.at("key") == events::StatusReportCreateEvent::key) {
-        events::StatusReportCreateEvent event;
-        if (ev.at("value").count("report_id") <= 0 || !ev.at("value").at("report_id").is_string()) {
-            // TODO(bassosimone): route this error.
-            interrupt();
-            return;
-        }
-        event.report_id = ev.at("value").at("report_id");
-        router->on_status_report_create(event);
-        return;
-    }
-    if (ev.at("key") == events::StatusResolverLookupEvent::key) {
-        events::StatusResolverLookupEvent event;
-        if (ev.at("value").count("ip_address") <= 0 || !ev.at("value").at("ip_address").is_string()) {
-            // TODO(bassosimone): route this error.
-            interrupt();
-            return;
-        }
-        event.ip_address = ev.at("value").at("ip_address");
-        router->on_status_resolver_lookup(event);
-        return;
-    }
-    if (ev.at("key") == events::StatusStartedEvent::key) {
-        events::StatusStartedEvent event;
-        /* No attributes */
-        router->on_status_started(event);
-        return;
-    }
-    if (ev.at("key") == events::StatusUpdatePerformanceEvent::key) {
-        events::StatusUpdatePerformanceEvent event;
-        if (ev.at("value").count("direction") <= 0 || !ev.at("value").at("direction").is_string()) {
-            // TODO(bassosimone): route this error.
-            interrupt();
-            return;
-        }
-        event.direction = ev.at("value").at("direction");
-        if (ev.at("value").count("elapsed") <= 0 || !ev.at("value").at("elapsed").is_number_float()) {
-            // TODO(bassosimone): route this error.
-            interrupt();
-            return;
-        }
-        event.elapsed = ev.at("value").at("elapsed");
-        if (ev.at("value").count("num_streams") <= 0 || !ev.at("value").at("num_streams").is_number_integer()) {
-            // TODO(bassosimone): route this error.
-            interrupt();
-            return;
-        }
-        event.num_streams = ev.at("value").at("num_streams");
-        if (ev.at("value").count("speed_kbps") <= 0 || !ev.at("value").at("speed_kbps").is_number_float()) {
-            // TODO(bassosimone): route this error.
-            interrupt();
-            return;
-        }
-        event.speed_kbps = ev.at("value").at("speed_kbps");
-        router->on_status_update_performance(event);
-        return;
-    }
-    if (ev.at("key") == events::StatusUpdateWebsitesEvent::key) {
+}
+
+bool WebsitesNettest::dispatch_event(nlohmann::json doc) noexcept {
+    if (doc.at("key") == events::StatusUpdateWebsitesEvent::key) {
         events::StatusUpdateWebsitesEvent event;
-        if (ev.at("value").count("url") <= 0 || !ev.at("value").at("url").is_string()) {
-            // TODO(bassosimone): route this error.
-            interrupt();
-            return;
-        }
-        event.url = ev.at("value").at("url");
-        if (ev.at("value").count("status") <= 0 || !ev.at("value").at("status").is_string()) {
-            // TODO(bassosimone): route this error.
-            interrupt();
-            return;
-        }
-        event.status = ev.at("value").at("status");
-        router->on_status_update_websites(event);
-        return;
+        event.url = doc.at("value").at("url");
+        event.status = doc.at("value").at("status");
+        on_status_update_websites(std::move(event));
+        return true;
     }
-    if (ev.at("key") == events::TaskTerminatedEvent::key) {
-        events::TaskTerminatedEvent event;
-        /* No attributes */
-        router->on_task_terminated(event);
-        return;
-    }
-#ifdef MK_NETTEST_TRACE
-    std::clog << "NETTEST: unhandled event: " << str << std::endl;
-#endif
-    // TODO(bassosimone): route this error.
-    interrupt();
+    return Nettest::dispatch_event(std::move(doc));
 }
 
-bool Nettest::is_done() noexcept {
-    std::unique_lock<std::mutex> _{mutex_};
-    return mk_task_is_done(task_.get());
+} // namespace common
+
+// # CaptivePortal
+
+#ifndef MK_NETTEST_NO_CAPTIVE_PORTAL
+
+bool CaptivePortalSettings::serialize_into(nlohmann::json *doc) noexcept {
+    (*doc)["name"] = "CaptivePortal";
+    /* No nettest specific settings */
+    return common::Settings::serialize_into(doc);
 }
 
-void Nettest::interrupt() noexcept {
-    std::unique_lock<std::mutex> _{mutex_};
-    mk_task_interrupt(task_.get());
+CaptivePortalNettest::CaptivePortalNettest(CaptivePortalSettings settings) noexcept {
+    std::swap(settings_, settings);
 }
 
-/* static */ routers::Router *Nettest::default_router() noexcept {
-    static routers::Router router;
-    return &router;
-}
+CaptivePortalNettest::~CaptivePortalNettest() noexcept {}
 
-bool Nettest::start_common(nlohmann::json doc, const settings::CommonSettings &cs, routers::Router *router) noexcept {
-    assert(router != nullptr);
-
-    doc["annotations"] = cs.annotations;
-    doc["disabled_events"] = cs.disabled_events;
-    doc["inputs"] = cs.inputs;
-    doc["input_filepaths"] = cs.input_filepaths;
-    doc["log_filepath"] = cs.log_filepath;
-    doc["log_level"] = cs.log_level;
-    doc["output_filepath"] = cs.output_filepath;
-    {
-        auto &o = doc["options"];
-        o["bouncer_base_url"] = cs.bouncer_base_url;
-        o["collector_base_url"] = cs.collector_base_url;
-        o["dns/nameserver"] = cs.dns_nameserver;
-        o["dns/engine"] = cs.dns_engine;
-        o["geoip_asn_path"] = cs.geoip_asn_path;
-        o["geoip_country_path"] = cs.geoip_country_path;
-        o["ignore_bouncer_error"] = (int64_t)cs.ignore_bouncer_error;
-        o["ignore_open_report_error"] = (int64_t)cs.ignore_open_report_error;
-        o["max_runtime"] = cs.max_runtime;
-        o["net/ca_bundle_path"] = cs.net_ca_bundle_path;
-        o["net/timeout"] = cs.net_timeout;
-        o["no_bouncer"] = (int64_t)cs.no_bouncer;
-        o["no_collector"] = (int64_t)cs.no_collector;
-        o["no_asn_lookup"] = (int64_t)cs.no_asn_lookup;
-        o["no_cc_lookup"] = (int64_t)cs.no_cc_lookup;
-        o["no_ip_lookup"] = (int64_t)cs.no_ip_lookup;
-        o["no_file_report"] = (int64_t)cs.no_file_report;
-        o["no_resolver_lookup"] = (int64_t)cs.no_resolver_lookup;
-        o["probe_asn"] = cs.probe_asn;
-        o["probe_cc"] = cs.probe_cc;
-        o["probe_ip"] = cs.probe_ip;
-        o["randomize_input"] = (int64_t)cs.randomize_input;
-        o["save_real_probe_asn"] = (int64_t)cs.save_real_probe_asn;
-        o["save_real_probe_cc"] = (int64_t)cs.save_real_probe_cc;
-        o["save_real_probe_ip"] = (int64_t)cs.save_real_probe_ip;
-        o["save_real_resolver_ip"] = (int64_t)cs.save_real_resolver_ip;
-        o["software_name"] = cs.software_name;
-        o["software_version"] = cs.software_version;
-    }
-
-    std::unique_lock<std::mutex> _{mutex_};
-    if (task_ != nullptr) {
-        // TODO(bassosimone): route this error.
+bool CaptivePortalNettest::run() noexcept {
+    nlohmann::json doc;
+    if (!settings_.serialize_into(&doc)) {
+        // TODO(bassosimone): route this error
         return false;
     }
-    std::string str;
-    try {
-        str = doc.dump();
-    } catch (const std::exception &) {
-        // TODO(bassosimone): route this error.
-        return false;
-    }
-#ifdef MK_NETTEST_TRACE
-    std::clog << "NETTEST: settings: " << str << std::endl;
-#endif
-
-    task_.reset(mk_task_start(str.c_str()));
-    if (task_ == nullptr) {
-        // TODO(bassosimone): route this error.
-        return false;
-    }
-    return true;
+    return run_with_json_settings(std::move(doc));
 }
+
+#endif // !MK_NETTEST_NO_CAPTIVE_PORTAL
+
+// # Dash
+
+#ifndef MK_NETTEST_NO_DASH
+
+bool DashSettings::serialize_into(nlohmann::json *doc) noexcept {
+    (*doc)["name"] = "Dash";
+    /* No nettest specific settings */
+    return common::Settings::serialize_into(doc);
+}
+
+DashNettest::DashNettest(DashSettings settings) noexcept {
+    std::swap(settings_, settings);
+}
+
+DashNettest::~DashNettest() noexcept {}
+
+bool DashNettest::run() noexcept {
+    nlohmann::json doc;
+    if (!settings_.serialize_into(&doc)) {
+        // TODO(bassosimone): route this error
+        return false;
+    }
+    return run_with_json_settings(std::move(doc));
+}
+
+#endif // !MK_NETTEST_NO_DASH
+
+// # DnsInjection
+
+#ifndef MK_NETTEST_NO_DNS_INJECTION
+
+bool DnsInjectionSettings::serialize_into(nlohmann::json *doc) noexcept {
+    (*doc)["name"] = "DnsInjection";
+    /* No nettest specific settings */
+    return common::NeedsInputSettings::serialize_into(doc);
+}
+
+DnsInjectionNettest::DnsInjectionNettest(DnsInjectionSettings settings) noexcept {
+    std::swap(settings_, settings);
+}
+
+DnsInjectionNettest::~DnsInjectionNettest() noexcept {}
+
+bool DnsInjectionNettest::run() noexcept {
+    nlohmann::json doc;
+    if (!settings_.serialize_into(&doc)) {
+        // TODO(bassosimone): route this error
+        return false;
+    }
+    return run_with_json_settings(std::move(doc));
+}
+
+#endif // !MK_NETTEST_NO_DNS_INJECTION
+
+// # FacebookMessenger
+
+#ifndef MK_NETTEST_NO_FACEBOOK_MESSENGER
+
+bool FacebookMessengerSettings::serialize_into(nlohmann::json *doc) noexcept {
+    (*doc)["name"] = "FacebookMessenger";
+    /* No nettest specific settings */
+    return common::Settings::serialize_into(doc);
+}
+
+FacebookMessengerNettest::FacebookMessengerNettest(FacebookMessengerSettings settings) noexcept {
+    std::swap(settings_, settings);
+}
+
+FacebookMessengerNettest::~FacebookMessengerNettest() noexcept {}
+
+bool FacebookMessengerNettest::run() noexcept {
+    nlohmann::json doc;
+    if (!settings_.serialize_into(&doc)) {
+        // TODO(bassosimone): route this error
+        return false;
+    }
+    return run_with_json_settings(std::move(doc));
+}
+
+#endif // !MK_NETTEST_NO_FACEBOOK_MESSENGER
+
+// # HttpHeaderFieldManipulation
+
+#ifndef MK_NETTEST_NO_HTTP_HEADER_FIELD_MANIPULATION
+
+bool HttpHeaderFieldManipulationSettings::serialize_into(nlohmann::json *doc) noexcept {
+    (*doc)["name"] = "HttpHeaderFieldManipulation";
+    /* No nettest specific settings */
+    return common::Settings::serialize_into(doc);
+}
+
+HttpHeaderFieldManipulationNettest::HttpHeaderFieldManipulationNettest(HttpHeaderFieldManipulationSettings settings) noexcept {
+    std::swap(settings_, settings);
+}
+
+HttpHeaderFieldManipulationNettest::~HttpHeaderFieldManipulationNettest() noexcept {}
+
+bool HttpHeaderFieldManipulationNettest::run() noexcept {
+    nlohmann::json doc;
+    if (!settings_.serialize_into(&doc)) {
+        // TODO(bassosimone): route this error
+        return false;
+    }
+    return run_with_json_settings(std::move(doc));
+}
+
+#endif // !MK_NETTEST_NO_HTTP_HEADER_FIELD_MANIPULATION
+
+// # HttpInvalidRequestLine
+
+#ifndef MK_NETTEST_NO_HTTP_INVALID_REQUEST_LINE
+
+bool HttpInvalidRequestLineSettings::serialize_into(nlohmann::json *doc) noexcept {
+    (*doc)["name"] = "HttpInvalidRequestLine";
+    /* No nettest specific settings */
+    return common::Settings::serialize_into(doc);
+}
+
+HttpInvalidRequestLineNettest::HttpInvalidRequestLineNettest(HttpInvalidRequestLineSettings settings) noexcept {
+    std::swap(settings_, settings);
+}
+
+HttpInvalidRequestLineNettest::~HttpInvalidRequestLineNettest() noexcept {}
+
+bool HttpInvalidRequestLineNettest::run() noexcept {
+    nlohmann::json doc;
+    if (!settings_.serialize_into(&doc)) {
+        // TODO(bassosimone): route this error
+        return false;
+    }
+    return run_with_json_settings(std::move(doc));
+}
+
+#endif // !MK_NETTEST_NO_HTTP_INVALID_REQUEST_LINE
+
+// # MeekFrontedRequests
+
+#ifndef MK_NETTEST_NO_MEEK_FRONTED_REQUESTS
+
+bool MeekFrontedRequestsSettings::serialize_into(nlohmann::json *doc) noexcept {
+    (*doc)["name"] = "MeekFrontedRequests";
+    /* No nettest specific settings */
+    return common::NeedsInputSettings::serialize_into(doc);
+}
+
+MeekFrontedRequestsNettest::MeekFrontedRequestsNettest(MeekFrontedRequestsSettings settings) noexcept {
+    std::swap(settings_, settings);
+}
+
+MeekFrontedRequestsNettest::~MeekFrontedRequestsNettest() noexcept {}
+
+bool MeekFrontedRequestsNettest::run() noexcept {
+    nlohmann::json doc;
+    if (!settings_.serialize_into(&doc)) {
+        // TODO(bassosimone): route this error
+        return false;
+    }
+    return run_with_json_settings(std::move(doc));
+}
+
+#endif // !MK_NETTEST_NO_MEEK_FRONTED_REQUESTS
+
+// # MultiNdt
+
+#ifndef MK_NETTEST_NO_MULTI_NDT
+
+bool MultiNdtSettings::serialize_into(nlohmann::json *doc) noexcept {
+    (*doc)["name"] = "MultiNdt";
+    /* No nettest specific settings */
+    return common::Settings::serialize_into(doc);
+}
+
+MultiNdtNettest::MultiNdtNettest(MultiNdtSettings settings) noexcept {
+    std::swap(settings_, settings);
+}
+
+MultiNdtNettest::~MultiNdtNettest() noexcept {}
+
+bool MultiNdtNettest::run() noexcept {
+    nlohmann::json doc;
+    if (!settings_.serialize_into(&doc)) {
+        // TODO(bassosimone): route this error
+        return false;
+    }
+    return run_with_json_settings(std::move(doc));
+}
+
+#endif // !MK_NETTEST_NO_MULTI_NDT
+
+// # Ndt
+
+#ifndef MK_NETTEST_NO_NDT
+
+bool NdtSettings::serialize_into(nlohmann::json *doc) noexcept {
+    (*doc)["name"] = "Ndt";
+    /* No nettest specific settings */
+    return common::Settings::serialize_into(doc);
+}
+
+NdtNettest::NdtNettest(NdtSettings settings) noexcept {
+    std::swap(settings_, settings);
+}
+
+NdtNettest::~NdtNettest() noexcept {}
+
+bool NdtNettest::run() noexcept {
+    nlohmann::json doc;
+    if (!settings_.serialize_into(&doc)) {
+        // TODO(bassosimone): route this error
+        return false;
+    }
+    return run_with_json_settings(std::move(doc));
+}
+
+#endif // !MK_NETTEST_NO_NDT
+
+// # TcpConnect
+
+#ifndef MK_NETTEST_NO_TCP_CONNECT
+
+bool TcpConnectSettings::serialize_into(nlohmann::json *doc) noexcept {
+    (*doc)["name"] = "TcpConnect";
+    /* No nettest specific settings */
+    return common::NeedsInputSettings::serialize_into(doc);
+}
+
+TcpConnectNettest::TcpConnectNettest(TcpConnectSettings settings) noexcept {
+    std::swap(settings_, settings);
+}
+
+TcpConnectNettest::~TcpConnectNettest() noexcept {}
+
+bool TcpConnectNettest::run() noexcept {
+    nlohmann::json doc;
+    if (!settings_.serialize_into(&doc)) {
+        // TODO(bassosimone): route this error
+        return false;
+    }
+    return run_with_json_settings(std::move(doc));
+}
+
+#endif // !MK_NETTEST_NO_TCP_CONNECT
+
+// # Telegram
+
+#ifndef MK_NETTEST_NO_TELEGRAM
+
+bool TelegramSettings::serialize_into(nlohmann::json *doc) noexcept {
+    (*doc)["name"] = "Telegram";
+    /* No nettest specific settings */
+    return common::Settings::serialize_into(doc);
+}
+
+TelegramNettest::TelegramNettest(TelegramSettings settings) noexcept {
+    std::swap(settings_, settings);
+}
+
+TelegramNettest::~TelegramNettest() noexcept {}
+
+bool TelegramNettest::run() noexcept {
+    nlohmann::json doc;
+    if (!settings_.serialize_into(&doc)) {
+        // TODO(bassosimone): route this error
+        return false;
+    }
+    return run_with_json_settings(std::move(doc));
+}
+
+#endif // !MK_NETTEST_NO_TELEGRAM
+
+// # WebConnectivity
+
+#ifndef MK_NETTEST_NO_WEB_CONNECTIVITY
+
+bool WebConnectivitySettings::serialize_into(nlohmann::json *doc) noexcept {
+    (*doc)["name"] = "WebConnectivity";
+    /* No nettest specific settings */
+    return common::NeedsInputSettings::serialize_into(doc);
+}
+
+WebConnectivityNettest::WebConnectivityNettest(WebConnectivitySettings settings) noexcept {
+    std::swap(settings_, settings);
+}
+
+WebConnectivityNettest::~WebConnectivityNettest() noexcept {}
+
+bool WebConnectivityNettest::run() noexcept {
+    nlohmann::json doc;
+    if (!settings_.serialize_into(&doc)) {
+        // TODO(bassosimone): route this error
+        return false;
+    }
+    return run_with_json_settings(std::move(doc));
+}
+
+#endif // !MK_NETTEST_NO_WEB_CONNECTIVITY
+
+// # Whatsapp
+
+#ifndef MK_NETTEST_NO_WHATSAPP
+
+bool WhatsappSettings::serialize_into(nlohmann::json *doc) noexcept {
+    (*doc)["name"] = "Whatsapp";
+    (*doc)["options"]["all_endpoints"] = (int64_t)all_endpoints;
+    return common::Settings::serialize_into(doc);
+}
+
+WhatsappNettest::WhatsappNettest(WhatsappSettings settings) noexcept {
+    std::swap(settings_, settings);
+}
+
+WhatsappNettest::~WhatsappNettest() noexcept {}
+
+bool WhatsappNettest::run() noexcept {
+    nlohmann::json doc;
+    if (!settings_.serialize_into(&doc)) {
+        // TODO(bassosimone): route this error
+        return false;
+    }
+    return run_with_json_settings(std::move(doc));
+}
+
+#endif // !MK_NETTEST_NO_WHATSAPP
 
 #endif // !MK_NETTEST_NO_INLINE_IMPL && !SWIG
 } // namespace nettest

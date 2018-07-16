@@ -15,7 +15,12 @@ class Attribute(object):
     def __init__(self, cxx_type, key, value=None):
         self.cxx_type = cxx_type
         self.key = key
-        self.value = value if value is not None else "{}"
+        self.value = value if value is not None else {
+            "bool": "false",
+            "double": "0.0",
+            "int64_t": "0",
+            "std::string": json.dumps(""),
+        }.get(cxx_type, "{}")
         # Casting from/to JSON is required for booleans because the FFI
         # implementation uses integers instead of booleans.
         self.cxx_cast_to_json = "(int64_t)" if cxx_type == "bool" else ""
@@ -35,81 +40,144 @@ class Attribute(object):
 class Setting(Attribute):
     """ Attribute of the Setting class. """
 
-    def __init__(self, cxx_type, key, value=None, mandatory=False, internal=False):
+    def __init__(self, cxx_type, key, value=None, mandatory=False,
+                 internal=False, tag=None):
         Attribute.__init__(self, cxx_type, key, value)
         self.mandatory = mandatory
         self.internal = internal
+        self.tag = tag if tag is not None else "common"
 
 class Event(object):
     """ Event emitted by FFI API while running tests. """
 
-    def __init__(self, key, *attributes):
+    def __init__(self, key, tag, *attributes):
         self.key = key
+        self.tag = tag
         self.cxx_class_name = "".join([e.capitalize() for e in key.replace(".", "_").split("_")])
         self.attributes = list(attributes)
 
 class Nettest(object):
     """ Network test runnable using the FFI API. """
 
-    def __init__(self, snake_case_name, *attributes):
+    def __init__(self, snake_case_name, tags, *attributes):
         self.snake_case_name = snake_case_name
+        self.tags = tags if tags is not None else list()
         self.name = "".join([e.capitalize() for e in snake_case_name.replace(".", "_").split("_")])
         self.attributes = list(attributes)
+        self.base_settings_class = "NeedsInput" if "needs_input" in self.tags else ""
+        self.base_nettest_class = "Performance" if "performance" in self.tags else "Websites" if "websites" in self.tags else ""
 
 def main():
     """ Main function """
 
-    events = [Event("failure.asn_lookup", Attribute("std::string", "failure")),
-              Event("failure.cc_lookup", Attribute("std::string", "failure")),
-              Event("failure.ip_lookup", Attribute("std::string", "failure")),
-              Event("failure.measurement", Attribute("std::string", "failure")),
-              Event("failure.measurement_submission", Attribute("std::string", "failure"),
-                                                      Attribute("int64_t", "idx"),
-                                                      Attribute("std::string", "json_str")),
-              Event("failure.report_create", Attribute("std::string", "failure")),
-              Event("failure.report_close", Attribute("std::string", "failure")),
-              Event("failure.resolver_lookup", Attribute("std::string", "failure")),
-              Event("failure.startup", Attribute("std::string", "failure")),
-              Event("log", Attribute("std::string", "log_level"),
-                           Attribute("std::string", "message")),
-              Event("measurement", Attribute("int64_t", "idx"),
-                                   Attribute("std::string", "json_str")),
-              Event("status.end", Attribute("double", "downloaded_kb"),
-                                  Attribute("double", "uploaded_kb"),
-                                  Attribute("std::string", "failure")),
-              Event("status.geoip_lookup", Attribute("std::string", "probe_ip"),
-                                           Attribute("std::string", "probe_asn"),
-                                           Attribute("std::string", "probe_cc"),
-                                           Attribute("std::string", "probe_network_name")),
-              Event("status.progress", Attribute("double", "percentage"),
-                                       Attribute("std::string", "message")),
-              Event("status.queued"),
-              Event("status.measurement_start", Attribute("int64_t", "idx"),
-                                                Attribute("std::string", "input")),
-              Event("status.measurement_submission", Attribute("int64_t", "idx")),
-              Event("status.measurement_done", Attribute("int64_t", "idx")),
-              Event("status.report_close", Attribute("std::string", "report_id")),
-              Event("status.report_create", Attribute("std::string", "report_id")),
-              Event("status.resolver_lookup", Attribute("std::string", "ip_address")),
-              Event("status.started"),
-              Event("status.update.performance", Attribute("std::string", "direction"),
-                                                 Attribute("double", "elapsed"),
-                                                 Attribute("int64_t", "num_streams"),
-                                                 Attribute("double", "speed_kbps")),
-              Event("status.update.websites", Attribute("std::string", "url"),
-                                              Attribute("std::string", "status")),
-              Event("task_terminated")]
+    events = [Event("failure.asn_lookup", "common",
+                    Attribute("std::string", "failure")),
+
+              Event("failure.cc_lookup", "common",
+                    Attribute("std::string", "failure")),
+
+              Event("failure.ip_lookup", "common",
+                    Attribute("std::string", "failure")),
+
+              Event("failure.measurement", "common",
+                    Attribute("std::string", "failure")),
+
+              Event("failure.measurement_submission", "common",
+                    Attribute("std::string", "failure"),
+                    Attribute("int64_t", "idx"),
+                    Attribute("std::string", "json_str")),
+
+              Event("failure.report_create", "common",
+                    Attribute("std::string", "failure")),
+
+              Event("failure.report_close", "common",
+                    Attribute("std::string", "failure")),
+
+              Event("failure.resolver_lookup", "common",
+                    Attribute("std::string", "failure")),
+
+              Event("failure.startup", "common",
+                    Attribute("std::string", "failure")),
+
+              Event("log", "common",
+                    Attribute("std::string", "log_level"),
+                    Attribute("std::string", "message")),
+
+              Event("measurement", "common",
+                    Attribute("int64_t", "idx"),
+                    Attribute("std::string", "json_str")),
+
+              Event("status.end", "common",
+                    Attribute("double", "downloaded_kb"),
+                    Attribute("double", "uploaded_kb"),
+                    Attribute("std::string", "failure")),
+
+              Event("status.geoip_lookup", "common",
+                    Attribute("std::string", "probe_ip"),
+                    Attribute("std::string", "probe_asn"),
+                    Attribute("std::string", "probe_cc"),
+                    Attribute("std::string", "probe_network_name")),
+
+              Event("status.progress", "common",
+                    Attribute("double", "percentage"),
+                    Attribute("std::string", "message")),
+
+              Event("status.queued", "common"),
+
+              Event("status.measurement_start", "common",
+                    Attribute("int64_t", "idx"),
+                    Attribute("std::string", "input")),
+
+              Event("status.measurement_submission", "common",
+                    Attribute("int64_t", "idx")),
+
+              Event("status.measurement_done", "common",
+                    Attribute("int64_t", "idx")),
+
+              Event("status.report_close", "common",
+                    Attribute("std::string", "report_id")),
+
+              Event("status.report_create", "common",
+                    Attribute("std::string", "report_id")),
+
+              Event("status.resolver_lookup", "common",
+                    Attribute("std::string", "ip_address")),
+
+              Event("status.started", "common"),
+
+              Event("status.update.performance", "performance",
+                    Attribute("std::string", "direction"),
+                    Attribute("double", "elapsed"),
+                    Attribute("int64_t", "num_streams"),
+                    Attribute("double", "speed_kbps")),
+
+              Event("status.update.websites", "websites",
+                    Attribute("std::string", "url"),
+                    Attribute("std::string", "status")),
+
+              Event("task_terminated", "common")]
 
     log_levels = ["err", "warning", "info", "debug", "debug2"]
 
     settings = [Setting("std::map<std::string, std::string>", "annotations"),
-                Setting("std::vector<std::string>", "disabled_events"),
-                Setting("std::vector<std::string>", "inputs"),
-                Setting("std::vector<std::string>", "input_filepaths"),
+
+                Setting("std::vector<std::string>", "disabled_events",
+                        internal=True),
+
+                Setting("std::vector<std::string>", "inputs",
+                        tag="needs_input"),
+
+                Setting("std::vector<std::string>", "input_filepaths",
+                        tag="needs_input"),
+
                 Setting("std::string", "log_filepath"),
-                Setting("std::string", "log_level", "log_levels::err"),
+
+                Setting("std::string", "log_level", "log_level_err"),
+
                 Setting("std::string", "name", mandatory=True, internal=True),
+
                 Setting("Options", "options", internal=True),
+
                 Setting("std::string", "output_filepath")]
 
     options = [Attribute("std::string", "bouncer_base_url", json.dumps("https://bouncer.ooni.io")),
@@ -141,19 +209,20 @@ def main():
                Attribute("std::string", "software_name"),
                Attribute("std::string", "software_version")]
 
-    nettests = [Nettest("captive_portal"),
-                Nettest("dash"),
-                Nettest("dns_injection"),
-                Nettest("facebook_messenger"),
-                Nettest("http_header_field_manipulation"),
-                Nettest("http_invalid_request_line"),
-                Nettest("meek_fronted_requests"),
-                Nettest("multi_ndt"),
-                Nettest("ndt"),
-                Nettest("tcp_connect"),
-                Nettest("telegram"),
-                Nettest("web_connectivity"),
-                Nettest("whatsapp", Attribute("bool", "all_endpoints", "false"))]
+    nettests = [Nettest("captive_portal", None),
+                Nettest("dash", ["performance"]),
+                Nettest("dns_injection", ["needs_input"]),
+                Nettest("facebook_messenger", None),
+                Nettest("http_header_field_manipulation", None),
+                Nettest("http_invalid_request_line", None),
+                Nettest("meek_fronted_requests", ["needs_input"]),
+                Nettest("multi_ndt", ["performance"]),
+                Nettest("ndt", ["performance"]),
+                Nettest("tcp_connect", ["needs_input"]),
+                Nettest("telegram", None),
+                Nettest("web_connectivity", ["needs_input", "websites"]),
+                Nettest("whatsapp", None,
+                        Attribute("bool", "all_endpoints", "false"))]
 
     with open("./script/autoapi/nettest.hpp.j2", "r") as sourcefp:
         tpl = jinja2.Template(sourcefp.read())
