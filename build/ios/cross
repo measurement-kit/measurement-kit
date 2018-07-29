@@ -22,6 +22,7 @@ if [ "$PLATFORM" = "iphoneos" ]; then
 elif [ "$ARCH" = "i386" ]; then
     EXTRA_CONFIG="--host=i386-apple-darwin --target=i386-apple-darwin --disable-shared"
     MINVERSION="-mios-simulator-version-min=$MINIOSVERSION"
+    CPPFLAGS="-DMK_NO_THREAD_LOCAL"
 elif [ "$ARCH" = "x86_64" ]; then
     EXTRA_CONFIG="--host=x86_64-apple-darwin --target=x86_64-apple-darwin --disable-shared"
     MINVERSION="-mios-simulator-version-min=$MINIOSVERSION"
