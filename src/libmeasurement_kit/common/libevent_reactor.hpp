@@ -15,6 +15,7 @@
 #include "src/libmeasurement_kit/common/utils.hpp"                // for mk::timeval_init
 #include "src/libmeasurement_kit/common/unique_ptr.hpp"           // for mk::UniquePtr
 #include "src/libmeasurement_kit/common/worker.hpp"               // for mk::Worker
+#include <atomic>                                  // for std::atomic_bool
 #include <cassert>                                 // for assert
 #include <event2/event.h>                          // for event_base_*
 #include <event2/thread.h>                         // for evthread_use_*

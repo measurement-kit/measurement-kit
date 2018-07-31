@@ -279,7 +279,8 @@ void Runnable::geoip_lookup(Callback<> cb) {
             logger->emit_event_ex("status.geoip_lookup", {
                 {"probe_asn", probe_asn},
                 {"probe_cc", probe_cc},
-                {"probe_ip", ip}
+                {"probe_ip", ip},
+                {"probe_network_name", ""} // TODO(bassosimone): gather!
             });
 
             cb();

@@ -2,6 +2,16 @@ language: cpp
 
 matrix:
   include:
+    # Verify that autoapi generated stuff is current
+    # ----------------------------------------------
+    #
+    # Just generate the files on travis and then make sure that no actual
+    # content has been changed into the work tree using the `-c` flag.
+    - env:
+      script:
+        - pip install --user jinja2
+        - ./script/autoapi/autoapi -c
+
     # CMake builds
     # ------------
     #

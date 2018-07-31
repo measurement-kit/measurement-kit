@@ -7,7 +7,6 @@
 #include <measurement_kit/common/json.hpp>
 #include <measurement_kit/common/logger.hpp>
 #include <measurement_kit/common/shared_ptr.hpp>
-#include <measurement_kit/ffi_macros.h>
 
 #include <assert.h>
 #include <stdarg.h>
@@ -209,36 +208,21 @@ class DefaultLogger : public Logger, public NonCopyable, public NonMovable {
     }
 
     void emit_event_ex(
-            const std::string &key, nlohmann::json &&value) override {
-        if (!value.is_object()) {
-            warn("wrong value for key: %s", key.c_str());
-            assert(false);
-        }
-#ifndef NDEBUG
-        {
-            bool found = false;
-            do {
-#define CHECK(name_, type_ignored_, mandatory_ignored_)                        \
-    if (key == #name_) {                                                       \
-        found = true;                                                          \
-        break;                                                                 \
-    }
-                MK_ENUM_EVENTS(CHECK)
-#undef CHECK
-            } while (0);
-            if (!found) {
-                fprintf(stderr, "PANIC: unknown event: %s\n", key.c_str());
-                abort();
-            }
-        }
-#endif
-        if (handlers_.count(key) <= 0) {
-            return;
-        }
+            std::string key, nlohmann::json &&value) override {
         nlohmann::json event{
             {"key", key},
             {"value", std::move(value)}
         };
+        if (handlers_.count(key) <= 0) {
+            // Even if the event has not registered handler, we pass them up
+            // one layer to validate the event structure. However, we can't
+            // really assert() here, because there are several places inside
+            // MK where we do not set handlers for extended events.
+            key = "__disabled";
+            if (handlers_.count(key) <= 0) {
+                return;
+            }
+        }
         std::unique_lock<std::recursive_mutex> _{mutex_};
         // TODO(bassosimone): other logging functions filter all the
         // exceptions. We cannot change this behavior until that is part

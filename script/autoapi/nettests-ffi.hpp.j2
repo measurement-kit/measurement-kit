@@ -436,97 +436,14 @@ class MK_NETTESTS_DEPRECATED BaseTest {
     SharedPtr<Details> impl_;
 };
 
-class CaptivePortalTest : public BaseTest {
+{% for nettest in nettests %}class {{ nettest.name }}Test : public BaseTest {
   public:
-    CaptivePortalTest() : BaseTest() {
-        impl_->settings["name"] = "CaptivePortal";
+    {{ nettest.name }}Test() : BaseTest() {
+        impl_->settings["name"] = "{{ nettest.name }}";
     }
-};
-
-class DashTest : public BaseTest {
-  public:
-    DashTest() : BaseTest() {
-        impl_->settings["name"] = "Dash";
-    }
-};
-
-class DnsInjectionTest : public BaseTest {
-  public:
-    DnsInjectionTest() : BaseTest() {
-        impl_->settings["name"] = "DnsInjection";
-    }
-};
-
-class FacebookMessengerTest : public BaseTest {
-  public:
-    FacebookMessengerTest() : BaseTest() {
-        impl_->settings["name"] = "FacebookMessenger";
-    }
-};
-
-class HttpHeaderFieldManipulationTest : public BaseTest {
-  public:
-    HttpHeaderFieldManipulationTest() : BaseTest() {
-        impl_->settings["name"] = "HttpHeaderFieldManipulation";
-    }
-};
-
-class HttpInvalidRequestLineTest : public BaseTest {
-  public:
-    HttpInvalidRequestLineTest() : BaseTest() {
-        impl_->settings["name"] = "HttpInvalidRequestLine";
-    }
-};
-
-class MeekFrontedRequestsTest : public BaseTest {
-  public:
-    MeekFrontedRequestsTest() : BaseTest() {
-        impl_->settings["name"] = "MeekFrontedRequests";
-    }
-};
-
-class MultiNdtTest : public BaseTest {
-  public:
-    MultiNdtTest() : BaseTest() {
-        impl_->settings["name"] = "MultiNdt";
-    }
-};
-
-class NdtTest : public BaseTest {
-  public:
-    NdtTest() : BaseTest() {
-        impl_->settings["name"] = "Ndt";
-    }
-};
-
-class TcpConnectTest : public BaseTest {
-  public:
-    TcpConnectTest() : BaseTest() {
-        impl_->settings["name"] = "TcpConnect";
-    }
-};
-
-class TelegramTest : public BaseTest {
-  public:
-    TelegramTest() : BaseTest() {
-        impl_->settings["name"] = "Telegram";
-    }
-};
-
-class WebConnectivityTest : public BaseTest {
-  public:
-    WebConnectivityTest() : BaseTest() {
-        impl_->settings["name"] = "WebConnectivity";
-    }
-};
-
-class WhatsappTest : public BaseTest {
-  public:
-    WhatsappTest() : BaseTest() {
-        impl_->settings["name"] = "Whatsapp";
-    }
-};
+};{{ "\n\n" if not loop.last }}{% endfor %}
 
 } // namespace nettests
 } // namespace mk
 #endif
+

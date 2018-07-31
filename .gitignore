@@ -44,6 +44,7 @@
 /test-driver
 /tmp
 /tor-bridges.tor-bridges-ip-port.csv
+/venv
 Makefile
 Makefile.in
 __venv__
