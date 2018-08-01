@@ -1,3 +1,11 @@
+# MeasurementKit 0.9.0-alpha.3 [2018-08-01]
+
+- Use new collector implementation (#1639)
+
+- Autogenerate C++11 API for using FFI API. This C++11 API is meant to
+  be also processed by SWIG. It looks much more complete than the previous
+  API meant for SWIG consumption, now removed (#1645)
+
 # MeasurementKit 0.9.0-alpha.2 [2018-05-30]
 
 - We have rewritten the existing API (nettests.hpp) in terms of the new
