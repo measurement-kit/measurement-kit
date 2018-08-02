@@ -1,3 +1,16 @@
+# MeasurementKit 0.9.0-alpha.5 [2018-08-02]
+
+- Restructure nettest.hpp to be more easily useable from iOS and
+  possibly also from Android. Specifically, it turns out that
+  having a different class (with different virtual methods) for
+  each nettest is painful in that you need to duplicate code
+  for handling common events. There are workarounds, but it is
+  quite clear that the cleanest approach is probably to have
+  a single class for running all tests. Subclass once and then
+  use in different contexts. Especially because, apart from
+  performance and websites events, all other events are always
+  emitted by all classes. Plus, it's also easier.
+
 # MeasurementKit 0.9.0-alpha.4 [2018-08-02]
 
 - Be less strict with respect to option types because the old API is
