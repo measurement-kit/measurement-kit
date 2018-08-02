@@ -156,11 +156,14 @@ class Settings {
     {% for option in options %}/// The "{{ option.key }}" setting.
     {{ option.cxx_type }} {{ option.key | replace("/", "_") }} = {{ option.value }};{{ "\n\n    " if not loop.last }}{% endfor %}
 
+    /// Destroys all allocated resources.
+    virtual ~Settings() noexcept;
+
 #ifdef SWIG
   private:
 #endif
     // Serialize common settings into a JSON document.
-    bool serialize_into(nlohmann::json *) noexcept;
+    virtual bool serialize_into(nlohmann::json *) const noexcept;
 };
 
 /// Base class for all nettests.
@@ -173,8 +176,8 @@ class Nettest {
     // C++ object model
     // ````````````````
 
-    /// Empty default constructor.
-    Nettest() noexcept;
+    /// Constructor with settings.
+    explicit Nettest(const Settings &) noexcept;
 
     /// Explicitly deleted copy constructor.
     Nettest(const Nettest &) noexcept = delete;
@@ -195,7 +198,7 @@ class Nettest {
     // `````````
 
     /// Runs the nettest.
-    virtual bool run() noexcept { return false; }
+    virtual bool run() noexcept;
 
     /// Interrupts a running nettest.
     void interrupt() noexcept;
@@ -206,9 +209,13 @@ class Nettest {
     {% for event in events %}/// Handles the "{{ event.key }}" event.
     virtual void on_{{ event.key | replace(".", "_") }}({{ event.cxx_class_name }}Event);{{ "\n\n    " if not loop.last }}{% endfor %}
 
+#ifdef SWIG
+  private:
+#else
   protected:
+#endif
     // Start a nettest given JSON settings
-    bool run_with_json_settings(nlohmann::json doc) noexcept;
+    bool run_with_json_settings(const nlohmann::json &doc) noexcept;
 
     // Dispatch the JSON event to the proper handler
     virtual bool dispatch_event(nlohmann::json doc) noexcept;
@@ -216,11 +223,10 @@ class Nettest {
   private:
     std::mutex mutex_;
     UniqueTask task_;
+    nlohmann::json settings_;
 };
 
-{% for nettest in nettests %}#ifndef MK_NETTEST_NO_{{ nettest.snake_case_name.upper() }}
-
-/// Settings for {{ nettest.name }}
+{% for nettest in nettests %}/// Settings for {{ nettest.name }}
 class {{ nettest.name }}Settings : public Settings {
   public:
     /// Unique name of this nettest.
@@ -232,26 +238,8 @@ class {{ nettest.name }}Settings : public Settings {
   private:
 #endif
     // Serialize {{ nettest.name }} settings into a JSON document.
-    bool serialize_into(nlohmann::json *) noexcept;
-};
-
-/// The {{ nettest.name }} nettest.
-class {{ nettest.name }}Nettest : public Nettest {
-  public:
-    /// Constructor with explicit settings.
-    explicit {{ nettest.name }}Nettest({{nettest.name }}Settings) noexcept;
-
-    /// Wait for nettest to terminate and destroy resources.
-    ~{{ nettest.name }}Nettest() noexcept override;
-
-    /// Runs the nettest.
-    bool run() noexcept override;
-
-  private:
-    {{ nettest.name }}Settings settings_;
-};
-
-#endif // !MK_NETTEST_NO_{{ nettest.snake_case_name.upper() }}{{ "\n\n" if not loop.last }}{% endfor %}
+    bool serialize_into(nlohmann::json *) const noexcept override;
+};{{ "\n\n" if not loop.last }}{% endfor %}
 
 /*-
  * __________        .__               __
@@ -279,7 +267,9 @@ void EventDeleter::operator()(mk_event_t *event) noexcept {
 
 // # Settings
 
-bool Settings::serialize_into(nlohmann::json *doc) noexcept {
+Settings::~Settings() noexcept {}
+
+bool Settings::serialize_into(nlohmann::json *doc) const noexcept {
     if (doc == nullptr) {
         return false;
     }
@@ -293,9 +283,13 @@ bool Settings::serialize_into(nlohmann::json *doc) noexcept {
 
 // # Nettest
 
-Nettest::Nettest() noexcept {}
+Nettest::Nettest(const Settings &doc) noexcept {
+  (void)doc.serialize_into(&settings_);
+}
 
 Nettest::~Nettest() noexcept {}
+
+bool Nettest::run() noexcept { return run_with_json_settings(settings_); }
 
 void Nettest::interrupt() noexcept {
     std::unique_lock<std::mutex> _{mutex_};
@@ -313,7 +307,8 @@ void Nettest::interrupt() noexcept {
 #endif
 }{{ "\n\n" if not loop.last }}{% endfor %}
 
-bool Nettest::run_with_json_settings(nlohmann::json settingsdoc) noexcept {
+bool Nettest::run_with_json_settings(
+        const nlohmann::json &settingsdoc) noexcept {
     {
         std::unique_lock<std::mutex> _{mutex_};
         if (task_ != nullptr) {
@@ -412,30 +407,13 @@ bool Nettest::dispatch_event(nlohmann::json doc) noexcept {
 
 {% for nettest in nettests %}// # {{ nettest.name }}
 
-#ifndef MK_NETTEST_NO_{{ nettest.snake_case_name.upper() }}
-
-bool {{ nettest.name }}Settings::serialize_into(nlohmann::json *doc) noexcept {
+bool {{ nettest.name }}Settings::serialize_into(
+        nlohmann::json *doc) const noexcept {
     (*doc)["name"] = "{{ nettest.name }}";
     {% if nettest.attributes %}{% for attribute in nettest.attributes %}(*doc)["options"]["{{ attribute.key}}"] = {{ attribute.cxx_cast_to_json }}{{ attribute.key }};{{ "\n    " if not loop.last }}{% endfor %}{% else %}/* No nettest specific settings */{% endif %}
     return Settings::serialize_into(doc);
 }
-
-{{ nettest.name }}Nettest::{{ nettest.name }}Nettest({{nettest.name }}Settings settings) noexcept {
-    std::swap(settings_, settings);
-}
-
-{{ nettest.name }}Nettest::~{{ nettest.name }}Nettest() noexcept {}
-
-bool {{ nettest.name }}Nettest::run() noexcept {
-    nlohmann::json doc;
-    if (!settings_.serialize_into(&doc)) {
-        // TODO(bassosimone): route this error
-        return false;
-    }
-    return run_with_json_settings(std::move(doc));
-}
-
-#endif // !MK_NETTEST_NO_{{ nettest.snake_case_name.upper() }}{{ "\n\n" if not loop.last }}{% endfor %}
+{{ "\n\n" if not loop.last }}{% endfor %}
 
 #endif // !MK_NETTEST_NO_INLINE_IMPL && !SWIG
 } // namespace nettest

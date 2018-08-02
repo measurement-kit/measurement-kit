@@ -544,11 +544,14 @@ class Settings {
     /// The "software_version" setting.
     std::string software_version = "";
 
+    /// Destroys all allocated resources.
+    virtual ~Settings() noexcept;
+
 #ifdef SWIG
   private:
 #endif
     // Serialize common settings into a JSON document.
-    bool serialize_into(nlohmann::json *) noexcept;
+    virtual bool serialize_into(nlohmann::json *) const noexcept;
 };
 
 /// Base class for all nettests.
@@ -561,8 +564,8 @@ class Nettest {
     // C++ object model
     // ````````````````
 
-    /// Empty default constructor.
-    Nettest() noexcept;
+    /// Constructor with settings.
+    explicit Nettest(const Settings &) noexcept;
 
     /// Explicitly deleted copy constructor.
     Nettest(const Nettest &) noexcept = delete;
@@ -583,7 +586,7 @@ class Nettest {
     // `````````
 
     /// Runs the nettest.
-    virtual bool run() noexcept { return false; }
+    virtual bool run() noexcept;
 
     /// Interrupts a running nettest.
     void interrupt() noexcept;
@@ -666,9 +669,13 @@ class Nettest {
     /// Handles the "task_terminated" event.
     virtual void on_task_terminated(TaskTerminatedEvent);
 
+#ifdef SWIG
+  private:
+#else
   protected:
+#endif
     // Start a nettest given JSON settings
-    bool run_with_json_settings(nlohmann::json doc) noexcept;
+    bool run_with_json_settings(const nlohmann::json &doc) noexcept;
 
     // Dispatch the JSON event to the proper handler
     virtual bool dispatch_event(nlohmann::json doc) noexcept;
@@ -676,9 +683,8 @@ class Nettest {
   private:
     std::mutex mutex_;
     UniqueTask task_;
+    nlohmann::json settings_;
 };
-
-#ifndef MK_NETTEST_NO_CAPTIVE_PORTAL
 
 /// Settings for CaptivePortal
 class CaptivePortalSettings : public Settings {
@@ -691,28 +697,8 @@ class CaptivePortalSettings : public Settings {
   private:
 #endif
     // Serialize CaptivePortal settings into a JSON document.
-    bool serialize_into(nlohmann::json *) noexcept;
+    bool serialize_into(nlohmann::json *) const noexcept override;
 };
-
-/// The CaptivePortal nettest.
-class CaptivePortalNettest : public Nettest {
-  public:
-    /// Constructor with explicit settings.
-    explicit CaptivePortalNettest(CaptivePortalSettings) noexcept;
-
-    /// Wait for nettest to terminate and destroy resources.
-    ~CaptivePortalNettest() noexcept override;
-
-    /// Runs the nettest.
-    bool run() noexcept override;
-
-  private:
-    CaptivePortalSettings settings_;
-};
-
-#endif // !MK_NETTEST_NO_CAPTIVE_PORTAL
-
-#ifndef MK_NETTEST_NO_DASH
 
 /// Settings for Dash
 class DashSettings : public Settings {
@@ -725,28 +711,8 @@ class DashSettings : public Settings {
   private:
 #endif
     // Serialize Dash settings into a JSON document.
-    bool serialize_into(nlohmann::json *) noexcept;
+    bool serialize_into(nlohmann::json *) const noexcept override;
 };
-
-/// The Dash nettest.
-class DashNettest : public Nettest {
-  public:
-    /// Constructor with explicit settings.
-    explicit DashNettest(DashSettings) noexcept;
-
-    /// Wait for nettest to terminate and destroy resources.
-    ~DashNettest() noexcept override;
-
-    /// Runs the nettest.
-    bool run() noexcept override;
-
-  private:
-    DashSettings settings_;
-};
-
-#endif // !MK_NETTEST_NO_DASH
-
-#ifndef MK_NETTEST_NO_DNS_INJECTION
 
 /// Settings for DnsInjection
 class DnsInjectionSettings : public Settings {
@@ -759,28 +725,8 @@ class DnsInjectionSettings : public Settings {
   private:
 #endif
     // Serialize DnsInjection settings into a JSON document.
-    bool serialize_into(nlohmann::json *) noexcept;
+    bool serialize_into(nlohmann::json *) const noexcept override;
 };
-
-/// The DnsInjection nettest.
-class DnsInjectionNettest : public Nettest {
-  public:
-    /// Constructor with explicit settings.
-    explicit DnsInjectionNettest(DnsInjectionSettings) noexcept;
-
-    /// Wait for nettest to terminate and destroy resources.
-    ~DnsInjectionNettest() noexcept override;
-
-    /// Runs the nettest.
-    bool run() noexcept override;
-
-  private:
-    DnsInjectionSettings settings_;
-};
-
-#endif // !MK_NETTEST_NO_DNS_INJECTION
-
-#ifndef MK_NETTEST_NO_FACEBOOK_MESSENGER
 
 /// Settings for FacebookMessenger
 class FacebookMessengerSettings : public Settings {
@@ -793,28 +739,8 @@ class FacebookMessengerSettings : public Settings {
   private:
 #endif
     // Serialize FacebookMessenger settings into a JSON document.
-    bool serialize_into(nlohmann::json *) noexcept;
+    bool serialize_into(nlohmann::json *) const noexcept override;
 };
-
-/// The FacebookMessenger nettest.
-class FacebookMessengerNettest : public Nettest {
-  public:
-    /// Constructor with explicit settings.
-    explicit FacebookMessengerNettest(FacebookMessengerSettings) noexcept;
-
-    /// Wait for nettest to terminate and destroy resources.
-    ~FacebookMessengerNettest() noexcept override;
-
-    /// Runs the nettest.
-    bool run() noexcept override;
-
-  private:
-    FacebookMessengerSettings settings_;
-};
-
-#endif // !MK_NETTEST_NO_FACEBOOK_MESSENGER
-
-#ifndef MK_NETTEST_NO_HTTP_HEADER_FIELD_MANIPULATION
 
 /// Settings for HttpHeaderFieldManipulation
 class HttpHeaderFieldManipulationSettings : public Settings {
@@ -827,28 +753,8 @@ class HttpHeaderFieldManipulationSettings : public Settings {
   private:
 #endif
     // Serialize HttpHeaderFieldManipulation settings into a JSON document.
-    bool serialize_into(nlohmann::json *) noexcept;
+    bool serialize_into(nlohmann::json *) const noexcept override;
 };
-
-/// The HttpHeaderFieldManipulation nettest.
-class HttpHeaderFieldManipulationNettest : public Nettest {
-  public:
-    /// Constructor with explicit settings.
-    explicit HttpHeaderFieldManipulationNettest(HttpHeaderFieldManipulationSettings) noexcept;
-
-    /// Wait for nettest to terminate and destroy resources.
-    ~HttpHeaderFieldManipulationNettest() noexcept override;
-
-    /// Runs the nettest.
-    bool run() noexcept override;
-
-  private:
-    HttpHeaderFieldManipulationSettings settings_;
-};
-
-#endif // !MK_NETTEST_NO_HTTP_HEADER_FIELD_MANIPULATION
-
-#ifndef MK_NETTEST_NO_HTTP_INVALID_REQUEST_LINE
 
 /// Settings for HttpInvalidRequestLine
 class HttpInvalidRequestLineSettings : public Settings {
@@ -861,28 +767,8 @@ class HttpInvalidRequestLineSettings : public Settings {
   private:
 #endif
     // Serialize HttpInvalidRequestLine settings into a JSON document.
-    bool serialize_into(nlohmann::json *) noexcept;
+    bool serialize_into(nlohmann::json *) const noexcept override;
 };
-
-/// The HttpInvalidRequestLine nettest.
-class HttpInvalidRequestLineNettest : public Nettest {
-  public:
-    /// Constructor with explicit settings.
-    explicit HttpInvalidRequestLineNettest(HttpInvalidRequestLineSettings) noexcept;
-
-    /// Wait for nettest to terminate and destroy resources.
-    ~HttpInvalidRequestLineNettest() noexcept override;
-
-    /// Runs the nettest.
-    bool run() noexcept override;
-
-  private:
-    HttpInvalidRequestLineSettings settings_;
-};
-
-#endif // !MK_NETTEST_NO_HTTP_INVALID_REQUEST_LINE
-
-#ifndef MK_NETTEST_NO_MEEK_FRONTED_REQUESTS
 
 /// Settings for MeekFrontedRequests
 class MeekFrontedRequestsSettings : public Settings {
@@ -895,28 +781,8 @@ class MeekFrontedRequestsSettings : public Settings {
   private:
 #endif
     // Serialize MeekFrontedRequests settings into a JSON document.
-    bool serialize_into(nlohmann::json *) noexcept;
+    bool serialize_into(nlohmann::json *) const noexcept override;
 };
-
-/// The MeekFrontedRequests nettest.
-class MeekFrontedRequestsNettest : public Nettest {
-  public:
-    /// Constructor with explicit settings.
-    explicit MeekFrontedRequestsNettest(MeekFrontedRequestsSettings) noexcept;
-
-    /// Wait for nettest to terminate and destroy resources.
-    ~MeekFrontedRequestsNettest() noexcept override;
-
-    /// Runs the nettest.
-    bool run() noexcept override;
-
-  private:
-    MeekFrontedRequestsSettings settings_;
-};
-
-#endif // !MK_NETTEST_NO_MEEK_FRONTED_REQUESTS
-
-#ifndef MK_NETTEST_NO_MULTI_NDT
 
 /// Settings for MultiNdt
 class MultiNdtSettings : public Settings {
@@ -929,28 +795,8 @@ class MultiNdtSettings : public Settings {
   private:
 #endif
     // Serialize MultiNdt settings into a JSON document.
-    bool serialize_into(nlohmann::json *) noexcept;
+    bool serialize_into(nlohmann::json *) const noexcept override;
 };
-
-/// The MultiNdt nettest.
-class MultiNdtNettest : public Nettest {
-  public:
-    /// Constructor with explicit settings.
-    explicit MultiNdtNettest(MultiNdtSettings) noexcept;
-
-    /// Wait for nettest to terminate and destroy resources.
-    ~MultiNdtNettest() noexcept override;
-
-    /// Runs the nettest.
-    bool run() noexcept override;
-
-  private:
-    MultiNdtSettings settings_;
-};
-
-#endif // !MK_NETTEST_NO_MULTI_NDT
-
-#ifndef MK_NETTEST_NO_NDT
 
 /// Settings for Ndt
 class NdtSettings : public Settings {
@@ -963,28 +809,8 @@ class NdtSettings : public Settings {
   private:
 #endif
     // Serialize Ndt settings into a JSON document.
-    bool serialize_into(nlohmann::json *) noexcept;
+    bool serialize_into(nlohmann::json *) const noexcept override;
 };
-
-/// The Ndt nettest.
-class NdtNettest : public Nettest {
-  public:
-    /// Constructor with explicit settings.
-    explicit NdtNettest(NdtSettings) noexcept;
-
-    /// Wait for nettest to terminate and destroy resources.
-    ~NdtNettest() noexcept override;
-
-    /// Runs the nettest.
-    bool run() noexcept override;
-
-  private:
-    NdtSettings settings_;
-};
-
-#endif // !MK_NETTEST_NO_NDT
-
-#ifndef MK_NETTEST_NO_TCP_CONNECT
 
 /// Settings for TcpConnect
 class TcpConnectSettings : public Settings {
@@ -997,28 +823,8 @@ class TcpConnectSettings : public Settings {
   private:
 #endif
     // Serialize TcpConnect settings into a JSON document.
-    bool serialize_into(nlohmann::json *) noexcept;
+    bool serialize_into(nlohmann::json *) const noexcept override;
 };
-
-/// The TcpConnect nettest.
-class TcpConnectNettest : public Nettest {
-  public:
-    /// Constructor with explicit settings.
-    explicit TcpConnectNettest(TcpConnectSettings) noexcept;
-
-    /// Wait for nettest to terminate and destroy resources.
-    ~TcpConnectNettest() noexcept override;
-
-    /// Runs the nettest.
-    bool run() noexcept override;
-
-  private:
-    TcpConnectSettings settings_;
-};
-
-#endif // !MK_NETTEST_NO_TCP_CONNECT
-
-#ifndef MK_NETTEST_NO_TELEGRAM
 
 /// Settings for Telegram
 class TelegramSettings : public Settings {
@@ -1031,28 +837,8 @@ class TelegramSettings : public Settings {
   private:
 #endif
     // Serialize Telegram settings into a JSON document.
-    bool serialize_into(nlohmann::json *) noexcept;
+    bool serialize_into(nlohmann::json *) const noexcept override;
 };
-
-/// The Telegram nettest.
-class TelegramNettest : public Nettest {
-  public:
-    /// Constructor with explicit settings.
-    explicit TelegramNettest(TelegramSettings) noexcept;
-
-    /// Wait for nettest to terminate and destroy resources.
-    ~TelegramNettest() noexcept override;
-
-    /// Runs the nettest.
-    bool run() noexcept override;
-
-  private:
-    TelegramSettings settings_;
-};
-
-#endif // !MK_NETTEST_NO_TELEGRAM
-
-#ifndef MK_NETTEST_NO_WEB_CONNECTIVITY
 
 /// Settings for WebConnectivity
 class WebConnectivitySettings : public Settings {
@@ -1065,28 +851,8 @@ class WebConnectivitySettings : public Settings {
   private:
 #endif
     // Serialize WebConnectivity settings into a JSON document.
-    bool serialize_into(nlohmann::json *) noexcept;
+    bool serialize_into(nlohmann::json *) const noexcept override;
 };
-
-/// The WebConnectivity nettest.
-class WebConnectivityNettest : public Nettest {
-  public:
-    /// Constructor with explicit settings.
-    explicit WebConnectivityNettest(WebConnectivitySettings) noexcept;
-
-    /// Wait for nettest to terminate and destroy resources.
-    ~WebConnectivityNettest() noexcept override;
-
-    /// Runs the nettest.
-    bool run() noexcept override;
-
-  private:
-    WebConnectivitySettings settings_;
-};
-
-#endif // !MK_NETTEST_NO_WEB_CONNECTIVITY
-
-#ifndef MK_NETTEST_NO_WHATSAPP
 
 /// Settings for Whatsapp
 class WhatsappSettings : public Settings {
@@ -1101,26 +867,8 @@ class WhatsappSettings : public Settings {
   private:
 #endif
     // Serialize Whatsapp settings into a JSON document.
-    bool serialize_into(nlohmann::json *) noexcept;
+    bool serialize_into(nlohmann::json *) const noexcept override;
 };
-
-/// The Whatsapp nettest.
-class WhatsappNettest : public Nettest {
-  public:
-    /// Constructor with explicit settings.
-    explicit WhatsappNettest(WhatsappSettings) noexcept;
-
-    /// Wait for nettest to terminate and destroy resources.
-    ~WhatsappNettest() noexcept override;
-
-    /// Runs the nettest.
-    bool run() noexcept override;
-
-  private:
-    WhatsappSettings settings_;
-};
-
-#endif // !MK_NETTEST_NO_WHATSAPP
 
 /*-
  * __________        .__               __
@@ -1148,7 +896,9 @@ void EventDeleter::operator()(mk_event_t *event) noexcept {
 
 // # Settings
 
-bool Settings::serialize_into(nlohmann::json *doc) noexcept {
+Settings::~Settings() noexcept {}
+
+bool Settings::serialize_into(nlohmann::json *doc) const noexcept {
     if (doc == nullptr) {
         return false;
     }
@@ -1194,9 +944,13 @@ bool Settings::serialize_into(nlohmann::json *doc) noexcept {
 
 // # Nettest
 
-Nettest::Nettest() noexcept {}
+Nettest::Nettest(const Settings &doc) noexcept {
+  (void)doc.serialize_into(&settings_);
+}
 
 Nettest::~Nettest() noexcept {}
+
+bool Nettest::run() noexcept { return run_with_json_settings(settings_); }
 
 void Nettest::interrupt() noexcept {
     std::unique_lock<std::mutex> _{mutex_};
@@ -1490,7 +1244,8 @@ void Nettest::on_task_terminated(TaskTerminatedEvent event) {
 #endif
 }
 
-bool Nettest::run_with_json_settings(nlohmann::json settingsdoc) noexcept {
+bool Nettest::run_with_json_settings(
+        const nlohmann::json &settingsdoc) noexcept {
     {
         std::unique_lock<std::mutex> _{mutex_};
         if (task_ != nullptr) {
@@ -2159,354 +1914,133 @@ bool Nettest::dispatch_event(nlohmann::json doc) noexcept {
 
 // # CaptivePortal
 
-#ifndef MK_NETTEST_NO_CAPTIVE_PORTAL
-
-bool CaptivePortalSettings::serialize_into(nlohmann::json *doc) noexcept {
+bool CaptivePortalSettings::serialize_into(
+        nlohmann::json *doc) const noexcept {
     (*doc)["name"] = "CaptivePortal";
     /* No nettest specific settings */
     return Settings::serialize_into(doc);
 }
 
-CaptivePortalNettest::CaptivePortalNettest(CaptivePortalSettings settings) noexcept {
-    std::swap(settings_, settings);
-}
-
-CaptivePortalNettest::~CaptivePortalNettest() noexcept {}
-
-bool CaptivePortalNettest::run() noexcept {
-    nlohmann::json doc;
-    if (!settings_.serialize_into(&doc)) {
-        // TODO(bassosimone): route this error
-        return false;
-    }
-    return run_with_json_settings(std::move(doc));
-}
-
-#endif // !MK_NETTEST_NO_CAPTIVE_PORTAL
 
 // # Dash
 
-#ifndef MK_NETTEST_NO_DASH
-
-bool DashSettings::serialize_into(nlohmann::json *doc) noexcept {
+bool DashSettings::serialize_into(
+        nlohmann::json *doc) const noexcept {
     (*doc)["name"] = "Dash";
     /* No nettest specific settings */
     return Settings::serialize_into(doc);
 }
 
-DashNettest::DashNettest(DashSettings settings) noexcept {
-    std::swap(settings_, settings);
-}
-
-DashNettest::~DashNettest() noexcept {}
-
-bool DashNettest::run() noexcept {
-    nlohmann::json doc;
-    if (!settings_.serialize_into(&doc)) {
-        // TODO(bassosimone): route this error
-        return false;
-    }
-    return run_with_json_settings(std::move(doc));
-}
-
-#endif // !MK_NETTEST_NO_DASH
 
 // # DnsInjection
 
-#ifndef MK_NETTEST_NO_DNS_INJECTION
-
-bool DnsInjectionSettings::serialize_into(nlohmann::json *doc) noexcept {
+bool DnsInjectionSettings::serialize_into(
+        nlohmann::json *doc) const noexcept {
     (*doc)["name"] = "DnsInjection";
     /* No nettest specific settings */
     return Settings::serialize_into(doc);
 }
 
-DnsInjectionNettest::DnsInjectionNettest(DnsInjectionSettings settings) noexcept {
-    std::swap(settings_, settings);
-}
-
-DnsInjectionNettest::~DnsInjectionNettest() noexcept {}
-
-bool DnsInjectionNettest::run() noexcept {
-    nlohmann::json doc;
-    if (!settings_.serialize_into(&doc)) {
-        // TODO(bassosimone): route this error
-        return false;
-    }
-    return run_with_json_settings(std::move(doc));
-}
-
-#endif // !MK_NETTEST_NO_DNS_INJECTION
 
 // # FacebookMessenger
 
-#ifndef MK_NETTEST_NO_FACEBOOK_MESSENGER
-
-bool FacebookMessengerSettings::serialize_into(nlohmann::json *doc) noexcept {
+bool FacebookMessengerSettings::serialize_into(
+        nlohmann::json *doc) const noexcept {
     (*doc)["name"] = "FacebookMessenger";
     /* No nettest specific settings */
     return Settings::serialize_into(doc);
 }
 
-FacebookMessengerNettest::FacebookMessengerNettest(FacebookMessengerSettings settings) noexcept {
-    std::swap(settings_, settings);
-}
-
-FacebookMessengerNettest::~FacebookMessengerNettest() noexcept {}
-
-bool FacebookMessengerNettest::run() noexcept {
-    nlohmann::json doc;
-    if (!settings_.serialize_into(&doc)) {
-        // TODO(bassosimone): route this error
-        return false;
-    }
-    return run_with_json_settings(std::move(doc));
-}
-
-#endif // !MK_NETTEST_NO_FACEBOOK_MESSENGER
 
 // # HttpHeaderFieldManipulation
 
-#ifndef MK_NETTEST_NO_HTTP_HEADER_FIELD_MANIPULATION
-
-bool HttpHeaderFieldManipulationSettings::serialize_into(nlohmann::json *doc) noexcept {
+bool HttpHeaderFieldManipulationSettings::serialize_into(
+        nlohmann::json *doc) const noexcept {
     (*doc)["name"] = "HttpHeaderFieldManipulation";
     /* No nettest specific settings */
     return Settings::serialize_into(doc);
 }
 
-HttpHeaderFieldManipulationNettest::HttpHeaderFieldManipulationNettest(HttpHeaderFieldManipulationSettings settings) noexcept {
-    std::swap(settings_, settings);
-}
-
-HttpHeaderFieldManipulationNettest::~HttpHeaderFieldManipulationNettest() noexcept {}
-
-bool HttpHeaderFieldManipulationNettest::run() noexcept {
-    nlohmann::json doc;
-    if (!settings_.serialize_into(&doc)) {
-        // TODO(bassosimone): route this error
-        return false;
-    }
-    return run_with_json_settings(std::move(doc));
-}
-
-#endif // !MK_NETTEST_NO_HTTP_HEADER_FIELD_MANIPULATION
 
 // # HttpInvalidRequestLine
 
-#ifndef MK_NETTEST_NO_HTTP_INVALID_REQUEST_LINE
-
-bool HttpInvalidRequestLineSettings::serialize_into(nlohmann::json *doc) noexcept {
+bool HttpInvalidRequestLineSettings::serialize_into(
+        nlohmann::json *doc) const noexcept {
     (*doc)["name"] = "HttpInvalidRequestLine";
     /* No nettest specific settings */
     return Settings::serialize_into(doc);
 }
 
-HttpInvalidRequestLineNettest::HttpInvalidRequestLineNettest(HttpInvalidRequestLineSettings settings) noexcept {
-    std::swap(settings_, settings);
-}
-
-HttpInvalidRequestLineNettest::~HttpInvalidRequestLineNettest() noexcept {}
-
-bool HttpInvalidRequestLineNettest::run() noexcept {
-    nlohmann::json doc;
-    if (!settings_.serialize_into(&doc)) {
-        // TODO(bassosimone): route this error
-        return false;
-    }
-    return run_with_json_settings(std::move(doc));
-}
-
-#endif // !MK_NETTEST_NO_HTTP_INVALID_REQUEST_LINE
 
 // # MeekFrontedRequests
 
-#ifndef MK_NETTEST_NO_MEEK_FRONTED_REQUESTS
-
-bool MeekFrontedRequestsSettings::serialize_into(nlohmann::json *doc) noexcept {
+bool MeekFrontedRequestsSettings::serialize_into(
+        nlohmann::json *doc) const noexcept {
     (*doc)["name"] = "MeekFrontedRequests";
     /* No nettest specific settings */
     return Settings::serialize_into(doc);
 }
 
-MeekFrontedRequestsNettest::MeekFrontedRequestsNettest(MeekFrontedRequestsSettings settings) noexcept {
-    std::swap(settings_, settings);
-}
-
-MeekFrontedRequestsNettest::~MeekFrontedRequestsNettest() noexcept {}
-
-bool MeekFrontedRequestsNettest::run() noexcept {
-    nlohmann::json doc;
-    if (!settings_.serialize_into(&doc)) {
-        // TODO(bassosimone): route this error
-        return false;
-    }
-    return run_with_json_settings(std::move(doc));
-}
-
-#endif // !MK_NETTEST_NO_MEEK_FRONTED_REQUESTS
 
 // # MultiNdt
 
-#ifndef MK_NETTEST_NO_MULTI_NDT
-
-bool MultiNdtSettings::serialize_into(nlohmann::json *doc) noexcept {
+bool MultiNdtSettings::serialize_into(
+        nlohmann::json *doc) const noexcept {
     (*doc)["name"] = "MultiNdt";
     /* No nettest specific settings */
     return Settings::serialize_into(doc);
 }
 
-MultiNdtNettest::MultiNdtNettest(MultiNdtSettings settings) noexcept {
-    std::swap(settings_, settings);
-}
-
-MultiNdtNettest::~MultiNdtNettest() noexcept {}
-
-bool MultiNdtNettest::run() noexcept {
-    nlohmann::json doc;
-    if (!settings_.serialize_into(&doc)) {
-        // TODO(bassosimone): route this error
-        return false;
-    }
-    return run_with_json_settings(std::move(doc));
-}
-
-#endif // !MK_NETTEST_NO_MULTI_NDT
 
 // # Ndt
 
-#ifndef MK_NETTEST_NO_NDT
-
-bool NdtSettings::serialize_into(nlohmann::json *doc) noexcept {
+bool NdtSettings::serialize_into(
+        nlohmann::json *doc) const noexcept {
     (*doc)["name"] = "Ndt";
     /* No nettest specific settings */
     return Settings::serialize_into(doc);
 }
 
-NdtNettest::NdtNettest(NdtSettings settings) noexcept {
-    std::swap(settings_, settings);
-}
-
-NdtNettest::~NdtNettest() noexcept {}
-
-bool NdtNettest::run() noexcept {
-    nlohmann::json doc;
-    if (!settings_.serialize_into(&doc)) {
-        // TODO(bassosimone): route this error
-        return false;
-    }
-    return run_with_json_settings(std::move(doc));
-}
-
-#endif // !MK_NETTEST_NO_NDT
 
 // # TcpConnect
 
-#ifndef MK_NETTEST_NO_TCP_CONNECT
-
-bool TcpConnectSettings::serialize_into(nlohmann::json *doc) noexcept {
+bool TcpConnectSettings::serialize_into(
+        nlohmann::json *doc) const noexcept {
     (*doc)["name"] = "TcpConnect";
     /* No nettest specific settings */
     return Settings::serialize_into(doc);
 }
 
-TcpConnectNettest::TcpConnectNettest(TcpConnectSettings settings) noexcept {
-    std::swap(settings_, settings);
-}
-
-TcpConnectNettest::~TcpConnectNettest() noexcept {}
-
-bool TcpConnectNettest::run() noexcept {
-    nlohmann::json doc;
-    if (!settings_.serialize_into(&doc)) {
-        // TODO(bassosimone): route this error
-        return false;
-    }
-    return run_with_json_settings(std::move(doc));
-}
-
-#endif // !MK_NETTEST_NO_TCP_CONNECT
 
 // # Telegram
 
-#ifndef MK_NETTEST_NO_TELEGRAM
-
-bool TelegramSettings::serialize_into(nlohmann::json *doc) noexcept {
+bool TelegramSettings::serialize_into(
+        nlohmann::json *doc) const noexcept {
     (*doc)["name"] = "Telegram";
     /* No nettest specific settings */
     return Settings::serialize_into(doc);
 }
 
-TelegramNettest::TelegramNettest(TelegramSettings settings) noexcept {
-    std::swap(settings_, settings);
-}
-
-TelegramNettest::~TelegramNettest() noexcept {}
-
-bool TelegramNettest::run() noexcept {
-    nlohmann::json doc;
-    if (!settings_.serialize_into(&doc)) {
-        // TODO(bassosimone): route this error
-        return false;
-    }
-    return run_with_json_settings(std::move(doc));
-}
-
-#endif // !MK_NETTEST_NO_TELEGRAM
 
 // # WebConnectivity
 
-#ifndef MK_NETTEST_NO_WEB_CONNECTIVITY
-
-bool WebConnectivitySettings::serialize_into(nlohmann::json *doc) noexcept {
+bool WebConnectivitySettings::serialize_into(
+        nlohmann::json *doc) const noexcept {
     (*doc)["name"] = "WebConnectivity";
     /* No nettest specific settings */
     return Settings::serialize_into(doc);
 }
 
-WebConnectivityNettest::WebConnectivityNettest(WebConnectivitySettings settings) noexcept {
-    std::swap(settings_, settings);
-}
-
-WebConnectivityNettest::~WebConnectivityNettest() noexcept {}
-
-bool WebConnectivityNettest::run() noexcept {
-    nlohmann::json doc;
-    if (!settings_.serialize_into(&doc)) {
-        // TODO(bassosimone): route this error
-        return false;
-    }
-    return run_with_json_settings(std::move(doc));
-}
-
-#endif // !MK_NETTEST_NO_WEB_CONNECTIVITY
 
 // # Whatsapp
 
-#ifndef MK_NETTEST_NO_WHATSAPP
-
-bool WhatsappSettings::serialize_into(nlohmann::json *doc) noexcept {
+bool WhatsappSettings::serialize_into(
+        nlohmann::json *doc) const noexcept {
     (*doc)["name"] = "Whatsapp";
     (*doc)["options"]["all_endpoints"] = (int64_t)all_endpoints;
     return Settings::serialize_into(doc);
 }
 
-WhatsappNettest::WhatsappNettest(WhatsappSettings settings) noexcept {
-    std::swap(settings_, settings);
-}
-
-WhatsappNettest::~WhatsappNettest() noexcept {}
-
-bool WhatsappNettest::run() noexcept {
-    nlohmann::json doc;
-    if (!settings_.serialize_into(&doc)) {
-        // TODO(bassosimone): route this error
-        return false;
-    }
-    return run_with_json_settings(std::move(doc));
-}
-
-#endif // !MK_NETTEST_NO_WHATSAPP
 
 #endif // !MK_NETTEST_NO_INLINE_IMPL && !SWIG
 } // namespace nettest
