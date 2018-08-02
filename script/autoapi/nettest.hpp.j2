@@ -98,11 +98,11 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+#include <atomic>
 #include <deque>
 #include <iostream>
 #include <map>
 #include <memory>
-#include <mutex>
 #include <sstream>
 #include <string>
 #include <thread>
@@ -205,8 +205,8 @@ class Nettest {
     // Dispatch the JSON event to the proper handler
     virtual bool dispatch_event(nlohmann::json doc) noexcept;
 
-    // Mutex to control access to task_.
-    std::mutex mutex_;
+    // Flag that tells us whether we should stop running
+    std::atomic_bool interrupted_{false};
 
     // Task running the nettest.
     UniqueTask task_;
@@ -279,10 +279,7 @@ Nettest::~Nettest() noexcept {}
 
 bool Nettest::run() noexcept { return run_with_json_settings(settings_); }
 
-void Nettest::interrupt() noexcept {
-    std::unique_lock<std::mutex> _{mutex_};
-    mk_task_interrupt(task_.get());
-}
+void Nettest::interrupt() noexcept { interrupted_ = true; }
 
 {% for event in events %}void Nettest::on_{{ event.key | replace(".", "_") }}({{ event.cxx_class_name }}Event event) {
 #ifdef MK_NETTEST_VERBOSE_DEFAULT_HANDLERS
@@ -297,11 +294,6 @@ void Nettest::interrupt() noexcept {
 
 bool Nettest::run_with_json_settings(const nlohmann::json &settingsdoc) noexcept {
     {
-        std::unique_lock<std::mutex> _{mutex_};
-        if (task_ != nullptr) {
-            // TODO(bassosimone): route this error.
-            return false;
-        }
         std::string str;
         try {
             str = settingsdoc.dump();
@@ -318,27 +310,22 @@ bool Nettest::run_with_json_settings(const nlohmann::json &settingsdoc) noexcept
             return false;
         }
     }
-    for (;;) {
+    while (!interrupted_) {
         nlohmann::json eventdoc;
         {
             UniqueEvent eventptr;
-            {
-                std::unique_lock<std::mutex> _{mutex_};
-                if (mk_task_is_done(task_.get())) {
-                    break;
-                }
-                eventptr.reset(mk_task_wait_for_next_event(task_.get()));
+            if (mk_task_is_done(task_.get())) {
+                break;
             }
+            eventptr.reset(mk_task_wait_for_next_event(task_.get()));
             if (eventptr == nullptr) {
                 // TODO(bassosimone): route this error.
-                interrupt();
-                return false;
+                break;
             }
             auto str = mk_event_serialize(eventptr.get());
             if (!str) {
                 // TODO(bassosimone): route this error.
-                interrupt();
-                return false;
+                break;
             }
 #ifdef MK_NETTEST_TRACE
             std::clog << "NETTEST: event: " << str << std::endl;
@@ -347,28 +334,24 @@ bool Nettest::run_with_json_settings(const nlohmann::json &settingsdoc) noexcept
                 eventdoc = nlohmann::json::parse(str);
             } catch (const std::exception &) {
                 // TODO(bassosimone): route this error.
-                interrupt();
-                return false;
+                break;
             }
         }
         if (eventdoc.count("key") != 1 || !eventdoc.at("key").is_string() ||
                 eventdoc.count("value") != 1 ||
                 !eventdoc.at("value").is_object()) {
             // TODO(bassosimone): route this error.
-            interrupt();
-            return false;
+            break;
         }
         {% for event in events %}if (eventdoc.at("key") == {{ event.cxx_class_name }}Event::key) {
             {% if event.attributes %}{% for attribute in event.attributes %}if (eventdoc.at("value").count("{{ attribute.key }}") != 1 ||
                     !eventdoc.at("value").at("{{ attribute.key }}").is_{{ attribute.json_type }}()) {
                 // TODO(bassosimone): route this error.
-                interrupt();
-                return false;
+                break;
             }{{ "\n            " if not loop.last }}{% endfor %}{% else %}/* No event attributes */{% endif %}
             if (!dispatch_event(std::move(eventdoc))) {
                 // TODO(bassosimone): route this error.
-                interrupt();
-                return false;
+                break;
             }
             continue;
         }{{ "\n        " if not loop.last }}{% endfor %}
@@ -376,9 +359,9 @@ bool Nettest::run_with_json_settings(const nlohmann::json &settingsdoc) noexcept
         std::clog << "NETTEST: unhandled event: " << str << std::endl;
 #endif
         // TODO(bassosimone): route this error.
-        interrupt();
-        return false;
+        break;
     }
+    mk_task_interrupt(task_.get());  // just in case we break early
     return true;
 }
 

@@ -98,11 +98,11 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+#include <atomic>
 #include <deque>
 #include <iostream>
 #include <map>
 #include <memory>
-#include <mutex>
 #include <sstream>
 #include <string>
 #include <thread>
@@ -494,8 +494,8 @@ class Nettest {
     // Dispatch the JSON event to the proper handler
     virtual bool dispatch_event(nlohmann::json doc) noexcept;
 
-    // Mutex to control access to task_.
-    std::mutex mutex_;
+    // Flag that tells us whether we should stop running
+    std::atomic_bool interrupted_{false};
 
     // Task running the nettest.
     UniqueTask task_;
@@ -733,10 +733,7 @@ Nettest::~Nettest() noexcept {}
 
 bool Nettest::run() noexcept { return run_with_json_settings(settings_); }
 
-void Nettest::interrupt() noexcept {
-    std::unique_lock<std::mutex> _{mutex_};
-    mk_task_interrupt(task_.get());
-}
+void Nettest::interrupt() noexcept { interrupted_ = true; }
 
 void Nettest::on_failure_asn_lookup(FailureAsnLookupEvent event) {
 #ifdef MK_NETTEST_VERBOSE_DEFAULT_HANDLERS
@@ -1027,11 +1024,6 @@ void Nettest::on_task_terminated(TaskTerminatedEvent event) {
 
 bool Nettest::run_with_json_settings(const nlohmann::json &settingsdoc) noexcept {
     {
-        std::unique_lock<std::mutex> _{mutex_};
-        if (task_ != nullptr) {
-            // TODO(bassosimone): route this error.
-            return false;
-        }
         std::string str;
         try {
             str = settingsdoc.dump();
@@ -1048,27 +1040,22 @@ bool Nettest::run_with_json_settings(const nlohmann::json &settingsdoc) noexcept
             return false;
         }
     }
-    for (;;) {
+    while (!interrupted_) {
         nlohmann::json eventdoc;
         {
             UniqueEvent eventptr;
-            {
-                std::unique_lock<std::mutex> _{mutex_};
-                if (mk_task_is_done(task_.get())) {
-                    break;
-                }
-                eventptr.reset(mk_task_wait_for_next_event(task_.get()));
+            if (mk_task_is_done(task_.get())) {
+                break;
             }
+            eventptr.reset(mk_task_wait_for_next_event(task_.get()));
             if (eventptr == nullptr) {
                 // TODO(bassosimone): route this error.
-                interrupt();
-                return false;
+                break;
             }
             auto str = mk_event_serialize(eventptr.get());
             if (!str) {
                 // TODO(bassosimone): route this error.
-                interrupt();
-                return false;
+                break;
             }
 #ifdef MK_NETTEST_TRACE
             std::clog << "NETTEST: event: " << str << std::endl;
@@ -1077,28 +1064,24 @@ bool Nettest::run_with_json_settings(const nlohmann::json &settingsdoc) noexcept
                 eventdoc = nlohmann::json::parse(str);
             } catch (const std::exception &) {
                 // TODO(bassosimone): route this error.
-                interrupt();
-                return false;
+                break;
             }
         }
         if (eventdoc.count("key") != 1 || !eventdoc.at("key").is_string() ||
                 eventdoc.count("value") != 1 ||
                 !eventdoc.at("value").is_object()) {
             // TODO(bassosimone): route this error.
-            interrupt();
-            return false;
+            break;
         }
         if (eventdoc.at("key") == FailureAsnLookupEvent::key) {
             if (eventdoc.at("value").count("failure") != 1 ||
                     !eventdoc.at("value").at("failure").is_string()) {
                 // TODO(bassosimone): route this error.
-                interrupt();
-                return false;
+                break;
             }
             if (!dispatch_event(std::move(eventdoc))) {
                 // TODO(bassosimone): route this error.
-                interrupt();
-                return false;
+                break;
             }
             continue;
         }
@@ -1106,13 +1089,11 @@ bool Nettest::run_with_json_settings(const nlohmann::json &settingsdoc) noexcept
             if (eventdoc.at("value").count("failure") != 1 ||
                     !eventdoc.at("value").at("failure").is_string()) {
                 // TODO(bassosimone): route this error.
-                interrupt();
-                return false;
+                break;
             }
             if (!dispatch_event(std::move(eventdoc))) {
                 // TODO(bassosimone): route this error.
-                interrupt();
-                return false;
+                break;
             }
             continue;
         }
@@ -1120,13 +1101,11 @@ bool Nettest::run_with_json_settings(const nlohmann::json &settingsdoc) noexcept
             if (eventdoc.at("value").count("failure") != 1 ||
                     !eventdoc.at("value").at("failure").is_string()) {
                 // TODO(bassosimone): route this error.
-                interrupt();
-                return false;
+                break;
             }
             if (!dispatch_event(std::move(eventdoc))) {
                 // TODO(bassosimone): route this error.
-                interrupt();
-                return false;
+                break;
             }
             continue;
         }
@@ -1134,13 +1113,11 @@ bool Nettest::run_with_json_settings(const nlohmann::json &settingsdoc) noexcept
             if (eventdoc.at("value").count("failure") != 1 ||
                     !eventdoc.at("value").at("failure").is_string()) {
                 // TODO(bassosimone): route this error.
-                interrupt();
-                return false;
+                break;
             }
             if (!dispatch_event(std::move(eventdoc))) {
                 // TODO(bassosimone): route this error.
-                interrupt();
-                return false;
+                break;
             }
             continue;
         }
@@ -1148,25 +1125,21 @@ bool Nettest::run_with_json_settings(const nlohmann::json &settingsdoc) noexcept
             if (eventdoc.at("value").count("failure") != 1 ||
                     !eventdoc.at("value").at("failure").is_string()) {
                 // TODO(bassosimone): route this error.
-                interrupt();
-                return false;
+                break;
             }
             if (eventdoc.at("value").count("idx") != 1 ||
                     !eventdoc.at("value").at("idx").is_number_integer()) {
                 // TODO(bassosimone): route this error.
-                interrupt();
-                return false;
+                break;
             }
             if (eventdoc.at("value").count("json_str") != 1 ||
                     !eventdoc.at("value").at("json_str").is_string()) {
                 // TODO(bassosimone): route this error.
-                interrupt();
-                return false;
+                break;
             }
             if (!dispatch_event(std::move(eventdoc))) {
                 // TODO(bassosimone): route this error.
-                interrupt();
-                return false;
+                break;
             }
             continue;
         }
@@ -1174,13 +1147,11 @@ bool Nettest::run_with_json_settings(const nlohmann::json &settingsdoc) noexcept
             if (eventdoc.at("value").count("failure") != 1 ||
                     !eventdoc.at("value").at("failure").is_string()) {
                 // TODO(bassosimone): route this error.
-                interrupt();
-                return false;
+                break;
             }
             if (!dispatch_event(std::move(eventdoc))) {
                 // TODO(bassosimone): route this error.
-                interrupt();
-                return false;
+                break;
             }
             continue;
         }
@@ -1188,13 +1159,11 @@ bool Nettest::run_with_json_settings(const nlohmann::json &settingsdoc) noexcept
             if (eventdoc.at("value").count("failure") != 1 ||
                     !eventdoc.at("value").at("failure").is_string()) {
                 // TODO(bassosimone): route this error.
-                interrupt();
-                return false;
+                break;
             }
             if (!dispatch_event(std::move(eventdoc))) {
                 // TODO(bassosimone): route this error.
-                interrupt();
-                return false;
+                break;
             }
             continue;
         }
@@ -1202,13 +1171,11 @@ bool Nettest::run_with_json_settings(const nlohmann::json &settingsdoc) noexcept
             if (eventdoc.at("value").count("failure") != 1 ||
                     !eventdoc.at("value").at("failure").is_string()) {
                 // TODO(bassosimone): route this error.
-                interrupt();
-                return false;
+                break;
             }
             if (!dispatch_event(std::move(eventdoc))) {
                 // TODO(bassosimone): route this error.
-                interrupt();
-                return false;
+                break;
             }
             continue;
         }
@@ -1216,13 +1183,11 @@ bool Nettest::run_with_json_settings(const nlohmann::json &settingsdoc) noexcept
             if (eventdoc.at("value").count("failure") != 1 ||
                     !eventdoc.at("value").at("failure").is_string()) {
                 // TODO(bassosimone): route this error.
-                interrupt();
-                return false;
+                break;
             }
             if (!dispatch_event(std::move(eventdoc))) {
                 // TODO(bassosimone): route this error.
-                interrupt();
-                return false;
+                break;
             }
             continue;
         }
@@ -1230,19 +1195,16 @@ bool Nettest::run_with_json_settings(const nlohmann::json &settingsdoc) noexcept
             if (eventdoc.at("value").count("log_level") != 1 ||
                     !eventdoc.at("value").at("log_level").is_string()) {
                 // TODO(bassosimone): route this error.
-                interrupt();
-                return false;
+                break;
             }
             if (eventdoc.at("value").count("message") != 1 ||
                     !eventdoc.at("value").at("message").is_string()) {
                 // TODO(bassosimone): route this error.
-                interrupt();
-                return false;
+                break;
             }
             if (!dispatch_event(std::move(eventdoc))) {
                 // TODO(bassosimone): route this error.
-                interrupt();
-                return false;
+                break;
             }
             continue;
         }
@@ -1250,19 +1212,16 @@ bool Nettest::run_with_json_settings(const nlohmann::json &settingsdoc) noexcept
             if (eventdoc.at("value").count("idx") != 1 ||
                     !eventdoc.at("value").at("idx").is_number_integer()) {
                 // TODO(bassosimone): route this error.
-                interrupt();
-                return false;
+                break;
             }
             if (eventdoc.at("value").count("json_str") != 1 ||
                     !eventdoc.at("value").at("json_str").is_string()) {
                 // TODO(bassosimone): route this error.
-                interrupt();
-                return false;
+                break;
             }
             if (!dispatch_event(std::move(eventdoc))) {
                 // TODO(bassosimone): route this error.
-                interrupt();
-                return false;
+                break;
             }
             continue;
         }
@@ -1270,25 +1229,21 @@ bool Nettest::run_with_json_settings(const nlohmann::json &settingsdoc) noexcept
             if (eventdoc.at("value").count("downloaded_kb") != 1 ||
                     !eventdoc.at("value").at("downloaded_kb").is_number_float()) {
                 // TODO(bassosimone): route this error.
-                interrupt();
-                return false;
+                break;
             }
             if (eventdoc.at("value").count("uploaded_kb") != 1 ||
                     !eventdoc.at("value").at("uploaded_kb").is_number_float()) {
                 // TODO(bassosimone): route this error.
-                interrupt();
-                return false;
+                break;
             }
             if (eventdoc.at("value").count("failure") != 1 ||
                     !eventdoc.at("value").at("failure").is_string()) {
                 // TODO(bassosimone): route this error.
-                interrupt();
-                return false;
+                break;
             }
             if (!dispatch_event(std::move(eventdoc))) {
                 // TODO(bassosimone): route this error.
-                interrupt();
-                return false;
+                break;
             }
             continue;
         }
@@ -1296,31 +1251,26 @@ bool Nettest::run_with_json_settings(const nlohmann::json &settingsdoc) noexcept
             if (eventdoc.at("value").count("probe_ip") != 1 ||
                     !eventdoc.at("value").at("probe_ip").is_string()) {
                 // TODO(bassosimone): route this error.
-                interrupt();
-                return false;
+                break;
             }
             if (eventdoc.at("value").count("probe_asn") != 1 ||
                     !eventdoc.at("value").at("probe_asn").is_string()) {
                 // TODO(bassosimone): route this error.
-                interrupt();
-                return false;
+                break;
             }
             if (eventdoc.at("value").count("probe_cc") != 1 ||
                     !eventdoc.at("value").at("probe_cc").is_string()) {
                 // TODO(bassosimone): route this error.
-                interrupt();
-                return false;
+                break;
             }
             if (eventdoc.at("value").count("probe_network_name") != 1 ||
                     !eventdoc.at("value").at("probe_network_name").is_string()) {
                 // TODO(bassosimone): route this error.
-                interrupt();
-                return false;
+                break;
             }
             if (!dispatch_event(std::move(eventdoc))) {
                 // TODO(bassosimone): route this error.
-                interrupt();
-                return false;
+                break;
             }
             continue;
         }
@@ -1328,19 +1278,16 @@ bool Nettest::run_with_json_settings(const nlohmann::json &settingsdoc) noexcept
             if (eventdoc.at("value").count("percentage") != 1 ||
                     !eventdoc.at("value").at("percentage").is_number_float()) {
                 // TODO(bassosimone): route this error.
-                interrupt();
-                return false;
+                break;
             }
             if (eventdoc.at("value").count("message") != 1 ||
                     !eventdoc.at("value").at("message").is_string()) {
                 // TODO(bassosimone): route this error.
-                interrupt();
-                return false;
+                break;
             }
             if (!dispatch_event(std::move(eventdoc))) {
                 // TODO(bassosimone): route this error.
-                interrupt();
-                return false;
+                break;
             }
             continue;
         }
@@ -1348,8 +1295,7 @@ bool Nettest::run_with_json_settings(const nlohmann::json &settingsdoc) noexcept
             /* No event attributes */
             if (!dispatch_event(std::move(eventdoc))) {
                 // TODO(bassosimone): route this error.
-                interrupt();
-                return false;
+                break;
             }
             continue;
         }
@@ -1357,19 +1303,16 @@ bool Nettest::run_with_json_settings(const nlohmann::json &settingsdoc) noexcept
             if (eventdoc.at("value").count("idx") != 1 ||
                     !eventdoc.at("value").at("idx").is_number_integer()) {
                 // TODO(bassosimone): route this error.
-                interrupt();
-                return false;
+                break;
             }
             if (eventdoc.at("value").count("input") != 1 ||
                     !eventdoc.at("value").at("input").is_string()) {
                 // TODO(bassosimone): route this error.
-                interrupt();
-                return false;
+                break;
             }
             if (!dispatch_event(std::move(eventdoc))) {
                 // TODO(bassosimone): route this error.
-                interrupt();
-                return false;
+                break;
             }
             continue;
         }
@@ -1377,13 +1320,11 @@ bool Nettest::run_with_json_settings(const nlohmann::json &settingsdoc) noexcept
             if (eventdoc.at("value").count("idx") != 1 ||
                     !eventdoc.at("value").at("idx").is_number_integer()) {
                 // TODO(bassosimone): route this error.
-                interrupt();
-                return false;
+                break;
             }
             if (!dispatch_event(std::move(eventdoc))) {
                 // TODO(bassosimone): route this error.
-                interrupt();
-                return false;
+                break;
             }
             continue;
         }
@@ -1391,13 +1332,11 @@ bool Nettest::run_with_json_settings(const nlohmann::json &settingsdoc) noexcept
             if (eventdoc.at("value").count("idx") != 1 ||
                     !eventdoc.at("value").at("idx").is_number_integer()) {
                 // TODO(bassosimone): route this error.
-                interrupt();
-                return false;
+                break;
             }
             if (!dispatch_event(std::move(eventdoc))) {
                 // TODO(bassosimone): route this error.
-                interrupt();
-                return false;
+                break;
             }
             continue;
         }
@@ -1405,13 +1344,11 @@ bool Nettest::run_with_json_settings(const nlohmann::json &settingsdoc) noexcept
             if (eventdoc.at("value").count("report_id") != 1 ||
                     !eventdoc.at("value").at("report_id").is_string()) {
                 // TODO(bassosimone): route this error.
-                interrupt();
-                return false;
+                break;
             }
             if (!dispatch_event(std::move(eventdoc))) {
                 // TODO(bassosimone): route this error.
-                interrupt();
-                return false;
+                break;
             }
             continue;
         }
@@ -1419,13 +1356,11 @@ bool Nettest::run_with_json_settings(const nlohmann::json &settingsdoc) noexcept
             if (eventdoc.at("value").count("report_id") != 1 ||
                     !eventdoc.at("value").at("report_id").is_string()) {
                 // TODO(bassosimone): route this error.
-                interrupt();
-                return false;
+                break;
             }
             if (!dispatch_event(std::move(eventdoc))) {
                 // TODO(bassosimone): route this error.
-                interrupt();
-                return false;
+                break;
             }
             continue;
         }
@@ -1433,13 +1368,11 @@ bool Nettest::run_with_json_settings(const nlohmann::json &settingsdoc) noexcept
             if (eventdoc.at("value").count("ip_address") != 1 ||
                     !eventdoc.at("value").at("ip_address").is_string()) {
                 // TODO(bassosimone): route this error.
-                interrupt();
-                return false;
+                break;
             }
             if (!dispatch_event(std::move(eventdoc))) {
                 // TODO(bassosimone): route this error.
-                interrupt();
-                return false;
+                break;
             }
             continue;
         }
@@ -1447,8 +1380,7 @@ bool Nettest::run_with_json_settings(const nlohmann::json &settingsdoc) noexcept
             /* No event attributes */
             if (!dispatch_event(std::move(eventdoc))) {
                 // TODO(bassosimone): route this error.
-                interrupt();
-                return false;
+                break;
             }
             continue;
         }
@@ -1456,31 +1388,26 @@ bool Nettest::run_with_json_settings(const nlohmann::json &settingsdoc) noexcept
             if (eventdoc.at("value").count("direction") != 1 ||
                     !eventdoc.at("value").at("direction").is_string()) {
                 // TODO(bassosimone): route this error.
-                interrupt();
-                return false;
+                break;
             }
             if (eventdoc.at("value").count("elapsed") != 1 ||
                     !eventdoc.at("value").at("elapsed").is_number_float()) {
                 // TODO(bassosimone): route this error.
-                interrupt();
-                return false;
+                break;
             }
             if (eventdoc.at("value").count("num_streams") != 1 ||
                     !eventdoc.at("value").at("num_streams").is_number_integer()) {
                 // TODO(bassosimone): route this error.
-                interrupt();
-                return false;
+                break;
             }
             if (eventdoc.at("value").count("speed_kbps") != 1 ||
                     !eventdoc.at("value").at("speed_kbps").is_number_float()) {
                 // TODO(bassosimone): route this error.
-                interrupt();
-                return false;
+                break;
             }
             if (!dispatch_event(std::move(eventdoc))) {
                 // TODO(bassosimone): route this error.
-                interrupt();
-                return false;
+                break;
             }
             continue;
         }
@@ -1488,19 +1415,16 @@ bool Nettest::run_with_json_settings(const nlohmann::json &settingsdoc) noexcept
             if (eventdoc.at("value").count("url") != 1 ||
                     !eventdoc.at("value").at("url").is_string()) {
                 // TODO(bassosimone): route this error.
-                interrupt();
-                return false;
+                break;
             }
             if (eventdoc.at("value").count("status") != 1 ||
                     !eventdoc.at("value").at("status").is_string()) {
                 // TODO(bassosimone): route this error.
-                interrupt();
-                return false;
+                break;
             }
             if (!dispatch_event(std::move(eventdoc))) {
                 // TODO(bassosimone): route this error.
-                interrupt();
-                return false;
+                break;
             }
             continue;
         }
@@ -1508,8 +1432,7 @@ bool Nettest::run_with_json_settings(const nlohmann::json &settingsdoc) noexcept
             /* No event attributes */
             if (!dispatch_event(std::move(eventdoc))) {
                 // TODO(bassosimone): route this error.
-                interrupt();
-                return false;
+                break;
             }
             continue;
         }
@@ -1517,9 +1440,9 @@ bool Nettest::run_with_json_settings(const nlohmann::json &settingsdoc) noexcept
         std::clog << "NETTEST: unhandled event: " << str << std::endl;
 #endif
         // TODO(bassosimone): route this error.
-        interrupt();
-        return false;
+        break;
     }
+    mk_task_interrupt(task_.get());  // just in case we break early
     return true;
 }
 
