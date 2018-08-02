@@ -206,7 +206,7 @@ class Nettest {
     // Event handlers
     // ``````````````
 
-    {% for event in events if event.tag == "common" %}/// Handles the "{{ event.key }}" event.
+    {% for event in events %}/// Handles the "{{ event.key }}" event.
     virtual void on_{{ event.key | replace(".", "_") }}({{ event.cxx_class_name }}Event);{{ "\n\n    " if not loop.last }}{% endfor %}
 
   protected:
@@ -219,34 +219,6 @@ class Nettest {
   private:
     std::mutex mutex_;
     UniqueTask task_;
-};
-
-/// Base class for nettests measuring performance.
-class PerformanceNettest : public Nettest {
-  public:
-    /// Wait for nettest to terminate and destroy resources.
-    ~PerformanceNettest() noexcept override {}
-
-    {% for event in events if event.tag == "performance" %}/// Handles the "{{ event.key }}" event.
-    virtual void on_{{ event.key | replace(".", "_") }}({{ event.cxx_class_name }}Event);{{ "\n\n    " if not loop.last }}{% endfor %}
-
-  protected:
-    // Dispatch the JSON event to the proper handler
-    bool dispatch_event(nlohmann::json doc) noexcept override;
-};
-
-/// Base class for nettest measuring websites blocking.
-class WebsitesNettest : public Nettest {
-  public:
-    /// Wait for nettest to terminate and destroy resources.
-    ~WebsitesNettest() noexcept override {}
-
-    {% for event in events if event.tag == "websites" %}/// Handles the "{{ event.key }}" event.
-    virtual void on_{{ event.key | replace(".", "_") }}({{ event.cxx_class_name }}Event);{{ "\n\n    " if not loop.last }}{% endfor %}
-
-  protected:
-    // Dispatch the JSON event to the proper handler
-    bool dispatch_event(nlohmann::json doc) noexcept override;
 };
 
 } // namespace common
@@ -269,7 +241,7 @@ class {{ nettest.name }}Settings : public Settings {
 };
 
 /// The {{ nettest.name }} nettest.
-class {{ nettest.name }}Nettest : public common::{{ nettest.base_nettest_class }}Nettest {
+class {{ nettest.name }}Nettest : public common::Nettest {
   public:
     /// Constructor with explicit settings.
     explicit {{ nettest.name }}Nettest({{nettest.name }}Settings) noexcept;
@@ -337,7 +309,7 @@ void Nettest::interrupt() noexcept {
     mk_task_interrupt(task_.get());
 }
 
-{% for event in events if event.tag == "common" %}void Nettest::on_{{ event.key | replace(".", "_") }}({{ event.cxx_class_name }}Event event) {
+{% for event in events %}void Nettest::on_{{ event.key | replace(".", "_") }}({{ event.cxx_class_name }}Event event) {
 #ifdef MK_NETTEST_VERBOSE_DEFAULT_HANDLERS
     std::clog << "{{ event.key }}";
     {% if event.attributes %}std::clog << ":";
@@ -436,59 +408,13 @@ bool Nettest::run_with_json_settings(nlohmann::json settingsdoc) noexcept {
 }
 
 bool Nettest::dispatch_event(nlohmann::json doc) noexcept {
-    {% for event in events if event.tag == "common" %}if (doc.at("key") == {{ event.cxx_class_name }}Event::key) {
+    {% for event in events %}if (doc.at("key") == {{ event.cxx_class_name }}Event::key) {
         {{ event.cxx_class_name}}Event event;
         {% if event.attributes %}{% for attribute in event.attributes %}event.{{ attribute.key }} = {{ attribute.cxx_cast_from_json }}doc.at("value").at("{{ attribute.key }}");{{ "\n        " if not loop.last }}{% endfor %}{% else %}/* No attributes */{% endif %}
         on_{{ event.key | replace(".", "_") }}(std::move(event));
         return true;
     }{{ "\n    " if not loop.last }}{% endfor %}
     return false;
-}
-
-// # PerformanceNettest
-
-{% for event in events if event.tag == "performance" %}void PerformanceNettest::on_{{ event.key | replace(".", "_") }}({{ event.cxx_class_name }}Event event) {
-#ifdef MK_NETTEST_VERBOSE_DEFAULT_HANDLERS
-    std::clog << "{{ event.key }}";
-    {% if event.attributes %}std::clog << ":";
-    {% for attribute in event.attributes %}std::clog << " {{ attribute.key }}='" << event.{{ attribute.key }} << "'";{{ "\n    " if not loop.last }}{% endfor %}{% else %}(void)event; /* No event attributes */{% endif %}
-    std::clog << std::endl;
-#else
-    (void)event;
-#endif
-}{{ "\n\n" if not loop.last }}{% endfor %}
-
-bool PerformanceNettest::dispatch_event(nlohmann::json doc) noexcept {
-    {% for event in events if event.tag == "performance" %}if (doc.at("key") == {{ event.cxx_class_name }}Event::key) {
-        {{ event.cxx_class_name}}Event event;
-        {% if event.attributes %}{% for attribute in event.attributes %}event.{{ attribute.key }} = {{ attribute.cxx_cast_from_json }}doc.at("value").at("{{ attribute.key }}");{{ "\n        " if not loop.last }}{% endfor %}{% else %}/* No attributes */{% endif %}
-        on_{{ event.key | replace(".", "_") }}(std::move(event));
-        return true;
-    }{{ "\n    " if not loop.last }}{% endfor %}
-    return Nettest::dispatch_event(std::move(doc));
-}
-
-// # WebsitesNettest
-
-{% for event in events if event.tag == "websites" %}void WebsitesNettest::on_{{ event.key | replace(".", "_") }}({{ event.cxx_class_name }}Event event) {
-#ifdef MK_NETTEST_VERBOSE_DEFAULT_HANDLERS
-    std::clog << "{{ event.key }}";
-    {% if event.attributes %}std::clog << ":";
-    {% for attribute in event.attributes %}std::clog << " {{ attribute.key }}='" << event.{{ attribute.key }} << "'";{{ "\n    " if not loop.last }}{% endfor %}{% else %}(void)event; /* No event attributes */{% endif %}
-    std::clog << std::endl;
-#else
-    (void)event;
-#endif
-}{{ "\n\n" if not loop.last }}{% endfor %}
-
-bool WebsitesNettest::dispatch_event(nlohmann::json doc) noexcept {
-    {% for event in events if event.tag == "websites" %}if (doc.at("key") == {{ event.cxx_class_name }}Event::key) {
-        {{ event.cxx_class_name}}Event event;
-        {% if event.attributes %}{% for attribute in event.attributes %}event.{{ attribute.key }} = {{ attribute.cxx_cast_from_json }}doc.at("value").at("{{ attribute.key }}");{{ "\n        " if not loop.last }}{% endfor %}{% else %}/* No attributes */{% endif %}
-        on_{{ event.key | replace(".", "_") }}(std::move(event));
-        return true;
-    }{{ "\n    " if not loop.last }}{% endfor %}
-    return Nettest::dispatch_event(std::move(doc));
 }
 
 } // namespace common

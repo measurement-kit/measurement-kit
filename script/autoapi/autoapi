@@ -50,9 +50,8 @@ class Setting(Attribute):
 class Event(object):
     """ Event emitted by FFI API while running tests. """
 
-    def __init__(self, key, tag, *attributes):
+    def __init__(self, key, *attributes):
         self.key = key
-        self.tag = tag
         self.cxx_class_name = "".join([e.capitalize() for e in key.replace(".", "_").split("_")])
         self.attributes = list(attributes)
 
@@ -64,97 +63,96 @@ class Nettest(object):
         self.tags = tags if tags is not None else list()
         self.name = "".join([e.capitalize() for e in snake_case_name.replace(".", "_").split("_")])
         self.attributes = list(attributes)
-        self.base_nettest_class = "Performance" if "performance" in self.tags else "Websites" if "websites" in self.tags else ""
 
 def main():
     """ Main function """
 
-    events = [Event("failure.asn_lookup", "common",
+    events = [Event("failure.asn_lookup",
                     Attribute("std::string", "failure")),
 
-              Event("failure.cc_lookup", "common",
+              Event("failure.cc_lookup",
                     Attribute("std::string", "failure")),
 
-              Event("failure.ip_lookup", "common",
+              Event("failure.ip_lookup",
                     Attribute("std::string", "failure")),
 
-              Event("failure.measurement", "common",
+              Event("failure.measurement",
                     Attribute("std::string", "failure")),
 
-              Event("failure.measurement_submission", "common",
+              Event("failure.measurement_submission",
                     Attribute("std::string", "failure"),
                     Attribute("int64_t", "idx"),
                     Attribute("std::string", "json_str")),
 
-              Event("failure.report_create", "common",
+              Event("failure.report_create",
                     Attribute("std::string", "failure")),
 
-              Event("failure.report_close", "common",
+              Event("failure.report_close",
                     Attribute("std::string", "failure")),
 
-              Event("failure.resolver_lookup", "common",
+              Event("failure.resolver_lookup",
                     Attribute("std::string", "failure")),
 
-              Event("failure.startup", "common",
+              Event("failure.startup",
                     Attribute("std::string", "failure")),
 
-              Event("log", "common",
+              Event("log",
                     Attribute("std::string", "log_level"),
                     Attribute("std::string", "message")),
 
-              Event("measurement", "common",
+              Event("measurement",
                     Attribute("int64_t", "idx"),
                     Attribute("std::string", "json_str")),
 
-              Event("status.end", "common",
+              Event("status.end",
                     Attribute("double", "downloaded_kb"),
                     Attribute("double", "uploaded_kb"),
                     Attribute("std::string", "failure")),
 
-              Event("status.geoip_lookup", "common",
+              Event("status.geoip_lookup",
                     Attribute("std::string", "probe_ip"),
                     Attribute("std::string", "probe_asn"),
                     Attribute("std::string", "probe_cc"),
                     Attribute("std::string", "probe_network_name")),
 
-              Event("status.progress", "common",
+              Event("status.progress",
                     Attribute("double", "percentage"),
                     Attribute("std::string", "message")),
 
-              Event("status.queued", "common"),
+              Event("status.queued"),
 
-              Event("status.measurement_start", "common",
+              Event("status.measurement_start",
                     Attribute("int64_t", "idx"),
                     Attribute("std::string", "input")),
 
-              Event("status.measurement_submission", "common",
+              Event("status.measurement_submission",
                     Attribute("int64_t", "idx")),
 
-              Event("status.measurement_done", "common",
+              Event("status.measurement_done",
                     Attribute("int64_t", "idx")),
 
-              Event("status.report_close", "common",
+              Event("status.report_close",
                     Attribute("std::string", "report_id")),
 
-              Event("status.report_create", "common",
+              Event("status.report_create",
                     Attribute("std::string", "report_id")),
 
-              Event("status.resolver_lookup", "common",
+              Event("status.resolver_lookup",
                     Attribute("std::string", "ip_address")),
 
-              Event("status.started", "common"),
+              Event("status.started"),
 
-              Event("status.update.performance", "performance",
+              Event("status.update.performance",
                     Attribute("std::string", "direction"),
                     Attribute("double", "elapsed"),
                     Attribute("int64_t", "num_streams"),
                     Attribute("double", "speed_kbps")),
 
-              Event("status.update.websites", "websites",
+              Event("status.update.websites",
                     Attribute("std::string", "url"),
                     Attribute("std::string", "status")),
 
-              Event("task_terminated", "common")]
+              Event("task_terminated")]
 
     log_levels = ["err", "warning", "info", "debug", "debug2"]
 

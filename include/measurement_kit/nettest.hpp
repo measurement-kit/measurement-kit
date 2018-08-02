@@ -660,6 +660,12 @@ class Nettest {
     /// Handles the "status.started" event.
     virtual void on_status_started(StatusStartedEvent);
 
+    /// Handles the "status.update.performance" event.
+    virtual void on_status_update_performance(StatusUpdatePerformanceEvent);
+
+    /// Handles the "status.update.websites" event.
+    virtual void on_status_update_websites(StatusUpdateWebsitesEvent);
+
     /// Handles the "task_terminated" event.
     virtual void on_task_terminated(TaskTerminatedEvent);
 
@@ -673,34 +679,6 @@ class Nettest {
   private:
     std::mutex mutex_;
     UniqueTask task_;
-};
-
-/// Base class for nettests measuring performance.
-class PerformanceNettest : public Nettest {
-  public:
-    /// Wait for nettest to terminate and destroy resources.
-    ~PerformanceNettest() noexcept override {}
-
-    /// Handles the "status.update.performance" event.
-    virtual void on_status_update_performance(StatusUpdatePerformanceEvent);
-
-  protected:
-    // Dispatch the JSON event to the proper handler
-    bool dispatch_event(nlohmann::json doc) noexcept override;
-};
-
-/// Base class for nettest measuring websites blocking.
-class WebsitesNettest : public Nettest {
-  public:
-    /// Wait for nettest to terminate and destroy resources.
-    ~WebsitesNettest() noexcept override {}
-
-    /// Handles the "status.update.websites" event.
-    virtual void on_status_update_websites(StatusUpdateWebsitesEvent);
-
-  protected:
-    // Dispatch the JSON event to the proper handler
-    bool dispatch_event(nlohmann::json doc) noexcept override;
 };
 
 } // namespace common
@@ -756,7 +734,7 @@ class DashSettings : public Settings {
 };
 
 /// The Dash nettest.
-class DashNettest : public common::PerformanceNettest {
+class DashNettest : public common::Nettest {
   public:
     /// Constructor with explicit settings.
     explicit DashNettest(DashSettings) noexcept;
@@ -960,7 +938,7 @@ class MultiNdtSettings : public Settings {
 };
 
 /// The MultiNdt nettest.
-class MultiNdtNettest : public common::PerformanceNettest {
+class MultiNdtNettest : public common::Nettest {
   public:
     /// Constructor with explicit settings.
     explicit MultiNdtNettest(MultiNdtSettings) noexcept;
@@ -994,7 +972,7 @@ class NdtSettings : public Settings {
 };
 
 /// The Ndt nettest.
-class NdtNettest : public common::PerformanceNettest {
+class NdtNettest : public common::Nettest {
   public:
     /// Constructor with explicit settings.
     explicit NdtNettest(NdtSettings) noexcept;
@@ -1096,7 +1074,7 @@ class WebConnectivitySettings : public Settings {
 };
 
 /// The WebConnectivity nettest.
-class WebConnectivityNettest : public common::WebsitesNettest {
+class WebConnectivityNettest : public common::Nettest {
   public:
     /// Constructor with explicit settings.
     explicit WebConnectivityNettest(WebConnectivitySettings) noexcept;
@@ -1477,6 +1455,32 @@ void Nettest::on_status_started(StatusStartedEvent event) {
 #ifdef MK_NETTEST_VERBOSE_DEFAULT_HANDLERS
     std::clog << "status.started";
     (void)event; /* No event attributes */
+    std::clog << std::endl;
+#else
+    (void)event;
+#endif
+}
+
+void Nettest::on_status_update_performance(StatusUpdatePerformanceEvent event) {
+#ifdef MK_NETTEST_VERBOSE_DEFAULT_HANDLERS
+    std::clog << "status.update.performance";
+    std::clog << ":";
+    std::clog << " direction='" << event.direction << "'";
+    std::clog << " elapsed='" << event.elapsed << "'";
+    std::clog << " num_streams='" << event.num_streams << "'";
+    std::clog << " speed_kbps='" << event.speed_kbps << "'";
+    std::clog << std::endl;
+#else
+    (void)event;
+#endif
+}
+
+void Nettest::on_status_update_websites(StatusUpdateWebsitesEvent event) {
+#ifdef MK_NETTEST_VERBOSE_DEFAULT_HANDLERS
+    std::clog << "status.update.websites";
+    std::clog << ":";
+    std::clog << " url='" << event.url << "'";
+    std::clog << " status='" << event.status << "'";
     std::clog << std::endl;
 #else
     (void)event;
@@ -2135,32 +2139,6 @@ bool Nettest::dispatch_event(nlohmann::json doc) noexcept {
         on_status_started(std::move(event));
         return true;
     }
-    if (doc.at("key") == TaskTerminatedEvent::key) {
-        TaskTerminatedEvent event;
-        /* No attributes */
-        on_task_terminated(std::move(event));
-        return true;
-    }
-    return false;
-}
-
-// # PerformanceNettest
-
-void PerformanceNettest::on_status_update_performance(StatusUpdatePerformanceEvent event) {
-#ifdef MK_NETTEST_VERBOSE_DEFAULT_HANDLERS
-    std::clog << "status.update.performance";
-    std::clog << ":";
-    std::clog << " direction='" << event.direction << "'";
-    std::clog << " elapsed='" << event.elapsed << "'";
-    std::clog << " num_streams='" << event.num_streams << "'";
-    std::clog << " speed_kbps='" << event.speed_kbps << "'";
-    std::clog << std::endl;
-#else
-    (void)event;
-#endif
-}
-
-bool PerformanceNettest::dispatch_event(nlohmann::json doc) noexcept {
     if (doc.at("key") == StatusUpdatePerformanceEvent::key) {
         StatusUpdatePerformanceEvent event;
         event.direction = doc.at("value").at("direction");
@@ -2170,24 +2148,6 @@ bool PerformanceNettest::dispatch_event(nlohmann::json doc) noexcept {
         on_status_update_performance(std::move(event));
         return true;
     }
-    return Nettest::dispatch_event(std::move(doc));
-}
-
-// # WebsitesNettest
-
-void WebsitesNettest::on_status_update_websites(StatusUpdateWebsitesEvent event) {
-#ifdef MK_NETTEST_VERBOSE_DEFAULT_HANDLERS
-    std::clog << "status.update.websites";
-    std::clog << ":";
-    std::clog << " url='" << event.url << "'";
-    std::clog << " status='" << event.status << "'";
-    std::clog << std::endl;
-#else
-    (void)event;
-#endif
-}
-
-bool WebsitesNettest::dispatch_event(nlohmann::json doc) noexcept {
     if (doc.at("key") == StatusUpdateWebsitesEvent::key) {
         StatusUpdateWebsitesEvent event;
         event.url = doc.at("value").at("url");
@@ -2195,7 +2155,13 @@ bool WebsitesNettest::dispatch_event(nlohmann::json doc) noexcept {
         on_status_update_websites(std::move(event));
         return true;
     }
-    return Nettest::dispatch_event(std::move(doc));
+    if (doc.at("key") == TaskTerminatedEvent::key) {
+        TaskTerminatedEvent event;
+        /* No attributes */
+        on_task_terminated(std::move(event));
+        return true;
+    }
+    return false;
 }
 
 } // namespace common
