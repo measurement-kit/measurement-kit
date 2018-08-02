@@ -32,7 +32,7 @@
 /// to setup common options among different tests.
 ///
 /// ```
-/// extern void set_more_common_settings(mk::nettest::common::Settings *);
+/// extern void set_more_common_settings(mk::nettest::Settings *);
 /// mk::nettest::WhatsappSettings settings;
 /// settings.all_endpoints = true;
 /// settings.log_level = mk::nettest::log_level_info;
@@ -163,9 +163,6 @@ class Settings {
     bool serialize_into(nlohmann::json *) noexcept;
 };
 
-/// Common generic code.
-namespace common {
-
 /// Base class for all nettests.
 class Nettest {
   public:
@@ -221,8 +218,6 @@ class Nettest {
     UniqueTask task_;
 };
 
-} // namespace common
-
 {% for nettest in nettests %}#ifndef MK_NETTEST_NO_{{ nettest.snake_case_name.upper() }}
 
 /// Settings for {{ nettest.name }}
@@ -241,7 +236,7 @@ class {{ nettest.name }}Settings : public Settings {
 };
 
 /// The {{ nettest.name }} nettest.
-class {{ nettest.name }}Nettest : public common::Nettest {
+class {{ nettest.name }}Nettest : public Nettest {
   public:
     /// Constructor with explicit settings.
     explicit {{ nettest.name }}Nettest({{nettest.name }}Settings) noexcept;
@@ -295,8 +290,6 @@ bool Settings::serialize_into(nlohmann::json *doc) noexcept {
     }
     return true;
 }
-
-namespace common {
 
 // # Nettest
 
@@ -416,8 +409,6 @@ bool Nettest::dispatch_event(nlohmann::json doc) noexcept {
     }{{ "\n    " if not loop.last }}{% endfor %}
     return false;
 }
-
-} // namespace common
 
 {% for nettest in nettests %}// # {{ nettest.name }}
 

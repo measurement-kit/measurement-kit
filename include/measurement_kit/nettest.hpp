@@ -32,7 +32,7 @@
 /// to setup common options among different tests.
 ///
 /// ```
-/// extern void set_more_common_settings(mk::nettest::common::Settings *);
+/// extern void set_more_common_settings(mk::nettest::Settings *);
 /// mk::nettest::WhatsappSettings settings;
 /// settings.all_endpoints = true;
 /// settings.log_level = mk::nettest::log_level_info;
@@ -551,9 +551,6 @@ class Settings {
     bool serialize_into(nlohmann::json *) noexcept;
 };
 
-/// Common generic code.
-namespace common {
-
 /// Base class for all nettests.
 class Nettest {
   public:
@@ -681,8 +678,6 @@ class Nettest {
     UniqueTask task_;
 };
 
-} // namespace common
-
 #ifndef MK_NETTEST_NO_CAPTIVE_PORTAL
 
 /// Settings for CaptivePortal
@@ -700,7 +695,7 @@ class CaptivePortalSettings : public Settings {
 };
 
 /// The CaptivePortal nettest.
-class CaptivePortalNettest : public common::Nettest {
+class CaptivePortalNettest : public Nettest {
   public:
     /// Constructor with explicit settings.
     explicit CaptivePortalNettest(CaptivePortalSettings) noexcept;
@@ -734,7 +729,7 @@ class DashSettings : public Settings {
 };
 
 /// The Dash nettest.
-class DashNettest : public common::Nettest {
+class DashNettest : public Nettest {
   public:
     /// Constructor with explicit settings.
     explicit DashNettest(DashSettings) noexcept;
@@ -768,7 +763,7 @@ class DnsInjectionSettings : public Settings {
 };
 
 /// The DnsInjection nettest.
-class DnsInjectionNettest : public common::Nettest {
+class DnsInjectionNettest : public Nettest {
   public:
     /// Constructor with explicit settings.
     explicit DnsInjectionNettest(DnsInjectionSettings) noexcept;
@@ -802,7 +797,7 @@ class FacebookMessengerSettings : public Settings {
 };
 
 /// The FacebookMessenger nettest.
-class FacebookMessengerNettest : public common::Nettest {
+class FacebookMessengerNettest : public Nettest {
   public:
     /// Constructor with explicit settings.
     explicit FacebookMessengerNettest(FacebookMessengerSettings) noexcept;
@@ -836,7 +831,7 @@ class HttpHeaderFieldManipulationSettings : public Settings {
 };
 
 /// The HttpHeaderFieldManipulation nettest.
-class HttpHeaderFieldManipulationNettest : public common::Nettest {
+class HttpHeaderFieldManipulationNettest : public Nettest {
   public:
     /// Constructor with explicit settings.
     explicit HttpHeaderFieldManipulationNettest(HttpHeaderFieldManipulationSettings) noexcept;
@@ -870,7 +865,7 @@ class HttpInvalidRequestLineSettings : public Settings {
 };
 
 /// The HttpInvalidRequestLine nettest.
-class HttpInvalidRequestLineNettest : public common::Nettest {
+class HttpInvalidRequestLineNettest : public Nettest {
   public:
     /// Constructor with explicit settings.
     explicit HttpInvalidRequestLineNettest(HttpInvalidRequestLineSettings) noexcept;
@@ -904,7 +899,7 @@ class MeekFrontedRequestsSettings : public Settings {
 };
 
 /// The MeekFrontedRequests nettest.
-class MeekFrontedRequestsNettest : public common::Nettest {
+class MeekFrontedRequestsNettest : public Nettest {
   public:
     /// Constructor with explicit settings.
     explicit MeekFrontedRequestsNettest(MeekFrontedRequestsSettings) noexcept;
@@ -938,7 +933,7 @@ class MultiNdtSettings : public Settings {
 };
 
 /// The MultiNdt nettest.
-class MultiNdtNettest : public common::Nettest {
+class MultiNdtNettest : public Nettest {
   public:
     /// Constructor with explicit settings.
     explicit MultiNdtNettest(MultiNdtSettings) noexcept;
@@ -972,7 +967,7 @@ class NdtSettings : public Settings {
 };
 
 /// The Ndt nettest.
-class NdtNettest : public common::Nettest {
+class NdtNettest : public Nettest {
   public:
     /// Constructor with explicit settings.
     explicit NdtNettest(NdtSettings) noexcept;
@@ -1006,7 +1001,7 @@ class TcpConnectSettings : public Settings {
 };
 
 /// The TcpConnect nettest.
-class TcpConnectNettest : public common::Nettest {
+class TcpConnectNettest : public Nettest {
   public:
     /// Constructor with explicit settings.
     explicit TcpConnectNettest(TcpConnectSettings) noexcept;
@@ -1040,7 +1035,7 @@ class TelegramSettings : public Settings {
 };
 
 /// The Telegram nettest.
-class TelegramNettest : public common::Nettest {
+class TelegramNettest : public Nettest {
   public:
     /// Constructor with explicit settings.
     explicit TelegramNettest(TelegramSettings) noexcept;
@@ -1074,7 +1069,7 @@ class WebConnectivitySettings : public Settings {
 };
 
 /// The WebConnectivity nettest.
-class WebConnectivityNettest : public common::Nettest {
+class WebConnectivityNettest : public Nettest {
   public:
     /// Constructor with explicit settings.
     explicit WebConnectivityNettest(WebConnectivitySettings) noexcept;
@@ -1110,7 +1105,7 @@ class WhatsappSettings : public Settings {
 };
 
 /// The Whatsapp nettest.
-class WhatsappNettest : public common::Nettest {
+class WhatsappNettest : public Nettest {
   public:
     /// Constructor with explicit settings.
     explicit WhatsappNettest(WhatsappSettings) noexcept;
@@ -1196,8 +1191,6 @@ bool Settings::serialize_into(nlohmann::json *doc) noexcept {
     }
     return true;
 }
-
-namespace common {
 
 // # Nettest
 
@@ -2163,8 +2156,6 @@ bool Nettest::dispatch_event(nlohmann::json doc) noexcept {
     }
     return false;
 }
-
-} // namespace common
 
 // # CaptivePortal
 
