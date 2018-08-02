@@ -1,5 +1,5 @@
 # Autoconf requirements
-AC_INIT(measurement_kit, 0.9.0-alpha.4, bassosimone@gmail.com)
+AC_INIT(measurement_kit, 0.9.0-alpha.5, bassosimone@gmail.com)
 
 # information on the package
 AC_CONFIG_SRCDIR([Makefile.am])
