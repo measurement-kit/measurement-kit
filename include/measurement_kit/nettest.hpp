@@ -420,8 +420,6 @@ class TaskTerminatedEvent {
 };
 
 #if !defined SWIG && !defined DOXYGEN
-namespace detail {
-
 // Deleter for mk_task_t.
 class TaskDeleter {
   public:
@@ -439,8 +437,6 @@ class EventDeleter {
 
 // Syntactic sugar for a unique mk_event_t pointer.
 using UniqueEvent = std::unique_ptr<mk_event_t, EventDeleter>;
-
-} // namespace detail
 #endif // !SWIG && !DOXYGEN
 
 /// Settings common to all nettests.
@@ -676,7 +672,7 @@ class Nettest {
 
   private:
     std::mutex mutex_;
-    detail::UniqueTask task_;
+    UniqueTask task_;
 };
 
 /// Base class for nettests measuring performance.
@@ -1169,8 +1165,6 @@ class WhatsappNettest : public common::Nettest {
  */
 #if !defined MK_NETTEST_NO_INLINE_IMPL && !defined SWIG
 
-namespace detail {
-
 void TaskDeleter::operator()(mk_task_t *task) noexcept {
     mk_task_destroy(task);
 }
@@ -1178,8 +1172,6 @@ void TaskDeleter::operator()(mk_task_t *task) noexcept {
 void EventDeleter::operator()(mk_event_t *event) noexcept {
     mk_event_destroy(event);
 }
-
-} // namespace detail
 
 // # Settings
 
@@ -1527,7 +1519,7 @@ bool Nettest::run_with_json_settings(nlohmann::json settingsdoc) noexcept {
     for (;;) {
         nlohmann::json eventdoc;
         {
-            detail::UniqueEvent eventptr;
+            UniqueEvent eventptr;
             {
                 std::unique_lock<std::mutex> _{mutex_};
                 if (mk_task_is_done(task_.get())) {
