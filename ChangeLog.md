@@ -1,3 +1,11 @@
+# MeasurementKit 0.9.0-alpha.4 [2018-08-02]
+
+- Be less strict with respect to option types because the old API is
+  internally using strings to represent options, hence it does not
+  matter the option type when we set the option's value, rather what
+  rules is whether the option can be converted to the correct type
+  when Measurement Kit is running. Fixes the old API on iOS.
+
 # MeasurementKit 0.9.0-alpha.3 [2018-08-01]
 
 - Use new collector implementation (#1639)
