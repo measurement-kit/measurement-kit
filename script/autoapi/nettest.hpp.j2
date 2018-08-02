@@ -39,15 +39,17 @@
 /// set_more_common_settings(&settings);
 /// ```
 ///
-/// ### 2. Optional: subclass your nettest
+/// ### 2. Optional: subclass nettest
 ///
-/// Create a subclass of the nettest you want to run, where you override
-/// all the events that you would like to handle.
+/// Create a subclass of the nettest class, where you override all the events
+/// that you would like to handle. (There is a unique nettest class to allow to
+/// manage any nettest using the same code; we will expose nettest specific
+/// code as part of a future release of MK).
 ///
 /// ```
-/// class MyWhatsapp : public mk::nettest::WhatsappNettest {
+/// class MyNettest : public mk::nettest::Nettest {
 ///  public:
-///   using mk::nettest::WhatsappNettest::WhatsappNettest;
+///   using mk::nettest::Nettest::Nettest;
 ///
 ///   void on_log(mk::nettest::LogEvent event) override {
 ///     // Your event handling code here. Remember that this is called
@@ -68,7 +70,7 @@
 /// the constructor the settings you created in step 1.
 ///
 /// ```
-/// MyWhatsapp nettest{std::move(settings)};
+/// MyNettest nettest{std::move(settings)};
 /// ```
 ///
 /// ### 4. Call run()
@@ -94,6 +96,7 @@
 
 #include <assert.h>
 #include <stdint.h>
+#include <stdlib.h>
 
 #include <deque>
 #include <iostream>
@@ -115,58 +118,44 @@ namespace mk {
 /// Namespace containing the nettest API.
 namespace nettest {
 
-{% for log_level in log_levels %}/// String representation of the "{{ log_level }}" log level.
-constexpr const char *log_level_{{ log_level }} = "{{ log_level.upper() }}";{{ "\n\n" if not loop.last }}{% endfor %}
+{% for log_level in log_levels %}constexpr const char *log_level_{{ log_level }} = "{{ log_level.upper() }}";{{ "\n" if not loop.last }}{% endfor %}
 
-{% for event in events %}/// C++ representation of the "{{ event.key }}" event.
+{% for event in events %}/// The "{{ event.key }}" event.
 class {{ event.cxx_class_name }}Event {
   public:
-    /// The unique identifier of this event.
-    static constexpr const char *key = "{{ event.key }}";
-    {% if event.attributes %}{% for attribute in event.attributes %}{{ "\n    " }}/// The "{{ attribute.key }}" attribute of this event.
-    {{ attribute.cxx_type }} {{ attribute.key }} = {{ attribute.value }};{{ "\n    " if not loop.last }}{% endfor %}{% else %}/* No attributes */{% endif %}
+    static constexpr const char *key = "{{ event.key }}";{% if event.attributes %}{% for attribute in event.attributes %}{{ "\n    " }}{{ attribute.cxx_type }} {{ attribute.key }} = {{ attribute.value }};{{ "    " if not loop.last }}{% endfor %}{% endif %}
 };{{ "\n\n" if not loop.last }}{% endfor %}
 
 #if !defined SWIG && !defined DOXYGEN
-// Deleter for mk_task_t.
 class TaskDeleter {
   public:
     void operator()(mk_task_t *task) noexcept;
 };
-
-// Syntactic sugar of a unique mk_task_t pointer.
 using UniqueTask = std::unique_ptr<mk_task_t, TaskDeleter>;
 
-// Deleter for mk_event_t.
 class EventDeleter {
   public:
     void operator()(mk_event_t *event) noexcept;
 };
-
-// Syntactic sugar for a unique mk_event_t pointer.
 using UniqueEvent = std::unique_ptr<mk_event_t, EventDeleter>;
 #endif // !SWIG && !DOXYGEN
 
 /// Settings common to all nettests.
 class Settings {
   public:
-    {% for setting in settings if not setting.internal %}/// The "{{ setting.key  }}" setting.
-    {{ setting.cxx_type }} {{ setting.key }} = {{ setting.value }};{{ "\n\n    " if not loop.last }}{% endfor %}
+    {% for setting in settings if not setting.internal %}{{ setting.cxx_type }} {{ setting.key }} = {{ setting.value }};{{ "\n    " if not loop.last }}{% endfor %}
 
-    {% for option in options %}/// The "{{ option.key }}" setting.
-    {{ option.cxx_type }} {{ option.key | replace("/", "_") }} = {{ option.value }};{{ "\n\n    " if not loop.last }}{% endfor %}
+    {% for option in options %}{{ option.cxx_type }} {{ option.key | replace("/", "_") }} = {{ option.value }};{{ "\n    " if not loop.last }}{% endfor %}
 
-    /// Destroys all allocated resources.
     virtual ~Settings() noexcept;
 
 #ifdef SWIG
   private:
 #endif
-    // Serialize common settings into a JSON document.
-    virtual bool serialize_into(nlohmann::json *) const noexcept;
+    virtual void serialize_into(nlohmann::json *) const noexcept;
 };
 
-/// Base class for all nettests.
+/// Class for running any nettest.
 class Nettest {
   public:
     // Implementation note: we cannot have `noexcept` in virtual methods to be
@@ -209,36 +198,32 @@ class Nettest {
     {% for event in events %}/// Handles the "{{ event.key }}" event.
     virtual void on_{{ event.key | replace(".", "_") }}({{ event.cxx_class_name }}Event);{{ "\n\n    " if not loop.last }}{% endfor %}
 
-#ifdef SWIG
   private:
-#else
-  protected:
-#endif
     // Start a nettest given JSON settings
     bool run_with_json_settings(const nlohmann::json &doc) noexcept;
 
     // Dispatch the JSON event to the proper handler
     virtual bool dispatch_event(nlohmann::json doc) noexcept;
 
-  private:
+    // Mutex to control access to task_.
     std::mutex mutex_;
+
+    // Task running the nettest.
     UniqueTask task_;
+
+    // Initial settings as a JSON.
     nlohmann::json settings_;
 };
 
 {% for nettest in nettests %}/// Settings for {{ nettest.name }}
 class {{ nettest.name }}Settings : public Settings {
   public:
-    /// Unique name of this nettest.
-    static constexpr const char *name = "{{ nettest.name }}";
-    {% if nettest.attributes %}{% for attribute in nettest.attributes %}{{ "\n    "}}/// The "{{ attribute.key }}" setting of this nettest.
-    {{ attribute.cxx_type}} {{ attribute.key }} = {{ attribute.value }};{{ "\n    " if not loop.last }}{% endfor %}{% else %}/* No nettest-specific settings */{% endif %}
+    static constexpr const char *name = "{{ nettest.name }}";{% if nettest.attributes %}{% for attribute in nettest.attributes %}{{ "\n    "}}{{ attribute.cxx_type}} {{ attribute.key }} = {{ attribute.value }};{{ "\n    " if not loop.last }}{% endfor %}{% endif %}
 
 #ifdef SWIG
   private:
 #endif
-    // Serialize {{ nettest.name }} settings into a JSON document.
-    bool serialize_into(nlohmann::json *) const noexcept override;
+    void serialize_into(nlohmann::json *) const noexcept override;
 };{{ "\n\n" if not loop.last }}{% endfor %}
 
 /*-
@@ -257,6 +242,8 @@ class {{ nettest.name }}Settings : public Settings {
  */
 #if !defined MK_NETTEST_NO_INLINE_IMPL && !defined SWIG
 
+// # Helpers
+
 void TaskDeleter::operator()(mk_task_t *task) noexcept {
     mk_task_destroy(task);
 }
@@ -269,22 +256,23 @@ void EventDeleter::operator()(mk_event_t *event) noexcept {
 
 Settings::~Settings() noexcept {}
 
-bool Settings::serialize_into(nlohmann::json *doc) const noexcept {
+void Settings::serialize_into(nlohmann::json *doc) const noexcept {
     if (doc == nullptr) {
-        return false;
+        abort();
+	// NOTHREACHED
     }
     {% for setting in settings if not setting.internal %}(*doc)["{{ setting.key }}"] = {{ setting.cxx_cast_to_json }}{{ setting.key }};{{ "\n    " if not loop.last }}{% endfor %}
     {
         auto &o = (*doc)["options"];
         {% for option in options %}o["{{ option.key }}"] = {{ option.cxx_cast_to_json }}{{ option.key | replace("/", "_") }};{{ "\n        " if not loop.last }}{% endfor %}
     }
-    return true;
+    return;
 }
 
 // # Nettest
 
 Nettest::Nettest(const Settings &doc) noexcept {
-  (void)doc.serialize_into(&settings_);
+  doc.serialize_into(&settings_);
 }
 
 Nettest::~Nettest() noexcept {}
@@ -307,8 +295,7 @@ void Nettest::interrupt() noexcept {
 #endif
 }{{ "\n\n" if not loop.last }}{% endfor %}
 
-bool Nettest::run_with_json_settings(
-        const nlohmann::json &settingsdoc) noexcept {
+bool Nettest::run_with_json_settings(const nlohmann::json &settingsdoc) noexcept {
     {
         std::unique_lock<std::mutex> _{mutex_};
         if (task_ != nullptr) {
@@ -407,13 +394,12 @@ bool Nettest::dispatch_event(nlohmann::json doc) noexcept {
 
 {% for nettest in nettests %}// # {{ nettest.name }}
 
-bool {{ nettest.name }}Settings::serialize_into(
-        nlohmann::json *doc) const noexcept {
+void {{ nettest.name }}Settings::serialize_into(nlohmann::json *doc) const noexcept {
+    if (doc == nullptr) abort(); // NOTREACHED
     (*doc)["name"] = "{{ nettest.name }}";
     {% if nettest.attributes %}{% for attribute in nettest.attributes %}(*doc)["options"]["{{ attribute.key}}"] = {{ attribute.cxx_cast_to_json }}{{ attribute.key }};{{ "\n    " if not loop.last }}{% endfor %}{% else %}/* No nettest specific settings */{% endif %}
-    return Settings::serialize_into(doc);
-}
-{{ "\n\n" if not loop.last }}{% endfor %}
+    Settings::serialize_into(doc);
+}{{ "\n\n" if not loop.last }}{% endfor %}
 
 #endif // !MK_NETTEST_NO_INLINE_IMPL && !SWIG
 } // namespace nettest

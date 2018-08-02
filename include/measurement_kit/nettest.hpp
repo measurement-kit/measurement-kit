@@ -39,15 +39,17 @@
 /// set_more_common_settings(&settings);
 /// ```
 ///
-/// ### 2. Optional: subclass your nettest
+/// ### 2. Optional: subclass nettest
 ///
-/// Create a subclass of the nettest you want to run, where you override
-/// all the events that you would like to handle.
+/// Create a subclass of the nettest class, where you override all the events
+/// that you would like to handle. (There is a unique nettest class to allow to
+/// manage any nettest using the same code; we will expose nettest specific
+/// code as part of a future release of MK).
 ///
 /// ```
-/// class MyWhatsapp : public mk::nettest::WhatsappNettest {
+/// class MyNettest : public mk::nettest::Nettest {
 ///  public:
-///   using mk::nettest::WhatsappNettest::WhatsappNettest;
+///   using mk::nettest::Nettest::Nettest;
 ///
 ///   void on_log(mk::nettest::LogEvent event) override {
 ///     // Your event handling code here. Remember that this is called
@@ -68,7 +70,7 @@
 /// the constructor the settings you created in step 1.
 ///
 /// ```
-/// MyWhatsapp nettest{std::move(settings)};
+/// MyNettest nettest{std::move(settings)};
 /// ```
 ///
 /// ### 4. Call run()
@@ -94,6 +96,7 @@
 
 #include <assert.h>
 #include <stdint.h>
+#include <stdlib.h>
 
 #include <deque>
 #include <iostream>
@@ -115,446 +118,261 @@ namespace mk {
 /// Namespace containing the nettest API.
 namespace nettest {
 
-/// String representation of the "err" log level.
 constexpr const char *log_level_err = "ERR";
-
-/// String representation of the "warning" log level.
 constexpr const char *log_level_warning = "WARNING";
-
-/// String representation of the "info" log level.
 constexpr const char *log_level_info = "INFO";
-
-/// String representation of the "debug" log level.
 constexpr const char *log_level_debug = "DEBUG";
-
-/// String representation of the "debug2" log level.
 constexpr const char *log_level_debug2 = "DEBUG2";
 
-/// C++ representation of the "failure.asn_lookup" event.
+/// The "failure.asn_lookup" event.
 class FailureAsnLookupEvent {
   public:
-    /// The unique identifier of this event.
     static constexpr const char *key = "failure.asn_lookup";
-    
-    /// The "failure" attribute of this event.
     std::string failure = "";
 };
 
-/// C++ representation of the "failure.cc_lookup" event.
+/// The "failure.cc_lookup" event.
 class FailureCcLookupEvent {
   public:
-    /// The unique identifier of this event.
     static constexpr const char *key = "failure.cc_lookup";
-    
-    /// The "failure" attribute of this event.
     std::string failure = "";
 };
 
-/// C++ representation of the "failure.ip_lookup" event.
+/// The "failure.ip_lookup" event.
 class FailureIpLookupEvent {
   public:
-    /// The unique identifier of this event.
     static constexpr const char *key = "failure.ip_lookup";
-    
-    /// The "failure" attribute of this event.
     std::string failure = "";
 };
 
-/// C++ representation of the "failure.measurement" event.
+/// The "failure.measurement" event.
 class FailureMeasurementEvent {
   public:
-    /// The unique identifier of this event.
     static constexpr const char *key = "failure.measurement";
-    
-    /// The "failure" attribute of this event.
     std::string failure = "";
 };
 
-/// C++ representation of the "failure.measurement_submission" event.
+/// The "failure.measurement_submission" event.
 class FailureMeasurementSubmissionEvent {
   public:
-    /// The unique identifier of this event.
     static constexpr const char *key = "failure.measurement_submission";
-    
-    /// The "failure" attribute of this event.
-    std::string failure = "";
-    
-    /// The "idx" attribute of this event.
-    int64_t idx = 0;
-    
-    /// The "json_str" attribute of this event.
+    std::string failure = "";    
+    int64_t idx = 0;    
     std::string json_str = "";
 };
 
-/// C++ representation of the "failure.report_create" event.
+/// The "failure.report_create" event.
 class FailureReportCreateEvent {
   public:
-    /// The unique identifier of this event.
     static constexpr const char *key = "failure.report_create";
-    
-    /// The "failure" attribute of this event.
     std::string failure = "";
 };
 
-/// C++ representation of the "failure.report_close" event.
+/// The "failure.report_close" event.
 class FailureReportCloseEvent {
   public:
-    /// The unique identifier of this event.
     static constexpr const char *key = "failure.report_close";
-    
-    /// The "failure" attribute of this event.
     std::string failure = "";
 };
 
-/// C++ representation of the "failure.resolver_lookup" event.
+/// The "failure.resolver_lookup" event.
 class FailureResolverLookupEvent {
   public:
-    /// The unique identifier of this event.
     static constexpr const char *key = "failure.resolver_lookup";
-    
-    /// The "failure" attribute of this event.
     std::string failure = "";
 };
 
-/// C++ representation of the "failure.startup" event.
+/// The "failure.startup" event.
 class FailureStartupEvent {
   public:
-    /// The unique identifier of this event.
     static constexpr const char *key = "failure.startup";
-    
-    /// The "failure" attribute of this event.
     std::string failure = "";
 };
 
-/// C++ representation of the "log" event.
+/// The "log" event.
 class LogEvent {
   public:
-    /// The unique identifier of this event.
     static constexpr const char *key = "log";
-    
-    /// The "log_level" attribute of this event.
-    std::string log_level = "";
-    
-    /// The "message" attribute of this event.
+    std::string log_level = "";    
     std::string message = "";
 };
 
-/// C++ representation of the "measurement" event.
+/// The "measurement" event.
 class MeasurementEvent {
   public:
-    /// The unique identifier of this event.
     static constexpr const char *key = "measurement";
-    
-    /// The "idx" attribute of this event.
-    int64_t idx = 0;
-    
-    /// The "json_str" attribute of this event.
+    int64_t idx = 0;    
     std::string json_str = "";
 };
 
-/// C++ representation of the "status.end" event.
+/// The "status.end" event.
 class StatusEndEvent {
   public:
-    /// The unique identifier of this event.
     static constexpr const char *key = "status.end";
-    
-    /// The "downloaded_kb" attribute of this event.
-    double downloaded_kb = 0.0;
-    
-    /// The "uploaded_kb" attribute of this event.
-    double uploaded_kb = 0.0;
-    
-    /// The "failure" attribute of this event.
+    double downloaded_kb = 0.0;    
+    double uploaded_kb = 0.0;    
     std::string failure = "";
 };
 
-/// C++ representation of the "status.geoip_lookup" event.
+/// The "status.geoip_lookup" event.
 class StatusGeoipLookupEvent {
   public:
-    /// The unique identifier of this event.
     static constexpr const char *key = "status.geoip_lookup";
-    
-    /// The "probe_ip" attribute of this event.
-    std::string probe_ip = "";
-    
-    /// The "probe_asn" attribute of this event.
-    std::string probe_asn = "";
-    
-    /// The "probe_cc" attribute of this event.
-    std::string probe_cc = "";
-    
-    /// The "probe_network_name" attribute of this event.
+    std::string probe_ip = "";    
+    std::string probe_asn = "";    
+    std::string probe_cc = "";    
     std::string probe_network_name = "";
 };
 
-/// C++ representation of the "status.progress" event.
+/// The "status.progress" event.
 class StatusProgressEvent {
   public:
-    /// The unique identifier of this event.
     static constexpr const char *key = "status.progress";
-    
-    /// The "percentage" attribute of this event.
-    double percentage = 0.0;
-    
-    /// The "message" attribute of this event.
+    double percentage = 0.0;    
     std::string message = "";
 };
 
-/// C++ representation of the "status.queued" event.
+/// The "status.queued" event.
 class StatusQueuedEvent {
   public:
-    /// The unique identifier of this event.
     static constexpr const char *key = "status.queued";
-    /* No attributes */
 };
 
-/// C++ representation of the "status.measurement_start" event.
+/// The "status.measurement_start" event.
 class StatusMeasurementStartEvent {
   public:
-    /// The unique identifier of this event.
     static constexpr const char *key = "status.measurement_start";
-    
-    /// The "idx" attribute of this event.
-    int64_t idx = 0;
-    
-    /// The "input" attribute of this event.
+    int64_t idx = 0;    
     std::string input = "";
 };
 
-/// C++ representation of the "status.measurement_submission" event.
+/// The "status.measurement_submission" event.
 class StatusMeasurementSubmissionEvent {
   public:
-    /// The unique identifier of this event.
     static constexpr const char *key = "status.measurement_submission";
-    
-    /// The "idx" attribute of this event.
     int64_t idx = 0;
 };
 
-/// C++ representation of the "status.measurement_done" event.
+/// The "status.measurement_done" event.
 class StatusMeasurementDoneEvent {
   public:
-    /// The unique identifier of this event.
     static constexpr const char *key = "status.measurement_done";
-    
-    /// The "idx" attribute of this event.
     int64_t idx = 0;
 };
 
-/// C++ representation of the "status.report_close" event.
+/// The "status.report_close" event.
 class StatusReportCloseEvent {
   public:
-    /// The unique identifier of this event.
     static constexpr const char *key = "status.report_close";
-    
-    /// The "report_id" attribute of this event.
     std::string report_id = "";
 };
 
-/// C++ representation of the "status.report_create" event.
+/// The "status.report_create" event.
 class StatusReportCreateEvent {
   public:
-    /// The unique identifier of this event.
     static constexpr const char *key = "status.report_create";
-    
-    /// The "report_id" attribute of this event.
     std::string report_id = "";
 };
 
-/// C++ representation of the "status.resolver_lookup" event.
+/// The "status.resolver_lookup" event.
 class StatusResolverLookupEvent {
   public:
-    /// The unique identifier of this event.
     static constexpr const char *key = "status.resolver_lookup";
-    
-    /// The "ip_address" attribute of this event.
     std::string ip_address = "";
 };
 
-/// C++ representation of the "status.started" event.
+/// The "status.started" event.
 class StatusStartedEvent {
   public:
-    /// The unique identifier of this event.
     static constexpr const char *key = "status.started";
-    /* No attributes */
 };
 
-/// C++ representation of the "status.update.performance" event.
+/// The "status.update.performance" event.
 class StatusUpdatePerformanceEvent {
   public:
-    /// The unique identifier of this event.
     static constexpr const char *key = "status.update.performance";
-    
-    /// The "direction" attribute of this event.
-    std::string direction = "";
-    
-    /// The "elapsed" attribute of this event.
-    double elapsed = 0.0;
-    
-    /// The "num_streams" attribute of this event.
-    int64_t num_streams = 0;
-    
-    /// The "speed_kbps" attribute of this event.
+    std::string direction = "";    
+    double elapsed = 0.0;    
+    int64_t num_streams = 0;    
     double speed_kbps = 0.0;
 };
 
-/// C++ representation of the "status.update.websites" event.
+/// The "status.update.websites" event.
 class StatusUpdateWebsitesEvent {
   public:
-    /// The unique identifier of this event.
     static constexpr const char *key = "status.update.websites";
-    
-    /// The "url" attribute of this event.
-    std::string url = "";
-    
-    /// The "status" attribute of this event.
+    std::string url = "";    
     std::string status = "";
 };
 
-/// C++ representation of the "task_terminated" event.
+/// The "task_terminated" event.
 class TaskTerminatedEvent {
   public:
-    /// The unique identifier of this event.
     static constexpr const char *key = "task_terminated";
-    /* No attributes */
 };
 
 #if !defined SWIG && !defined DOXYGEN
-// Deleter for mk_task_t.
 class TaskDeleter {
   public:
     void operator()(mk_task_t *task) noexcept;
 };
-
-// Syntactic sugar of a unique mk_task_t pointer.
 using UniqueTask = std::unique_ptr<mk_task_t, TaskDeleter>;
 
-// Deleter for mk_event_t.
 class EventDeleter {
   public:
     void operator()(mk_event_t *event) noexcept;
 };
-
-// Syntactic sugar for a unique mk_event_t pointer.
 using UniqueEvent = std::unique_ptr<mk_event_t, EventDeleter>;
 #endif // !SWIG && !DOXYGEN
 
 /// Settings common to all nettests.
 class Settings {
   public:
-    /// The "annotations" setting.
     std::map<std::string, std::string> annotations = {};
-
-    /// The "inputs" setting.
     std::vector<std::string> inputs = {};
-
-    /// The "input_filepaths" setting.
     std::vector<std::string> input_filepaths = {};
-
-    /// The "log_filepath" setting.
     std::string log_filepath = "";
-
-    /// The "log_level" setting.
     std::string log_level = log_level_err;
-
-    /// The "output_filepath" setting.
     std::string output_filepath = "";
 
-    /// The "bouncer_base_url" setting.
     std::string bouncer_base_url = "https://bouncer.ooni.io";
-
-    /// The "collector_base_url" setting.
     std::string collector_base_url = "";
-
-    /// The "dns/nameserver" setting.
     std::string dns_nameserver = "";
-
-    /// The "dns/engine" setting.
     std::string dns_engine = "system";
-
-    /// The "geoip_asn_path" setting.
     std::string geoip_asn_path = "";
-
-    /// The "geoip_country_path" setting.
     std::string geoip_country_path = "";
-
-    /// The "ignore_bouncer_error" setting.
     bool ignore_bouncer_error = true;
-
-    /// The "ignore_open_report_error" setting.
     bool ignore_open_report_error = true;
-
-    /// The "max_runtime" setting.
     double max_runtime = -1.0;
-
-    /// The "net/ca_bundle_path" setting.
     std::string net_ca_bundle_path = "";
-
-    /// The "net/timeout" setting.
     double net_timeout = 10.0;
-
-    /// The "no_bouncer" setting.
     bool no_bouncer = false;
-
-    /// The "no_collector" setting.
     bool no_collector = false;
-
-    /// The "no_asn_lookup" setting.
     bool no_asn_lookup = false;
-
-    /// The "no_cc_lookup" setting.
     bool no_cc_lookup = false;
-
-    /// The "no_ip_lookup" setting.
     bool no_ip_lookup = false;
-
-    /// The "no_file_report" setting.
     bool no_file_report = false;
-
-    /// The "no_resolver_lookup" setting.
     bool no_resolver_lookup = false;
-
-    /// The "probe_asn" setting.
     std::string probe_asn = "";
-
-    /// The "probe_cc" setting.
     std::string probe_cc = "";
-
-    /// The "probe_ip" setting.
     std::string probe_ip = "";
-
-    /// The "randomize_input" setting.
     bool randomize_input = true;
-
-    /// The "save_real_probe_asn" setting.
     bool save_real_probe_asn = true;
-
-    /// The "save_real_probe_cc" setting.
     bool save_real_probe_cc = true;
-
-    /// The "save_real_probe_ip" setting.
     bool save_real_probe_ip = false;
-
-    /// The "save_real_resolver_ip" setting.
     bool save_real_resolver_ip = true;
-
-    /// The "software_name" setting.
     std::string software_name = "";
-
-    /// The "software_version" setting.
     std::string software_version = "";
 
-    /// Destroys all allocated resources.
     virtual ~Settings() noexcept;
 
 #ifdef SWIG
   private:
 #endif
-    // Serialize common settings into a JSON document.
-    virtual bool serialize_into(nlohmann::json *) const noexcept;
+    virtual void serialize_into(nlohmann::json *) const noexcept;
 };
 
-/// Base class for all nettests.
+/// Class for running any nettest.
 class Nettest {
   public:
     // Implementation note: we cannot have `noexcept` in virtual methods to be
@@ -669,205 +487,165 @@ class Nettest {
     /// Handles the "task_terminated" event.
     virtual void on_task_terminated(TaskTerminatedEvent);
 
-#ifdef SWIG
   private:
-#else
-  protected:
-#endif
     // Start a nettest given JSON settings
     bool run_with_json_settings(const nlohmann::json &doc) noexcept;
 
     // Dispatch the JSON event to the proper handler
     virtual bool dispatch_event(nlohmann::json doc) noexcept;
 
-  private:
+    // Mutex to control access to task_.
     std::mutex mutex_;
+
+    // Task running the nettest.
     UniqueTask task_;
+
+    // Initial settings as a JSON.
     nlohmann::json settings_;
 };
 
 /// Settings for CaptivePortal
 class CaptivePortalSettings : public Settings {
   public:
-    /// Unique name of this nettest.
     static constexpr const char *name = "CaptivePortal";
-    /* No nettest-specific settings */
 
 #ifdef SWIG
   private:
 #endif
-    // Serialize CaptivePortal settings into a JSON document.
-    bool serialize_into(nlohmann::json *) const noexcept override;
+    void serialize_into(nlohmann::json *) const noexcept override;
 };
 
 /// Settings for Dash
 class DashSettings : public Settings {
   public:
-    /// Unique name of this nettest.
     static constexpr const char *name = "Dash";
-    /* No nettest-specific settings */
 
 #ifdef SWIG
   private:
 #endif
-    // Serialize Dash settings into a JSON document.
-    bool serialize_into(nlohmann::json *) const noexcept override;
+    void serialize_into(nlohmann::json *) const noexcept override;
 };
 
 /// Settings for DnsInjection
 class DnsInjectionSettings : public Settings {
   public:
-    /// Unique name of this nettest.
     static constexpr const char *name = "DnsInjection";
-    /* No nettest-specific settings */
 
 #ifdef SWIG
   private:
 #endif
-    // Serialize DnsInjection settings into a JSON document.
-    bool serialize_into(nlohmann::json *) const noexcept override;
+    void serialize_into(nlohmann::json *) const noexcept override;
 };
 
 /// Settings for FacebookMessenger
 class FacebookMessengerSettings : public Settings {
   public:
-    /// Unique name of this nettest.
     static constexpr const char *name = "FacebookMessenger";
-    /* No nettest-specific settings */
 
 #ifdef SWIG
   private:
 #endif
-    // Serialize FacebookMessenger settings into a JSON document.
-    bool serialize_into(nlohmann::json *) const noexcept override;
+    void serialize_into(nlohmann::json *) const noexcept override;
 };
 
 /// Settings for HttpHeaderFieldManipulation
 class HttpHeaderFieldManipulationSettings : public Settings {
   public:
-    /// Unique name of this nettest.
     static constexpr const char *name = "HttpHeaderFieldManipulation";
-    /* No nettest-specific settings */
 
 #ifdef SWIG
   private:
 #endif
-    // Serialize HttpHeaderFieldManipulation settings into a JSON document.
-    bool serialize_into(nlohmann::json *) const noexcept override;
+    void serialize_into(nlohmann::json *) const noexcept override;
 };
 
 /// Settings for HttpInvalidRequestLine
 class HttpInvalidRequestLineSettings : public Settings {
   public:
-    /// Unique name of this nettest.
     static constexpr const char *name = "HttpInvalidRequestLine";
-    /* No nettest-specific settings */
 
 #ifdef SWIG
   private:
 #endif
-    // Serialize HttpInvalidRequestLine settings into a JSON document.
-    bool serialize_into(nlohmann::json *) const noexcept override;
+    void serialize_into(nlohmann::json *) const noexcept override;
 };
 
 /// Settings for MeekFrontedRequests
 class MeekFrontedRequestsSettings : public Settings {
   public:
-    /// Unique name of this nettest.
     static constexpr const char *name = "MeekFrontedRequests";
-    /* No nettest-specific settings */
 
 #ifdef SWIG
   private:
 #endif
-    // Serialize MeekFrontedRequests settings into a JSON document.
-    bool serialize_into(nlohmann::json *) const noexcept override;
+    void serialize_into(nlohmann::json *) const noexcept override;
 };
 
 /// Settings for MultiNdt
 class MultiNdtSettings : public Settings {
   public:
-    /// Unique name of this nettest.
     static constexpr const char *name = "MultiNdt";
-    /* No nettest-specific settings */
 
 #ifdef SWIG
   private:
 #endif
-    // Serialize MultiNdt settings into a JSON document.
-    bool serialize_into(nlohmann::json *) const noexcept override;
+    void serialize_into(nlohmann::json *) const noexcept override;
 };
 
 /// Settings for Ndt
 class NdtSettings : public Settings {
   public:
-    /// Unique name of this nettest.
     static constexpr const char *name = "Ndt";
-    /* No nettest-specific settings */
 
 #ifdef SWIG
   private:
 #endif
-    // Serialize Ndt settings into a JSON document.
-    bool serialize_into(nlohmann::json *) const noexcept override;
+    void serialize_into(nlohmann::json *) const noexcept override;
 };
 
 /// Settings for TcpConnect
 class TcpConnectSettings : public Settings {
   public:
-    /// Unique name of this nettest.
     static constexpr const char *name = "TcpConnect";
-    /* No nettest-specific settings */
 
 #ifdef SWIG
   private:
 #endif
-    // Serialize TcpConnect settings into a JSON document.
-    bool serialize_into(nlohmann::json *) const noexcept override;
+    void serialize_into(nlohmann::json *) const noexcept override;
 };
 
 /// Settings for Telegram
 class TelegramSettings : public Settings {
   public:
-    /// Unique name of this nettest.
     static constexpr const char *name = "Telegram";
-    /* No nettest-specific settings */
 
 #ifdef SWIG
   private:
 #endif
-    // Serialize Telegram settings into a JSON document.
-    bool serialize_into(nlohmann::json *) const noexcept override;
+    void serialize_into(nlohmann::json *) const noexcept override;
 };
 
 /// Settings for WebConnectivity
 class WebConnectivitySettings : public Settings {
   public:
-    /// Unique name of this nettest.
     static constexpr const char *name = "WebConnectivity";
-    /* No nettest-specific settings */
 
 #ifdef SWIG
   private:
 #endif
-    // Serialize WebConnectivity settings into a JSON document.
-    bool serialize_into(nlohmann::json *) const noexcept override;
+    void serialize_into(nlohmann::json *) const noexcept override;
 };
 
 /// Settings for Whatsapp
 class WhatsappSettings : public Settings {
   public:
-    /// Unique name of this nettest.
     static constexpr const char *name = "Whatsapp";
-    
-    /// The "all_endpoints" setting of this nettest.
     bool all_endpoints = false;
 
 #ifdef SWIG
   private:
 #endif
-    // Serialize Whatsapp settings into a JSON document.
-    bool serialize_into(nlohmann::json *) const noexcept override;
+    void serialize_into(nlohmann::json *) const noexcept override;
 };
 
 /*-
@@ -886,6 +664,8 @@ class WhatsappSettings : public Settings {
  */
 #if !defined MK_NETTEST_NO_INLINE_IMPL && !defined SWIG
 
+// # Helpers
+
 void TaskDeleter::operator()(mk_task_t *task) noexcept {
     mk_task_destroy(task);
 }
@@ -898,9 +678,10 @@ void EventDeleter::operator()(mk_event_t *event) noexcept {
 
 Settings::~Settings() noexcept {}
 
-bool Settings::serialize_into(nlohmann::json *doc) const noexcept {
+void Settings::serialize_into(nlohmann::json *doc) const noexcept {
     if (doc == nullptr) {
-        return false;
+        abort();
+	// NOTHREACHED
     }
     (*doc)["annotations"] = annotations;
     (*doc)["inputs"] = inputs;
@@ -939,13 +720,13 @@ bool Settings::serialize_into(nlohmann::json *doc) const noexcept {
         o["software_name"] = software_name;
         o["software_version"] = software_version;
     }
-    return true;
+    return;
 }
 
 // # Nettest
 
 Nettest::Nettest(const Settings &doc) noexcept {
-  (void)doc.serialize_into(&settings_);
+  doc.serialize_into(&settings_);
 }
 
 Nettest::~Nettest() noexcept {}
@@ -1244,8 +1025,7 @@ void Nettest::on_task_terminated(TaskTerminatedEvent event) {
 #endif
 }
 
-bool Nettest::run_with_json_settings(
-        const nlohmann::json &settingsdoc) noexcept {
+bool Nettest::run_with_json_settings(const nlohmann::json &settingsdoc) noexcept {
     {
         std::unique_lock<std::mutex> _{mutex_};
         if (task_ != nullptr) {
@@ -1914,133 +1694,120 @@ bool Nettest::dispatch_event(nlohmann::json doc) noexcept {
 
 // # CaptivePortal
 
-bool CaptivePortalSettings::serialize_into(
-        nlohmann::json *doc) const noexcept {
+void CaptivePortalSettings::serialize_into(nlohmann::json *doc) const noexcept {
+    if (doc == nullptr) abort(); // NOTREACHED
     (*doc)["name"] = "CaptivePortal";
     /* No nettest specific settings */
-    return Settings::serialize_into(doc);
+    Settings::serialize_into(doc);
 }
-
 
 // # Dash
 
-bool DashSettings::serialize_into(
-        nlohmann::json *doc) const noexcept {
+void DashSettings::serialize_into(nlohmann::json *doc) const noexcept {
+    if (doc == nullptr) abort(); // NOTREACHED
     (*doc)["name"] = "Dash";
     /* No nettest specific settings */
-    return Settings::serialize_into(doc);
+    Settings::serialize_into(doc);
 }
-
 
 // # DnsInjection
 
-bool DnsInjectionSettings::serialize_into(
-        nlohmann::json *doc) const noexcept {
+void DnsInjectionSettings::serialize_into(nlohmann::json *doc) const noexcept {
+    if (doc == nullptr) abort(); // NOTREACHED
     (*doc)["name"] = "DnsInjection";
     /* No nettest specific settings */
-    return Settings::serialize_into(doc);
+    Settings::serialize_into(doc);
 }
-
 
 // # FacebookMessenger
 
-bool FacebookMessengerSettings::serialize_into(
-        nlohmann::json *doc) const noexcept {
+void FacebookMessengerSettings::serialize_into(nlohmann::json *doc) const noexcept {
+    if (doc == nullptr) abort(); // NOTREACHED
     (*doc)["name"] = "FacebookMessenger";
     /* No nettest specific settings */
-    return Settings::serialize_into(doc);
+    Settings::serialize_into(doc);
 }
-
 
 // # HttpHeaderFieldManipulation
 
-bool HttpHeaderFieldManipulationSettings::serialize_into(
-        nlohmann::json *doc) const noexcept {
+void HttpHeaderFieldManipulationSettings::serialize_into(nlohmann::json *doc) const noexcept {
+    if (doc == nullptr) abort(); // NOTREACHED
     (*doc)["name"] = "HttpHeaderFieldManipulation";
     /* No nettest specific settings */
-    return Settings::serialize_into(doc);
+    Settings::serialize_into(doc);
 }
-
 
 // # HttpInvalidRequestLine
 
-bool HttpInvalidRequestLineSettings::serialize_into(
-        nlohmann::json *doc) const noexcept {
+void HttpInvalidRequestLineSettings::serialize_into(nlohmann::json *doc) const noexcept {
+    if (doc == nullptr) abort(); // NOTREACHED
     (*doc)["name"] = "HttpInvalidRequestLine";
     /* No nettest specific settings */
-    return Settings::serialize_into(doc);
+    Settings::serialize_into(doc);
 }
-
 
 // # MeekFrontedRequests
 
-bool MeekFrontedRequestsSettings::serialize_into(
-        nlohmann::json *doc) const noexcept {
+void MeekFrontedRequestsSettings::serialize_into(nlohmann::json *doc) const noexcept {
+    if (doc == nullptr) abort(); // NOTREACHED
     (*doc)["name"] = "MeekFrontedRequests";
     /* No nettest specific settings */
-    return Settings::serialize_into(doc);
+    Settings::serialize_into(doc);
 }
-
 
 // # MultiNdt
 
-bool MultiNdtSettings::serialize_into(
-        nlohmann::json *doc) const noexcept {
+void MultiNdtSettings::serialize_into(nlohmann::json *doc) const noexcept {
+    if (doc == nullptr) abort(); // NOTREACHED
     (*doc)["name"] = "MultiNdt";
     /* No nettest specific settings */
-    return Settings::serialize_into(doc);
+    Settings::serialize_into(doc);
 }
-
 
 // # Ndt
 
-bool NdtSettings::serialize_into(
-        nlohmann::json *doc) const noexcept {
+void NdtSettings::serialize_into(nlohmann::json *doc) const noexcept {
+    if (doc == nullptr) abort(); // NOTREACHED
     (*doc)["name"] = "Ndt";
     /* No nettest specific settings */
-    return Settings::serialize_into(doc);
+    Settings::serialize_into(doc);
 }
-
 
 // # TcpConnect
 
-bool TcpConnectSettings::serialize_into(
-        nlohmann::json *doc) const noexcept {
+void TcpConnectSettings::serialize_into(nlohmann::json *doc) const noexcept {
+    if (doc == nullptr) abort(); // NOTREACHED
     (*doc)["name"] = "TcpConnect";
     /* No nettest specific settings */
-    return Settings::serialize_into(doc);
+    Settings::serialize_into(doc);
 }
-
 
 // # Telegram
 
-bool TelegramSettings::serialize_into(
-        nlohmann::json *doc) const noexcept {
+void TelegramSettings::serialize_into(nlohmann::json *doc) const noexcept {
+    if (doc == nullptr) abort(); // NOTREACHED
     (*doc)["name"] = "Telegram";
     /* No nettest specific settings */
-    return Settings::serialize_into(doc);
+    Settings::serialize_into(doc);
 }
-
 
 // # WebConnectivity
 
-bool WebConnectivitySettings::serialize_into(
-        nlohmann::json *doc) const noexcept {
+void WebConnectivitySettings::serialize_into(nlohmann::json *doc) const noexcept {
+    if (doc == nullptr) abort(); // NOTREACHED
     (*doc)["name"] = "WebConnectivity";
     /* No nettest specific settings */
-    return Settings::serialize_into(doc);
+    Settings::serialize_into(doc);
 }
-
 
 // # Whatsapp
 
-bool WhatsappSettings::serialize_into(
-        nlohmann::json *doc) const noexcept {
+void WhatsappSettings::serialize_into(nlohmann::json *doc) const noexcept {
+    if (doc == nullptr) abort(); // NOTREACHED
     (*doc)["name"] = "Whatsapp";
     (*doc)["options"]["all_endpoints"] = (int64_t)all_endpoints;
-    return Settings::serialize_into(doc);
+    Settings::serialize_into(doc);
 }
-
 
 #endif // !MK_NETTEST_NO_INLINE_IMPL && !SWIG
 } // namespace nettest
