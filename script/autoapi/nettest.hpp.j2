@@ -151,13 +151,10 @@ using UniqueEvent = std::unique_ptr<mk_event_t, EventDeleter>;
 } // namespace detail
 #endif // !SWIG && !DOXYGEN
 
-/// Common generic code.
-namespace common {
-
 /// Settings common to all nettests.
 class Settings {
   public:
-    {% for setting in settings if not setting.internal and setting.tag == "common" %}/// The "{{ setting.key  }}" setting.
+    {% for setting in settings if not setting.internal %}/// The "{{ setting.key  }}" setting.
     {{ setting.cxx_type }} {{ setting.key }} = {{ setting.value }};{{ "\n\n    " if not loop.last }}{% endfor %}
 
     {% for option in options %}/// The "{{ option.key }}" setting.
@@ -170,18 +167,8 @@ class Settings {
     bool serialize_into(nlohmann::json *) noexcept;
 };
 
-/// Settings common to all nettests that need input.
-class NeedsInputSettings : public Settings {
-  public:
-    {% for setting in settings if not setting.internal and setting.tag == "needs_input" %}/// The "{{ setting.key  }}" setting.
-    {{ setting.cxx_type }} {{ setting.key }} = {{ setting.value }};{{ "\n\n    " if not loop.last }}{% endfor %}
-
-#ifdef SWIG
-  private:
-#endif
-    // Serialize needs-input nettests settings into a JSON document.
-    bool serialize_into(nlohmann::json *) noexcept;
-};
+/// Common generic code.
+namespace common {
 
 /// Base class for all nettests.
 class Nettest {
@@ -271,7 +258,7 @@ class WebsitesNettest : public Nettest {
 {% for nettest in nettests %}#ifndef MK_NETTEST_NO_{{ nettest.snake_case_name.upper() }}
 
 /// Settings for {{ nettest.name }}
-class {{ nettest.name }}Settings : public common::{{ nettest.base_settings_class }}Settings {
+class {{ nettest.name }}Settings : public Settings {
   public:
     /// Unique name of this nettest.
     static constexpr const char *name = "{{ nettest.name }}";
@@ -331,15 +318,13 @@ void EventDeleter::operator()(mk_event_t *event) noexcept {
 
 } // namespace detail
 
-namespace common {
-
 // # Settings
 
 bool Settings::serialize_into(nlohmann::json *doc) noexcept {
     if (doc == nullptr) {
         return false;
     }
-    {% for setting in settings if not setting.internal and setting.tag == "common" %}(*doc)["{{ setting.key }}"] = {{ setting.cxx_cast_to_json }}{{ setting.key }};{{ "\n    " if not loop.last }}{% endfor %}
+    {% for setting in settings if not setting.internal %}(*doc)["{{ setting.key }}"] = {{ setting.cxx_cast_to_json }}{{ setting.key }};{{ "\n    " if not loop.last }}{% endfor %}
     {
         auto &o = (*doc)["options"];
         {% for option in options %}o["{{ option.key }}"] = {{ option.cxx_cast_to_json }}{{ option.key | replace("/", "_") }};{{ "\n        " if not loop.last }}{% endfor %}
@@ -347,15 +332,7 @@ bool Settings::serialize_into(nlohmann::json *doc) noexcept {
     return true;
 }
 
-// # NeedsInputSettings
-
-bool NeedsInputSettings::serialize_into(nlohmann::json *doc) noexcept {
-    if (doc == nullptr) {
-        return false;
-    }
-    {% for setting in settings if not setting.internal and setting.tag == "needs_input" %}(*doc)["{{ setting.key }}"] = {{ setting.cxx_cast_to_json }}{{ setting.key }};{{ "\n    " if not loop.last }}{% endfor %}
-    return Settings::serialize_into(doc);
-}
+namespace common {
 
 // # Nettest
 
@@ -531,7 +508,7 @@ bool WebsitesNettest::dispatch_event(nlohmann::json doc) noexcept {
 bool {{ nettest.name }}Settings::serialize_into(nlohmann::json *doc) noexcept {
     (*doc)["name"] = "{{ nettest.name }}";
     {% if nettest.attributes %}{% for attribute in nettest.attributes %}(*doc)["options"]["{{ attribute.key}}"] = {{ attribute.cxx_cast_to_json }}{{ attribute.key }};{{ "\n    " if not loop.last }}{% endfor %}{% else %}/* No nettest specific settings */{% endif %}
-    return common::{{ nettest.base_settings_class }}Settings::serialize_into(doc);
+    return Settings::serialize_into(doc);
 }
 
 {{ nettest.name }}Nettest::{{ nettest.name }}Nettest({{nettest.name }}Settings settings) noexcept {

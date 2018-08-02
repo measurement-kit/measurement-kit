@@ -64,7 +64,6 @@ class Nettest(object):
         self.tags = tags if tags is not None else list()
         self.name = "".join([e.capitalize() for e in snake_case_name.replace(".", "_").split("_")])
         self.attributes = list(attributes)
-        self.base_settings_class = "NeedsInput" if "needs_input" in self.tags else ""
         self.base_nettest_class = "Performance" if "performance" in self.tags else "Websites" if "websites" in self.tags else ""
 
 def main():

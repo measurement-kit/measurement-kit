@@ -443,14 +443,17 @@ using UniqueEvent = std::unique_ptr<mk_event_t, EventDeleter>;
 } // namespace detail
 #endif // !SWIG && !DOXYGEN
 
-/// Common generic code.
-namespace common {
-
 /// Settings common to all nettests.
 class Settings {
   public:
     /// The "annotations" setting.
     std::map<std::string, std::string> annotations = {};
+
+    /// The "inputs" setting.
+    std::vector<std::string> inputs = {};
+
+    /// The "input_filepaths" setting.
+    std::vector<std::string> input_filepaths = {};
 
     /// The "log_filepath" setting.
     std::string log_filepath = "";
@@ -552,21 +555,8 @@ class Settings {
     bool serialize_into(nlohmann::json *) noexcept;
 };
 
-/// Settings common to all nettests that need input.
-class NeedsInputSettings : public Settings {
-  public:
-    /// The "inputs" setting.
-    std::vector<std::string> inputs = {};
-
-    /// The "input_filepaths" setting.
-    std::vector<std::string> input_filepaths = {};
-
-#ifdef SWIG
-  private:
-#endif
-    // Serialize needs-input nettests settings into a JSON document.
-    bool serialize_into(nlohmann::json *) noexcept;
-};
+/// Common generic code.
+namespace common {
 
 /// Base class for all nettests.
 class Nettest {
@@ -722,7 +712,7 @@ class WebsitesNettest : public Nettest {
 #ifndef MK_NETTEST_NO_CAPTIVE_PORTAL
 
 /// Settings for CaptivePortal
-class CaptivePortalSettings : public common::Settings {
+class CaptivePortalSettings : public Settings {
   public:
     /// Unique name of this nettest.
     static constexpr const char *name = "CaptivePortal";
@@ -756,7 +746,7 @@ class CaptivePortalNettest : public common::Nettest {
 #ifndef MK_NETTEST_NO_DASH
 
 /// Settings for Dash
-class DashSettings : public common::Settings {
+class DashSettings : public Settings {
   public:
     /// Unique name of this nettest.
     static constexpr const char *name = "Dash";
@@ -790,7 +780,7 @@ class DashNettest : public common::PerformanceNettest {
 #ifndef MK_NETTEST_NO_DNS_INJECTION
 
 /// Settings for DnsInjection
-class DnsInjectionSettings : public common::NeedsInputSettings {
+class DnsInjectionSettings : public Settings {
   public:
     /// Unique name of this nettest.
     static constexpr const char *name = "DnsInjection";
@@ -824,7 +814,7 @@ class DnsInjectionNettest : public common::Nettest {
 #ifndef MK_NETTEST_NO_FACEBOOK_MESSENGER
 
 /// Settings for FacebookMessenger
-class FacebookMessengerSettings : public common::Settings {
+class FacebookMessengerSettings : public Settings {
   public:
     /// Unique name of this nettest.
     static constexpr const char *name = "FacebookMessenger";
@@ -858,7 +848,7 @@ class FacebookMessengerNettest : public common::Nettest {
 #ifndef MK_NETTEST_NO_HTTP_HEADER_FIELD_MANIPULATION
 
 /// Settings for HttpHeaderFieldManipulation
-class HttpHeaderFieldManipulationSettings : public common::Settings {
+class HttpHeaderFieldManipulationSettings : public Settings {
   public:
     /// Unique name of this nettest.
     static constexpr const char *name = "HttpHeaderFieldManipulation";
@@ -892,7 +882,7 @@ class HttpHeaderFieldManipulationNettest : public common::Nettest {
 #ifndef MK_NETTEST_NO_HTTP_INVALID_REQUEST_LINE
 
 /// Settings for HttpInvalidRequestLine
-class HttpInvalidRequestLineSettings : public common::Settings {
+class HttpInvalidRequestLineSettings : public Settings {
   public:
     /// Unique name of this nettest.
     static constexpr const char *name = "HttpInvalidRequestLine";
@@ -926,7 +916,7 @@ class HttpInvalidRequestLineNettest : public common::Nettest {
 #ifndef MK_NETTEST_NO_MEEK_FRONTED_REQUESTS
 
 /// Settings for MeekFrontedRequests
-class MeekFrontedRequestsSettings : public common::NeedsInputSettings {
+class MeekFrontedRequestsSettings : public Settings {
   public:
     /// Unique name of this nettest.
     static constexpr const char *name = "MeekFrontedRequests";
@@ -960,7 +950,7 @@ class MeekFrontedRequestsNettest : public common::Nettest {
 #ifndef MK_NETTEST_NO_MULTI_NDT
 
 /// Settings for MultiNdt
-class MultiNdtSettings : public common::Settings {
+class MultiNdtSettings : public Settings {
   public:
     /// Unique name of this nettest.
     static constexpr const char *name = "MultiNdt";
@@ -994,7 +984,7 @@ class MultiNdtNettest : public common::PerformanceNettest {
 #ifndef MK_NETTEST_NO_NDT
 
 /// Settings for Ndt
-class NdtSettings : public common::Settings {
+class NdtSettings : public Settings {
   public:
     /// Unique name of this nettest.
     static constexpr const char *name = "Ndt";
@@ -1028,7 +1018,7 @@ class NdtNettest : public common::PerformanceNettest {
 #ifndef MK_NETTEST_NO_TCP_CONNECT
 
 /// Settings for TcpConnect
-class TcpConnectSettings : public common::NeedsInputSettings {
+class TcpConnectSettings : public Settings {
   public:
     /// Unique name of this nettest.
     static constexpr const char *name = "TcpConnect";
@@ -1062,7 +1052,7 @@ class TcpConnectNettest : public common::Nettest {
 #ifndef MK_NETTEST_NO_TELEGRAM
 
 /// Settings for Telegram
-class TelegramSettings : public common::Settings {
+class TelegramSettings : public Settings {
   public:
     /// Unique name of this nettest.
     static constexpr const char *name = "Telegram";
@@ -1096,7 +1086,7 @@ class TelegramNettest : public common::Nettest {
 #ifndef MK_NETTEST_NO_WEB_CONNECTIVITY
 
 /// Settings for WebConnectivity
-class WebConnectivitySettings : public common::NeedsInputSettings {
+class WebConnectivitySettings : public Settings {
   public:
     /// Unique name of this nettest.
     static constexpr const char *name = "WebConnectivity";
@@ -1130,7 +1120,7 @@ class WebConnectivityNettest : public common::WebsitesNettest {
 #ifndef MK_NETTEST_NO_WHATSAPP
 
 /// Settings for Whatsapp
-class WhatsappSettings : public common::Settings {
+class WhatsappSettings : public Settings {
   public:
     /// Unique name of this nettest.
     static constexpr const char *name = "Whatsapp";
@@ -1191,8 +1181,6 @@ void EventDeleter::operator()(mk_event_t *event) noexcept {
 
 } // namespace detail
 
-namespace common {
-
 // # Settings
 
 bool Settings::serialize_into(nlohmann::json *doc) noexcept {
@@ -1200,6 +1188,8 @@ bool Settings::serialize_into(nlohmann::json *doc) noexcept {
         return false;
     }
     (*doc)["annotations"] = annotations;
+    (*doc)["inputs"] = inputs;
+    (*doc)["input_filepaths"] = input_filepaths;
     (*doc)["log_filepath"] = log_filepath;
     (*doc)["log_level"] = log_level;
     (*doc)["output_filepath"] = output_filepath;
@@ -1237,16 +1227,7 @@ bool Settings::serialize_into(nlohmann::json *doc) noexcept {
     return true;
 }
 
-// # NeedsInputSettings
-
-bool NeedsInputSettings::serialize_into(nlohmann::json *doc) noexcept {
-    if (doc == nullptr) {
-        return false;
-    }
-    (*doc)["inputs"] = inputs;
-    (*doc)["input_filepaths"] = input_filepaths;
-    return Settings::serialize_into(doc);
-}
+namespace common {
 
 // # Nettest
 
@@ -2234,7 +2215,7 @@ bool WebsitesNettest::dispatch_event(nlohmann::json doc) noexcept {
 bool CaptivePortalSettings::serialize_into(nlohmann::json *doc) noexcept {
     (*doc)["name"] = "CaptivePortal";
     /* No nettest specific settings */
-    return common::Settings::serialize_into(doc);
+    return Settings::serialize_into(doc);
 }
 
 CaptivePortalNettest::CaptivePortalNettest(CaptivePortalSettings settings) noexcept {
@@ -2261,7 +2242,7 @@ bool CaptivePortalNettest::run() noexcept {
 bool DashSettings::serialize_into(nlohmann::json *doc) noexcept {
     (*doc)["name"] = "Dash";
     /* No nettest specific settings */
-    return common::Settings::serialize_into(doc);
+    return Settings::serialize_into(doc);
 }
 
 DashNettest::DashNettest(DashSettings settings) noexcept {
@@ -2288,7 +2269,7 @@ bool DashNettest::run() noexcept {
 bool DnsInjectionSettings::serialize_into(nlohmann::json *doc) noexcept {
     (*doc)["name"] = "DnsInjection";
     /* No nettest specific settings */
-    return common::NeedsInputSettings::serialize_into(doc);
+    return Settings::serialize_into(doc);
 }
 
 DnsInjectionNettest::DnsInjectionNettest(DnsInjectionSettings settings) noexcept {
@@ -2315,7 +2296,7 @@ bool DnsInjectionNettest::run() noexcept {
 bool FacebookMessengerSettings::serialize_into(nlohmann::json *doc) noexcept {
     (*doc)["name"] = "FacebookMessenger";
     /* No nettest specific settings */
-    return common::Settings::serialize_into(doc);
+    return Settings::serialize_into(doc);
 }
 
 FacebookMessengerNettest::FacebookMessengerNettest(FacebookMessengerSettings settings) noexcept {
@@ -2342,7 +2323,7 @@ bool FacebookMessengerNettest::run() noexcept {
 bool HttpHeaderFieldManipulationSettings::serialize_into(nlohmann::json *doc) noexcept {
     (*doc)["name"] = "HttpHeaderFieldManipulation";
     /* No nettest specific settings */
-    return common::Settings::serialize_into(doc);
+    return Settings::serialize_into(doc);
 }
 
 HttpHeaderFieldManipulationNettest::HttpHeaderFieldManipulationNettest(HttpHeaderFieldManipulationSettings settings) noexcept {
@@ -2369,7 +2350,7 @@ bool HttpHeaderFieldManipulationNettest::run() noexcept {
 bool HttpInvalidRequestLineSettings::serialize_into(nlohmann::json *doc) noexcept {
     (*doc)["name"] = "HttpInvalidRequestLine";
     /* No nettest specific settings */
-    return common::Settings::serialize_into(doc);
+    return Settings::serialize_into(doc);
 }
 
 HttpInvalidRequestLineNettest::HttpInvalidRequestLineNettest(HttpInvalidRequestLineSettings settings) noexcept {
@@ -2396,7 +2377,7 @@ bool HttpInvalidRequestLineNettest::run() noexcept {
 bool MeekFrontedRequestsSettings::serialize_into(nlohmann::json *doc) noexcept {
     (*doc)["name"] = "MeekFrontedRequests";
     /* No nettest specific settings */
-    return common::NeedsInputSettings::serialize_into(doc);
+    return Settings::serialize_into(doc);
 }
 
 MeekFrontedRequestsNettest::MeekFrontedRequestsNettest(MeekFrontedRequestsSettings settings) noexcept {
@@ -2423,7 +2404,7 @@ bool MeekFrontedRequestsNettest::run() noexcept {
 bool MultiNdtSettings::serialize_into(nlohmann::json *doc) noexcept {
     (*doc)["name"] = "MultiNdt";
     /* No nettest specific settings */
-    return common::Settings::serialize_into(doc);
+    return Settings::serialize_into(doc);
 }
 
 MultiNdtNettest::MultiNdtNettest(MultiNdtSettings settings) noexcept {
@@ -2450,7 +2431,7 @@ bool MultiNdtNettest::run() noexcept {
 bool NdtSettings::serialize_into(nlohmann::json *doc) noexcept {
     (*doc)["name"] = "Ndt";
     /* No nettest specific settings */
-    return common::Settings::serialize_into(doc);
+    return Settings::serialize_into(doc);
 }
 
 NdtNettest::NdtNettest(NdtSettings settings) noexcept {
@@ -2477,7 +2458,7 @@ bool NdtNettest::run() noexcept {
 bool TcpConnectSettings::serialize_into(nlohmann::json *doc) noexcept {
     (*doc)["name"] = "TcpConnect";
     /* No nettest specific settings */
-    return common::NeedsInputSettings::serialize_into(doc);
+    return Settings::serialize_into(doc);
 }
 
 TcpConnectNettest::TcpConnectNettest(TcpConnectSettings settings) noexcept {
@@ -2504,7 +2485,7 @@ bool TcpConnectNettest::run() noexcept {
 bool TelegramSettings::serialize_into(nlohmann::json *doc) noexcept {
     (*doc)["name"] = "Telegram";
     /* No nettest specific settings */
-    return common::Settings::serialize_into(doc);
+    return Settings::serialize_into(doc);
 }
 
 TelegramNettest::TelegramNettest(TelegramSettings settings) noexcept {
@@ -2531,7 +2512,7 @@ bool TelegramNettest::run() noexcept {
 bool WebConnectivitySettings::serialize_into(nlohmann::json *doc) noexcept {
     (*doc)["name"] = "WebConnectivity";
     /* No nettest specific settings */
-    return common::NeedsInputSettings::serialize_into(doc);
+    return Settings::serialize_into(doc);
 }
 
 WebConnectivityNettest::WebConnectivityNettest(WebConnectivitySettings settings) noexcept {
@@ -2558,7 +2539,7 @@ bool WebConnectivityNettest::run() noexcept {
 bool WhatsappSettings::serialize_into(nlohmann::json *doc) noexcept {
     (*doc)["name"] = "Whatsapp";
     (*doc)["options"]["all_endpoints"] = (int64_t)all_endpoints;
-    return common::Settings::serialize_into(doc);
+    return Settings::serialize_into(doc);
 }
 
 WhatsappNettest::WhatsappNettest(WhatsappSettings settings) noexcept {
