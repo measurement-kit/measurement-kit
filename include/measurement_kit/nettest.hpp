@@ -49,7 +49,7 @@
 ///  public:
 ///   using mk::nettest::WhatsappNettest::WhatsappNettest;
 ///
-///   void on_log(mk::nettest::events::LogEvent event) override {
+///   void on_log(mk::nettest::LogEvent event) override {
 ///     // Your event handling code here. Remember that this is called
 ///     // in the context of the FFI API's background thread.
 ///     //
@@ -129,9 +129,6 @@ constexpr const char *log_level_debug = "DEBUG";
 
 /// String representation of the "debug2" log level.
 constexpr const char *log_level_debug2 = "DEBUG2";
-
-/// Groups all events together.
-namespace events {
 
 /// C++ representation of the "failure.asn_lookup" event.
 class FailureAsnLookupEvent {
@@ -422,8 +419,6 @@ class TaskTerminatedEvent {
     /* No attributes */
 };
 
-} // namespace events
-
 #if !defined SWIG && !defined DOXYGEN
 namespace detail {
 
@@ -614,73 +609,73 @@ class Nettest {
     // ``````````````
 
     /// Handles the "failure.asn_lookup" event.
-    virtual void on_failure_asn_lookup(events::FailureAsnLookupEvent);
+    virtual void on_failure_asn_lookup(FailureAsnLookupEvent);
 
     /// Handles the "failure.cc_lookup" event.
-    virtual void on_failure_cc_lookup(events::FailureCcLookupEvent);
+    virtual void on_failure_cc_lookup(FailureCcLookupEvent);
 
     /// Handles the "failure.ip_lookup" event.
-    virtual void on_failure_ip_lookup(events::FailureIpLookupEvent);
+    virtual void on_failure_ip_lookup(FailureIpLookupEvent);
 
     /// Handles the "failure.measurement" event.
-    virtual void on_failure_measurement(events::FailureMeasurementEvent);
+    virtual void on_failure_measurement(FailureMeasurementEvent);
 
     /// Handles the "failure.measurement_submission" event.
-    virtual void on_failure_measurement_submission(events::FailureMeasurementSubmissionEvent);
+    virtual void on_failure_measurement_submission(FailureMeasurementSubmissionEvent);
 
     /// Handles the "failure.report_create" event.
-    virtual void on_failure_report_create(events::FailureReportCreateEvent);
+    virtual void on_failure_report_create(FailureReportCreateEvent);
 
     /// Handles the "failure.report_close" event.
-    virtual void on_failure_report_close(events::FailureReportCloseEvent);
+    virtual void on_failure_report_close(FailureReportCloseEvent);
 
     /// Handles the "failure.resolver_lookup" event.
-    virtual void on_failure_resolver_lookup(events::FailureResolverLookupEvent);
+    virtual void on_failure_resolver_lookup(FailureResolverLookupEvent);
 
     /// Handles the "failure.startup" event.
-    virtual void on_failure_startup(events::FailureStartupEvent);
+    virtual void on_failure_startup(FailureStartupEvent);
 
     /// Handles the "log" event.
-    virtual void on_log(events::LogEvent);
+    virtual void on_log(LogEvent);
 
     /// Handles the "measurement" event.
-    virtual void on_measurement(events::MeasurementEvent);
+    virtual void on_measurement(MeasurementEvent);
 
     /// Handles the "status.end" event.
-    virtual void on_status_end(events::StatusEndEvent);
+    virtual void on_status_end(StatusEndEvent);
 
     /// Handles the "status.geoip_lookup" event.
-    virtual void on_status_geoip_lookup(events::StatusGeoipLookupEvent);
+    virtual void on_status_geoip_lookup(StatusGeoipLookupEvent);
 
     /// Handles the "status.progress" event.
-    virtual void on_status_progress(events::StatusProgressEvent);
+    virtual void on_status_progress(StatusProgressEvent);
 
     /// Handles the "status.queued" event.
-    virtual void on_status_queued(events::StatusQueuedEvent);
+    virtual void on_status_queued(StatusQueuedEvent);
 
     /// Handles the "status.measurement_start" event.
-    virtual void on_status_measurement_start(events::StatusMeasurementStartEvent);
+    virtual void on_status_measurement_start(StatusMeasurementStartEvent);
 
     /// Handles the "status.measurement_submission" event.
-    virtual void on_status_measurement_submission(events::StatusMeasurementSubmissionEvent);
+    virtual void on_status_measurement_submission(StatusMeasurementSubmissionEvent);
 
     /// Handles the "status.measurement_done" event.
-    virtual void on_status_measurement_done(events::StatusMeasurementDoneEvent);
+    virtual void on_status_measurement_done(StatusMeasurementDoneEvent);
 
     /// Handles the "status.report_close" event.
-    virtual void on_status_report_close(events::StatusReportCloseEvent);
+    virtual void on_status_report_close(StatusReportCloseEvent);
 
     /// Handles the "status.report_create" event.
-    virtual void on_status_report_create(events::StatusReportCreateEvent);
+    virtual void on_status_report_create(StatusReportCreateEvent);
 
     /// Handles the "status.resolver_lookup" event.
-    virtual void on_status_resolver_lookup(events::StatusResolverLookupEvent);
+    virtual void on_status_resolver_lookup(StatusResolverLookupEvent);
 
     /// Handles the "status.started" event.
-    virtual void on_status_started(events::StatusStartedEvent);
+    virtual void on_status_started(StatusStartedEvent);
 
     /// Handles the "task_terminated" event.
-    virtual void on_task_terminated(events::TaskTerminatedEvent);
+    virtual void on_task_terminated(TaskTerminatedEvent);
 
   protected:
     // Start a nettest given JSON settings
@@ -701,7 +696,7 @@ class PerformanceNettest : public Nettest {
     ~PerformanceNettest() noexcept override {}
 
     /// Handles the "status.update.performance" event.
-    virtual void on_status_update_performance(events::StatusUpdatePerformanceEvent);
+    virtual void on_status_update_performance(StatusUpdatePerformanceEvent);
 
   protected:
     // Dispatch the JSON event to the proper handler
@@ -715,7 +710,7 @@ class WebsitesNettest : public Nettest {
     ~WebsitesNettest() noexcept override {}
 
     /// Handles the "status.update.websites" event.
-    virtual void on_status_update_websites(events::StatusUpdateWebsitesEvent);
+    virtual void on_status_update_websites(StatusUpdateWebsitesEvent);
 
   protected:
     // Dispatch the JSON event to the proper handler
@@ -1264,7 +1259,7 @@ void Nettest::interrupt() noexcept {
     mk_task_interrupt(task_.get());
 }
 
-void Nettest::on_failure_asn_lookup(events::FailureAsnLookupEvent event) {
+void Nettest::on_failure_asn_lookup(FailureAsnLookupEvent event) {
 #ifdef MK_NETTEST_VERBOSE_DEFAULT_HANDLERS
     std::clog << "failure.asn_lookup";
     std::clog << ":";
@@ -1275,7 +1270,7 @@ void Nettest::on_failure_asn_lookup(events::FailureAsnLookupEvent event) {
 #endif
 }
 
-void Nettest::on_failure_cc_lookup(events::FailureCcLookupEvent event) {
+void Nettest::on_failure_cc_lookup(FailureCcLookupEvent event) {
 #ifdef MK_NETTEST_VERBOSE_DEFAULT_HANDLERS
     std::clog << "failure.cc_lookup";
     std::clog << ":";
@@ -1286,7 +1281,7 @@ void Nettest::on_failure_cc_lookup(events::FailureCcLookupEvent event) {
 #endif
 }
 
-void Nettest::on_failure_ip_lookup(events::FailureIpLookupEvent event) {
+void Nettest::on_failure_ip_lookup(FailureIpLookupEvent event) {
 #ifdef MK_NETTEST_VERBOSE_DEFAULT_HANDLERS
     std::clog << "failure.ip_lookup";
     std::clog << ":";
@@ -1297,7 +1292,7 @@ void Nettest::on_failure_ip_lookup(events::FailureIpLookupEvent event) {
 #endif
 }
 
-void Nettest::on_failure_measurement(events::FailureMeasurementEvent event) {
+void Nettest::on_failure_measurement(FailureMeasurementEvent event) {
 #ifdef MK_NETTEST_VERBOSE_DEFAULT_HANDLERS
     std::clog << "failure.measurement";
     std::clog << ":";
@@ -1308,7 +1303,7 @@ void Nettest::on_failure_measurement(events::FailureMeasurementEvent event) {
 #endif
 }
 
-void Nettest::on_failure_measurement_submission(events::FailureMeasurementSubmissionEvent event) {
+void Nettest::on_failure_measurement_submission(FailureMeasurementSubmissionEvent event) {
 #ifdef MK_NETTEST_VERBOSE_DEFAULT_HANDLERS
     std::clog << "failure.measurement_submission";
     std::clog << ":";
@@ -1321,7 +1316,7 @@ void Nettest::on_failure_measurement_submission(events::FailureMeasurementSubmis
 #endif
 }
 
-void Nettest::on_failure_report_create(events::FailureReportCreateEvent event) {
+void Nettest::on_failure_report_create(FailureReportCreateEvent event) {
 #ifdef MK_NETTEST_VERBOSE_DEFAULT_HANDLERS
     std::clog << "failure.report_create";
     std::clog << ":";
@@ -1332,7 +1327,7 @@ void Nettest::on_failure_report_create(events::FailureReportCreateEvent event) {
 #endif
 }
 
-void Nettest::on_failure_report_close(events::FailureReportCloseEvent event) {
+void Nettest::on_failure_report_close(FailureReportCloseEvent event) {
 #ifdef MK_NETTEST_VERBOSE_DEFAULT_HANDLERS
     std::clog << "failure.report_close";
     std::clog << ":";
@@ -1343,7 +1338,7 @@ void Nettest::on_failure_report_close(events::FailureReportCloseEvent event) {
 #endif
 }
 
-void Nettest::on_failure_resolver_lookup(events::FailureResolverLookupEvent event) {
+void Nettest::on_failure_resolver_lookup(FailureResolverLookupEvent event) {
 #ifdef MK_NETTEST_VERBOSE_DEFAULT_HANDLERS
     std::clog << "failure.resolver_lookup";
     std::clog << ":";
@@ -1354,7 +1349,7 @@ void Nettest::on_failure_resolver_lookup(events::FailureResolverLookupEvent even
 #endif
 }
 
-void Nettest::on_failure_startup(events::FailureStartupEvent event) {
+void Nettest::on_failure_startup(FailureStartupEvent event) {
 #ifdef MK_NETTEST_VERBOSE_DEFAULT_HANDLERS
     std::clog << "failure.startup";
     std::clog << ":";
@@ -1365,7 +1360,7 @@ void Nettest::on_failure_startup(events::FailureStartupEvent event) {
 #endif
 }
 
-void Nettest::on_log(events::LogEvent event) {
+void Nettest::on_log(LogEvent event) {
 #ifdef MK_NETTEST_VERBOSE_DEFAULT_HANDLERS
     std::clog << "log";
     std::clog << ":";
@@ -1377,7 +1372,7 @@ void Nettest::on_log(events::LogEvent event) {
 #endif
 }
 
-void Nettest::on_measurement(events::MeasurementEvent event) {
+void Nettest::on_measurement(MeasurementEvent event) {
 #ifdef MK_NETTEST_VERBOSE_DEFAULT_HANDLERS
     std::clog << "measurement";
     std::clog << ":";
@@ -1389,7 +1384,7 @@ void Nettest::on_measurement(events::MeasurementEvent event) {
 #endif
 }
 
-void Nettest::on_status_end(events::StatusEndEvent event) {
+void Nettest::on_status_end(StatusEndEvent event) {
 #ifdef MK_NETTEST_VERBOSE_DEFAULT_HANDLERS
     std::clog << "status.end";
     std::clog << ":";
@@ -1402,7 +1397,7 @@ void Nettest::on_status_end(events::StatusEndEvent event) {
 #endif
 }
 
-void Nettest::on_status_geoip_lookup(events::StatusGeoipLookupEvent event) {
+void Nettest::on_status_geoip_lookup(StatusGeoipLookupEvent event) {
 #ifdef MK_NETTEST_VERBOSE_DEFAULT_HANDLERS
     std::clog << "status.geoip_lookup";
     std::clog << ":";
@@ -1416,7 +1411,7 @@ void Nettest::on_status_geoip_lookup(events::StatusGeoipLookupEvent event) {
 #endif
 }
 
-void Nettest::on_status_progress(events::StatusProgressEvent event) {
+void Nettest::on_status_progress(StatusProgressEvent event) {
 #ifdef MK_NETTEST_VERBOSE_DEFAULT_HANDLERS
     std::clog << "status.progress";
     std::clog << ":";
@@ -1428,7 +1423,7 @@ void Nettest::on_status_progress(events::StatusProgressEvent event) {
 #endif
 }
 
-void Nettest::on_status_queued(events::StatusQueuedEvent event) {
+void Nettest::on_status_queued(StatusQueuedEvent event) {
 #ifdef MK_NETTEST_VERBOSE_DEFAULT_HANDLERS
     std::clog << "status.queued";
     (void)event; /* No event attributes */
@@ -1438,7 +1433,7 @@ void Nettest::on_status_queued(events::StatusQueuedEvent event) {
 #endif
 }
 
-void Nettest::on_status_measurement_start(events::StatusMeasurementStartEvent event) {
+void Nettest::on_status_measurement_start(StatusMeasurementStartEvent event) {
 #ifdef MK_NETTEST_VERBOSE_DEFAULT_HANDLERS
     std::clog << "status.measurement_start";
     std::clog << ":";
@@ -1450,7 +1445,7 @@ void Nettest::on_status_measurement_start(events::StatusMeasurementStartEvent ev
 #endif
 }
 
-void Nettest::on_status_measurement_submission(events::StatusMeasurementSubmissionEvent event) {
+void Nettest::on_status_measurement_submission(StatusMeasurementSubmissionEvent event) {
 #ifdef MK_NETTEST_VERBOSE_DEFAULT_HANDLERS
     std::clog << "status.measurement_submission";
     std::clog << ":";
@@ -1461,7 +1456,7 @@ void Nettest::on_status_measurement_submission(events::StatusMeasurementSubmissi
 #endif
 }
 
-void Nettest::on_status_measurement_done(events::StatusMeasurementDoneEvent event) {
+void Nettest::on_status_measurement_done(StatusMeasurementDoneEvent event) {
 #ifdef MK_NETTEST_VERBOSE_DEFAULT_HANDLERS
     std::clog << "status.measurement_done";
     std::clog << ":";
@@ -1472,7 +1467,7 @@ void Nettest::on_status_measurement_done(events::StatusMeasurementDoneEvent even
 #endif
 }
 
-void Nettest::on_status_report_close(events::StatusReportCloseEvent event) {
+void Nettest::on_status_report_close(StatusReportCloseEvent event) {
 #ifdef MK_NETTEST_VERBOSE_DEFAULT_HANDLERS
     std::clog << "status.report_close";
     std::clog << ":";
@@ -1483,7 +1478,7 @@ void Nettest::on_status_report_close(events::StatusReportCloseEvent event) {
 #endif
 }
 
-void Nettest::on_status_report_create(events::StatusReportCreateEvent event) {
+void Nettest::on_status_report_create(StatusReportCreateEvent event) {
 #ifdef MK_NETTEST_VERBOSE_DEFAULT_HANDLERS
     std::clog << "status.report_create";
     std::clog << ":";
@@ -1494,7 +1489,7 @@ void Nettest::on_status_report_create(events::StatusReportCreateEvent event) {
 #endif
 }
 
-void Nettest::on_status_resolver_lookup(events::StatusResolverLookupEvent event) {
+void Nettest::on_status_resolver_lookup(StatusResolverLookupEvent event) {
 #ifdef MK_NETTEST_VERBOSE_DEFAULT_HANDLERS
     std::clog << "status.resolver_lookup";
     std::clog << ":";
@@ -1505,7 +1500,7 @@ void Nettest::on_status_resolver_lookup(events::StatusResolverLookupEvent event)
 #endif
 }
 
-void Nettest::on_status_started(events::StatusStartedEvent event) {
+void Nettest::on_status_started(StatusStartedEvent event) {
 #ifdef MK_NETTEST_VERBOSE_DEFAULT_HANDLERS
     std::clog << "status.started";
     (void)event; /* No event attributes */
@@ -1515,7 +1510,7 @@ void Nettest::on_status_started(events::StatusStartedEvent event) {
 #endif
 }
 
-void Nettest::on_task_terminated(events::TaskTerminatedEvent event) {
+void Nettest::on_task_terminated(TaskTerminatedEvent event) {
 #ifdef MK_NETTEST_VERBOSE_DEFAULT_HANDLERS
     std::clog << "task_terminated";
     (void)event; /* No event attributes */
@@ -1588,7 +1583,7 @@ bool Nettest::run_with_json_settings(nlohmann::json settingsdoc) noexcept {
             interrupt();
             return false;
         }
-        if (eventdoc.at("key") == events::FailureAsnLookupEvent::key) {
+        if (eventdoc.at("key") == FailureAsnLookupEvent::key) {
             if (eventdoc.at("value").count("failure") != 1 ||
                     !eventdoc.at("value").at("failure").is_string()) {
                 // TODO(bassosimone): route this error.
@@ -1602,7 +1597,7 @@ bool Nettest::run_with_json_settings(nlohmann::json settingsdoc) noexcept {
             }
             continue;
         }
-        if (eventdoc.at("key") == events::FailureCcLookupEvent::key) {
+        if (eventdoc.at("key") == FailureCcLookupEvent::key) {
             if (eventdoc.at("value").count("failure") != 1 ||
                     !eventdoc.at("value").at("failure").is_string()) {
                 // TODO(bassosimone): route this error.
@@ -1616,7 +1611,7 @@ bool Nettest::run_with_json_settings(nlohmann::json settingsdoc) noexcept {
             }
             continue;
         }
-        if (eventdoc.at("key") == events::FailureIpLookupEvent::key) {
+        if (eventdoc.at("key") == FailureIpLookupEvent::key) {
             if (eventdoc.at("value").count("failure") != 1 ||
                     !eventdoc.at("value").at("failure").is_string()) {
                 // TODO(bassosimone): route this error.
@@ -1630,7 +1625,7 @@ bool Nettest::run_with_json_settings(nlohmann::json settingsdoc) noexcept {
             }
             continue;
         }
-        if (eventdoc.at("key") == events::FailureMeasurementEvent::key) {
+        if (eventdoc.at("key") == FailureMeasurementEvent::key) {
             if (eventdoc.at("value").count("failure") != 1 ||
                     !eventdoc.at("value").at("failure").is_string()) {
                 // TODO(bassosimone): route this error.
@@ -1644,7 +1639,7 @@ bool Nettest::run_with_json_settings(nlohmann::json settingsdoc) noexcept {
             }
             continue;
         }
-        if (eventdoc.at("key") == events::FailureMeasurementSubmissionEvent::key) {
+        if (eventdoc.at("key") == FailureMeasurementSubmissionEvent::key) {
             if (eventdoc.at("value").count("failure") != 1 ||
                     !eventdoc.at("value").at("failure").is_string()) {
                 // TODO(bassosimone): route this error.
@@ -1670,7 +1665,7 @@ bool Nettest::run_with_json_settings(nlohmann::json settingsdoc) noexcept {
             }
             continue;
         }
-        if (eventdoc.at("key") == events::FailureReportCreateEvent::key) {
+        if (eventdoc.at("key") == FailureReportCreateEvent::key) {
             if (eventdoc.at("value").count("failure") != 1 ||
                     !eventdoc.at("value").at("failure").is_string()) {
                 // TODO(bassosimone): route this error.
@@ -1684,7 +1679,7 @@ bool Nettest::run_with_json_settings(nlohmann::json settingsdoc) noexcept {
             }
             continue;
         }
-        if (eventdoc.at("key") == events::FailureReportCloseEvent::key) {
+        if (eventdoc.at("key") == FailureReportCloseEvent::key) {
             if (eventdoc.at("value").count("failure") != 1 ||
                     !eventdoc.at("value").at("failure").is_string()) {
                 // TODO(bassosimone): route this error.
@@ -1698,7 +1693,7 @@ bool Nettest::run_with_json_settings(nlohmann::json settingsdoc) noexcept {
             }
             continue;
         }
-        if (eventdoc.at("key") == events::FailureResolverLookupEvent::key) {
+        if (eventdoc.at("key") == FailureResolverLookupEvent::key) {
             if (eventdoc.at("value").count("failure") != 1 ||
                     !eventdoc.at("value").at("failure").is_string()) {
                 // TODO(bassosimone): route this error.
@@ -1712,7 +1707,7 @@ bool Nettest::run_with_json_settings(nlohmann::json settingsdoc) noexcept {
             }
             continue;
         }
-        if (eventdoc.at("key") == events::FailureStartupEvent::key) {
+        if (eventdoc.at("key") == FailureStartupEvent::key) {
             if (eventdoc.at("value").count("failure") != 1 ||
                     !eventdoc.at("value").at("failure").is_string()) {
                 // TODO(bassosimone): route this error.
@@ -1726,7 +1721,7 @@ bool Nettest::run_with_json_settings(nlohmann::json settingsdoc) noexcept {
             }
             continue;
         }
-        if (eventdoc.at("key") == events::LogEvent::key) {
+        if (eventdoc.at("key") == LogEvent::key) {
             if (eventdoc.at("value").count("log_level") != 1 ||
                     !eventdoc.at("value").at("log_level").is_string()) {
                 // TODO(bassosimone): route this error.
@@ -1746,7 +1741,7 @@ bool Nettest::run_with_json_settings(nlohmann::json settingsdoc) noexcept {
             }
             continue;
         }
-        if (eventdoc.at("key") == events::MeasurementEvent::key) {
+        if (eventdoc.at("key") == MeasurementEvent::key) {
             if (eventdoc.at("value").count("idx") != 1 ||
                     !eventdoc.at("value").at("idx").is_number_integer()) {
                 // TODO(bassosimone): route this error.
@@ -1766,7 +1761,7 @@ bool Nettest::run_with_json_settings(nlohmann::json settingsdoc) noexcept {
             }
             continue;
         }
-        if (eventdoc.at("key") == events::StatusEndEvent::key) {
+        if (eventdoc.at("key") == StatusEndEvent::key) {
             if (eventdoc.at("value").count("downloaded_kb") != 1 ||
                     !eventdoc.at("value").at("downloaded_kb").is_number_float()) {
                 // TODO(bassosimone): route this error.
@@ -1792,7 +1787,7 @@ bool Nettest::run_with_json_settings(nlohmann::json settingsdoc) noexcept {
             }
             continue;
         }
-        if (eventdoc.at("key") == events::StatusGeoipLookupEvent::key) {
+        if (eventdoc.at("key") == StatusGeoipLookupEvent::key) {
             if (eventdoc.at("value").count("probe_ip") != 1 ||
                     !eventdoc.at("value").at("probe_ip").is_string()) {
                 // TODO(bassosimone): route this error.
@@ -1824,7 +1819,7 @@ bool Nettest::run_with_json_settings(nlohmann::json settingsdoc) noexcept {
             }
             continue;
         }
-        if (eventdoc.at("key") == events::StatusProgressEvent::key) {
+        if (eventdoc.at("key") == StatusProgressEvent::key) {
             if (eventdoc.at("value").count("percentage") != 1 ||
                     !eventdoc.at("value").at("percentage").is_number_float()) {
                 // TODO(bassosimone): route this error.
@@ -1844,7 +1839,7 @@ bool Nettest::run_with_json_settings(nlohmann::json settingsdoc) noexcept {
             }
             continue;
         }
-        if (eventdoc.at("key") == events::StatusQueuedEvent::key) {
+        if (eventdoc.at("key") == StatusQueuedEvent::key) {
             /* No event attributes */
             if (!dispatch_event(std::move(eventdoc))) {
                 // TODO(bassosimone): route this error.
@@ -1853,7 +1848,7 @@ bool Nettest::run_with_json_settings(nlohmann::json settingsdoc) noexcept {
             }
             continue;
         }
-        if (eventdoc.at("key") == events::StatusMeasurementStartEvent::key) {
+        if (eventdoc.at("key") == StatusMeasurementStartEvent::key) {
             if (eventdoc.at("value").count("idx") != 1 ||
                     !eventdoc.at("value").at("idx").is_number_integer()) {
                 // TODO(bassosimone): route this error.
@@ -1873,7 +1868,7 @@ bool Nettest::run_with_json_settings(nlohmann::json settingsdoc) noexcept {
             }
             continue;
         }
-        if (eventdoc.at("key") == events::StatusMeasurementSubmissionEvent::key) {
+        if (eventdoc.at("key") == StatusMeasurementSubmissionEvent::key) {
             if (eventdoc.at("value").count("idx") != 1 ||
                     !eventdoc.at("value").at("idx").is_number_integer()) {
                 // TODO(bassosimone): route this error.
@@ -1887,7 +1882,7 @@ bool Nettest::run_with_json_settings(nlohmann::json settingsdoc) noexcept {
             }
             continue;
         }
-        if (eventdoc.at("key") == events::StatusMeasurementDoneEvent::key) {
+        if (eventdoc.at("key") == StatusMeasurementDoneEvent::key) {
             if (eventdoc.at("value").count("idx") != 1 ||
                     !eventdoc.at("value").at("idx").is_number_integer()) {
                 // TODO(bassosimone): route this error.
@@ -1901,7 +1896,7 @@ bool Nettest::run_with_json_settings(nlohmann::json settingsdoc) noexcept {
             }
             continue;
         }
-        if (eventdoc.at("key") == events::StatusReportCloseEvent::key) {
+        if (eventdoc.at("key") == StatusReportCloseEvent::key) {
             if (eventdoc.at("value").count("report_id") != 1 ||
                     !eventdoc.at("value").at("report_id").is_string()) {
                 // TODO(bassosimone): route this error.
@@ -1915,7 +1910,7 @@ bool Nettest::run_with_json_settings(nlohmann::json settingsdoc) noexcept {
             }
             continue;
         }
-        if (eventdoc.at("key") == events::StatusReportCreateEvent::key) {
+        if (eventdoc.at("key") == StatusReportCreateEvent::key) {
             if (eventdoc.at("value").count("report_id") != 1 ||
                     !eventdoc.at("value").at("report_id").is_string()) {
                 // TODO(bassosimone): route this error.
@@ -1929,7 +1924,7 @@ bool Nettest::run_with_json_settings(nlohmann::json settingsdoc) noexcept {
             }
             continue;
         }
-        if (eventdoc.at("key") == events::StatusResolverLookupEvent::key) {
+        if (eventdoc.at("key") == StatusResolverLookupEvent::key) {
             if (eventdoc.at("value").count("ip_address") != 1 ||
                     !eventdoc.at("value").at("ip_address").is_string()) {
                 // TODO(bassosimone): route this error.
@@ -1943,7 +1938,7 @@ bool Nettest::run_with_json_settings(nlohmann::json settingsdoc) noexcept {
             }
             continue;
         }
-        if (eventdoc.at("key") == events::StatusStartedEvent::key) {
+        if (eventdoc.at("key") == StatusStartedEvent::key) {
             /* No event attributes */
             if (!dispatch_event(std::move(eventdoc))) {
                 // TODO(bassosimone): route this error.
@@ -1952,7 +1947,7 @@ bool Nettest::run_with_json_settings(nlohmann::json settingsdoc) noexcept {
             }
             continue;
         }
-        if (eventdoc.at("key") == events::StatusUpdatePerformanceEvent::key) {
+        if (eventdoc.at("key") == StatusUpdatePerformanceEvent::key) {
             if (eventdoc.at("value").count("direction") != 1 ||
                     !eventdoc.at("value").at("direction").is_string()) {
                 // TODO(bassosimone): route this error.
@@ -1984,7 +1979,7 @@ bool Nettest::run_with_json_settings(nlohmann::json settingsdoc) noexcept {
             }
             continue;
         }
-        if (eventdoc.at("key") == events::StatusUpdateWebsitesEvent::key) {
+        if (eventdoc.at("key") == StatusUpdateWebsitesEvent::key) {
             if (eventdoc.at("value").count("url") != 1 ||
                     !eventdoc.at("value").at("url").is_string()) {
                 // TODO(bassosimone): route this error.
@@ -2004,7 +1999,7 @@ bool Nettest::run_with_json_settings(nlohmann::json settingsdoc) noexcept {
             }
             continue;
         }
-        if (eventdoc.at("key") == events::TaskTerminatedEvent::key) {
+        if (eventdoc.at("key") == TaskTerminatedEvent::key) {
             /* No event attributes */
             if (!dispatch_event(std::move(eventdoc))) {
                 // TODO(bassosimone): route this error.
@@ -2024,86 +2019,86 @@ bool Nettest::run_with_json_settings(nlohmann::json settingsdoc) noexcept {
 }
 
 bool Nettest::dispatch_event(nlohmann::json doc) noexcept {
-    if (doc.at("key") == events::FailureAsnLookupEvent::key) {
-        events::FailureAsnLookupEvent event;
+    if (doc.at("key") == FailureAsnLookupEvent::key) {
+        FailureAsnLookupEvent event;
         event.failure = doc.at("value").at("failure");
         on_failure_asn_lookup(std::move(event));
         return true;
     }
-    if (doc.at("key") == events::FailureCcLookupEvent::key) {
-        events::FailureCcLookupEvent event;
+    if (doc.at("key") == FailureCcLookupEvent::key) {
+        FailureCcLookupEvent event;
         event.failure = doc.at("value").at("failure");
         on_failure_cc_lookup(std::move(event));
         return true;
     }
-    if (doc.at("key") == events::FailureIpLookupEvent::key) {
-        events::FailureIpLookupEvent event;
+    if (doc.at("key") == FailureIpLookupEvent::key) {
+        FailureIpLookupEvent event;
         event.failure = doc.at("value").at("failure");
         on_failure_ip_lookup(std::move(event));
         return true;
     }
-    if (doc.at("key") == events::FailureMeasurementEvent::key) {
-        events::FailureMeasurementEvent event;
+    if (doc.at("key") == FailureMeasurementEvent::key) {
+        FailureMeasurementEvent event;
         event.failure = doc.at("value").at("failure");
         on_failure_measurement(std::move(event));
         return true;
     }
-    if (doc.at("key") == events::FailureMeasurementSubmissionEvent::key) {
-        events::FailureMeasurementSubmissionEvent event;
+    if (doc.at("key") == FailureMeasurementSubmissionEvent::key) {
+        FailureMeasurementSubmissionEvent event;
         event.failure = doc.at("value").at("failure");
         event.idx = doc.at("value").at("idx");
         event.json_str = doc.at("value").at("json_str");
         on_failure_measurement_submission(std::move(event));
         return true;
     }
-    if (doc.at("key") == events::FailureReportCreateEvent::key) {
-        events::FailureReportCreateEvent event;
+    if (doc.at("key") == FailureReportCreateEvent::key) {
+        FailureReportCreateEvent event;
         event.failure = doc.at("value").at("failure");
         on_failure_report_create(std::move(event));
         return true;
     }
-    if (doc.at("key") == events::FailureReportCloseEvent::key) {
-        events::FailureReportCloseEvent event;
+    if (doc.at("key") == FailureReportCloseEvent::key) {
+        FailureReportCloseEvent event;
         event.failure = doc.at("value").at("failure");
         on_failure_report_close(std::move(event));
         return true;
     }
-    if (doc.at("key") == events::FailureResolverLookupEvent::key) {
-        events::FailureResolverLookupEvent event;
+    if (doc.at("key") == FailureResolverLookupEvent::key) {
+        FailureResolverLookupEvent event;
         event.failure = doc.at("value").at("failure");
         on_failure_resolver_lookup(std::move(event));
         return true;
     }
-    if (doc.at("key") == events::FailureStartupEvent::key) {
-        events::FailureStartupEvent event;
+    if (doc.at("key") == FailureStartupEvent::key) {
+        FailureStartupEvent event;
         event.failure = doc.at("value").at("failure");
         on_failure_startup(std::move(event));
         return true;
     }
-    if (doc.at("key") == events::LogEvent::key) {
-        events::LogEvent event;
+    if (doc.at("key") == LogEvent::key) {
+        LogEvent event;
         event.log_level = doc.at("value").at("log_level");
         event.message = doc.at("value").at("message");
         on_log(std::move(event));
         return true;
     }
-    if (doc.at("key") == events::MeasurementEvent::key) {
-        events::MeasurementEvent event;
+    if (doc.at("key") == MeasurementEvent::key) {
+        MeasurementEvent event;
         event.idx = doc.at("value").at("idx");
         event.json_str = doc.at("value").at("json_str");
         on_measurement(std::move(event));
         return true;
     }
-    if (doc.at("key") == events::StatusEndEvent::key) {
-        events::StatusEndEvent event;
+    if (doc.at("key") == StatusEndEvent::key) {
+        StatusEndEvent event;
         event.downloaded_kb = doc.at("value").at("downloaded_kb");
         event.uploaded_kb = doc.at("value").at("uploaded_kb");
         event.failure = doc.at("value").at("failure");
         on_status_end(std::move(event));
         return true;
     }
-    if (doc.at("key") == events::StatusGeoipLookupEvent::key) {
-        events::StatusGeoipLookupEvent event;
+    if (doc.at("key") == StatusGeoipLookupEvent::key) {
+        StatusGeoipLookupEvent event;
         event.probe_ip = doc.at("value").at("probe_ip");
         event.probe_asn = doc.at("value").at("probe_asn");
         event.probe_cc = doc.at("value").at("probe_cc");
@@ -2111,64 +2106,64 @@ bool Nettest::dispatch_event(nlohmann::json doc) noexcept {
         on_status_geoip_lookup(std::move(event));
         return true;
     }
-    if (doc.at("key") == events::StatusProgressEvent::key) {
-        events::StatusProgressEvent event;
+    if (doc.at("key") == StatusProgressEvent::key) {
+        StatusProgressEvent event;
         event.percentage = doc.at("value").at("percentage");
         event.message = doc.at("value").at("message");
         on_status_progress(std::move(event));
         return true;
     }
-    if (doc.at("key") == events::StatusQueuedEvent::key) {
-        events::StatusQueuedEvent event;
+    if (doc.at("key") == StatusQueuedEvent::key) {
+        StatusQueuedEvent event;
         /* No attributes */
         on_status_queued(std::move(event));
         return true;
     }
-    if (doc.at("key") == events::StatusMeasurementStartEvent::key) {
-        events::StatusMeasurementStartEvent event;
+    if (doc.at("key") == StatusMeasurementStartEvent::key) {
+        StatusMeasurementStartEvent event;
         event.idx = doc.at("value").at("idx");
         event.input = doc.at("value").at("input");
         on_status_measurement_start(std::move(event));
         return true;
     }
-    if (doc.at("key") == events::StatusMeasurementSubmissionEvent::key) {
-        events::StatusMeasurementSubmissionEvent event;
+    if (doc.at("key") == StatusMeasurementSubmissionEvent::key) {
+        StatusMeasurementSubmissionEvent event;
         event.idx = doc.at("value").at("idx");
         on_status_measurement_submission(std::move(event));
         return true;
     }
-    if (doc.at("key") == events::StatusMeasurementDoneEvent::key) {
-        events::StatusMeasurementDoneEvent event;
+    if (doc.at("key") == StatusMeasurementDoneEvent::key) {
+        StatusMeasurementDoneEvent event;
         event.idx = doc.at("value").at("idx");
         on_status_measurement_done(std::move(event));
         return true;
     }
-    if (doc.at("key") == events::StatusReportCloseEvent::key) {
-        events::StatusReportCloseEvent event;
+    if (doc.at("key") == StatusReportCloseEvent::key) {
+        StatusReportCloseEvent event;
         event.report_id = doc.at("value").at("report_id");
         on_status_report_close(std::move(event));
         return true;
     }
-    if (doc.at("key") == events::StatusReportCreateEvent::key) {
-        events::StatusReportCreateEvent event;
+    if (doc.at("key") == StatusReportCreateEvent::key) {
+        StatusReportCreateEvent event;
         event.report_id = doc.at("value").at("report_id");
         on_status_report_create(std::move(event));
         return true;
     }
-    if (doc.at("key") == events::StatusResolverLookupEvent::key) {
-        events::StatusResolverLookupEvent event;
+    if (doc.at("key") == StatusResolverLookupEvent::key) {
+        StatusResolverLookupEvent event;
         event.ip_address = doc.at("value").at("ip_address");
         on_status_resolver_lookup(std::move(event));
         return true;
     }
-    if (doc.at("key") == events::StatusStartedEvent::key) {
-        events::StatusStartedEvent event;
+    if (doc.at("key") == StatusStartedEvent::key) {
+        StatusStartedEvent event;
         /* No attributes */
         on_status_started(std::move(event));
         return true;
     }
-    if (doc.at("key") == events::TaskTerminatedEvent::key) {
-        events::TaskTerminatedEvent event;
+    if (doc.at("key") == TaskTerminatedEvent::key) {
+        TaskTerminatedEvent event;
         /* No attributes */
         on_task_terminated(std::move(event));
         return true;
@@ -2178,7 +2173,7 @@ bool Nettest::dispatch_event(nlohmann::json doc) noexcept {
 
 // # PerformanceNettest
 
-void PerformanceNettest::on_status_update_performance(events::StatusUpdatePerformanceEvent event) {
+void PerformanceNettest::on_status_update_performance(StatusUpdatePerformanceEvent event) {
 #ifdef MK_NETTEST_VERBOSE_DEFAULT_HANDLERS
     std::clog << "status.update.performance";
     std::clog << ":";
@@ -2193,8 +2188,8 @@ void PerformanceNettest::on_status_update_performance(events::StatusUpdatePerfor
 }
 
 bool PerformanceNettest::dispatch_event(nlohmann::json doc) noexcept {
-    if (doc.at("key") == events::StatusUpdatePerformanceEvent::key) {
-        events::StatusUpdatePerformanceEvent event;
+    if (doc.at("key") == StatusUpdatePerformanceEvent::key) {
+        StatusUpdatePerformanceEvent event;
         event.direction = doc.at("value").at("direction");
         event.elapsed = doc.at("value").at("elapsed");
         event.num_streams = doc.at("value").at("num_streams");
@@ -2207,7 +2202,7 @@ bool PerformanceNettest::dispatch_event(nlohmann::json doc) noexcept {
 
 // # WebsitesNettest
 
-void WebsitesNettest::on_status_update_websites(events::StatusUpdateWebsitesEvent event) {
+void WebsitesNettest::on_status_update_websites(StatusUpdateWebsitesEvent event) {
 #ifdef MK_NETTEST_VERBOSE_DEFAULT_HANDLERS
     std::clog << "status.update.websites";
     std::clog << ":";
@@ -2220,8 +2215,8 @@ void WebsitesNettest::on_status_update_websites(events::StatusUpdateWebsitesEven
 }
 
 bool WebsitesNettest::dispatch_event(nlohmann::json doc) noexcept {
-    if (doc.at("key") == events::StatusUpdateWebsitesEvent::key) {
-        events::StatusUpdateWebsitesEvent event;
+    if (doc.at("key") == StatusUpdateWebsitesEvent::key) {
+        StatusUpdateWebsitesEvent event;
         event.url = doc.at("value").at("url");
         event.status = doc.at("value").at("status");
         on_status_update_websites(std::move(event));

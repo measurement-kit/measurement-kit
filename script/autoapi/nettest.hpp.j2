@@ -49,7 +49,7 @@
 ///  public:
 ///   using mk::nettest::WhatsappNettest::WhatsappNettest;
 ///
-///   void on_log(mk::nettest::events::LogEvent event) override {
+///   void on_log(mk::nettest::LogEvent event) override {
 ///     // Your event handling code here. Remember that this is called
 ///     // in the context of the FFI API's background thread.
 ///     //
@@ -118,9 +118,6 @@ namespace nettest {
 {% for log_level in log_levels %}/// String representation of the "{{ log_level }}" log level.
 constexpr const char *log_level_{{ log_level }} = "{{ log_level.upper() }}";{{ "\n\n" if not loop.last }}{% endfor %}
 
-/// Groups all events together.
-namespace events {
-
 {% for event in events %}/// C++ representation of the "{{ event.key }}" event.
 class {{ event.cxx_class_name }}Event {
   public:
@@ -129,8 +126,6 @@ class {{ event.cxx_class_name }}Event {
     {% if event.attributes %}{% for attribute in event.attributes %}{{ "\n    " }}/// The "{{ attribute.key }}" attribute of this event.
     {{ attribute.cxx_type }} {{ attribute.key }} = {{ attribute.value }};{{ "\n    " if not loop.last }}{% endfor %}{% else %}/* No attributes */{% endif %}
 };{{ "\n\n" if not loop.last }}{% endfor %}
-
-} // namespace events
 
 #if !defined SWIG && !defined DOXYGEN
 namespace detail {
@@ -229,7 +224,7 @@ class Nettest {
     // ``````````````
 
     {% for event in events if event.tag == "common" %}/// Handles the "{{ event.key }}" event.
-    virtual void on_{{ event.key | replace(".", "_") }}(events::{{ event.cxx_class_name }}Event);{{ "\n\n    " if not loop.last }}{% endfor %}
+    virtual void on_{{ event.key | replace(".", "_") }}({{ event.cxx_class_name }}Event);{{ "\n\n    " if not loop.last }}{% endfor %}
 
   protected:
     // Start a nettest given JSON settings
@@ -250,7 +245,7 @@ class PerformanceNettest : public Nettest {
     ~PerformanceNettest() noexcept override {}
 
     {% for event in events if event.tag == "performance" %}/// Handles the "{{ event.key }}" event.
-    virtual void on_{{ event.key | replace(".", "_") }}(events::{{ event.cxx_class_name }}Event);{{ "\n\n    " if not loop.last }}{% endfor %}
+    virtual void on_{{ event.key | replace(".", "_") }}({{ event.cxx_class_name }}Event);{{ "\n\n    " if not loop.last }}{% endfor %}
 
   protected:
     // Dispatch the JSON event to the proper handler
@@ -264,7 +259,7 @@ class WebsitesNettest : public Nettest {
     ~WebsitesNettest() noexcept override {}
 
     {% for event in events if event.tag == "websites" %}/// Handles the "{{ event.key }}" event.
-    virtual void on_{{ event.key | replace(".", "_") }}(events::{{ event.cxx_class_name }}Event);{{ "\n\n    " if not loop.last }}{% endfor %}
+    virtual void on_{{ event.key | replace(".", "_") }}({{ event.cxx_class_name }}Event);{{ "\n\n    " if not loop.last }}{% endfor %}
 
   protected:
     // Dispatch the JSON event to the proper handler
@@ -373,7 +368,7 @@ void Nettest::interrupt() noexcept {
     mk_task_interrupt(task_.get());
 }
 
-{% for event in events if event.tag == "common" %}void Nettest::on_{{ event.key | replace(".", "_") }}(events::{{ event.cxx_class_name }}Event event) {
+{% for event in events if event.tag == "common" %}void Nettest::on_{{ event.key | replace(".", "_") }}({{ event.cxx_class_name }}Event event) {
 #ifdef MK_NETTEST_VERBOSE_DEFAULT_HANDLERS
     std::clog << "{{ event.key }}";
     {% if event.attributes %}std::clog << ":";
@@ -447,7 +442,7 @@ bool Nettest::run_with_json_settings(nlohmann::json settingsdoc) noexcept {
             interrupt();
             return false;
         }
-        {% for event in events %}if (eventdoc.at("key") == events::{{ event.cxx_class_name }}Event::key) {
+        {% for event in events %}if (eventdoc.at("key") == {{ event.cxx_class_name }}Event::key) {
             {% if event.attributes %}{% for attribute in event.attributes %}if (eventdoc.at("value").count("{{ attribute.key }}") != 1 ||
                     !eventdoc.at("value").at("{{ attribute.key }}").is_{{ attribute.json_type }}()) {
                 // TODO(bassosimone): route this error.
@@ -472,8 +467,8 @@ bool Nettest::run_with_json_settings(nlohmann::json settingsdoc) noexcept {
 }
 
 bool Nettest::dispatch_event(nlohmann::json doc) noexcept {
-    {% for event in events if event.tag == "common" %}if (doc.at("key") == events::{{ event.cxx_class_name }}Event::key) {
-        events::{{ event.cxx_class_name}}Event event;
+    {% for event in events if event.tag == "common" %}if (doc.at("key") == {{ event.cxx_class_name }}Event::key) {
+        {{ event.cxx_class_name}}Event event;
         {% if event.attributes %}{% for attribute in event.attributes %}event.{{ attribute.key }} = {{ attribute.cxx_cast_from_json }}doc.at("value").at("{{ attribute.key }}");{{ "\n        " if not loop.last }}{% endfor %}{% else %}/* No attributes */{% endif %}
         on_{{ event.key | replace(".", "_") }}(std::move(event));
         return true;
@@ -483,7 +478,7 @@ bool Nettest::dispatch_event(nlohmann::json doc) noexcept {
 
 // # PerformanceNettest
 
-{% for event in events if event.tag == "performance" %}void PerformanceNettest::on_{{ event.key | replace(".", "_") }}(events::{{ event.cxx_class_name }}Event event) {
+{% for event in events if event.tag == "performance" %}void PerformanceNettest::on_{{ event.key | replace(".", "_") }}({{ event.cxx_class_name }}Event event) {
 #ifdef MK_NETTEST_VERBOSE_DEFAULT_HANDLERS
     std::clog << "{{ event.key }}";
     {% if event.attributes %}std::clog << ":";
@@ -495,8 +490,8 @@ bool Nettest::dispatch_event(nlohmann::json doc) noexcept {
 }{{ "\n\n" if not loop.last }}{% endfor %}
 
 bool PerformanceNettest::dispatch_event(nlohmann::json doc) noexcept {
-    {% for event in events if event.tag == "performance" %}if (doc.at("key") == events::{{ event.cxx_class_name }}Event::key) {
-        events::{{ event.cxx_class_name}}Event event;
+    {% for event in events if event.tag == "performance" %}if (doc.at("key") == {{ event.cxx_class_name }}Event::key) {
+        {{ event.cxx_class_name}}Event event;
         {% if event.attributes %}{% for attribute in event.attributes %}event.{{ attribute.key }} = {{ attribute.cxx_cast_from_json }}doc.at("value").at("{{ attribute.key }}");{{ "\n        " if not loop.last }}{% endfor %}{% else %}/* No attributes */{% endif %}
         on_{{ event.key | replace(".", "_") }}(std::move(event));
         return true;
@@ -506,7 +501,7 @@ bool PerformanceNettest::dispatch_event(nlohmann::json doc) noexcept {
 
 // # WebsitesNettest
 
-{% for event in events if event.tag == "websites" %}void WebsitesNettest::on_{{ event.key | replace(".", "_") }}(events::{{ event.cxx_class_name }}Event event) {
+{% for event in events if event.tag == "websites" %}void WebsitesNettest::on_{{ event.key | replace(".", "_") }}({{ event.cxx_class_name }}Event event) {
 #ifdef MK_NETTEST_VERBOSE_DEFAULT_HANDLERS
     std::clog << "{{ event.key }}";
     {% if event.attributes %}std::clog << ":";
@@ -518,8 +513,8 @@ bool PerformanceNettest::dispatch_event(nlohmann::json doc) noexcept {
 }{{ "\n\n" if not loop.last }}{% endfor %}
 
 bool WebsitesNettest::dispatch_event(nlohmann::json doc) noexcept {
-    {% for event in events if event.tag == "websites" %}if (doc.at("key") == events::{{ event.cxx_class_name }}Event::key) {
-        events::{{ event.cxx_class_name}}Event event;
+    {% for event in events if event.tag == "websites" %}if (doc.at("key") == {{ event.cxx_class_name }}Event::key) {
+        {{ event.cxx_class_name}}Event event;
         {% if event.attributes %}{% for attribute in event.attributes %}event.{{ attribute.key }} = {{ attribute.cxx_cast_from_json }}doc.at("value").at("{{ attribute.key }}");{{ "\n        " if not loop.last }}{% endfor %}{% else %}/* No attributes */{% endif %}
         on_{{ event.key | replace(".", "_") }}(std::move(event));
         return true;
