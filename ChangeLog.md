@@ -1,3 +1,8 @@
+# MeasurementKit 0.9.0-alpha.6 [2018-08-05]
+
+- Fix nit in nettest.hpp preventing SWIG generated code
+  from compiling hence preventing an Android build.
+
 # MeasurementKit 0.9.0-alpha.5 [2018-08-02]
 
 - Restructure nettest.hpp to be more easily useable from iOS and
