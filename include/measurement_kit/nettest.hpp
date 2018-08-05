@@ -404,7 +404,7 @@ class Nettest {
     // `````````
 
     /// Runs the nettest.
-    virtual bool run() noexcept;
+    bool run() noexcept;
 
     /// Interrupts a running nettest.
     void interrupt() noexcept;
