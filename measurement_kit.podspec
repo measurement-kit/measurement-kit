@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name = "measurement_kit"
-  s.version = "0.9.0-alpha.5"
+  s.version = "0.9.0-alpha.6"
   s.summary = "Portable network measurement library"
   s.author = "Simone Basso",
              "Arturo Filastò",
