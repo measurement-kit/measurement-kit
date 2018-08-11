@@ -280,7 +280,7 @@ bool Nettest::run_with_json_settings(const nlohmann::json &settingsdoc) noexcept
 #ifdef MK_NETTEST_TRACE
         std::clog << "NETTEST: settings: " << str << std::endl;
 #endif
-        task_.reset(mk_task_start(str.c_str()));
+        task_.reset(mk_nettest_start(str.c_str()));
         if (task_ == nullptr) {
             // TODO(bassosimone): route this error.
             return false;

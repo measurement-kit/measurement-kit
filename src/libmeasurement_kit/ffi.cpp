@@ -36,7 +36,7 @@ struct mk_task_ : mk::engine::Task {
     using mk::engine::Task::Task;
 };
 
-mk_task_t *mk_task_start(const char *settings) noexcept {
+mk_task_t *mk_nettest_start(const char *settings) noexcept {
     if (settings == nullptr) {
         return nullptr;
     }

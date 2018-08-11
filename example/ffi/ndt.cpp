@@ -14,10 +14,10 @@
  * statically with its own version of libc++.
  */
 int main() {
-    mk_task_t *task = mk_task_start("{\n"
-                                    "    \"name\": \"Ndt\",\n"
-                                    "    \"log_level\": \"INFO\"\n"
-                                    "}\n");
+    mk_task_t *task = mk_nettest_start("{\n"
+                                       "    \"name\": \"Ndt\",\n"
+                                       "    \"log_level\": \"INFO\"\n"
+                                       "}\n");
     if (task == NULL) {
         fprintf(stderr, "ERROR: cannot create/start task\n");
         exit(1);

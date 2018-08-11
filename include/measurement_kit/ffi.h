@@ -44,11 +44,11 @@ void mk_event_destroy(mk_event_t *event) MK_FFI_NOEXCEPT;
 /** mk_task_t is a task that Measurement Kit can run. */
 typedef struct mk_task_ mk_task_t;
 
-/** mk_task_start() starts a task with the specified JSON settings. You own
+/** mk_nettest_start() starts a task with the specified JSON settings. You own
  * the returned task pointer and must mk_task_destroy() it when done. NULL is
  * returned in case we cannot parse the JSON settings (or in case of less
  * likely errors). */
-mk_task_t *mk_task_start(const char *settings) MK_FFI_NOEXCEPT;
+mk_task_t *mk_nettest_start(const char *settings) MK_FFI_NOEXCEPT;
 
 /** mk_task_wait_for_next_event() blocks until the next event. You own the
  * returned event pointer and must mk_event_destroy() it when done. */
