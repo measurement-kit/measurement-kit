@@ -311,20 +311,6 @@ class TaskTerminatedEvent {
     static constexpr const char *key = "task_terminated";
 };
 
-#if !defined SWIG && !defined DOXYGEN
-class TaskDeleter {
-  public:
-    void operator()(mk_task_t *task) noexcept;
-};
-using UniqueTask = std::unique_ptr<mk_task_t, TaskDeleter>;
-
-class EventDeleter {
-  public:
-    void operator()(mk_event_t *event) noexcept;
-};
-using UniqueEvent = std::unique_ptr<mk_event_t, EventDeleter>;
-#endif // !SWIG && !DOXYGEN
-
 /// Settings common to all nettests.
 class Settings {
   public:
@@ -498,7 +484,7 @@ class Nettest {
     std::atomic_bool interrupted_{false};
 
     // Task running the nettest.
-    UniqueTask task_;
+    mk_unique_task task_;
 
     // Initial settings as a JSON.
     nlohmann::json settings_;
@@ -663,16 +649,6 @@ class WhatsappSettings : public Settings {
  * units to include the implementation into a single object.
  */
 #if !defined MK_NETTEST_NO_INLINE_IMPL && !defined SWIG
-
-// # Helpers
-
-void TaskDeleter::operator()(mk_task_t *task) noexcept {
-    mk_task_destroy(task);
-}
-
-void EventDeleter::operator()(mk_event_t *event) noexcept {
-    mk_event_destroy(event);
-}
 
 // # Settings
 
@@ -1043,7 +1019,7 @@ bool Nettest::run_with_json_settings(const nlohmann::json &settingsdoc) noexcept
     while (!interrupted_) {
         nlohmann::json eventdoc;
         {
-            UniqueEvent eventptr;
+            mk_unique_event eventptr;
             if (mk_task_is_done(task_.get())) {
                 break;
             }

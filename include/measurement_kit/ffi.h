@@ -88,6 +88,28 @@ void mk_task_interrupt(mk_task_t *task) MK_FFI_NOEXCEPT;
 void mk_task_destroy(mk_task_t *task) MK_FFI_NOEXCEPT;
 
 #ifdef __cplusplus
-}
-#endif
+}  // extern "C"
+
+#if __cplusplus >= 201103L
+
+#include <memory>
+
+class mk_task_deleter {
+  public:
+    void operator()(mk_task_t *task) noexcept {
+        mk_task_destroy(task);
+    }
+};
+using mk_unique_task = std::unique_ptr<mk_task_t, mk_task_deleter>;
+
+class mk_event_deleter {
+  public:
+    void operator()(mk_event_t *event) noexcept {
+        mk_event_destroy(event);
+    }
+};
+using mk_unique_event = std::unique_ptr<mk_event_t, mk_event_deleter>;
+
+#endif  // __cplusplus >= 201103L
+#endif  /* __cplusplus */
 #endif /* MEASUREMENT_KIT_FFI_H */
