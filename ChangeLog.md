@@ -1,3 +1,7 @@
+# MeasurementKit 0.9.0-alpha.7 [2018-08-11]
+
+- Move some useful C++ classes into the ffi.h header.
+
 # MeasurementKit 0.9.0-alpha.6 [2018-08-05]
 
 - Fix nit in nettest.hpp preventing SWIG generated code
