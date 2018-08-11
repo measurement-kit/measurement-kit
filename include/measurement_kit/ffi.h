@@ -69,7 +69,8 @@ void mk_task_destroy(mk_task_t *task) MK_FFI_NOEXCEPT;
 #ifdef __cplusplus
 }  // extern "C"
 
-#if __cplusplus >= 201103L
+// Explanation: Visual Studio does not claim to be fully C++11 compatible.
+#if __cplusplus >= 201103L || (defined _MSC_VER && _MSC_VER >= 1900)
 
 #include <memory>
 
@@ -89,6 +90,6 @@ class mk_event_deleter {
 };
 using mk_unique_event = std::unique_ptr<mk_event_t, mk_event_deleter>;
 
-#endif  // __cplusplus >= 201103L
+#endif  // __cplusplus >= 201103L || (defined _MSC_VER && _MSC_VER >= 1900)
 #endif  /* __cplusplus */
-#endif /* MEASUREMENT_KIT_FFI_H */
+#endif  /* MEASUREMENT_KIT_FFI_H */
