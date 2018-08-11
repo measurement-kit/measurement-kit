@@ -1,3 +1,12 @@
+# MeasurementKit 0.9.0-alpha.8 [2018-08-11]
+
+- ffi: allow for future different kind of tasks by making it clear that we
+  are currently running nettest tasks
+
+- ffi: remove `mk_task_start_ex()` that was optional complexity
+
+- ffi: attempt to repair build with the MSVC compiler
+
 # MeasurementKit 0.9.0-alpha.7 [2018-08-11]
 
 - Move some useful C++ classes into the ffi.h header.
