@@ -13,7 +13,7 @@ a simple specification of Measurement Kit's FFI API messages.
 
 - `engine.cpp.j2`: template for `src/libmeasurement_kit/engine.cpp`
 
-- `nettest.hpp.j2`: template for `include/measurement_kit/nettest.hpp`
+- `nettest.hpp.j2`: template for `include/measurement_kit/experimental/nettest.hpp`
 
 ## Usage
 

@@ -3,7 +3,7 @@
 #include "test/winsock.hpp"
 
 #define MK_NETTEST_VERBOSE_DEFAULT_HANDLERS  // print events in handlers
-#include <measurement_kit/nettest.hpp>
+#include <measurement_kit/experimental/nettest.hpp>
 
 #include <stdlib.h>
 

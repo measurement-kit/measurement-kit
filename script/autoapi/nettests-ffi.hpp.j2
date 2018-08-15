@@ -219,7 +219,7 @@ class MK_NETTESTS_DEPRECATED BaseTest {
     // How we actually start a task and process its events.
 
     // Helper macro used to facilitate suppressing exceptions since the
-    // nettest.hpp API always suppresses exceptions in callbacks. This is
+    // nettests.hpp API always suppresses exceptions in callbacks. This is
     // consistent with the original implementation's behavior.
     //
     // This is not necessarily a very good idea, but the original code was
