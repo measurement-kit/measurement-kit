@@ -1,3 +1,12 @@
+# MeasurementKit 0.9.0-alpha.9 [2018-08-15]
+
+- logger: fix progress when no handler is set
+
+- regress: do not use the TRN M-Lab POD that is currently have
+  issues and instead use the IAD POD
+
+- api: clearly mark nettest.hpp as experimental
+
 # MeasurementKit 0.9.0-alpha.8 [2018-08-11]
 
 - ffi: allow for future different kind of tasks by making it clear that we
