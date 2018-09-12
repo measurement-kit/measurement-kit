@@ -568,7 +568,7 @@ country and autonomous system. In detail, the JSON is like:
   "value": {
     "probe_ip": "<ip_address>",
     "probe_asn": "<asn>",
-    "probe_cc": "<cc>"
+    "probe_cc": "<cc>",
     "probe_network_name": "<network_name>"
   }
 }
