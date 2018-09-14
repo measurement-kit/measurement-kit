@@ -190,8 +190,8 @@ class DefaultLogger : public Logger, public NonCopyable, public NonMovable {
 
     void progress(double prog, const char *s) override {
         std::unique_lock<std::recursive_mutex> _{mutex_};
+        prog = prog * progress_scale_ + progress_offset_;
         if (progress_handler_) {
-            prog = prog * progress_scale_ + progress_offset_;
             try {
                 progress_handler_(prog, s);
             } catch (const std::exception &) {
@@ -233,8 +233,8 @@ class DefaultLogger : public Logger, public NonCopyable, public NonMovable {
 
     void progress_relative(double prog, const char *s) override {
         std::unique_lock<std::recursive_mutex> _{mutex_};
+        progress_relative_ += prog * progress_scale_;
         if (progress_handler_) {
-            progress_relative_ += prog * progress_scale_;
             try {
                 progress_handler_(progress_offset_ + progress_relative_, s);
             } catch (const std::exception &) {

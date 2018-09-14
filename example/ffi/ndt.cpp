@@ -14,14 +14,12 @@
  * statically with its own version of libc++.
  */
 int main() {
-    mk_task_t *task = nullptr;
-    mk_task_error_t err =
-            mk_task_start_ex(&task, "{\n"
-                                    "    \"name\": \"Ndt\",\n"
-                                    "    \"log_level\": \"INFO\"\n"
-                                    "}\n");
-    if (err != MK_TASK_ENONE) {
-        fprintf(stderr, "ERROR: cannot create/start task: %d\n", err);
+    mk_task_t *task = mk_nettest_start("{\n"
+                                       "    \"name\": \"Ndt\",\n"
+                                       "    \"log_level\": \"INFO\"\n"
+                                       "}\n");
+    if (task == NULL) {
+        fprintf(stderr, "ERROR: cannot create/start task\n");
         exit(1);
     }
 

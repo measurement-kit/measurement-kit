@@ -24,7 +24,7 @@ We encourage you to avoid using it when a more user-friendly API is available.
 typedef          struct mk_event_   mk_event_t;
 typedef          struct mk_task_    mk_task_t;
 
-mk_task_t       *mk_task_start(const char *settings);
+mk_task_t       *mk_nettest_start(const char *settings);
 mk_event_t      *mk_task_wait_for_next_event(mk_task_t *task);
 int              mk_task_is_done(mk_task_t *task);
 void             mk_task_interrupt(mk_task_t *task);
@@ -56,7 +56,7 @@ shared queue until the task has finished running.
 
 ## API documentation
 
-`mk_task_start` starts a task with the settings provided as a serialized
+`mk_nettest_start` starts a nettest task with the settings provided as a serialized
 JSON. Returns `NULL` if `conf` was `NULL`, or in case of parse error. You
 own (and must destroy) the returned task pointer.
 
@@ -90,7 +90,7 @@ The following example runs the "Ndt" test with "INFO" verbosity.
     "name": "Ndt",
     "log_level": "INFO"
   })";
-  mk_task_t *task = mk_task_start(settings);
+  mk_task_t *task = mk_nettest_start(settings);
   if (!task) {
     std::clog << "ERROR: cannot start task" << std::endl;
     return;
@@ -114,9 +114,9 @@ The following example runs the "Ndt" test with "INFO" verbosity.
   mk_task_destroy(task);
 ```
 
-## Tasks
+## Nettest tasks
 
-The following tasks are defined (case matters):
+The following nettests tasks are defined (case matters):
 
 - `"Dash"`: Neubot's DASH test.
 - `"CaptivePortal"`: OONI's captive portal test.
@@ -134,7 +134,7 @@ The following tasks are defined (case matters):
 
 ## Settings
 
-The task settings is a JSON like:
+The nettest task settings object is a JSON like:
 
 ```JSON
 {
@@ -191,7 +191,7 @@ The task settings is a JSON like:
 }
 ```
 
-The only mandatory key is `name`, which identifies the task. All the other
+The only mandatory key is `name`, which identifies the nettest. All the other
 keys are optional. Above we have shown the most commonly used `options`, that
 are described in greater detail below. The value we included for options
 is their default value (_however_, the value of non-`options` settings _is not_
@@ -205,13 +205,13 @@ are available:
   the events that you are not interested into. All the available event
   names are described below. By default all events are enabled;
 
-- `"inputs"`: (array; optional) array of strings to be passed to the task as
-  input. If the task does not take any input, this is ignored. If the task
+- `"inputs"`: (array; optional) array of strings to be passed to the nettest as
+  input. If the nettest does not take any input, this is ignored. If the nettest
   requires input and you provide neither `"inputs"` nor `"input_filepaths"`,
-  the task will fail;
+  the nettest will fail;
 
 - `"input_filepaths"`: (array; optional) array of files containing input
-  strings, one per line, to be passed to the task. These files are read and
+  strings, one per line, to be passed to the nettest. These files are read and
   their content is merged with the one of the `inputs` key.
 
 - `"log_filepath"`: (string; optional) name of the file where to
@@ -220,10 +220,10 @@ are available:
 - `"log_level"`: (string; optional) how much information you want to see
   written in the log file and emitted by log-related events.
 
-- `"name"`: (string; mandatory) name of the task to run. The available
-  task names have been described above;
+- `"name"`: (string; mandatory) name of the nettest to run. The available
+  nettest names have been described above;
 
-- `"options"`: (object; optional) options modifying the task behavior, as
+- `"options"`: (object; optional) options modifying the nettest behavior, as
   an object mapping string keys to string, integer or double values;
 
 - `"output_filepath"`: (string; optional) file where you want MK to
@@ -536,8 +536,8 @@ is like:
 ```
 
 Where `json_str` is the measurement result serialized as JSON. The schema of
-a measurement result depends on the type of task, as described below. And
-where `idx` is the index of the current measurement (relevant only for tasks
+a measurement result depends on the type of nettest, as described below. And
+where `idx` is the index of the current measurement (relevant only for nettests
 that iterate over an input list).
 
 - `"status.end"`: (object) This event is emitted just once at the end of the
@@ -559,7 +559,7 @@ uploaded kilo-bytes, and `failure` is the overall failure that occurred during
 the test (or the empty string, if no error occurred).
 
 - `"status.geoip_lookup"`: (object) This event is emitted only once at the
-beginning of the task, and provides information about the user's IP address,
+beginning of the nettest, and provides information about the user's IP address,
 country and autonomous system. In detail, the JSON is like:
 
 ```JSON
@@ -578,8 +578,8 @@ Where `<ip_address>` is the user's IP address, `asn` is the autonomous
 system number, `cc` is the country code, `network_name` is the commercial
 name associated to the autonomous system number.
 
-- `"status.progress"`: (object) This is emitted during the task lifecycle to
-inform you about the task progress towards completion. In detail, the JSON is
+- `"status.progress"`: (object) This is emitted during the nettest lifecycle to
+inform you about the nettest progress towards completion. In detail, the JSON is
 like:
 
 ```JSON
@@ -592,11 +592,11 @@ like:
 }
 ```
 
-Where `percentage` is the percentage of completion of the task, and `message`
-indicates the operation that the task just completed.
+Where `percentage` is the percentage of completion of the nettest, and `message`
+indicates the operation that the nettest just completed.
 
-- `"status.queued"`: (object) Indicates that the task has been accepted. In
-case there are already running tasks, as mentioned above, they will be
+- `"status.queued"`: (object) Indicates that the nettest has been accepted. In
+case there are already running nettests, as mentioned above, they will be
 prevented from running concurrently. The JSON is like:
 
 ```JSON
@@ -610,7 +610,7 @@ prevented from running concurrently. The JSON is like:
 Where `value` is empty.
 
 - `"status.measurement_start"`: (object) Indicates that a measurement inside
-a task has started. The JSON is like:
+a nettest has started. The JSON is like:
 
 ```JSON
 {
@@ -655,7 +655,7 @@ the specified input. The JSON is like:
 Where `idx` is the index of the measurement input.
 
 - `"status.report_close"`: (object) Measurement Kit has closed a report for the
-current task, and tells you the report-ID. The report-ID is the identifier of
+current nettest, and tells you the report-ID. The report-ID is the identifier of
 the measurement result(s), which have been submitted. The JSON is like:
 
 ```JSON
@@ -670,7 +670,7 @@ the measurement result(s), which have been submitted. The JSON is like:
 Where `report_id` is the report identifier.
 
 - `"status.report_create"`: (object) Measurement Kit has created a report for
-the current task, and tells you the report-ID. The report-ID is the identifier
+the current nettest, and tells you the report-ID. The report-ID is the identifier
 of the measurement result(s), which will be later submitted. The JSON is like:
 
 ```JSON
@@ -685,7 +685,7 @@ of the measurement result(s), which will be later submitted. The JSON is like:
 Where `report_id` is the report identifier.
 
 - `"status.resolver_lookup"`: (object) This event is emitted only once at the
-beginning of the task, when the IP address of the resolver is discovered. The
+beginning of the nettest, when the IP address of the resolver is discovered. The
 JSON is like:
 
 ```JSON
@@ -699,7 +699,7 @@ JSON is like:
 
 Where `<ip_address>` is the resolver's IP address.
 
-- `"status.started"`: (object) The task has started, and the JSON is like:
+- `"status.started"`: (object) The nettest has started, and the JSON is like:
 
 ```JSON
 {
@@ -763,19 +763,19 @@ Where `value` is empty.
 
 ## Task pseudocode
 
-The following illustrates in pseudocode the operations performed by a task
-once you call `mk_task_start`. It not 100% accurate; in particular, we have
+The following illustrates in pseudocode the operations performed by a nettest
+once you call `mk_nettest_start`. It not 100% accurate; in particular, we have
 omitted the code that generates most log messages. This pseudocode is meant to
 help you understand how Measurement Kit works internally, and specifically how all
 the settings described above interact together when you specify them for
-running Measurement Kit tasks. We are using pseudo JavaScript because that
+running Measurement Kit nettests. We are using pseudo JavaScript because that
 is the easiest language to show manipulation of JSON objects such as the
 `settings` object.
 
-As mentioned, a task run in its own thread. It first validate settings, then
+As mentioned, a nettest runs in its own thread. It first validate settings, then
 it opens the logfile (if needed), and finally it waits in queue until other
-possibly running tasks terminate. The `finish` function will be called when the
-task is done, and will emit all the events emitted at the end of a task.
+possibly running nettests terminate. The `finish` function will be called when the
+nettest is done, and will emit all the events emitted at the end of a nettest.
 
 ```JavaScript
 function taskThread(settings) {
@@ -805,14 +805,14 @@ function taskThread(settings) {
     openLogFile(settings.log_filepath)
   }
 
-  let task = makeTask(settings.name)
+  let task = makeNettestTask(settings.name)
 
   emitEvent("status.started", {})
 
 
 ```
 
-After all this setup, a task contacts the OONI bouncer, lookups the IP address,
+After all this setup, a nettest contacts the OONI bouncer, lookups the IP address,
 the country code, the autonomous system number, and the resolver lookup. All
 these information end up in the JSON measurement. Also, all these operations can
 be explicitly disabled by setting the appropriate settings.
@@ -984,7 +984,7 @@ some events with `idx` equal to `0` and `input` equal to an empty string.)
 ```
 
 Then, Measurement Kit iterates over all the input and runs the function
-implementing the specified task on each input.
+implementing the specified nettest on each input.
 
 ```JavaScript
   let begin = timeNow()

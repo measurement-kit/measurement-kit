@@ -16,7 +16,7 @@ using namespace mk;
 TEST_CASE("Query works as expected") {
     Settings settings;
     settings["mlabns/address_family"] = "ipv4";
-    settings["mlabns/metro"] = "trn";
+    settings["mlabns/metro"] = "iad";
     settings["mlabns/policy"] = "random";
     std::string tool = "neubot";
 
@@ -38,7 +38,7 @@ TEST_CASE("Query works as expected") {
 TEST_CASE("Query can pass the settings to the dns level") {
     Settings settings;
     settings["mlabns/address_family"] = "ipv4";
-    settings["mlabns/metro"] = "trn";
+    settings["mlabns/metro"] = "iad";
     settings["mlabns/policy"] = "random";
     settings["dns/nameserver"] = "8.8.8.8";
     settings["dns/timeout"] = 0.0001;
@@ -62,7 +62,7 @@ TEST_CASE("Make sure that an error is passed to callback with invalid "
           "address_family settings") {
     Settings settings;
     settings["mlabns/address_family"] = "ip4"; // Invalid
-    settings["mlabns/metro"] = "trn";
+    settings["mlabns/metro"] = "iad";
     settings["mlabns/policy"] = "random";
     std::string tool = "neubot";
     SharedPtr<Reactor> reactor = Reactor::make();
@@ -100,7 +100,7 @@ TEST_CASE("Make sure that an error is passed to callback with invalid policy "
           "settings") {
     Settings settings;
     settings["mlabns/address_family"] = "ipv4";
-    settings["mlabns/metro"] = "trn";
+    settings["mlabns/metro"] = "iad";
     settings["mlabns/policy"] = "antani"; // Invalid
     std::string tool = "neubot";
 
@@ -119,7 +119,7 @@ TEST_CASE("Make sure that an error is passed to callback with invalid tool "
           "settings") {
     Settings settings;
     settings["mlabns/address_family"] = "ipv4";
-    settings["mlabns/metro"] = "trn";
+    settings["mlabns/metro"] = "iad";
     settings["mlabns/policy"] = "random";
     std::string tool = "antani"; // Invalid
 
@@ -145,7 +145,7 @@ TEST_CASE(
     "Make sure that an error is passed to callback if http::request fails") {
     Settings settings;
     settings["mlabns/address_family"] = "ipv4";
-    settings["mlabns/metro"] = "trn";
+    settings["mlabns/metro"] = "iad";
     settings["mlabns/policy"] = "random";
     std::string tool = "neubot";
 
@@ -182,7 +182,7 @@ TEST_CASE("Make sure that an error is passed to callback if the response does "
           "not contain all fields") {
     Settings settings;
     settings["mlabns/address_family"] = "ipv4";
-    settings["mlabns/metro"] = "trn";
+    settings["mlabns/metro"] = "iad";
     settings["mlabns/policy"] = "random";
     std::string tool = "neubot";
 
@@ -218,7 +218,7 @@ TEST_CASE("Make sure that an error is passed to callback if the response "
           "contains a field with invalid type") {
     Settings settings;
     settings["mlabns/address_family"] = "ipv4";
-    settings["mlabns/metro"] = "trn";
+    settings["mlabns/metro"] = "iad";
     settings["mlabns/policy"] = "random";
     std::string tool = "neubot";
 

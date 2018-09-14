@@ -36,29 +36,17 @@ struct mk_task_ : mk::engine::Task {
     using mk::engine::Task::Task;
 };
 
-mk_task_t *mk_task_start(const char *settings) noexcept {
-    mk_task_t *rv = nullptr;
-    (void)mk_task_start_ex(&rv, settings);
-    return rv;
-}
-
-mk_task_error_t mk_task_start_ex(
-        mk_task_t **task, const char *settings) noexcept {
-    if (task == nullptr) {
-        return MK_TASK_EGENERIC;
-    }
-    *task = nullptr; // initialize
+mk_task_t *mk_nettest_start(const char *settings) noexcept {
     if (settings == nullptr) {
-        return MK_TASK_EGENERIC;
+        return nullptr;
     }
     nlohmann::json json;
     try {
         json = nlohmann::json::parse(settings);
     } catch (const std::exception &) {
-        return MK_TASK_EPARSE;
+        return nullptr;
     }
-    *task = new mk_task_t{std::move(json)};
-    return MK_TASK_ENONE;
+    return new mk_task_t{std::move(json)};
 }
 
 mk_event_t *mk_task_wait_for_next_event(mk_task_t *task) noexcept {

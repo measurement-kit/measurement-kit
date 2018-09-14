@@ -51,18 +51,6 @@
 namespace mk {
 namespace nettests {
 
-class TaskDeleter {
-  public:
-    void operator()(mk_task_t *task) noexcept { mk_task_destroy(task); }
-};
-using TaskUptr = std::unique_ptr<mk_task_t, TaskDeleter>;
-
-class EventDeleter {
-  public:
-    void operator()(mk_event_t *event) noexcept { mk_event_destroy(event); }
-};
-using EventUptr = std::unique_ptr<mk_event_t, EventDeleter>;
-
 class MK_NETTESTS_DEPRECATED BaseTest {
   public:
     // Implementation notes
@@ -231,7 +219,7 @@ class MK_NETTESTS_DEPRECATED BaseTest {
     // How we actually start a task and process its events.
 
     // Helper macro used to facilitate suppressing exceptions since the
-    // nettest.hpp API always suppresses exceptions in callbacks. This is
+    // nettests.hpp API always suppresses exceptions in callbacks. This is
     // consistent with the original implementation's behavior.
     //
     // This is not necessarily a very good idea, but the original code was
@@ -275,14 +263,14 @@ class MK_NETTESTS_DEPRECATED BaseTest {
         // whether to handle this possible error condition or not.
         std::string serialized_settings;
         serialized_settings = tip->settings.dump();
-        TaskUptr tup{mk_task_start(serialized_settings.c_str())};
+        mk_unique_task tup{mk_nettest_start(serialized_settings.c_str())};
         if (!tup) {
-            throw std::runtime_error("mk_task_start() failed");
+            throw std::runtime_error("mk_nettest_start() failed");
         }
         while (!mk_task_is_done(tup.get())) {
             nlohmann::json ev;
             {
-                EventUptr eup{mk_task_wait_for_next_event(tup.get())};
+                mk_unique_event eup{mk_task_wait_for_next_event(tup.get())};
                 if (!eup) {
                     throw std::runtime_error(
                             "mk_task_wait_for_next_event() failed");
