@@ -44,32 +44,11 @@ void mk_event_destroy(mk_event_t *event) MK_FFI_NOEXCEPT;
 /** mk_task_t is a task that Measurement Kit can run. */
 typedef struct mk_task_ mk_task_t;
 
-/** mk_task_start() starts a task with the specified JSON settings. You own
+/** mk_nettest_start() starts a task with the specified JSON settings. You own
  * the returned task pointer and must mk_task_destroy() it when done. NULL is
  * returned in case we cannot parse the JSON settings (or in case of less
- * likely errors; see mk_task_start_ex()). */
-mk_task_t *mk_task_start(const char *settings) MK_FFI_NOEXCEPT;
-
-/** mk_task_error_t enumerates the possible error codes returned by
- * the mk_task_start_ex() factory function. */
-enum mk_task_error_t {
-    /** MK_TASK_ENONE indicates that no error occurred. */
-    MK_TASK_ENONE = 0,
-    /** MK_TASK_EPARSE indicates that we could not parse the settings string
-     * provided in input as a valid JSON. */
-    MK_TASK_EPARSE,
-    /** MK_TASK_EGENERIC indicates any other error. */
-    MK_TASK_EGENERIC
-};
-
-/** mk_task_start_ex() starts a task with the specified JSON settings. @return
- * MK_TASK_EGENERIC if either @p task or @p settings are `NULL`. @return
- * MK_TASK_EPARSE if @p settings cannot be parsed. @return MK_TASK_EGENERIC
- * in case of other, unlikely, errors. @return MK_TASK_ENONE on success. @note
- * you should consider @p task to contain a valid pointer, that you own and
- * must mk_task_destroy(), only in the MK_TASK_ENONE case. */
-enum mk_task_error_t mk_task_start_ex(
-        mk_task_t **task, const char *settings) MK_FFI_NOEXCEPT;
+ * likely errors). */
+mk_task_t *mk_nettest_start(const char *settings) MK_FFI_NOEXCEPT;
 
 /** mk_task_wait_for_next_event() blocks until the next event. You own the
  * returned event pointer and must mk_event_destroy() it when done. */
@@ -88,6 +67,29 @@ void mk_task_interrupt(mk_task_t *task) MK_FFI_NOEXCEPT;
 void mk_task_destroy(mk_task_t *task) MK_FFI_NOEXCEPT;
 
 #ifdef __cplusplus
-}
-#endif
-#endif /* MEASUREMENT_KIT_FFI_H */
+}  // extern "C"
+
+// Explanation: Visual Studio does not claim to be fully C++11 compatible.
+#if __cplusplus >= 201103L || (defined _MSC_VER && _MSC_VER >= 1900)
+
+#include <memory>
+
+class mk_task_deleter {
+  public:
+    void operator()(mk_task_t *task) noexcept {
+        mk_task_destroy(task);
+    }
+};
+using mk_unique_task = std::unique_ptr<mk_task_t, mk_task_deleter>;
+
+class mk_event_deleter {
+  public:
+    void operator()(mk_event_t *event) noexcept {
+        mk_event_destroy(event);
+    }
+};
+using mk_unique_event = std::unique_ptr<mk_event_t, mk_event_deleter>;
+
+#endif  // __cplusplus >= 201103L || (defined _MSC_VER && _MSC_VER >= 1900)
+#endif  /* __cplusplus */
+#endif  /* MEASUREMENT_KIT_FFI_H */

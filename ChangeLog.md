@@ -1,3 +1,59 @@
+# MeasurementKit 0.9.0-alpha.9 [2018-08-15]
+
+- logger: fix progress when no handler is set
+
+- regress: do not use the TRN M-Lab POD that is currently have
+  issues and instead use the IAD POD
+
+- api: clearly mark nettest.hpp as experimental
+
+# MeasurementKit 0.9.0-alpha.8 [2018-08-11]
+
+- ffi: allow for future different kind of tasks by making it clear that we
+  are currently running nettest tasks
+
+- ffi: remove `mk_task_start_ex()` that was optional complexity
+
+- ffi: attempt to repair build with the MSVC compiler
+
+# MeasurementKit 0.9.0-alpha.7 [2018-08-11]
+
+- Move some useful C++ classes into the ffi.h header.
+
+# MeasurementKit 0.9.0-alpha.6 [2018-08-05]
+
+- Fix nit in nettest.hpp preventing SWIG generated code
+  from compiling hence preventing an Android build.
+
+# MeasurementKit 0.9.0-alpha.5 [2018-08-02]
+
+- Restructure nettest.hpp to be more easily useable from iOS and
+  possibly also from Android. Specifically, it turns out that
+  having a different class (with different virtual methods) for
+  each nettest is painful in that you need to duplicate code
+  for handling common events. There are workarounds, but it is
+  quite clear that the cleanest approach is probably to have
+  a single class for running all tests. Subclass once and then
+  use in different contexts. Especially because, apart from
+  performance and websites events, all other events are always
+  emitted by all classes. Plus, it's also easier.
+
+# MeasurementKit 0.9.0-alpha.4 [2018-08-02]
+
+- Be less strict with respect to option types because the old API is
+  internally using strings to represent options, hence it does not
+  matter the option type when we set the option's value, rather what
+  rules is whether the option can be converted to the correct type
+  when Measurement Kit is running. Fixes the old API on iOS.
+
+# MeasurementKit 0.9.0-alpha.3 [2018-08-01]
+
+- Use new collector implementation (#1639)
+
+- Autogenerate C++11 API for using FFI API. This C++11 API is meant to
+  be also processed by SWIG. It looks much more complete than the previous
+  API meant for SWIG consumption, now removed (#1645)
+
 # MeasurementKit 0.9.0-alpha.2 [2018-05-30]
 
 - We have rewritten the existing API (nettests.hpp) in terms of the new
