@@ -206,8 +206,17 @@ void Runnable::geoip_lookup(Callback<> cb) {
 
     // No need to perform further lookups if we don't need to save anything
     if (not save_ip and not save_asn and not save_cc) {
-        logger->warn("Not knowing user_ip means we cannot attempt to scrub it "
-                     "from the report");
+        if (probe_ip == "127.0.0.1") {
+            logger->warn("Not knowing user_ip means we cannot attempt to "
+                         "scrub it from the report");
+        }
+        /*
+         * XXX Passing down the stack the real probe IP to allow
+         * specific tests to scrub entries.
+         *
+         * See also measurement-kit/measurement-kit#1110.
+         */
+        options["real_probe_ip_"] = probe_ip;
         cb();
         return;
     }
