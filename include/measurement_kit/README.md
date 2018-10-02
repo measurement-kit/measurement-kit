@@ -12,8 +12,6 @@ this basic C-like FFI-friendly API:
 
 - [Golang API](https://github.com/measurement-kit/go-measurement-kit);
 
-- [C++11 API](https://github.com/measurement-kit/cxx11-api).
-
 We encourage you to avoid using it when a more user-friendly API is available.
 
 ## Synopsis
@@ -164,26 +162,26 @@ The nettest task settings object is a JSON like:
     "dns/engine": "system",
     "geoip_asn_path": "",
     "geoip_country_path": "",
-    "ignore_bouncer_error": 1,
-    "ignore_open_report_error": 1,
+    "ignore_bouncer_error": true,
+    "ignore_open_report_error": true,
     "max_runtime": -1.0,
     "net/ca_bundle_path": "",
     "net/timeout": 10.0,
-    "no_bouncer": 0,
-    "no_collector": 0,
-    "no_asn_lookup": 0,
-    "no_cc_lookup": 0,
-    "no_ip_lookup": 0,
-    "no_file_report": 0,
-    "no_resolver_lookup": 0,
+    "no_bouncer": false,
+    "no_collector": false,
+    "no_asn_lookup": false,
+    "no_cc_lookup": false,
+    "no_ip_lookup": false,
+    "no_file_report": false,
+    "no_resolver_lookup": false,
     "probe_asn": "",
     "probe_cc": "",
     "probe_ip": "",
-    "randomize_input": 1,
-    "save_real_probe_asn": 1,
-    "save_real_probe_cc": 1,
-    "save_real_probe_ip": 0,
-    "save_real_resolver_ip": 1,
+    "randomize_input": true,
+    "save_real_probe_asn": true,
+    "save_real_probe_cc": true,
+    "save_real_probe_ip": false,
+    "save_real_resolver_ip": true,
     "software_name": "measurement_kit",
     "software_version": "<current-mk-version>"
   },
@@ -250,9 +248,11 @@ specify `"INFO"`, you will only see `"ERR"`, `"WARNING"`, and `"INFO"` logs.
 
 ## Options
 
-Options can be `string`, `double`, or `int`. There is not boolean type, and
-we use `int`s with boolean semantics in some cases, with the usual convention
-that `0` means false and non-`0` means true.
+Options can be `string`, `double`, `int`, or `boolean`. There used to be no
+boolean type, but we later added support for it (between v0.9.0-alpha.9 and
+v0.9.0-alpha.10). The code will currently warn you if the type of a variable
+is not correct. In future versions, we will enforce this restriction more
+strictly and only accept options with the correct type.
 
 These are the available options:
 
@@ -277,12 +277,12 @@ These are the available options:
 - `"geoip_country_path"`: (string) path to the GeoIP Country database
   file. By default not set;
 
-- `"ignore_bouncer_error"`: (int) whether to ignore an error in contacting
-  the OONI bouncer. By default set to `1` so that bouncer errors will
+- `"ignore_bouncer_error"`: (boolean) whether to ignore an error in contacting
+  the OONI bouncer. By default set to `true` so that bouncer errors will
   be ignored;
 
-- `"ignore_open_report_error"`: (int) whether to ignore an error when opening
-  the report with the OONI collector. By default set to `1` so that errors
+- `"ignore_open_report_error"`: (boolean) whether to ignore an error when opening
+  the report with the OONI collector. By default set to `true` so that errors
   will be ignored;
 
 - `"max_runtime"`: (double) number of seconds after which the test will
@@ -298,30 +298,30 @@ These are the available options:
 - `"net/timeout"`: (double) number of seconds after which network I/O
   operations will timeout. By default set to `10.0` seconds;
 
-- `"no_bouncer"`: (int) whether to use a bouncer. By default set to
-  `0`, meaning that a bouncer will be used;
+- `"no_bouncer"`: (boolean) whether to use a bouncer. By default set to
+  `false`, meaning that a bouncer will be used;
 
-- `"no_collector"`: (int) whether to use a collector. By default set to
-  `0`, meaning that a collector will be used;
+- `"no_collector"`: (boolean) whether to use a collector. By default set to
+  `false`, meaning that a collector will be used;
 
-- `"no_asn_lookup"`: (int) whether to lookup the Autonomous System Number
+- `"no_asn_lookup"`: (boolean) whether to lookup the Autonomous System Number
   in which we're running. Requires the `"geoip_asn_path"` to be set. By
-  default set to `1`, meaning that we'll attempt ASN lookup;
+  default set to `true`, meaning that we'll attempt ASN lookup;
 
-- `"no_cc_lookup"`: (int) whether to lookup the code of the country (CC) in
+- `"no_cc_lookup"`: (boolean) whether to lookup the code of the country (CC) in
   which we are. Requires the `"geoip_country_path"` to be set. By default,
-  set to `1`, meaning that we'll attempt CC lookup;
+  set to `true`, meaning that we'll attempt CC lookup;
 
-- `"no_ip_lookup"`: (int) whether to lookup our IP address. By default set
-  to `1`, meaning that we'll try. Seting this to `0` prevents us from
+- `"no_ip_lookup"`: (boolean) whether to lookup our IP address. By default set
+  to `true`, meaning that we'll try. Seting this to `false` prevents us from
   looking up also the ASN and the CC and will also prevent us from attempting
   to scrub the user IP address from the results of many OONI tests;
 
-- `"no_file_report"`: (int) whether to write a report (i.e. measurement
-  result) file on disk. By default set to `0`, meaning that we'll try;
+- `"no_file_report"`: (boolean) whether to write a report (i.e. measurement
+  result) file on disk. By default set to `false`, meaning that we'll try;
 
-- `"no_resolver_lookup"`: (int) whether to lookup the IP address of the
-  resolver used. By default set to `0`, meaning that we'll try;
+- `"no_resolver_lookup"`: (boolean) whether to lookup the IP address of the
+  resolver used. By default set to `false`, meaning that we'll try;
 
 - `"probe_asn"`: (string) ASN in which we are. Set this if you already
   looked up for the ASN. Setting this to a non-empty string will disable
@@ -335,20 +335,20 @@ These are the available options:
   IP. Setting this to a non-empty string will disable the probe IP
   lookup. By default it's an empty string;
 
-- `"randomize_input"`: (int) whether to randomize input. By default set to
-  `1`, meaning that we'll randomize input;
+- `"randomize_input"`: (boolean) whether to randomize input. By default set to
+  `true`, meaning that we'll randomize input;
 
-- `"save_real_probe_asn"`: (int) whether to save the ASN. By default set
-  to `1`, meaning that we will save it;
+- `"save_real_probe_asn"`: (boolean) whether to save the ASN. By default set
+  to `true`, meaning that we will save it;
 
-- `"save_real_probe_cc"`: (int) whether to save the CC. By default set to `1`,
+- `"save_real_probe_cc"`: (boolean) whether to save the CC. By default set to `true`,
   meaning that we will save it;
 
-- `"save_real_probe_ip"`: (int) whether to save our IP. By default set to `0`,
+- `"save_real_probe_ip"`: (boolean) whether to save our IP. By default set to `true`,
   meaning that we will not save it;
 
-- `"save_real_resolver_ip"`: (int) whether to save the resolver IP. By default
-  set to `1`, meaning that we'll save it;
+- `"save_real_resolver_ip"`: (boolean) whether to save the resolver IP. By default
+  set to `true`, meaning that we'll save it;
 
 - `"software_name"`: (string) name of the app. By default set to
   `"measurement_kit"`;
@@ -771,6 +771,9 @@ the settings described above interact together when you specify them for
 running Measurement Kit nettests. We are using pseudo JavaScript because that
 is the easiest language to show manipulation of JSON objects such as the
 `settings` object.
+
+As of MK v0.9.0-alpha.9, there are some misalignments between the pseudocode
+and the implementation, which we'll fix during the v0.9.0 and v0.10.0 releases.
 
 As mentioned, a nettest runs in its own thread. It first validate settings, then
 it opens the logfile (if needed), and finally it waits in queue until other
