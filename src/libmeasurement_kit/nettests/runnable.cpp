@@ -25,15 +25,7 @@ namespace nettests {
 using namespace mk::report;
 using namespace mk::ooni;
 
-Runnable::~Runnable() {
-    for (auto fn : destroy_cbs) {
-        try {
-            fn();
-        } catch (const std::exception &) {
-            /* Suppress */ ;
-        }
-    }
-}
+Runnable::~Runnable() {}
 
 void Runnable::setup(std::string) {}
 void Runnable::teardown(std::string) {}
@@ -136,15 +128,6 @@ void Runnable::run_next_measurement(size_t thread_id, Callback<Error> cb,
         entry["annotations"] = annotations;
         report.fill_entry(entry);
         fixup_entry(entry); // Let drivers possibly fix-up the entry
-        if (entry_cb) {
-            try {
-                entry_cb(entry.dump());
-            } catch (const std::exception &exc) {
-                logger->warn("Unhandled exception in entry_cb(): %s",
-                             exc.what());
-                /* FALLTHROUGH */
-            }
-        }
         // TODO(bassosimone): make sure that this entry contains the report ID
         // which probably is currently not the case.
         logger->emit_event_ex("measurement", nlohmann::json::object({
@@ -430,9 +413,6 @@ void Runnable::query_bouncer(Callback<Error> cb) {
 }
 
 void Runnable::begin(Callback<Error> cb) {
-    if (begin_cb) {
-        begin_cb();
-    }
     mk::utc_time_now(&test_start_time);
     beginning = mk::time_now();
     query_bouncer([=](Error error) {
@@ -496,26 +476,10 @@ void Runnable::begin(Callback<Error> cb) {
 }
 
 void Runnable::end(Callback<Error> cb) {
-    for (auto fn : end_cbs) {
-        try {
-            fn();
-        } catch (const std::exception &) {
-            /* Suppress */ ;
-        }
-    }
     logger->set_progress_offset(0.0);
     logger->set_progress_scale(1.0);
     logger->progress(0.95, "ending the test");
     report.close([=](Error err) {
-        reactor->with_current_data_usage([=](DataUsage &du) {
-            if (!!data_usage_cb) {
-                try {
-                    data_usage_cb(du);
-                } catch (const std::exception &) {
-                    /* Suppress */ ;
-                }
-            }
-        });
         logger->progress(1.00, "test complete");
         cb(err);
     });
