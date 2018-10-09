@@ -29,15 +29,17 @@ OoniReporter::OoniReporter(Settings s, SharedPtr<Reactor> r, SharedPtr<Logger> l
 }
 
 Continuation<Error> OoniReporter::open(Report &report) {
-    return do_open_([=](Callback<Error> cb) {
+    return do_open_([=](Callback<Error> cb) mutable {
         logger->info("Opening report; please be patient...");
         ooni::collector::connect_and_create_report(
                 report.get_dummy_entry(),
-                [=](Error error, std::string rid) {
+                [=](Error error, std::string rid) mutable {
                     logger->debug("Opening report... %d", error.code);
                     if (not error) {
                         logger->info("Report ID: %s", rid.c_str());
                         report_id = rid;
+                        assert(report.report_id == "");
+                        report.report_id = rid;
                     }
                     cb(error);
                 },
