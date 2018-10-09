@@ -37,6 +37,7 @@ void Report::fill_entry(Entry &entry) const {
     entry["annotations"]["engine_name"] = "libmeasurement_kit";
     entry["annotations"]["engine_version"] = MK_VERSION;
     entry["annotations"]["engine_version_full"] = MK_VERSION_FULL;
+    entry["report_id"] = report_id;
 }
 
 Entry Report::get_dummy_entry() const {
@@ -54,43 +55,7 @@ void Report::open(Callback<Error> callback) {
 }
 
 void Report::write_entry(Entry entry, Callback<Error> callback,
-                         SharedPtr<Logger> logger) {
-    if (report_id == "") {
-        auto count = 0;
-        for (auto &reporter : reporters_) {
-            auto rid = reporter->get_report_id();
-            if (rid != "") {
-                report_id = rid;
-                ++count;
-            }
-        }
-        /*
-         * XXX For now we trust the last reporter that provides us with a
-         * non-zero-length report-id. The reason for doing the full scan
-         * over the existing reporters and for checking is to be ready for
-         * an hypothetical moment where more than one reporter will give
-         * back a good report-id (only ooni_reporter does that).
-         */
-        if (count > 1) {
-            callback(MultipleReportIdsError());
-            return;
-        }
-        if (report_id != "") {
-            logger->debug("report: found report-id: '%s'", report_id.c_str());
-        }
-    }
-
-    /*
-     * Override the report id with the one found above (if any). Note that
-     * memoization to prevent submitting multiple times in case of a partial
-     * failure and retry will be performed by write_entry() below.
-     */
-    if (report_id != "") {
-        entry["report_id"] = report_id;
-        logger->debug("report: force adding to entry report-id: %s",
-            entry["report_id"].dump().c_str());
-    }
-
+                         SharedPtr<Logger>) {
     mk::parallel(FMAP(reporters_, [=](SharedPtr<BaseReporter> r) {
         return r->write_entry(entry);
     }), callback);
