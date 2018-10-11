@@ -25,7 +25,7 @@ EOF
 
 apply_patches() {
     if [ -d ../../../build/patch/$1 ]; then
-        for diff in `find ../../../build/patch/$1 -type f`; do
+        for diff in `find ../../../build/patch/$1 -type f | sort`; do
             echo "* apply patch: $diff"
             git apply -v $diff
         done
