@@ -422,6 +422,7 @@ Where all the possible values of `<failure_string>` are described below.
 {
   "key": "failure.measurement",
   "value": {
+    "idx": 0,
     "failure": "<failure_string>"
   }
 }
