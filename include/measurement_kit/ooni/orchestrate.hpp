@@ -4,8 +4,6 @@
 #ifndef MEASUREMENT_KIT_OONI_ORCHESTRATE_HPP
 #define MEASUREMENT_KIT_OONI_ORCHESTRATE_HPP
 
-// Documentation: doc/api/ooni/orchestrate.md
-
 #include <measurement_kit/common/error.hpp>
 #include <measurement_kit/common/json.hpp>
 #include <measurement_kit/common/logger.hpp>
@@ -69,6 +67,7 @@ class ClientMetadata {
     std::string probe_asn;
     std::string probe_cc;
     std::string probe_family;
+    std::string probe_timezone;
     std::string registry_url = production_registry_url();
     std::string software_name = "measurement_kit";
     std::string software_version = MK_VERSION;

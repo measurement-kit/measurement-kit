@@ -151,6 +151,9 @@ Json ClientMetadata::as_json() const {
     j["platform"] = platform;
     j["probe_asn"] = probe_asn;
     j["probe_cc"] = probe_cc;
+    if (!probe_timezone.empty()) {
+        j["probe_timezone"] = probe_timezone;
+    }
     if (!probe_family.empty()) {
         j["probe_family"] = probe_family;
     }
