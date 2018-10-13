@@ -1,3 +1,11 @@
+# MeasurementKit 0.8.4 [2018-10-10]
+
+- Make sure the entry contains the report ID
+
+- Backport 00a6c46 from the master branch
+
+- Update all easily updatable dependencies
+
 # MeasurementKit 0.8.3 [2018-04-23]
 
 - Remove iPhoneSimulator/i386

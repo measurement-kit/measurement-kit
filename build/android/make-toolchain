@@ -39,7 +39,7 @@ if [ "$API" = "" ]; then
     if [ "$ARCH" = "arm64" -o "$ARCH" = "mips64" -o "$ARCH" = "x86_64" ]; then
         API=21
     else
-        API=14
+        API=16
     fi
 fi
 

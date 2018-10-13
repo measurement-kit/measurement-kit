@@ -93,7 +93,7 @@ fi
 
 # Override makefile's defaults with toolchain's tools. We use clang.
 TOOL_PREFIX=${ANDROID_TOOLCHAIN}/bin/${TOOLCHAIN_NAME}
-export CPP=${TOOL_PREFIX}-cpp
+export CPP="${TOOL_PREFIX}-clang -E"
 export AR=${TOOL_PREFIX}-ar
 export AS=${TOOL_PREFIX}-as
 export NM=${TOOL_PREFIX}-nm

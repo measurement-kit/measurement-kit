@@ -264,35 +264,6 @@ TEST_CASE("We can retry a partially successful close") {
     REQUIRE(failing_reporter->close_count == 2);
 }
 
-class ReturningIdReporter : public BaseReporter {
-  public:
-    static SharedPtr<ReturningIdReporter> make() {
-        return SharedPtr<ReturningIdReporter>(new ReturningIdReporter);
-    }
-
-    ~ReturningIdReporter() override;
-
-    std::string get_report_id() override { return "xx"; }
-};
-
-ReturningIdReporter::~ReturningIdReporter() {}
-
-TEST_CASE(
-        "We return an error if multiple report-ids are returned by reporters") {
-    Report report;
-    report.add_reporter(ReturningIdReporter::make().as<BaseReporter>());
-    report.add_reporter(ReturningIdReporter::make().as<BaseReporter>());
-    report.open([&](Error err) {
-        REQUIRE(err == NoError());
-        Entry entry;
-        entry["foobar"] = 17;
-        entry["baz"] = "foobar";
-        report.write_entry(entry, [&](Error err) {
-            REQUIRE(err == MultipleReportIdsError());
-        }, Logger::global());
-    });
-}
-
 TEST_CASE("We can override software name and version") {
     Report report;
     Entry entry;

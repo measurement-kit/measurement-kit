@@ -12,8 +12,8 @@ measurement-kit (`libmeasurement_kit`, `-lmeasurement_kit`)
 #ifndef MEASUREMENT_KIT_COMMON_VERSION_HPP
 #define MEASUREMENT_KIT_COMMON_VERSION_HPP
 
-#define MK_VERSION "0.8.3"
-#define MK_VERSION_FULL "v0.8.3-6-abcdef"
+#define MK_VERSION "0.8.4"
+#define MK_VERSION_FULL "v0.8.4-6-abcdef"
 
 #ifdef __cplusplus
 extern "C" {
