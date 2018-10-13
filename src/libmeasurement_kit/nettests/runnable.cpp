@@ -269,9 +269,21 @@ void Runnable::geoip_lookup(Callback<> cb) {
             if (save_asn and asn_path != "") {
                 auto inst = GeoipCache::thread_local_instance();
                 if (!!inst) {
-                    auto rv = inst->resolve_asn(asn_path, ip, logger);
+                    auto rv = inst->resolve_asn_full(asn_path, ip, logger);
                     if (!!rv) {
-                        probe_asn = rv.as_value();
+                        auto asninfo = rv.as_value();
+                        auto p = asninfo.find(" ");
+                        if (p != std::string::npos) {
+                            probe_asn = asninfo.substr(0, p);
+                            // Note that p + 1 cannot overflow SIZE_MAX since
+                            // std::string::npos is SIZE_MAX and we have already
+                            // excluded that specific case above.
+                            if (asninfo.size() > p + 1) {
+                                probe_network_name = asninfo.substr(p + 1);
+                            }
+                        } else {
+                            probe_asn = asninfo;
+                        }
                     } else {
                         // Error message already printed
                     }
@@ -289,7 +301,7 @@ void Runnable::geoip_lookup(Callback<> cb) {
                 {"probe_asn", probe_asn},
                 {"probe_cc", probe_cc},
                 {"probe_ip", ip},
-                {"probe_network_name", ""} // TODO(bassosimone): gather!
+                {"probe_network_name", probe_network_name},
             });
 
             cb();

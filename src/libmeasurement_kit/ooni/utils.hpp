@@ -30,6 +30,9 @@ class GeoipDatabase {
     ErrorOr<std::string>
     resolve_asn(std::string ip, SharedPtr<Logger> = Logger::global());
 
+    ErrorOr<std::string>
+    resolve_asn_full(std::string ip, SharedPtr<Logger> = Logger::global());
+
     std::string path;
 
   private:
@@ -87,6 +90,14 @@ class GeoipCache {
         logger->debug("resolve asn '%s' using '%s'",
                       ip.c_str(), path.c_str());
         return get(path)->resolve_asn(ip, logger);
+    }
+
+    ErrorOr<std::string>
+    resolve_asn_full(std::string path, std::string ip,
+                     SharedPtr<Logger> logger = Logger::global()) {
+        logger->debug("resolve asn full '%s' using '%s'",
+                      ip.c_str(), path.c_str());
+        return get(path)->resolve_asn_full(ip, logger);
     }
 
     // This means we cache up to 3 GeoIP database handles, based on filepath and
