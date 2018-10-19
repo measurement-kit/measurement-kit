@@ -112,6 +112,8 @@ if [ $cmake -eq 0 ]; then
     echo "    - GeoIP"
     echo "    - openssl / libressl"
     echo "    - libevent"
+    echo "    - libcurl"
+    echo "    - libmaxminddb"
     echo ""
     echo "If any of these dependencies is missing, the './configure' script"
     echo "shall stop and tell you how you could install it."

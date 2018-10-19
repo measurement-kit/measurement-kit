@@ -1,6 +1,6 @@
 #!/bin/sh
 set -ex
-version=v0.3.2
+version=v0.4.0
 name=libcurlx
 basedir=include/measurement_kit/vendor/$name
 rm -rf $basedir

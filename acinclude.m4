@@ -122,6 +122,48 @@ AC_DEFUN([MK_AM_GEOIP], [
   fi
 ])
 
+AC_DEFUN([MK_AM_LIBCURL], [
+  AC_ARG_WITH([libcurl],
+              [AS_HELP_STRING([--with-libcurl],
+                [cURL library @<:@default=check@:>@])
+              ],
+              [
+                CPPFLAGS="$CPPFLAGS -I$withval/include"
+                LDFLAGS="$LDFLAGS -L$withval/lib"
+              ],
+              [])
+  mk_not_found=""
+  AC_CHECK_HEADERS(curl/curl.h, [], [mk_not_found=1])
+  AC_CHECK_LIB(curl, curl_easy_init, [], [mk_not_found=1])
+  if test "$mk_not_found" = "1"; then
+    AC_MSG_WARN([Failed to find dependency: libcurl])
+    echo "    - to install on Debian: sudo apt-get install libcurl4-openssl-dev"
+    echo "    - to install on OSX: brew install curl"
+    AC_MSG_ERROR([Please, install libcurl and run configure again])
+  fi
+])
+
+AC_DEFUN([MK_AM_LIBMAXMINDDB], [
+  AC_ARG_WITH([libmaxminddb],
+              [AS_HELP_STRING([--with-libmaxminddb],
+                [MaxMindDB library @<:@default=check@:>@])
+              ],
+              [
+                CPPFLAGS="$CPPFLAGS -I$withval/include"
+                LDFLAGS="$LDFLAGS -L$withval/lib"
+              ],
+              [])
+  mk_not_found=""
+  AC_CHECK_HEADERS(maxminddb.h, [], [mk_not_found=1])
+  AC_CHECK_LIB(maxminddb, MMDB_open, [], [mk_not_found=1])
+  if test "$mk_not_found" = "1"; then
+    AC_MSG_WARN([Failed to find dependency: libmaxminddb])
+    echo "    - to install on Debian: sudo apt-get install libmaxminddb-dev"
+    echo "    - to install on OSX: brew install libmaxminddb"
+    AC_MSG_ERROR([Please, install libmaxminddb and run configure again])
+  fi
+])
+
 AC_DEFUN([MK_AM_OPENSSL], [
 
   AC_ARG_WITH([openssl],

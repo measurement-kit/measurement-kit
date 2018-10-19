@@ -8,6 +8,19 @@ extern "C" {
 // Libmmdbx discovers the probe IP, country code (CC), autonomous system
 // numer (ASN), and network name (i.e. the ASN description).
 //
+// This is the typical workflow of integrating libmmdbx into a project:
+//
+// 1. download the latest measurement-kit/libcurlx into the current directory
+//
+// 2. download libmmdbx.h
+//
+// 3. make sure you include libcurlx.h first
+//
+// 4. then include libmmdbx.h
+//
+// 5. depending on your needs also define MK_CURLX_INLINE_IMPL before
+//    including libcurlx.h and MK_MMDBX_INLINE_IMPL before including libmmdbx.h
+//
 // This is the typical workflow of using libmmdbx:
 //
 // 1. create a mk_mmdbx_settings_t instance
@@ -46,7 +59,7 @@ typedef struct mk_mmdbx_settings mk_mmdbx_settings_t;
 mk_mmdbx_settings_t *mk_mmdbx_settings_new(void);
 
 // mk_mmdbx_settings_set_timeout changes the default timeout for I/O.
-void mk_mmdbx_settings_set_timeout(mk_mmdbx_settings_t *p, unsigned v);
+void mk_mmdbx_settings_set_timeout(mk_mmdbx_settings_t *p, int v);
 
 // mk_mmdbx_settings_set_country_db_path sets the path to the county
 // database. We currently use libmaxminddb as a backend.
@@ -136,10 +149,8 @@ using mk_mmdbx_results_uptr = std::unique_ptr<mk_mmdbx_results_t>;
 
 #include <maxminddb.h>
 
-#include "libcurlx.h"
-
 struct mk_mmdbx_settings {
-  unsigned timeout = 7;
+  int timeout = 30  /* seconds */;
   std::string country_db_path;
   std::string asn_db_path;
   std::string ca_path;
@@ -149,7 +160,7 @@ mk_mmdbx_settings_t *mk_mmdbx_settings_new() {
   return new mk_mmdbx_settings;
 }
 
-void mk_mmdbx_settings_set_timeout(mk_mmdbx_settings_t *p, unsigned v) {
+void mk_mmdbx_settings_set_timeout(mk_mmdbx_settings_t *p, int v) {
   if (p != nullptr) p->timeout = v;
 }
 

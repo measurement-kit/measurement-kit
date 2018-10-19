@@ -21,7 +21,7 @@ void mk_curlx_request_add_header(mk_curlx_request_t *req, const char *h);
 
 void mk_curlx_request_set_body(mk_curlx_request_t *req, const char *b);
 
-void mk_curlx_request_set_timeout(mk_curlx_request_t *req, unsigned timeout);
+void mk_curlx_request_set_timeout(mk_curlx_request_t *req, int timeout);
 
 void mk_curlx_request_set_proxy_url(mk_curlx_request_t *req, const char *u);
 
@@ -74,7 +74,7 @@ struct mk_curlx_response_deleter {
 };
 
 using mk_curlx_response_uptr = std::unique_ptr<mk_curlx_response_t,
-                                              mk_curlx_response_deleter>;
+                                               mk_curlx_response_deleter>;
 
 #ifdef MK_CURLX_INLINE_IMPL
 
@@ -93,7 +93,7 @@ struct mk_curlx_request {
   std::string url;
   std::vector<std::string> headers;
   std::string body;
-  unsigned timeout = 7;
+  int timeout = 30 /* seconds */;
   std::string proxy_url;
   bool follow_redir = false;
 };
@@ -128,7 +128,7 @@ void mk_curlx_request_set_body(mk_curlx_request_t *req, const char *b) {
   if (req != nullptr && b != nullptr) req->body = b;
 }
 
-void mk_curlx_request_set_timeout(mk_curlx_request_t *req, unsigned timeout) {
+void mk_curlx_request_set_timeout(mk_curlx_request_t *req, int timeout) {
   if (req != nullptr) req->timeout = timeout;
 }
 
@@ -432,7 +432,8 @@ mk_curlx_response_t *mk_curlx_perform(const mk_curlx_request_t *req) {
     res->logs += "curl_easy_setopt(CURLOPT_WRITEDATA) failed\n";
     return res.release();
   }
-  if ((res->error = MK_CURLX_EASY_SETOPT(handle.get(), CURLOPT_TIMEOUT,
+  if (req->timeout > 0 &&
+      (res->error = MK_CURLX_EASY_SETOPT(handle.get(), CURLOPT_TIMEOUT,
                                          req->timeout)) != CURLE_OK) {
     res->logs += "curl_easy_setopt(CURLOPT_TIMEOUT) failed\n";
     return res.release();
