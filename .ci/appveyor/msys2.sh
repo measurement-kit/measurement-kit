@@ -2,11 +2,11 @@
 set -ex
 BASE_URL=https://github.com/measurement-kit/prebuilt/releases/download
 CHANNEL=testing
-GEOIP_VERSION=1.6.12-2
+GEOIP_VERSION=1.6.12-4
 GEOIP=mingw-geoip-api-c-$GEOIP_VERSION
-LIBEVENT_VERSION=2.1.8-3
+LIBEVENT_VERSION=2.1.8-7
 LIBEVENT=mingw-libevent-$LIBEVENT_VERSION
-LIBRESSL_VERSION=2.6.4-3
+LIBRESSL_VERSION=2.7.4-3
 LIBRESSL=mingw-libressl-$LIBRESSL_VERSION
 curl -LsO $BASE_URL/$CHANNEL/$GEOIP.tar.gz
 curl -LsO $BASE_URL/$CHANNEL/$LIBEVENT.tar.gz
@@ -22,4 +22,4 @@ ARCH=x86_64
             --with-openssl=$PREFIX/libressl/$LIBRESSL_VERSION/$ARCH            \
             --with-ca-bundle=test/fixtures/saved_ca_bundle.pem                 \
             --disable-shared $PKG_CONFIGUREFLAGS
-make V=0 -j$(nproc)
+make V=0 -j$(nproc) check
