@@ -1,0 +1,16 @@
+#!/bin/sh
+set -ex
+version=v0.2.0
+name=libmmdbx
+basedir=include/measurement_kit/vendor/$name
+rm -rf $basedir
+destdir=$basedir/$version
+install -d $destdir
+url=https://raw.githubusercontent.com/measurement-kit/$name/$version/$name.h
+(
+  set -ex
+  cd $destdir
+  curl -fsSLO $url
+)
+git add $basedir
+git commit -am "Vendor measurement-kit/$name@$version"
