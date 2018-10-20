@@ -13,7 +13,7 @@ using namespace mk;
 using namespace mk::dns;
 
 #ifdef ENABLE_INTEGRATION_TESTS
-#ifdef __MINGW__
+#ifdef __MINGW32__
 static const char *fail_inet_ntop(int, void *, char *, size_t)
 #elif defined _MSC_VER
 static const char *fail_inet_ntop(int, const void *, char *, size_t)

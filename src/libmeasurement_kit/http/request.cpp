@@ -6,7 +6,7 @@
 #include "src/libmeasurement_kit/common/utils.hpp"
 #include "src/libmeasurement_kit/net/error.hpp"
 
-#if defined _WIN32 && !defined __MINGW__
+#if defined _WIN32 && !defined __MINGW32__
 #define strcasecmp _stricmp
 #endif
 
