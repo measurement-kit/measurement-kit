@@ -1,3 +1,6 @@
+Since v0.9.0-alpha.10, the ChangeLog is not used anymore. Please see
+https://github.com/measurement-kit/measurement-kit/releases.
+
 # MeasurementKit 0.9.0-alpha.9 [2018-08-15]
 
 - logger: fix progress when no handler is set
