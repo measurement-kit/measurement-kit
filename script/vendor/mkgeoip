@@ -1,10 +1,8 @@
 #!/bin/sh
 set -ex
-version=v0.4.0
-name=libcurlx
-basedir=include/measurement_kit/vendor/$name
-rm -rf $basedir
-destdir=$basedir/$version
+version=v0.6.0
+name=mkgeoip
+destdir=include/measurement_kit/vendor
 install -d $destdir
 url=https://raw.githubusercontent.com/measurement-kit/$name/$version/$name.h
 (
@@ -12,5 +10,5 @@ url=https://raw.githubusercontent.com/measurement-kit/$name/$version/$name.h
   cd $destdir
   curl -fsSLO $url
 )
-git add $basedir
+git add $destdir/$name.h
 git commit -am "Vendor measurement-kit/$name@$version"
