@@ -124,6 +124,21 @@ ErrorOr<std::string> GeoipDatabase::resolve_city_name(
 
 ErrorOr<std::string> GeoipDatabase::resolve_asn(std::string ip,
                                              SharedPtr<Logger> logger) {
+    auto maybe_asn = resolve_asn_full(ip, logger);
+    if (!maybe_asn) {
+        return maybe_asn;
+    }
+    // We only want ASXXX
+    auto s = maybe_asn.as_value();
+    auto vec = mk::split<std::vector<std::string>>(s);
+    if (vec.size() < 1) {
+        return ErrorOr<std::string>{ValueError(), ""};
+    }
+    return ErrorOr<std::string>{NoError(), vec[0]};
+}
+
+ErrorOr<std::string> GeoipDatabase::resolve_asn_full(
+      std::string ip, SharedPtr<Logger> logger) {
     return with_open_database_do([=]() -> ErrorOr<std::string> {
         GeoIPLookup gl;
         memset(&gl, 0, sizeof(gl));
@@ -132,7 +147,6 @@ ErrorOr<std::string> GeoipDatabase::resolve_asn(std::string ip,
             return {GeoipAsnLookupError(), std::string{}};
         }
         std::string asn = res;
-        asn = split(asn).front(); // We only want ASXX
         free(res);
         return {NoError(), asn};
     }, logger);

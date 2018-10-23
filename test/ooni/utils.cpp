@@ -144,6 +144,10 @@ TEST_CASE("geoip works") {
             "GeoIPASNum.dat",
             "130.192.16.172"
     );
+    auto asn_full = ooni::GeoipCache::thread_local_instance()->resolve_asn_full(
+            "GeoIPASNum.dat",
+            "130.192.16.172"
+    );
     auto cname = ooni::GeoipCache::thread_local_instance()->resolve_country_name(
             "GeoIP.dat",
             "130.192.16.172"
@@ -153,6 +157,7 @@ TEST_CASE("geoip works") {
             "130.192.16.172"
     );
     REQUIRE(*asn == std::string{"AS137"});
+    REQUIRE(*asn_full == std::string{"AS137 Consortium GARR"});
     REQUIRE(*cc == std::string{"IT"});
     REQUIRE(*cname == std::string{"Italy"});
 }

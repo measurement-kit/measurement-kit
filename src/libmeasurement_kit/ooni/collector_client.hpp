@@ -17,7 +17,7 @@ namespace collector {
 */
 
 #define MK_OONI_PRODUCTION_COLLECTOR_URL "https://b.collector.ooni.io"
-#define MK_OONI_TESTING_COLLECTOR_URL "https://b.collector.test.ooni.io:4441"
+#define MK_OONI_TESTING_COLLECTOR_URL "https://collector-sandbox.ooni.io"
 
 std::string production_collector_url();
 std::string testing_collector_url();

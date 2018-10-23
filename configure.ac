@@ -1,5 +1,5 @@
 # Autoconf requirements
-AC_INIT(measurement_kit, 0.9.0-alpha.9, bassosimone@gmail.com)
+AC_INIT(measurement_kit, 0.9.0-alpha.10, bassosimone@gmail.com)
 
 # information on the package
 AC_CONFIG_SRCDIR([Makefile.am])
@@ -60,6 +60,8 @@ MK_AM_OPENSSL
 MK_AM_LIBEVENT
 MK_AM_GEOIP
 MK_AM_RESOLV
+MK_AM_LIBCURL
+MK_AM_LIBMAXMINDDB
 
 # checks for header files
 # checks for types

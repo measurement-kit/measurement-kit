@@ -394,6 +394,9 @@ static void task_run(TaskImpl *pimpl, nlohmann::json &settings) {
             } else if (value.is_number_float()) {
                 auto v = value.get<double>();
                 runnable->options[key] = v;
+            } else if (value.is_boolean()) {
+                auto v = value.get<bool>();
+                runnable->options[key] = (v) ? 1 : 0;
             } else {
                 std::stringstream ss;
                 ss << "Found option '" << key << "' to have an invalid type"

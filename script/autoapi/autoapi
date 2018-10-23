@@ -29,7 +29,7 @@ class Attribute(object):
         # the expected type of specific settings or options.
         self.json_type = {
             "Options": "object",
-            "bool": "number_integer",
+            "bool": "boolean",
             "double": "number_float",
             "int64_t": "number_integer",
             "std::map<std::string, std::string>": "object",

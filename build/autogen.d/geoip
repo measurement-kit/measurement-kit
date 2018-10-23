@@ -2,14 +2,27 @@
 set -e
 
 autogen_get_geoip() {
-    echo "* Fetching geoip database"
+    echo "* Fetching geoip databases"
     base=https://download.maxmind.com/download/geoip/database
     if [ ! -f "GeoIP.dat" ]; then
-        wget $base/GeoLiteCountry/GeoIP.dat.gz -O GeoIP.dat.gz
+        curl -fsSLO $base/GeoLiteCountry/GeoIP.dat.gz
         gzip -d GeoIP.dat.gz
     fi
     if [ ! -f "GeoIPASNum.dat" ]; then
-        wget $base/asnum/GeoIPASNum.dat.gz -O GeoIPASNum.dat.gz
+        curl -fsSLO $base/asnum/GeoIPASNum.dat.gz -O
         gzip -d GeoIPASNum.dat.gz
+    fi
+    base=https://geolite.maxmind.com/download/geoip/database
+    if [ ! -f "country.mmdb" ]; then
+        wget $base/GeoLite2-Country.tar.gz
+        tar -xf GeoLite2-Country.tar.gz
+        mv GeoLite2-Country_20??????/GeoLite2-Country.mmdb country.mmdb
+        rm -rf GeoLite2-Country_20??????
+    fi
+    if [ ! -f "asn.mmdb" ]; then
+        wget $base/GeoLite2-ASN.tar.gz
+        tar -xf GeoLite2-ASN.tar.gz
+        mv GeoLite2-ASN_20??????/GeoLite2-ASN.mmdb asn.mmdb
+        rm -rf GeoLite2-ASN_20??????
     fi
 }

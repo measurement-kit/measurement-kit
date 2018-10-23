@@ -769,11 +769,11 @@ static void task_run(TaskImpl *pimpl, nlohmann::json &settings) {
                     }
                     if (key == "ignore_bouncer_error") {
                         found = true;
-                        if (!value.is_number_integer()) {
+                        if (!value.is_boolean()) {
                             std::stringstream ss;
                             ss << "Found " << key << " option which has the "
                                << "wrong type (fyi: it should be a "
-                               << "number_integer)";
+                               << "boolean)";
                             emit_settings_warning(pimpl, ss.str().data());
                             // FALLTHROUGH
                         }
@@ -781,11 +781,11 @@ static void task_run(TaskImpl *pimpl, nlohmann::json &settings) {
                     }
                     if (key == "ignore_open_report_error") {
                         found = true;
-                        if (!value.is_number_integer()) {
+                        if (!value.is_boolean()) {
                             std::stringstream ss;
                             ss << "Found " << key << " option which has the "
                                << "wrong type (fyi: it should be a "
-                               << "number_integer)";
+                               << "boolean)";
                             emit_settings_warning(pimpl, ss.str().data());
                             // FALLTHROUGH
                         }
@@ -829,11 +829,11 @@ static void task_run(TaskImpl *pimpl, nlohmann::json &settings) {
                     }
                     if (key == "no_bouncer") {
                         found = true;
-                        if (!value.is_number_integer()) {
+                        if (!value.is_boolean()) {
                             std::stringstream ss;
                             ss << "Found " << key << " option which has the "
                                << "wrong type (fyi: it should be a "
-                               << "number_integer)";
+                               << "boolean)";
                             emit_settings_warning(pimpl, ss.str().data());
                             // FALLTHROUGH
                         }
@@ -841,11 +841,11 @@ static void task_run(TaskImpl *pimpl, nlohmann::json &settings) {
                     }
                     if (key == "no_collector") {
                         found = true;
-                        if (!value.is_number_integer()) {
+                        if (!value.is_boolean()) {
                             std::stringstream ss;
                             ss << "Found " << key << " option which has the "
                                << "wrong type (fyi: it should be a "
-                               << "number_integer)";
+                               << "boolean)";
                             emit_settings_warning(pimpl, ss.str().data());
                             // FALLTHROUGH
                         }
@@ -853,11 +853,11 @@ static void task_run(TaskImpl *pimpl, nlohmann::json &settings) {
                     }
                     if (key == "no_asn_lookup") {
                         found = true;
-                        if (!value.is_number_integer()) {
+                        if (!value.is_boolean()) {
                             std::stringstream ss;
                             ss << "Found " << key << " option which has the "
                                << "wrong type (fyi: it should be a "
-                               << "number_integer)";
+                               << "boolean)";
                             emit_settings_warning(pimpl, ss.str().data());
                             // FALLTHROUGH
                         }
@@ -865,11 +865,11 @@ static void task_run(TaskImpl *pimpl, nlohmann::json &settings) {
                     }
                     if (key == "no_cc_lookup") {
                         found = true;
-                        if (!value.is_number_integer()) {
+                        if (!value.is_boolean()) {
                             std::stringstream ss;
                             ss << "Found " << key << " option which has the "
                                << "wrong type (fyi: it should be a "
-                               << "number_integer)";
+                               << "boolean)";
                             emit_settings_warning(pimpl, ss.str().data());
                             // FALLTHROUGH
                         }
@@ -877,11 +877,11 @@ static void task_run(TaskImpl *pimpl, nlohmann::json &settings) {
                     }
                     if (key == "no_ip_lookup") {
                         found = true;
-                        if (!value.is_number_integer()) {
+                        if (!value.is_boolean()) {
                             std::stringstream ss;
                             ss << "Found " << key << " option which has the "
                                << "wrong type (fyi: it should be a "
-                               << "number_integer)";
+                               << "boolean)";
                             emit_settings_warning(pimpl, ss.str().data());
                             // FALLTHROUGH
                         }
@@ -889,11 +889,11 @@ static void task_run(TaskImpl *pimpl, nlohmann::json &settings) {
                     }
                     if (key == "no_file_report") {
                         found = true;
-                        if (!value.is_number_integer()) {
+                        if (!value.is_boolean()) {
                             std::stringstream ss;
                             ss << "Found " << key << " option which has the "
                                << "wrong type (fyi: it should be a "
-                               << "number_integer)";
+                               << "boolean)";
                             emit_settings_warning(pimpl, ss.str().data());
                             // FALLTHROUGH
                         }
@@ -901,11 +901,11 @@ static void task_run(TaskImpl *pimpl, nlohmann::json &settings) {
                     }
                     if (key == "no_resolver_lookup") {
                         found = true;
-                        if (!value.is_number_integer()) {
+                        if (!value.is_boolean()) {
                             std::stringstream ss;
                             ss << "Found " << key << " option which has the "
                                << "wrong type (fyi: it should be a "
-                               << "number_integer)";
+                               << "boolean)";
                             emit_settings_warning(pimpl, ss.str().data());
                             // FALLTHROUGH
                         }
@@ -949,11 +949,11 @@ static void task_run(TaskImpl *pimpl, nlohmann::json &settings) {
                     }
                     if (key == "randomize_input") {
                         found = true;
-                        if (!value.is_number_integer()) {
+                        if (!value.is_boolean()) {
                             std::stringstream ss;
                             ss << "Found " << key << " option which has the "
                                << "wrong type (fyi: it should be a "
-                               << "number_integer)";
+                               << "boolean)";
                             emit_settings_warning(pimpl, ss.str().data());
                             // FALLTHROUGH
                         }
@@ -961,11 +961,11 @@ static void task_run(TaskImpl *pimpl, nlohmann::json &settings) {
                     }
                     if (key == "save_real_probe_asn") {
                         found = true;
-                        if (!value.is_number_integer()) {
+                        if (!value.is_boolean()) {
                             std::stringstream ss;
                             ss << "Found " << key << " option which has the "
                                << "wrong type (fyi: it should be a "
-                               << "number_integer)";
+                               << "boolean)";
                             emit_settings_warning(pimpl, ss.str().data());
                             // FALLTHROUGH
                         }
@@ -973,11 +973,11 @@ static void task_run(TaskImpl *pimpl, nlohmann::json &settings) {
                     }
                     if (key == "save_real_probe_cc") {
                         found = true;
-                        if (!value.is_number_integer()) {
+                        if (!value.is_boolean()) {
                             std::stringstream ss;
                             ss << "Found " << key << " option which has the "
                                << "wrong type (fyi: it should be a "
-                               << "number_integer)";
+                               << "boolean)";
                             emit_settings_warning(pimpl, ss.str().data());
                             // FALLTHROUGH
                         }
@@ -985,11 +985,11 @@ static void task_run(TaskImpl *pimpl, nlohmann::json &settings) {
                     }
                     if (key == "save_real_probe_ip") {
                         found = true;
-                        if (!value.is_number_integer()) {
+                        if (!value.is_boolean()) {
                             std::stringstream ss;
                             ss << "Found " << key << " option which has the "
                                << "wrong type (fyi: it should be a "
-                               << "number_integer)";
+                               << "boolean)";
                             emit_settings_warning(pimpl, ss.str().data());
                             // FALLTHROUGH
                         }
@@ -997,11 +997,11 @@ static void task_run(TaskImpl *pimpl, nlohmann::json &settings) {
                     }
                     if (key == "save_real_resolver_ip") {
                         found = true;
-                        if (!value.is_number_integer()) {
+                        if (!value.is_boolean()) {
                             std::stringstream ss;
                             ss << "Found " << key << " option which has the "
                                << "wrong type (fyi: it should be a "
-                               << "number_integer)";
+                               << "boolean)";
                             emit_settings_warning(pimpl, ss.str().data());
                             // FALLTHROUGH
                         }
@@ -1061,6 +1061,9 @@ static void task_run(TaskImpl *pimpl, nlohmann::json &settings) {
             } else if (value.is_number_float()) {
                 auto v = value.get<double>();
                 runnable->options[key] = v;
+            } else if (value.is_boolean()) {
+                auto v = value.get<bool>();
+                runnable->options[key] = (v) ? 1 : 0;
             } else {
                 std::stringstream ss;
                 ss << "Found option '" << key << "' to have an invalid type"

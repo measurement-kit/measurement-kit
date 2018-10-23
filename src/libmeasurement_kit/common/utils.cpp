@@ -13,7 +13,6 @@
 #include <measurement_kit/common.hpp>
 #include <openssl/sha.h>
 #include <random>
-#include <regex>
 
 struct timeval;
 

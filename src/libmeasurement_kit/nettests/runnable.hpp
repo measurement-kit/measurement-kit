@@ -48,6 +48,7 @@ class Runnable : public NonCopyable, public NonMovable {
     std::string probe_ip = "127.0.0.1";
     std::string probe_asn = "AS0";
     std::string probe_cc = "ZZ";
+    std::string probe_network_name = "";
     std::string resolver_ip = "127.0.0.1";
 
   protected:
