@@ -2,6 +2,7 @@
 #define MEASUREMENT_KIT_MKGEOIP_H
 
 #include <stdint.h>
+#include <stdlib.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -272,15 +273,12 @@ static bool lookup_ip(const mkgeoip_settings_t *p, mkgeoip_results_uptr &r) {
   r->bytes_sent += mkcurl_response_get_bytes_sent(res.get());
   r->bytes_recv += mkcurl_response_get_bytes_recv(res.get());
   {
-    // TODO(bassosimone): in this case it would make sense to have a function
-    // that moves out the logs, because it's a waste to double copy.
-    const uint8_t *base = nullptr;
-    size_t length = 0;
-    if (!mkcurl_response_get_logs_binary_v2(res.get(), &base, &length)) {
+    std::string logs;
+    if (!mkcurl_response_moveout_logs(res.get(), &logs)) {
       r->error = MKGEOIP_ENOMEM;
       return false;
     }
-    r->logs += std::string{(char *)base, length};
+    r->logs += logs;
   }
   if (mkcurl_response_get_error(res.get()) != 0) {
     r->error = MKGEOIP_ECURL;
@@ -291,14 +289,9 @@ static bool lookup_ip(const mkgeoip_settings_t *p, mkgeoip_results_uptr &r) {
     return false;
   }
   std::string body;
-  {
-    const uint8_t *base = nullptr;
-    size_t count = 0;
-    if (!mkcurl_response_get_body_binary_v2(res.get(), &base, &count)) {
-      r->error = MKGEOIP_ENOMEM;
-      return false;
-    }
-    body = std::string{(char *)base, count};
+  if (!mkcurl_response_moveout_body(res.get(), &body)) {
+    r->error = MKGEOIP_ENOMEM;
+    return false;
   }
   if (!parse_ip(body, r)) {
     r->logs += "Failed to parse IP\n";
