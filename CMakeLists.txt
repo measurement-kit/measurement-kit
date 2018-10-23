@@ -1,5 +1,6 @@
 project(MeasurementKit)
 cmake_minimum_required(VERSION 2.8.0)
+message(WARNING "This CMake only build system is not guaranteed to work on Windows with MSVC. We may consider removing it also for UNIX. Be aware of that, this build system is still an experiment")
 include("cmake/Common.cmake")
 include("cmake/LibMeasurementKit.cmake")
 include("cmake/MeasurementKit.cmake")
