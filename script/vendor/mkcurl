@@ -1,6 +1,6 @@
 #!/bin/sh
 set -ex
-version=v0.6.1
+version=v0.6.2
 name=mkcurl
 destdir=include/measurement_kit/vendor/measurement-kit
 install -d $destdir

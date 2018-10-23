@@ -133,7 +133,9 @@ mkcurl_response_t *mkcurl_perform(const mkcurl_request_t *req);
 #ifdef __cplusplus
 }  // extern "C"
 
+#include <algorithm>
 #include <memory>
+#include <string>
 
 /// mkcurl_request_deleter is a custom deleter for mkcurl_request_t.
 struct mkcurl_request_deleter {
@@ -156,6 +158,19 @@ struct mkcurl_response_deleter {
 /// mkcurl_response_uptr is a unique pointer for mkcurl_response_t.
 using mkcurl_response_uptr = std::unique_ptr<mkcurl_response_t,
                                              mkcurl_response_deleter>;
+
+/// mkcurl_request_movein_body moves @p b inside @p req to be the request body.
+void mkcurl_request_movein_body(mkcurl_request_t *req, std::string &&b);
+
+/// mkcurl_response_moveout_body moves the response body out of @p res in @p s.
+int64_t mkcurl_response_moveout_body(mkcurl_response_t *res, std::string *s);
+
+/// mkcurl_response_moveout_logs moves the logs out of @p res in @p s.
+int64_t mkcurl_response_moveout_logs(mkcurl_response_t *res, std::string *s);
+
+/// mkcurl_response_moveout_logs moves response headers out of @p res in @p s.
+int64_t mkcurl_response_moveout_response_headers(
+    mkcurl_response_t *res, std::string *s);
 
 // If you just want to know about the API, you can stop reading here. What
 // follows is the inline implementation of the library. By default it is not
@@ -642,6 +657,29 @@ mkcurl_response_t *mkcurl_perform(const mkcurl_request_t *req) {
   }
   res->logs += "curl_easy_perform() success\n";
   return res.release();
+}
+
+void mkcurl_request_movein_body(mkcurl_request_t *req, std::string &&b) {
+  if (req != nullptr) std::swap(req->body, b);
+}
+
+int64_t mkcurl_response_moveout_body(mkcurl_response_t *res, std::string *s) {
+  if (res == nullptr || s == nullptr) return false;
+  std::swap(res->body, *s);
+  return true;
+}
+
+int64_t mkcurl_response_moveout_logs(mkcurl_response_t *res, std::string *s) {
+  if (res == nullptr || s == nullptr) return false;
+  std::swap(res->logs, *s);
+  return true;
+}
+
+int64_t mkcurl_response_moveout_response_headers(
+    mkcurl_response_t *res, std::string *s) {
+  if (res == nullptr || s == nullptr) return false;
+  std::swap(res->response_headers, *s);
+  return true;
 }
 
 #endif  // MKCURL_INLINE_IMPL
