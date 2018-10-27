@@ -81,8 +81,8 @@ TEST_CASE("Make sure that on_destroy() works") {
 TEST_CASE("Ensure we do not save too much information by default") {
     test::nettests::with_runnable([](nettests::Runnable &test) {
         test.reactor = Reactor::make();
-        test.options["geoip_country_path"] = "GeoIP.dat";
-        test.options["geoip_asn_path"] = "GeoIPASNum.dat";
+        test.options["geoip_country_path"] = "country.mmdb";
+        test.options["geoip_asn_path"] = "asn.mmdb";
         test.reactor->run_with_initial_event([&]() {
             test.entry_cb = [](std::string s) {
                 Json entry = Json::parse(s);
@@ -99,8 +99,8 @@ TEST_CASE("Ensure we do not save too much information by default") {
 TEST_CASE("Ensure we can save IP address if we want") {
     test::nettests::with_runnable([](nettests::Runnable &test) {
         test.reactor = Reactor::make();
-        test.options["geoip_country_path"] = "GeoIP.dat";
-        test.options["geoip_asn_path"] = "GeoIPASNum.dat";
+        test.options["geoip_country_path"] = "country.mmdb";
+        test.options["geoip_asn_path"] = "asn.mmdb";
         test.options["save_real_probe_ip"] = true;
         test.reactor->run_with_initial_event([&]() {
             test.entry_cb = [](std::string s) {
@@ -118,8 +118,8 @@ TEST_CASE("Ensure we can save IP address if we want") {
 TEST_CASE("Ensure we can avoid saving CC and ASN if we want") {
     test::nettests::with_runnable([](nettests::Runnable &test) {
         test.reactor = Reactor::make();
-        test.options["geoip_country_path"] = "GeoIP.dat";
-        test.options["geoip_asn_path"] = "GeoIPASNum.dat";
+        test.options["geoip_country_path"] = "country.mmdb";
+        test.options["geoip_asn_path"] = "asn.mmdb";
         test.options["save_real_probe_cc"] = false;
         test.options["save_real_probe_asn"] = false;
         test.reactor->run_with_initial_event([&]() {

@@ -26,9 +26,9 @@ static inline void run_test(mk::nettests::BaseTest &test) {
 
 template <typename T> void with_test(with_test_cb &&lambda) {
     lambda(
-          T{}.set_option("geoip_country_path", "GeoIP.dat")
+          T{}.set_option("geoip_country_path", "country.mmdb")
                 .add_annotation("continuous_integration", "true")
-                .set_option("geoip_asn_path", "GeoIPASNum.dat")
+                .set_option("geoip_asn_path", "asn.mmdb")
                 .set_verbosity(MK_LOG_INFO)
                 // Using the new collector for testing purposes.
                 // TODO(bassosimone): switch to production collector when

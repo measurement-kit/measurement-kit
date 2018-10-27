@@ -161,8 +161,8 @@ TEST_CASE("orchestrate::login() works correctly") {
 TEST_CASE("Orchestration works") {
     Client client;
     client.logger->increase_verbosity();
-    client.geoip_country_path = "GeoIP.dat";
-    client.geoip_asn_path = "GeoIPASNum.dat";
+    client.geoip_country_path = "country.mmdb";
+    client.geoip_asn_path = "asn.mmdb";
     client.network_type = "wifi";
     // client.device_token = "{TOKEN}";  /* Not needed on PC devices */
     client.registry_url = testing_registry_url();
