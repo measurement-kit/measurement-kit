@@ -271,11 +271,11 @@ These are the available options:
   names. Can also be set to `"libevent"`, to use libevent's DNS engine.
   In such case, you must provide a `"dns/nameserver"` as well;
 
-- `"geoip_asn_path"`: (string) path to the GeoIP ASN database file. By
-  default not set;
-
-- `"geoip_country_path"`: (string) path to the GeoIP Country database
+- `"geoip_asn_path"`: (string) path to the GeoLite2 `.mmdb` ASN database
   file. By default not set;
+
+- `"geoip_country_path"`: (string) path to the GeoLite2 `.mmdb` Country
+  database file. By default not set;
 
 - `"ignore_bouncer_error"`: (boolean) whether to ignore an error in contacting
   the OONI bouncer. By default set to `true` so that bouncer errors will
