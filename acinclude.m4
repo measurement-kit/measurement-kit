@@ -164,6 +164,26 @@ AC_DEFUN([MK_AM_LIBMAXMINDDB], [
   fi
 ])
 
+AC_DEFUN([MK_AM_ZLIB], [
+  AC_ARG_WITH([zlib],
+              [AS_HELP_STRING([--with-zlib],
+                [cURL library @<:@default=check@:>@])
+              ],
+              [
+                CPPFLAGS="$CPPFLAGS -I$withval/include"
+                LDFLAGS="$LDFLAGS -L$withval/lib"
+              ],
+              [])
+  mk_not_found=""
+  AC_CHECK_HEADERS(zlib.h, [], [mk_not_found=1])
+  AC_CHECK_LIB(z, inflate, [], [mk_not_found=1])
+  if test "$mk_not_found" = "1"; then
+    AC_MSG_WARN([Failed to find dependency: zlib])
+    echo "    - to install on Debian: sudo apt-get install zlib1g-dev"
+    AC_MSG_ERROR([Please, install zlib and run configure again])
+  fi
+])
+
 AC_DEFUN([MK_AM_OPENSSL], [
 
   AC_ARG_WITH([openssl],
