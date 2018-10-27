@@ -28,8 +28,6 @@ depcomp
 *.gcda
 *.gcno
 *.gcov
-/GeoIPASNum.dat
-/GeoIP.dat
 /GeoLite2-ASN.tar.gz
 /GeoLite2-Country.tar.gz
 .idea
