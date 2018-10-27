@@ -3,7 +3,7 @@
 set -e
 export LC_ALL=C  # Stable sorting regardless of the locale
 
-. build/autogen.d/geoip
+. script/autogen.d/geoip
 
 no_geoip=0
 cmake=0
