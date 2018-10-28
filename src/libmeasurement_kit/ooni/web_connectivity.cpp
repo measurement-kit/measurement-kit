@@ -5,12 +5,14 @@
 #include "src/libmeasurement_kit/common/utils.hpp"
 #include "src/libmeasurement_kit/ooni/constants.hpp"
 #include "src/libmeasurement_kit/ooni/nettests.hpp"
-#include "src/libmeasurement_kit/ooni/utils.hpp"
 #include "src/libmeasurement_kit/ooni/templates.hpp"
+#include "src/libmeasurement_kit/ooni/utils.hpp"
 
 #include <algorithm>
 #include <cctype>
 #include <set>
+
+#include <measurement_kit/vendor/mkmmdb.h>
 
 #define BODY_PROPORTION_FACTOR 0.7
 
@@ -192,17 +194,21 @@ static void compare_dns_queries(SharedPtr<Entry> entry,
     std::set<std::string> ctrl_asns;
 
     std::string asn_p = options.get("geoip_asn_path", std::string{});
-    auto ip_location = GeoipCache::thread_local_instance()->get(asn_p);
+    mkmmdb_uptr mmdb{mkmmdb_open_nonnull(asn_p.c_str())};
     for (auto exp_addr : exp_addresses) {
-        ErrorOr<std::string> asn = ip_location->resolve_asn(exp_addr);
-        if (asn && asn.as_value() != "AS0") {
-            exp_asns.insert(asn.as_value());
+        int64_t n = mkmmdb_lookup_asn(mmdb.get(), exp_addr.c_str());
+        if (n > 0) {
+            std::string asn = "AS";
+            asn += std::to_string(n);
+            exp_asns.insert(asn);
         }
     }
     for (auto ctrl_addr : ctrl_addresses) {
-        ErrorOr<std::string> asn = ip_location->resolve_asn(ctrl_addr);
-        if (asn && asn.as_value() != "AS0") {
-            ctrl_asns.insert(asn.as_value());
+        int64_t n = mkmmdb_lookup_asn(mmdb.get(), ctrl_addr.c_str());
+        if (n > 0) {
+            std::string asn = "AS";
+            asn += std::to_string(n);
+            ctrl_asns.insert(asn);
         }
     }
     std::set<std::string> common_asns;

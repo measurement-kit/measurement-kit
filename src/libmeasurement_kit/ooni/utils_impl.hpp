@@ -15,34 +15,6 @@
 namespace mk {
 namespace ooni {
 
-template <MK_MOCK_AS(http::get, http_get)>
-void ip_lookup_impl(Callback<Error, std::string> callback, Settings settings = {},
-               SharedPtr<Reactor> reactor = Reactor::global(),
-               SharedPtr<Logger> logger = Logger::global()) {
-    http_get("http://geoip.ubuntu.com/lookup",
-            [=](Error err, SharedPtr<http::Response> response) {
-                if (err) {
-                    callback(err, "");
-                    return;
-                }
-                if (response->status_code != 200) {
-                    callback(HttpRequestError(), "");
-                    return;
-                }
-                std::string ip = regexp::ubuntu_xml_extract_ip(response->body);
-                if (ip.empty()) {
-                    callback(RegexSearchError(), "");
-                    return;
-                }
-                if (!net::is_ip_addr(ip)) {
-                    callback(ValueError(), "");
-                    return;
-                }
-                callback(NoError(), ip);
-            },
-            {}, settings, reactor, logger, nullptr, 0);
-}
-
 template <MK_MOCK_AS(dns::query, dns_query)>
 void resolver_lookup_impl(Callback<Error, std::string> callback,
                           Settings settings = {},

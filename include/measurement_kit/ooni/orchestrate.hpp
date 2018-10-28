@@ -58,6 +58,7 @@ class ClientMetadata {
     Settings settings = {};
     std::string available_bandwidth;
     std::string device_token;
+    std::string ca_bundle_path;
     std::string events_url = production_events_url();
     std::string language;
     std::string network_type;

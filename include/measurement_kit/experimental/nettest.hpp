@@ -161,6 +161,13 @@ class FailureMeasurementSubmissionEvent {
     std::string json_str = "";
 };
 
+/// The "failure.network_name_lookup" event.
+class FailureNetworkNameLookupEvent {
+  public:
+    static constexpr const char *key = "failure.network_name_lookup";
+    std::string failure = "";
+};
+
 /// The "failure.report_create" event.
 class FailureReportCreateEvent {
   public:
@@ -339,13 +346,11 @@ class Settings {
     bool no_ip_lookup = false;
     bool no_file_report = false;
     bool no_resolver_lookup = false;
-    std::string probe_asn = "";
-    std::string probe_cc = "";
-    std::string probe_ip = "";
     bool randomize_input = true;
     bool save_real_probe_asn = true;
     bool save_real_probe_cc = true;
     bool save_real_probe_ip = false;
+    bool save_real_probe_network_name = false;
     bool save_real_resolver_ip = true;
     std::string software_name = "";
     std::string software_version = "";
@@ -412,6 +417,9 @@ class Nettest {
 
     /// Handles the "failure.measurement_submission" event.
     virtual void on_failure_measurement_submission(FailureMeasurementSubmissionEvent);
+
+    /// Handles the "failure.network_name_lookup" event.
+    virtual void on_failure_network_name_lookup(FailureNetworkNameLookupEvent);
 
     /// Handles the "failure.report_create" event.
     virtual void on_failure_report_create(FailureReportCreateEvent);
@@ -685,13 +693,11 @@ void Settings::serialize_into(nlohmann::json *doc) const noexcept {
         o["no_ip_lookup"] = (int64_t)no_ip_lookup;
         o["no_file_report"] = (int64_t)no_file_report;
         o["no_resolver_lookup"] = (int64_t)no_resolver_lookup;
-        o["probe_asn"] = probe_asn;
-        o["probe_cc"] = probe_cc;
-        o["probe_ip"] = probe_ip;
         o["randomize_input"] = (int64_t)randomize_input;
         o["save_real_probe_asn"] = (int64_t)save_real_probe_asn;
         o["save_real_probe_cc"] = (int64_t)save_real_probe_cc;
         o["save_real_probe_ip"] = (int64_t)save_real_probe_ip;
+        o["save_real_probe_network_name"] = (int64_t)save_real_probe_network_name;
         o["save_real_resolver_ip"] = (int64_t)save_real_resolver_ip;
         o["software_name"] = software_name;
         o["software_version"] = software_version;
@@ -762,6 +768,17 @@ void Nettest::on_failure_measurement_submission(FailureMeasurementSubmissionEven
     std::clog << " failure='" << event.failure << "'";
     std::clog << " idx='" << event.idx << "'";
     std::clog << " json_str='" << event.json_str << "'";
+    std::clog << std::endl;
+#else
+    (void)event;
+#endif
+}
+
+void Nettest::on_failure_network_name_lookup(FailureNetworkNameLookupEvent event) {
+#ifdef MK_NETTEST_VERBOSE_DEFAULT_HANDLERS
+    std::clog << "failure.network_name_lookup";
+    std::clog << ":";
+    std::clog << " failure='" << event.failure << "'";
     std::clog << std::endl;
 #else
     (void)event;
@@ -1119,6 +1136,18 @@ bool Nettest::run_with_json_settings(const nlohmann::json &settingsdoc) noexcept
             }
             continue;
         }
+        if (eventdoc.at("key") == FailureNetworkNameLookupEvent::key) {
+            if (eventdoc.at("value").count("failure") != 1 ||
+                    !eventdoc.at("value").at("failure").is_string()) {
+                // TODO(bassosimone): route this error.
+                break;
+            }
+            if (!dispatch_event(std::move(eventdoc))) {
+                // TODO(bassosimone): route this error.
+                break;
+            }
+            continue;
+        }
         if (eventdoc.at("key") == FailureReportCreateEvent::key) {
             if (eventdoc.at("value").count("failure") != 1 ||
                     !eventdoc.at("value").at("failure").is_string()) {
@@ -1453,6 +1482,12 @@ bool Nettest::dispatch_event(nlohmann::json doc) noexcept {
         event.idx = doc.at("value").at("idx");
         event.json_str = doc.at("value").at("json_str");
         on_failure_measurement_submission(std::move(event));
+        return true;
+    }
+    if (doc.at("key") == FailureNetworkNameLookupEvent::key) {
+        FailureNetworkNameLookupEvent event;
+        event.failure = doc.at("value").at("failure");
+        on_failure_network_name_lookup(std::move(event));
         return true;
     }
     if (doc.at("key") == FailureReportCreateEvent::key) {

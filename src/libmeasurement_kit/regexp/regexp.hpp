@@ -29,8 +29,6 @@ std::string html_extract_title(const std::string &input);
 
 bool private_ipv4(const std::string &input);
 
-std::string ubuntu_xml_extract_ip(const std::string &input);
-
 } // namespace regexp
 } // namespace mk
 #endif // SRC_LIBMEASUREMENT_KIT_REGEXP_REGEXP_HPP

@@ -2,18 +2,13 @@
 // Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
-#include <measurement_kit/ooni/orchestrate.hpp> // for orchestrate::Client
-#include "src/libmeasurement_kit/ooni/utils_impl.hpp"
+#include "src/libmeasurement_kit/common/reactor.hpp"
 #include "src/libmeasurement_kit/common/utils.hpp"
+#include "src/libmeasurement_kit/ooni/utils_impl.hpp"
 #include "src/libmeasurement_kit/regexp/regexp.hpp"
 
 namespace mk {
 namespace ooni {
-
-void ip_lookup(Callback<Error, std::string> callback, Settings settings,
-               SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
-    ip_lookup_impl(callback, settings, reactor, logger);
-}
 
 void resolver_lookup(Callback<Error, std::string> callback, Settings settings,
                      SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
@@ -29,128 +24,6 @@ void find_location(std::string geoip_country_path, std::string geoip_asn_path,
     client.geoip_country_path = geoip_country_path;
     client.settings = settings;
     client.find_location(std::move(cb));
-}
-
-/* static */ SharedPtr<GeoipCache> GeoipCache::thread_local_instance() {
-    // We have experimentally found that iOS armv7 does not support well
-    // thread_local. In such case, we allocate a new cache every time rather
-    // than using a thread local cache. We will be able to drop this fix
-    // in the moment in which support for 32-bit iOS will be dropped.
-    //
-    // See <https://github.com/measurement-kit/measurement-kit/issues/1397>.
-#ifndef MK_NO_THREAD_LOCAL
-    static thread_local
-#endif
-    SharedPtr<GeoipCache> singleton{new GeoipCache};
-    return singleton;
-}
-
-SharedPtr<GeoipDatabase> GeoipCache::get(std::string path, bool &did_open) {
-    if (instances.find(path) != instances.end()) {
-        did_open = false;
-        return instances.at(path);
-    }
-    did_open = true;
-    if (instances.size() > max_size) {
-        instances.erase(std::prev(instances.end()));
-    }
-    instances[path] = SharedPtr<GeoipDatabase>(new GeoipDatabase(path));
-    return instances[path];
-}
-
-ErrorOr<std::string> GeoipDatabase::with_open_database_do(
-        std::function<ErrorOr<std::string>()> action,
-        SharedPtr<Logger> logger) {
-    if (!db) {
-        db.reset(GeoIP_open(path.c_str(), GEOIP_MEMORY_CACHE|GEOIP_SILENCE),
-                 [](GeoIP *pointer) {
-                    if (pointer) {
-                        GeoIP_delete(pointer);
-                    }
-                 });
-        if (!db) {
-            logger->warn("cannot open geoip database: %s", path.c_str());
-            return {GeoipDatabaseOpenError(), std::string{}};
-        }
-        // FALLTHROUGH
-    }
-    return action();
-}
-
-ErrorOr<std::string> GeoipDatabase::resolve_country_code(
-            std::string ip, SharedPtr<Logger> logger) {
-    return with_open_database_do([=]() -> ErrorOr<std::string> {
-        GeoIPLookup gl;
-        memset(&gl, 0, sizeof(gl));
-        const char *result;
-        result = GeoIP_country_code_by_name_gl(db.get(), ip.c_str(), &gl);
-        if (result == nullptr) {
-            return {GeoipCountryCodeLookupError(), std::string{}};
-        }
-        std::string country_code = result;
-        return {NoError(), country_code};
-    }, logger);
-}
-
-ErrorOr<std::string> GeoipDatabase::resolve_country_name(
-            std::string ip, SharedPtr<Logger> logger) {
-    return with_open_database_do([=]() -> ErrorOr<std::string> {
-        GeoIPLookup gl;
-        memset(&gl, 0, sizeof(gl));
-        const char *result;
-        result = GeoIP_country_name_by_name_gl(db.get(), ip.c_str(), &gl);
-        if (result == nullptr) {
-            return {GeoipCountryNameLookupError(), std::string{}};
-        }
-        std::string country_name = result;
-        return {NoError(), country_name};
-    }, logger);
-}
-
-ErrorOr<std::string> GeoipDatabase::resolve_city_name(
-            std::string ip, SharedPtr<Logger> logger) {
-    return with_open_database_do([=]() -> ErrorOr<std::string> {
-        GeoIPRecord *gir = GeoIP_record_by_name(db.get(), ip.c_str());
-        if (gir == nullptr) {
-            return {GeoipCityLookupError(), std::string{}};
-        }
-        std::string result;
-        if (gir->city != nullptr) {
-            result = gir->city;
-        }
-        GeoIPRecord_delete(gir);
-        return {NoError(), result};
-    }, logger);
-}
-
-ErrorOr<std::string> GeoipDatabase::resolve_asn(std::string ip,
-                                             SharedPtr<Logger> logger) {
-    auto maybe_asn = resolve_asn_full(ip, logger);
-    if (!maybe_asn) {
-        return maybe_asn;
-    }
-    // We only want ASXXX
-    auto s = maybe_asn.as_value();
-    auto vec = mk::split<std::vector<std::string>>(s);
-    if (vec.size() < 1) {
-        return ErrorOr<std::string>{ValueError(), ""};
-    }
-    return ErrorOr<std::string>{NoError(), vec[0]};
-}
-
-ErrorOr<std::string> GeoipDatabase::resolve_asn_full(
-      std::string ip, SharedPtr<Logger> logger) {
-    return with_open_database_do([=]() -> ErrorOr<std::string> {
-        GeoIPLookup gl;
-        memset(&gl, 0, sizeof(gl));
-        char *res = GeoIP_name_by_name_gl(db.get(), ip.c_str(), &gl);
-        if (res == nullptr) {
-            return {GeoipAsnLookupError(), std::string{}};
-        }
-        std::string asn = res;
-        free(res);
-        return {NoError(), asn};
-    }, logger);
 }
 
 std::string extract_html_title(std::string body) {

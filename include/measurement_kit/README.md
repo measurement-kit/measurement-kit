@@ -174,9 +174,6 @@ The nettest task settings object is a JSON like:
     "no_ip_lookup": false,
     "no_file_report": false,
     "no_resolver_lookup": false,
-    "probe_asn": "",
-    "probe_cc": "",
-    "probe_ip": "",
     "randomize_input": true,
     "save_real_probe_asn": true,
     "save_real_probe_cc": true,
@@ -322,18 +319,6 @@ These are the available options:
 
 - `"no_resolver_lookup"`: (boolean) whether to lookup the IP address of the
   resolver used. By default set to `false`, meaning that we'll try;
-
-- `"probe_asn"`: (string) ASN in which we are. Set this if you already
-  looked up for the ASN. Setting this to a non-empty string will disable
-  the ASN lookup. By default it's an empty string;
-
-- `"probe_cc"`: (string) Country code. Set this is you already looked up
-  the country code. Setting this to a non-empty string will disable CC
-  lookup. By default it's an empty string;
-
-- `"probe_ip"`: (string) Probe IP. Set this if you already know our
-  IP. Setting this to a non-empty string will disable the probe IP
-  lookup. By default it's an empty string;
 
 - `"randomize_input"`: (boolean) whether to randomize input. By default set to
   `true`, meaning that we'll randomize input;

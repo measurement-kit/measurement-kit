@@ -223,6 +223,7 @@ static bool is_event_key_valid(const std::string &str) {
         (str == "failure.ip_lookup") ||
         (str == "failure.measurement") ||
         (str == "failure.measurement_submission") ||
+        (str == "failure.network_name_lookup") ||
         (str == "failure.report_create") ||
         (str == "failure.report_close") ||
         (str == "failure.resolver_lookup") ||
@@ -283,6 +284,11 @@ static nlohmann::json possibly_validate_event(nlohmann::json &&event) {
             assert(event.at("value").at("idx").is_number_integer());
             assert(event.at("value").count("json_str") == 1);
             assert(event.at("value").at("json_str").is_string());
+            break;
+        }
+        if (event.at("key") == "failure.network_name_lookup") {
+            assert(event.at("value").count("failure") == 1);
+            assert(event.at("value").at("failure").is_string());
             break;
         }
         if (event.at("key") == "failure.report_create") {
@@ -407,6 +413,7 @@ static nlohmann::json known_events() {
     json.push_back("failure.ip_lookup");
     json.push_back("failure.measurement");
     json.push_back("failure.measurement_submission");
+    json.push_back("failure.network_name_lookup");
     json.push_back("failure.report_create");
     json.push_back("failure.report_close");
     json.push_back("failure.resolver_lookup");
@@ -911,42 +918,6 @@ static void task_run(TaskImpl *pimpl, nlohmann::json &settings) {
                         }
                         break;
                     }
-                    if (key == "probe_asn") {
-                        found = true;
-                        if (!value.is_string()) {
-                            std::stringstream ss;
-                            ss << "Found " << key << " option which has the "
-                               << "wrong type (fyi: it should be a "
-                               << "string)";
-                            emit_settings_warning(pimpl, ss.str().data());
-                            // FALLTHROUGH
-                        }
-                        break;
-                    }
-                    if (key == "probe_cc") {
-                        found = true;
-                        if (!value.is_string()) {
-                            std::stringstream ss;
-                            ss << "Found " << key << " option which has the "
-                               << "wrong type (fyi: it should be a "
-                               << "string)";
-                            emit_settings_warning(pimpl, ss.str().data());
-                            // FALLTHROUGH
-                        }
-                        break;
-                    }
-                    if (key == "probe_ip") {
-                        found = true;
-                        if (!value.is_string()) {
-                            std::stringstream ss;
-                            ss << "Found " << key << " option which has the "
-                               << "wrong type (fyi: it should be a "
-                               << "string)";
-                            emit_settings_warning(pimpl, ss.str().data());
-                            // FALLTHROUGH
-                        }
-                        break;
-                    }
                     if (key == "randomize_input") {
                         found = true;
                         if (!value.is_boolean()) {
@@ -984,6 +955,18 @@ static void task_run(TaskImpl *pimpl, nlohmann::json &settings) {
                         break;
                     }
                     if (key == "save_real_probe_ip") {
+                        found = true;
+                        if (!value.is_boolean()) {
+                            std::stringstream ss;
+                            ss << "Found " << key << " option which has the "
+                               << "wrong type (fyi: it should be a "
+                               << "boolean)";
+                            emit_settings_warning(pimpl, ss.str().data());
+                            // FALLTHROUGH
+                        }
+                        break;
+                    }
+                    if (key == "save_real_probe_network_name") {
                         found = true;
                         if (!value.is_boolean()) {
                             std::stringstream ss;
