@@ -1,3 +1,6 @@
+// Part of Measurement Kit <https://measurement-kit.github.io/>.
+// Measurement Kit is free software under the BSD license. See AUTHORS
+// and LICENSE for more information on the copying conditions.
 #ifndef MEASUREMENT_KIT_MKDATA_H
 #define MEASUREMENT_KIT_MKDATA_H
 
@@ -12,20 +15,21 @@ extern "C" {
 typedef struct mkdata mkdata_t;
 
 /// mkdata_new creates a new mkdata_t instance
-mkdata_t *mkdata_new(void);
+mkdata_t *mkdata_new_nonnull(void);
 
-/// mkdata_set copies data from the provided vector into @p data
-void mkdata_set(mkdata_t *data, const uint8_t *base, size_t count);
+/// mkdata_set_v2 copies data from the provided vector into @p data. This
+/// function calls abort if passed null arguments.
+void mkdata_set_v2(mkdata_t *data, const uint8_t *base, size_t count);
 
-/// mkdata_contains_valid_utf8 tells you whether @p data contains valid UTF-8
-int64_t mkdata_contains_valid_utf8(mkdata_t *data);
+/// mkdata_contains_valid_utf8_v2 tells you whether @p data contains valid
+/// UTF-8 data. This function aborts if passed null arguments.
+int64_t mkdata_contains_valid_utf8_v2(mkdata_t *data);
 
-/// mkdata_get_base64 gives you a base64 encoded representation of the data
-/// contained inside of @p data. Returns a boolean-ish value, where true (i.e.
-/// nonzero) means success and false (zero) means failure.
-int64_t mkdata_get_base64(mkdata_t *data, const uint8_t **p, size_t *n);
+/// mkdata_get_base64_v2 gives you a base64 encoded representation of the data
+/// contained inside of @p data. It aborts if passed null arguments.
+void mkdata_get_base64_v2(mkdata_t *data, const uint8_t **p, size_t *n);
 
-/// mkdata_delete delets the @p data instance.
+/// mkdata_delete delets the @p data instance. Note that @p data MAY be null.
 void mkdata_delete(mkdata_t *data);
 
 #ifdef __cplusplus
@@ -44,15 +48,17 @@ struct mkdata_deleter {
 /// mkdata_uptr is a unique pointer to a mkdata_t.
 using mkdata_uptr = std::unique_ptr<mkdata_t, mkdata_deleter>;
 
-/// mkdata_movein moves data from the string insider the mkdata_t instance.
-void mkdata_movein(mkdata_t *data, std::string &&s);
+/// mkdata_movein_data moves data from the string insider the mkdata_t
+/// instance. This function aborts if passed null arguments.
+void mkdata_movein_data(mkdata_uptr &data, std::string &&s);
 
-/// mkdata_move_base64 converts to base64 and moves the base64 encoded data
-/// into the @p rv string. Returns true on success, false on failure.
-int64_t mkdata_move_base64(mkdata_t *data, std::string *rv);
+/// mkdata_moveout_base64 converts to base64 and returns the result. It will
+/// call abort if passed null arguments.
+std::string mkdata_moveout_base64(mkdata_uptr &data);
 
-/// mkdata_moveout moves the internal data into the returned string.
-std::string mkdata_moveout(mkdata_t *data);
+/// mkdata_moveout_data moves the internal data into the returned string. It
+/// calls abort if passed null arguments.
+std::string mkdata_moveout_data(mkdata_uptr &data);
 
 #ifdef MKDATA_INLINE_IMPL
 
@@ -61,12 +67,14 @@ struct mkdata {
   std::string base64;
 };
 
-mkdata_t *mkdata_new(void) { return new mkdata_t{}; }
+mkdata_t *mkdata_new_nonnull(void) { return new mkdata_t{}; }
 
-void mkdata_set(mkdata_t *data, const uint8_t *base, size_t count) {
-  if (data != nullptr && base != nullptr) {
-    mkdata_movein(data, std::string{(char *)base, count});
+void mkdata_set_v2(mkdata_t *data, const uint8_t *base, size_t count) {
+  if (data == nullptr || base == nullptr) {
+    abort();
   }
+  data->data = std::string{(const char *)base, count};
+  data->base64 = "";
 }
 
 // === BEGIN{ http://bjoern.hoehrmann.de/utf-8/decoder/dfa/ ===
@@ -110,8 +118,10 @@ mkdata_decode_utf8(uint32_t* state, uint32_t* codep, uint32_t byte) {
 // clang-format on
 // === }END http://bjoern.hoehrmann.de/utf-8/decoder/dfa/ ===
 
-int64_t mkdata_contains_valid_utf8(mkdata_t *data) {
-  if (data == nullptr) return false;
+int64_t mkdata_contains_valid_utf8_v2(mkdata_t *data) {
+  if (data == nullptr) {
+    abort();
+  }
   uint32_t codepoint{};
   uint32_t state{};
   for (size_t i = 0; i < data->data.size(); ++i) {
@@ -200,37 +210,41 @@ static inline std::string mkdata_b64_encode(const uint8_t *base, size_t len) {
 }
 // === }END René Nyffenegger BASE64 code ===
 
-int64_t mkdata_get_base64(mkdata_t *data, const uint8_t **p, size_t *n) {
-  if (data == nullptr || p == nullptr || n == nullptr) return false;
+void mkdata_get_base64_v2(mkdata_t *data, const uint8_t **p, size_t *n) {
+  if (data == nullptr || p == nullptr || n == nullptr) {
+    abort();
+  }
   data->base64 = mkdata_b64_encode((const uint8_t *)data->data.c_str(),
                                    data->data.size());
   *p = (const uint8_t *)data->base64.c_str();
   *n = data->base64.size();
-  return true;
 }
 
 void mkdata_delete(mkdata_t *data) { delete data; }
 
-void mkdata_movein(mkdata_t *data, std::string &&s) {
-  if (data != nullptr) {
-    std::swap(s, data->data);
-    data->base64 = "";
+void mkdata_movein_data(mkdata_uptr &data, std::string &&s) {
+  if (data == nullptr) {
+    abort();
   }
+  std::swap(s, data->data);
+  data->base64 = "";
 }
 
-int64_t mkdata_move_base64(mkdata_t *data, std::string *rv) {
-  if (data == nullptr || rv == nullptr) return false;
+std::string mkdata_moveout_base64(mkdata_uptr &data) {
+  if (data == nullptr) {
+    abort();
+  }
   const uint8_t *base_ignored = nullptr;
   size_t length_ignored = 0;
-  int64_t okay = mkdata_get_base64(data, &base_ignored, &length_ignored);
-  if (okay) std::swap(*rv, data->base64);
-  return true;
+  mkdata_get_base64_v2(data.get(), &base_ignored, &length_ignored);
+  return std::move(data->base64);
 }
 
-std::string mkdata_moveout(mkdata_t *data) {
-  std::string s;
-  if (data != nullptr) std::swap(data->data, s);
-  return s;
+std::string mkdata_moveout_data(mkdata_uptr &data) {
+  if (data == nullptr) {
+    abort();
+  }
+  return std::move(data->data);
 }
 
 #endif  // MKDATA_INLINE_IMPL
