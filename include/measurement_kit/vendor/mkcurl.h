@@ -4,6 +4,19 @@
 #ifndef MEASUREMENT_KIT_MKCURL_H
 #define MEASUREMENT_KIT_MKCURL_H
 
+/// @file mkcurl.h
+///
+/// This file contains Measurement Kit cURL wrappers. You should create a
+/// mkcurl_request_t instance and configure it. Make sure you supply the URL
+/// otherwise we don't know what to do. Then you can perform the request by
+/// using mkcurl_request_perform_nonnull. This function returns the response as a
+/// mkcurl_response_t instance. Make sure you check whether there was any
+/// sort of network level error with mkcurl_response_get_error_v2, and also
+/// check the HTTP status code with mkcurl_response_get_status_code_v2 to
+/// be sure your request succeded before proceeding further. In case of error
+/// you can always inspect the logs. Be careful that the logs may contain
+/// non UTF-8 data, hence on some languages you cannot treat them as a string.
+
 #include <stdint.h>
 #include <stdlib.h>
 
@@ -11,134 +24,135 @@
 extern "C" {
 #endif
 
-/// mkcurl_request_t is a HTTP request you send using CURL.
+/// mkcurl_request_t is an HTTP request.
 typedef struct mkcurl_request mkcurl_request_t;
 
 /// mkcurl_response_t is an HTTP response.
 typedef struct mkcurl_response mkcurl_response_t;
 
-/// mkcurl_request_new creates a new request object. May return NULL on error.
-mkcurl_request_t *mkcurl_request_new(void);
+/// mkcurl_request_new_nonnull creates a new request object. This function
+/// calls abort if allocating a new request fails.
+mkcurl_request_t *mkcurl_request_new_nonnull(void);
 
-/// mkcurl_request_set_ca_bundle_path sets the CA bundle path. Typically
-/// this option is required on mobile devices.
-void mkcurl_request_set_ca_bundle_path(mkcurl_request_t *req, const char *p);
+/// mkcurl_request_set_ca_bundle_path_v2 sets the CA bundle path. Typically
+/// this option is required on mobile devices. This function calls abort
+/// if passed null arguments by the caller.
+void mkcurl_request_set_ca_bundle_path_v2(mkcurl_request_t *req, const char *p);
 
-/// mkcurl_request_enable_http2 enables using the HTTP2 protocol. It may fail
-/// when performing the request if CURL's HTTP2 backend is not compiled in.
-void mkcurl_request_enable_http2(mkcurl_request_t *req);
+/// mkcurl_request_enable_http2_v2 enables using the HTTP2 protocol. If the
+/// HTTP2 backend is not compiled in, the mkcurl_request_perform_nonnull will
+/// fail when trying to use it. This function calls abort if passed a
+/// null argument by the caller.
+void mkcurl_request_enable_http2_v2(mkcurl_request_t *req);
 
-/// mkcurl_request_set_method_post sets the method to POST (default is GET).
-void mkcurl_request_set_method_post(mkcurl_request_t *req);
+/// mkcurl_request_set_method_post_v2 sets the method to POST (default is GET).
+/// It calls abort if passed a null argument by the caller.
+void mkcurl_request_set_method_post_v2(mkcurl_request_t *req);
 
-/// mkcurl_request_set_method_put sets the method to PUT (default is GET).
-void mkcurl_request_set_method_put(mkcurl_request_t *req);
+/// mkcurl_request_set_method_put_v2 sets the method to PUT (default is GET). It
+/// calls abort if passed a null argument by the caller.
+void mkcurl_request_set_method_put_v2(mkcurl_request_t *req);
 
-/// mkcurl_request_set_url sets the request URL. This setting is required.
-void mkcurl_request_set_url(mkcurl_request_t *req, const char *u);
+/// mkcurl_request_set_url_v2 sets the request URL. This setting is required
+/// otherwise we will not know what to do. This function calls abort
+/// if it is passed any null argument by the caller.
+void mkcurl_request_set_url_v2(mkcurl_request_t *req, const char *u);
 
-/// mkcurl_request_add_header adds an header to the request.
-void mkcurl_request_add_header(mkcurl_request_t *req, const char *h);
+/// mkcurl_request_add_header_v2 adds an header to the request. This function
+/// calls abort if it is passed any null argument by the caller.
+void mkcurl_request_add_header_v2(mkcurl_request_t *req, const char *h);
 
-/// mkcurl_request_set_body sets the request body. Make sure you also use POST.
-void mkcurl_request_set_body(mkcurl_request_t *req, const char *b);
-
-/// mkcurl_request_set_body_binary_v2 sets the body as a binary vector.
-void mkcurl_request_set_body_binary_v2(mkcurl_request_t *req,
+/// mkcurl_request_set_body_binary_v3 sets the body as a binary vector. This
+/// function calls abort if it is passed any null argument by the caller.
+void mkcurl_request_set_body_binary_v3(mkcurl_request_t *req,
                                        const uint8_t *b, size_t n);
 
-/// mkcurl_request_set_timeout sets the request timeout. This is the time after
+/// mkcurl_request_set_timeout_v2 sets the timeout. That is, the time after
 /// which the request/response handling loop is interrupted. Setting zero or a
 /// negative value tells CURL to disable such timeout. By default, we configure
-/// CURL using a small, but reasonable timeout.
-void mkcurl_request_set_timeout(mkcurl_request_t *req, int64_t timeout);
+/// CURL using a small, but reasonable timeout. This function calls abort
+/// if passed a null pointer by the caller. The maximum timeout value that
+/// you can actually set is LONG_MAX. Any value bigger than that will be treated
+/// as you actually passed LONG_MAX to this function.
+void mkcurl_request_set_timeout_v2(mkcurl_request_t *req, int64_t timeout);
 
-/// mkcurl_request_set_proxy_url sets the proxy URL. To use Tor, set
-/// this option to `socks5h://127.0.0.1:9050`.
-void mkcurl_request_set_proxy_url(mkcurl_request_t *req, const char *u);
+/// mkcurl_request_set_proxy_url_v2 sets the proxy URL. To use Tor, set
+/// this option to `socks5h://127.0.0.1:9050`. This function calls abort
+/// if passed any null pointer argument by the caller.
+void mkcurl_request_set_proxy_url_v2(mkcurl_request_t *req, const char *u);
 
-/// mkcurl_request_enable_follow_redirect enables following redirects.
-void mkcurl_request_enable_follow_redirect(mkcurl_request_t *req);
+/// mkcurl_request_enable_follow_redirect_v2 enables following redirects. This
+/// function call abort if passed any null argument by the caller.
+void mkcurl_request_enable_follow_redirect_v2(mkcurl_request_t *req);
 
-/// mkcurl_request_perform sends an HTTP request and returns the related
-/// response. It may return NULL in case of internal error.
-mkcurl_response_t *mkcurl_request_perform(const mkcurl_request_t *req);
+/// mkcurl_request_perform_nonnull sends an HTTP request and returns the related
+/// response. It will never return a null pointer. It will call abort if
+/// passed a null argument by the caller.
+mkcurl_response_t *mkcurl_request_perform_nonnull(const mkcurl_request_t *req);
 
-/// mkcurl_request_delete deletes a request.
+/// mkcurl_request_delete deletes @p req. Note that @p req MAY be null.
 void mkcurl_request_delete(mkcurl_request_t *req);
 
-/// mkcurl_response_copy returns a copy of @p res.
-mkcurl_response_t *mkcurl_response_copy(const mkcurl_response_t *res);
+/// mkcurl_response_get_error_v2 returns the CURL error that occurred. Remember
+/// the the request MAY have failed even though no error occurred (i.e. you
+/// SHOULD also check the status code). This function will call abort if
+/// passed a null pointer argument by the caller.
+int64_t mkcurl_response_get_error_v2(const mkcurl_response_t *res);
 
-/// mkcurl_response_get_error returns the error that occurred. Most errors
-/// are generated by CURL. Sometimes we borrow CURL errors. Sometimes we may
-/// event want to use CURL_LAST to indicate a very unexpected error. Also,
-/// remember that, even though you may not see an error here, the request may
-/// still have failed because of, e.g. a 500. So, do check the status!
-int64_t mkcurl_response_get_error(const mkcurl_response_t *res);
+/// mkcurl_response_get_redirect_url_v2 returns the URL to which we were
+/// redirected, if redirection is enabled, otherwise returns an empty string.
+/// This function calls abort if passed a null argument.
+const char *mkcurl_response_get_redirect_url_v2(const mkcurl_response_t *res);
 
-/// mkcurl_response_get_redirect_url returns the URL to which we were
-/// redirected, if redirection is enabled. May return NULL on error.
-const char *mkcurl_response_get_redirect_url(const mkcurl_response_t *res);
+/// mkcurl_response_get_status_code_v2 returns the status code. This function
+/// calls abort if passed a null pointer by the caller.
+int64_t mkcurl_response_get_status_code_v2(const mkcurl_response_t *res);
 
-/// mkcurl_response_get_status_code returns the status code. May return
-/// unreasonably large numbers in case of severe internal errors.
-int64_t mkcurl_response_get_status_code(const mkcurl_response_t *res);
+/// mkcurl_response_get_body_binary_v3 returns the body as a binary vector. It
+/// calls abort if passed a null argument by the caller.
+void mkcurl_response_get_body_binary_v3(const mkcurl_response_t *res,
+                                        const uint8_t **p, size_t *n);
 
-/// mkcurl_response_get_body returns the body as a C string. Since the body
-/// may be binary, mkcurl_response_get_body_binary is generally better. It may
-/// return NULL in case of internal error.
-const char *mkcurl_response_get_body(const mkcurl_response_t *res);
+/// mkcurl_response_get_bytes_sent_v2 returns the bytes sent. Should be a
+/// positive number with the fractional part equal to zero. This function calls
+/// abort if passed a null argument by the caller.
+double mkcurl_response_get_bytes_sent_v2(const mkcurl_response_t *res);
 
-/// mkcurl_response_get_body_v2 returns the body as a binary vector. Returns
-/// true on success and false on failure.
-int64_t mkcurl_response_get_body_binary_v2(const mkcurl_response_t *res,
-                                           const uint8_t **p, size_t *n);
+/// mkcurl_response_get_bytes_recv_v2 returns the bytes received. Should be a
+/// positive number with the fractional part equal to zero. This function calls
+/// abort if passed a null argument by the caller.
+double mkcurl_response_get_bytes_recv_v2(const mkcurl_response_t *res);
 
-/// mkcurl_response_get_bytes_sent returns the bytes sent. Should be a positive
-/// number with the fractional part equal to zero.
-double mkcurl_response_get_bytes_sent(const mkcurl_response_t *res);
+/// mkcurl_response_get_logs_binary_v3 returns the logs a binary vector. It
+/// calls abort if passed a null argument by the caller. We use a binary
+/// vector because in principle logs MAY contain non UTF-8 data.
+void mkcurl_response_get_logs_binary_v3(const mkcurl_response_t *res,
+                                        const uint8_t **p, size_t *n);
 
-/// mkcurl_response_get_bytes_recv returns the bytes received. Should be a
-/// positive number with the fractional part equal to zero.
-double mkcurl_response_get_bytes_recv(const mkcurl_response_t *res);
+/// mkcurl_response_get_request_headers_v2 returns the request line and all the
+/// headers that were subsequently sent as part of the request. This function
+/// never returns a null pointer. It calls abort if @p res is null.
+const char *mkcurl_response_get_request_headers_v2(
+    const mkcurl_response_t *res);
 
-/// mkcurl_response_get_logs returns the logs produced while performing the
-/// request. Logs might contain binary data, so mkcurl_response_get_logs_binary
-/// is a safer alternative. Could return NULL on error.
-const char *mkcurl_response_get_logs(const mkcurl_response_t *res);
-
-/// mkcurl_response_get_logs_binary_v2 returns the logs a binary vector. Returns
-/// true on success and false on failure.
-int64_t mkcurl_response_get_logs_binary_v2(const mkcurl_response_t *res,
-                                           const uint8_t **p, size_t *n);
-
-/// mkcurl_response_get_request_headers returns the request line and all the
-/// headers that were subsequently sent as part of the request. It may return
-/// NULL in case of internal errors.
-const char *mkcurl_response_get_request_headers(const mkcurl_response_t *res);
-
-/// mkcurl_response_get_response_headers returns the response line and all
-/// the headers subsequently sent as part of the response(s). It may return
-/// NULL in case of internal errors.
-const char *mkcurl_response_get_response_headers(const mkcurl_response_t *res);
-
-/// mkcurl_response_get_response_headers_binary_v2 returns the response line
-/// and the headers as a binary vector. Returns true on sucess and false
-/// in case of failure.
-int64_t mkcurl_response_get_response_headers_binary_v2(
+/// mkcurl_response_get_response_headers_binary_v3 returns the response line
+/// and the headers as a binary vector. It calls abort if any of its
+/// arguments is a null pointer. We use a binary vector because in principle
+/// the headers MAY contain non UTF-8 data.
+void mkcurl_response_get_response_headers_binary_v3(
     const mkcurl_response_t *res, const uint8_t **p, size_t *n);
 
-/// mkcurl_response_get_certificate_chain returns the certificate chain as a
-/// sequence of certificates in PEM format separated by empty lines. It MAY
-/// return a NULL pointer in case of internal error.
-const char *mkcurl_response_get_certificate_chain(const mkcurl_response_t *res);
+/// mkcurl_response_get_certificate_chain_v2 returns the certificate chain as a
+/// sequence of certificates in PEM format separated by empty lines. It will
+/// call abort if @p res is a null pointer.
+const char *mkcurl_response_get_certificate_chain_v2(
+    const mkcurl_response_t *res);
 
-/// mkcurl_response_get_content_type returns the contenty type (if available)
-/// or an empty string. It may return NULL in case of internal error.
-const char *mkcurl_response_get_content_type(const mkcurl_response_t *res);
+/// mkcurl_response_get_content_type_v2 returns the contenty type (if available)
+/// or an empty string. Calls abort if @p res is a null pointer.
+const char *mkcurl_response_get_content_type_v2(const mkcurl_response_t *res);
 
-/// mkcurl_response_delete deletes a response.
+/// mkcurl_response_delete deletes @p res. Note that @p res MAY be null.
 void mkcurl_response_delete(mkcurl_response_t *res);
 
 #ifdef __cplusplus
@@ -170,18 +184,24 @@ struct mkcurl_response_deleter {
 using mkcurl_response_uptr = std::unique_ptr<mkcurl_response_t,
                                              mkcurl_response_deleter>;
 
-/// mkcurl_request_movein_body moves @p b inside @p req to be the request body.
-void mkcurl_request_movein_body(mkcurl_request_t *req, std::string &&b);
+/// mkcurl_request_movein_body_v2 moves @p b inside @p req
+/// to be the request body. This function aborts if passed null arguments.
+void mkcurl_request_movein_body_v2(mkcurl_request_uptr &req, std::string &&b);
 
-/// mkcurl_response_moveout_body moves the response body out of @p res in @p s.
-int64_t mkcurl_response_moveout_body(mkcurl_response_t *res, std::string *s);
+/// mkcurl_response_moveout_body_v2 moves the response body out
+/// of @p res. This function calls abort if passed a null pointer. Note
+/// that the body MAY be a binary string.
+std::string mkcurl_response_moveout_body_v2(mkcurl_response_uptr &res);
 
-/// mkcurl_response_moveout_logs moves the logs out of @p res in @p s.
-int64_t mkcurl_response_moveout_logs(mkcurl_response_t *res, std::string *s);
+/// mkcurl_response_moveout_logs_v2 moves the logs out of @p res. This
+/// function calls abort if @p res is null. Note that logs MAY be binary.
+std::string mkcurl_response_moveout_logs_v2(mkcurl_response_uptr &res);
 
-/// mkcurl_response_moveout_logs moves response headers out of @p res in @p s.
-int64_t mkcurl_response_moveout_response_headers(
-    mkcurl_response_t *res, std::string *s);
+/// mkcurl_response_moveout_response_headers_v2 moves response headers out
+/// of @p res. This function calls abort if @p res is null. Note
+/// that in principle headers MAY be contain non UTF-8 data.
+std::string mkcurl_response_moveout_response_headers_v2(
+    mkcurl_response_uptr &res);
 
 // If you just want to know about the API, you can stop reading here. What
 // follows is the inline implementation of the library. By default it is not
@@ -197,185 +217,242 @@ int64_t mkcurl_response_moveout_response_headers(
 
 #include <curl/curl.h>
 
+// mkcurl_method enumerates all request methods we know.
 enum class mkcurl_method {
   GET,
   POST,
   PUT
 };
 
+// mkcurl_request is an HTTP request.
 struct mkcurl_request {
+  // ca_path is the path to the CA bundle to use.
   std::string ca_path;
+  // enable_http2 indicates whether we should enable HTTP2.
   bool enable_http2 = false;
+  // method is the method we want to use.
   mkcurl_method method = mkcurl_method::GET;
+  // url is the URL we want to use.
   std::string url;
+  // headers contains the request headers.
   std::vector<std::string> headers;
+  // body contains the request body (possibly a binary body).
   std::string body;
-  long timeout = 30 /* seconds (same unit and type width as CURL) */;
+  // timeout is the time after which the request is aborted (in seconds)
+  long timeout = 30;
+  // proxy_url is the optional URL of the proxy to use.
   std::string proxy_url;
+  // follow_redir indicates whether we should follow redirects.
   bool follow_redir = false;
 };
 
-mkcurl_request_t *mkcurl_request_new() {
+mkcurl_request_t *mkcurl_request_new_nonnull() {
   return new mkcurl_request_t{};
 }
 
-void mkcurl_request_set_ca_bundle_path(mkcurl_request_t *req, const char *p) {
-  if (req != nullptr && p != nullptr) req->ca_path = p;
-}
+#ifndef MKCURL_ABORT
+// MKCURL_ABORT allows to mock abort
+#define MKCURL_ABORT abort
+#endif
 
-void mkcurl_request_enable_http2(mkcurl_request_t *req) {
-  if (req != nullptr) req->enable_http2 = true;
-}
-
-void mkcurl_request_set_method_post(mkcurl_request_t *req) {
-  if (req != nullptr) req->method = mkcurl_method::POST;
-}
-
-void mkcurl_request_set_method_put(mkcurl_request_t *req) {
-  if (req != nullptr) req->method = mkcurl_method::PUT;
-}
-
-void mkcurl_request_set_url(mkcurl_request_t *req, const char *u) {
-  if (req != nullptr && u != nullptr) req->url = u;
-}
-
-void mkcurl_request_add_header(mkcurl_request_t *req, const char *h) {
-  if (req != nullptr && h != nullptr) {
-    req->headers.push_back(h);
+void mkcurl_request_set_ca_bundle_path_v2(mkcurl_request_t *req, const char *p) {
+  if (req == nullptr || p == nullptr) {
+    MKCURL_ABORT();
   }
+  req->ca_path = p;
 }
 
-void mkcurl_request_set_body(mkcurl_request_t *req, const char *b) {
-  if (req != nullptr && b != nullptr) req->body = b;
+void mkcurl_request_enable_http2_v2(mkcurl_request_t *req) {
+  if (req == nullptr) {
+    MKCURL_ABORT();
+  }
+  req->enable_http2 = true;
 }
 
-void mkcurl_request_set_body_binary_v2(mkcurl_request_t *req,
+void mkcurl_request_set_method_post_v2(mkcurl_request_t *req) {
+  if (req == nullptr) {
+    MKCURL_ABORT();
+  }
+  req->method = mkcurl_method::POST;
+}
+
+void mkcurl_request_set_method_put_v2(mkcurl_request_t *req) {
+  if (req == nullptr) {
+    MKCURL_ABORT();
+  }
+  req->method = mkcurl_method::PUT;
+}
+
+void mkcurl_request_set_url_v2(mkcurl_request_t *req, const char *u) {
+  if (req == nullptr || u == nullptr) {
+    MKCURL_ABORT();
+  }
+  req->url = u;
+}
+
+void mkcurl_request_add_header_v2(mkcurl_request_t *req, const char *h) {
+  if (req == nullptr || h == nullptr) {
+    MKCURL_ABORT();
+  }
+  req->headers.push_back(h);
+}
+
+void mkcurl_request_set_body_binary_v3(mkcurl_request_t *req,
                                        const uint8_t *b, size_t n) {
-  if (req != nullptr && b != nullptr && n > 0) {
-    req->body = std::string{(char *)b, n};
+  if (req == nullptr || b == nullptr) {
+    MKCURL_ABORT();
   }
+  req->body = std::string{(const char *)b, n};
 }
 
-void mkcurl_request_set_timeout(mkcurl_request_t *req, int64_t timeout) {
-  if (req != nullptr) {
-    req->timeout = (long)((timeout < 0)
-                              ? 0  // which, for CURL means infinite
-                              : (timeout < INT16_MAX)
-                                    ? timeout      // it's in range
-                                    : INT16_MAX);  // too many seconds already
+void mkcurl_request_set_timeout_v2(mkcurl_request_t *req, int64_t timeout) {
+  if (req == nullptr) {
+    MKCURL_ABORT();
   }
+  req->timeout = (long)((timeout < 0L)
+                            ? 0L  // which, for CURL means infinite
+                            : (timeout < LONG_MAX)
+                                  ? (long)timeout  // it's in range
+                                  : LONG_MAX);     // curl uses a long argument
 }
 
-void mkcurl_request_set_proxy_url(mkcurl_request_t *req, const char *u) {
-  if (req != nullptr && u != nullptr) req->proxy_url = u;
+void mkcurl_request_set_proxy_url_v2(mkcurl_request_t *req, const char *u) {
+  if (req == nullptr || u == nullptr) {
+    MKCURL_ABORT();
+  }
+  req->proxy_url = u;
 }
 
-void mkcurl_request_enable_follow_redirect(mkcurl_request_t *req) {
-  if (req != nullptr) req->follow_redir = true;
+void mkcurl_request_enable_follow_redirect_v2(mkcurl_request_t *req) {
+  if (req == nullptr) {
+    MKCURL_ABORT();
+  }
+  req->follow_redir = true;
 }
 
 void mkcurl_request_delete(mkcurl_request_t *req) { delete req; }
 
+// mkcurl_response is an HTTP response.
 struct mkcurl_response {
-  int64_t error = CURLE_OK;  // In CURL is an enum, hence has int width
+  // error is the CURL error that occurred. In CURL this is an enum hence it
+  // is castable to int. Therefore using int64_t should always be okay.
+  int64_t error = CURLE_OK;
+  // redirect_url is the URL to which we were redirected, if any.
   std::string redirect_url;
-  int64_t status_code = 0;   // In CURL is a long, hence <= width
+  // status_code is the HTTP status code. In CURL this is a long hence
+  // using int64_t should always be wide enough.
+  int64_t status_code = 0;
+  // body is the response body.
   std::string body;
+  // bytes_sent are the bytes sent when sending the request.
   double bytes_sent = 0.0;
+  // bytes_recv are the bytes recv when receiving the response.
   double bytes_recv = 0.0;
+  // logs contains the (possibly non UTF-8) logs.
   std::string logs;
+  // request_headers contains the request line and the headers.
   std::string request_headers;
+  // response_headers contains the response line and the headers.
   std::string response_headers;
+  // certs contains a sequence of newline separated PEM certificates.
   std::string certs;
+  // content_type is the response content type.
   std::string content_type;
 };
 
 // mkcurl_log appends @p line to @p logs. It adds information on the current
 // time in millisecond. It also appends a newline to the end of the line.
-static void mkcurl_log(std::string *logs, std::string &&line) {
-  if (logs == nullptr) abort();
+static void mkcurl_log(std::string &logs, std::string &&line) {
   std::stringstream ss;
   auto now = std::chrono::duration_cast<std::chrono::milliseconds>(
       std::chrono::steady_clock::now().time_since_epoch());
   ss << "[" << now.count() << "] " << line << "\n";
-  *logs += ss.str();
+  logs += ss.str();
 }
 
-mkcurl_response_t *mkcurl_response_copy(const mkcurl_response_t *res) {
-  mkcurl_response_t *copy = nullptr;
-  if (res != nullptr) {
-    copy = new mkcurl_response_t{*res};
+int64_t mkcurl_response_get_error_v2(const mkcurl_response_t *res) {
+  if (res == nullptr) {
+    MKCURL_ABORT();
   }
-  return copy;
+  return res->error;
 }
 
-int64_t mkcurl_response_get_error(const mkcurl_response_t *res) {
-  return (res != nullptr) ? res->error : (int64_t)CURLE_OK;
+const char *mkcurl_response_get_redirect_url_v2(const mkcurl_response_t *res) {
+  if (res == nullptr) {
+    MKCURL_ABORT();
+  }
+  return res->redirect_url.c_str();
 }
 
-const char *mkcurl_response_get_redirect_url(const mkcurl_response_t *res) {
-  return (res != nullptr) ? res->redirect_url.c_str() : "";
+int64_t mkcurl_response_get_status_code_v2(const mkcurl_response_t *res) {
+  if (res == nullptr) {
+    MKCURL_ABORT();
+  }
+  return res->status_code;
 }
 
-int64_t mkcurl_response_get_status_code(const mkcurl_response_t *res) {
-  return (res != nullptr) ? res->status_code : 200;
-}
-
-const char *mkcurl_response_get_body(const mkcurl_response_t *res) {
-  return (res != nullptr) ? res->body.c_str() : "";
-}
-
-int64_t mkcurl_response_get_body_binary_v2(const mkcurl_response_t *res,
-                                           const uint8_t **p, size_t *n) {
-  if (res == nullptr || p == nullptr || n == nullptr) return false;
+void mkcurl_response_get_body_binary_v3(const mkcurl_response_t *res,
+                                        const uint8_t **p, size_t *n) {
+  if (res == nullptr || p == nullptr || n == nullptr) {
+    MKCURL_ABORT();
+  }
   *p = (const uint8_t *)res->body.c_str();
   *n = res->body.size();
-  return true;
 }
 
-double mkcurl_response_get_bytes_sent(const mkcurl_response_t *res) {
-  return (res != nullptr) ? res->bytes_sent : 0.0;
+double mkcurl_response_get_bytes_sent_v2(const mkcurl_response_t *res) {
+  if (res == nullptr) {
+    MKCURL_ABORT();
+  }
+  return res->bytes_sent;
 }
 
-double mkcurl_response_get_bytes_recv(const mkcurl_response_t *res) {
-  return (res != nullptr) ? res->bytes_recv : 0.0;
+double mkcurl_response_get_bytes_recv_v2(const mkcurl_response_t *res) {
+  if (res == nullptr) {
+    MKCURL_ABORT();
+  }
+  return res->bytes_recv;
 }
 
-const char *mkcurl_response_get_logs(const mkcurl_response_t *res) {
-  return (res != nullptr) ? res->logs.c_str() : "";
-}
-
-int64_t mkcurl_response_get_logs_binary_v2(const mkcurl_response_t *res,
-                                           const uint8_t **p, size_t *n) {
-  if (res == nullptr || p == nullptr || n == nullptr) return false;
+void mkcurl_response_get_logs_binary_v3(const mkcurl_response_t *res,
+                                        const uint8_t **p, size_t *n) {
+  if (res == nullptr || p == nullptr || n == nullptr) {
+    MKCURL_ABORT();
+  }
   *p = (const uint8_t *)res->logs.c_str();
   *n = res->logs.size();
-  return true;
 }
 
-const char *mkcurl_response_get_request_headers(const mkcurl_response_t *res) {
-  return (res != nullptr) ? res->request_headers.c_str() : "";
+const char *mkcurl_response_get_request_headers_v2(
+    const mkcurl_response_t *res) {
+  if (res == nullptr) {
+    MKCURL_ABORT();
+  }
+  return res->request_headers.c_str();
 }
 
-const char *mkcurl_response_get_response_headers(const mkcurl_response_t *res) {
-  return (res != nullptr) ? res->response_headers.c_str() : "";
-}
-
-int64_t mkcurl_response_get_response_headers_binary_v2(
+void mkcurl_response_get_response_headers_binary_v3(
     const mkcurl_response_t *res, const uint8_t **p, size_t *n) {
-  if (res == nullptr || p == nullptr || n == nullptr) return false;
+  if (res == nullptr || p == nullptr || n == nullptr) {
+    MKCURL_ABORT();
+  }
   *p = (const uint8_t *)res->response_headers.c_str();
   *n = res->response_headers.size();
-  return true;
 }
 
-const char *mkcurl_response_get_certificate_chain(
+const char *mkcurl_response_get_certificate_chain_v2(
     const mkcurl_response_t *res) {
-  return (res != nullptr) ? res->certs.c_str() : "";
+  if (res == nullptr) {
+    MKCURL_ABORT();
+  }
+  return res->certs.c_str();
 }
 
-const char *mkcurl_response_get_content_type(const mkcurl_response_t *res) {
-  return (res != nullptr) ? res->content_type.c_str() : "";
+const char *mkcurl_response_get_content_type_v2(const mkcurl_response_t *res) {
+  if (res == nullptr) {
+    MKCURL_ABORT();
+  }
+  return res->content_type.c_str();
 }
 
 void mkcurl_response_delete(mkcurl_response_t *res) { delete res; }
@@ -390,12 +467,19 @@ using mkcurl_uptr = std::unique_ptr<CURL, mkcurl_deleter>;
 
 // mkcurl_slist is a curl_slist with RAII semantic.
 struct mkcurl_slist {
+  // mkcurl_slist is the default constructor.
   mkcurl_slist() = default;
+  // mkcurl_slist is the deleted copy constructor.
   mkcurl_slist(const mkcurl_slist &) = delete;
+  // operator= is the deleted copy assignment.
   mkcurl_slist &operator=(const mkcurl_slist &) = delete;
+  // mkcurl_slist is the deleted move constructor.
   mkcurl_slist(mkcurl_slist &&) = delete;
+  // operator= is the deleted move assignment.
   mkcurl_slist &operator=(mkcurl_slist &&) = delete;
+  // ~mkcurl_slist is the destructor.
   ~mkcurl_slist() { curl_slist_free_all(p); }
+  // p is the pointer to the wrapped slist.
   curl_slist *p = nullptr;
 };
 
@@ -432,8 +516,11 @@ static size_t mkcurl_body_cb(
     return 0;  // This means "no body"
   }
   if (size > SIZE_MAX / nmemb) {
-    assert(false);  // If size is zero we we end up here
+    // If size is zero we end up into this branch.
     return 0;
+  }
+  if (ptr == nullptr || userdata == nullptr) {
+    MKCURL_ABORT();
   }
   auto realsiz = size * nmemb;  // Overflow or zero not possible (see above)
   auto res = static_cast<mkcurl_response_t *>(userdata);
@@ -450,6 +537,9 @@ static int mkcurl_debug_cb(CURL *handle,
                            size_t size,
                            void *userptr) {
   (void)handle;
+  if (data == nullptr || userptr == nullptr) {
+    MKCURL_ABORT();
+  }
   auto res = static_cast<mkcurl_response_t *>(userptr);
 
   auto log_many_lines = [&](std::string prefix, const std::string &str) {
@@ -462,17 +552,17 @@ static int mkcurl_debug_cb(CURL *handle,
         logline << prefix << " ";
       }
       logline << line;
-      mkcurl_log(&res->logs, logline.str());
+      mkcurl_log(res->logs, logline.str());
     }
   };
 
   switch (type) {
     case CURLINFO_TEXT:
-      log_many_lines("", std::string{(char *)data, size});
+      log_many_lines("", std::string{(const char *)data, size});
       break;
     case CURLINFO_HEADER_IN:
       {
-        std::string s{(char *)data, size};
+        std::string s{(const char *)data, size};
         log_many_lines("<", s);
         res->response_headers += s;
       }
@@ -485,7 +575,7 @@ static int mkcurl_debug_cb(CURL *handle,
       break;
     case CURLINFO_HEADER_OUT:
       {
-        std::string s{(char *)data, size};
+        std::string s{(const char *)data, size};
         log_many_lines(">", s);
         res->request_headers += s;
       }
@@ -544,15 +634,6 @@ static int mkcurl_debug_cb(CURL *handle,
   return 0;
 }
 
-// mkcurl_read_eof_cb returns immediately EOF when CURL attempts to read
-// the file that is read by default when doing a PUT upload. This way only
-// data set as POST data end up being uploaded. Note that using --data-binary
-// (i.e. CURLOPT_POSTFIELDS) with PUT is documented behaviour, so we are
-// not doing anything obscure here; see <https://ec.haxx.se/http-put.html>.
-static size_t mkcurl_read_eof_cb(char *, size_t, size_t, void *) {
-  return 0;
-}
-
 }  // extern "C"
 
 // TODO(bassosimone):
@@ -562,33 +643,35 @@ static size_t mkcurl_read_eof_cb(char *, size_t, size_t, void *) {
 // 2. Allow to disable CURLOPT_SSL_VERIFYHOST
 //
 // 3. Allow to set a specific SSL version with CURLOPT_SSLVERSION
-mkcurl_response_t *mkcurl_request_perform(const mkcurl_request_t *req) {
-  if (req == nullptr) return nullptr;
-  mkcurl_response_uptr res{new mkcurl_response_t{}};
+mkcurl_response_t *mkcurl_request_perform_nonnull(const mkcurl_request_t *req) {
+  if (req == nullptr) {
+    MKCURL_ABORT();
+  }
+  mkcurl_response_uptr res{new mkcurl_response_t{}};  // new doesn't fail
   mkcurl_uptr handle{MKCURL_EASY_INIT()};
   if (!handle) {
     res->error = CURLE_OUT_OF_MEMORY;
-    mkcurl_log(&res->logs, "curl_easy_init() failed");
+    mkcurl_log(res->logs, "curl_easy_init() failed");
     return res.release();
   }
   mkcurl_slist headers;
   for (auto &s : req->headers) {
     if ((headers.p = MKCURL_SLIST_APPEND(headers.p, s.c_str())) == nullptr) {
       res->error = CURLE_OUT_OF_MEMORY;
-      mkcurl_log(&res->logs, "curl_slist_append() failed");
+      mkcurl_log(res->logs, "curl_slist_append() failed");
       return res.release();
     }
   }
   if (!req->ca_path.empty() &&
       (res->error = MKCURL_EASY_SETOPT(handle.get(), CURLOPT_CAINFO,
                                        req->ca_path.c_str())) != CURLE_OK) {
-    mkcurl_log(&res->logs, "curl_easy_setopt(CURLOPT_CAINFO) failed");
+    mkcurl_log(res->logs, "curl_easy_setopt(CURLOPT_CAINFO) failed");
     return res.release();
   }
   if (req->enable_http2 == true &&
       (res->error = MKCURL_EASY_SETOPT(handle.get(), CURLOPT_HTTP_VERSION,
                                        CURL_HTTP_VERSION_2_0)) != CURLE_OK) {
-    mkcurl_log(&res->logs, "curl_easy_setopt(CURLOPT_HTTP_VERSION) failed");
+    mkcurl_log(res->logs, "curl_easy_setopt(CURLOPT_HTTP_VERSION) failed");
     return res.release();
   }
   if (req->method == mkcurl_method::POST ||
@@ -598,60 +681,59 @@ mkcurl_response_t *mkcurl_request_perform(const mkcurl_request_t *req) {
     // with P{OS,U}T <https://curl.haxx.se/mail/lib-2017-07/0013.html>.
     if ((headers.p = MKCURL_SLIST_APPEND(headers.p, "Expect:")) == nullptr) {
       res->error = CURLE_OUT_OF_MEMORY;
-      mkcurl_log(&res->logs, "curl_slist_append() failed");
+      mkcurl_log(res->logs, "curl_slist_append() failed");
       return res.release();
     }
-    auto o = (req->method == mkcurl_method::POST) ? CURLOPT_POST : CURLOPT_PUT;
-    if ((res->error = MKCURL_EASY_SETOPT(handle.get(), o, 1L)) != CURLE_OK) {
-      mkcurl_log(&res->logs, "curl_easy_setopt(CURLOPT_P{OS,U}T) failed");
+    if ((res->error = MKCURL_EASY_SETOPT(handle.get(), CURLOPT_POST,
+                                         1L)) != CURLE_OK) {
+      mkcurl_log(res->logs, "curl_easy_setopt(CURLOPT_POST) failed");
       return res.release();
     }
     if ((res->error = MKCURL_EASY_SETOPT(handle.get(), CURLOPT_POSTFIELDS,
                                          req->body.c_str())) != CURLE_OK) {
-      mkcurl_log(&res->logs, "curl_easy_setopt(CURLOPT_POSTFIELDS) failed");
+      mkcurl_log(res->logs, "curl_easy_setopt(CURLOPT_POSTFIELDS) failed");
       return res.release();
     }
     // The following is very important to allow us to upload any kind of
-    // binary file, otherwise CURL will use strlen(). We need to be careful
-    // with the field size because Win32 does not like it when we try to
-    // use very large field sizes on a 32 bit environment.
-#if defined _WIN32 && !defined _WIN64
-#define MKCURLOPT_POSTFIELDSIZE CURLOPT_POSTFIELDSIZE
-#else
-#define MKCURLOPT_POSTFIELDSIZE CURLOPT_POSTFIELDSIZE_LARGE
-#endif
+    // binary file, otherwise CURL will use strlen(). We do not need to
+    // send more than 2 GiB of data, hence we can safely limit ourself to
+    // using CURLOPT_POSTFIELDSIZE that takes a `long` argument.
+    if (req->body.size() > LONG_MAX) {
+      mkcurl_log(res->logs, "Body larger than LONG_MAX");
+      return res.release();
+    }
     if ((res->error = MKCURL_EASY_SETOPT(
-             handle.get(), MKCURLOPT_POSTFIELDSIZE,
-             req->body.size())) != CURLE_OK) {
-      mkcurl_log(&res->logs, "curl_easy_setopt(MKCURLOPT_POSTFIELDSIZE) failed");
+             handle.get(), CURLOPT_POSTFIELDSIZE,
+             (long)req->body.size())) != CURLE_OK) {
+      mkcurl_log(res->logs, "curl_easy_setopt(MKCURLOPT_POSTFIELDSIZE) failed");
       return res.release();
     }
     if (req->method == mkcurl_method::PUT &&
-        (res->error = MKCURL_EASY_SETOPT(handle.get(), CURLOPT_READFUNCTION,
-                                         mkcurl_read_eof_cb)) != CURLE_OK) {
-      mkcurl_log(&res->logs, "curl_easy_setopt(CURLOPT_READFUNCTION) failed");
+        (res->error = MKCURL_EASY_SETOPT(handle.get(), CURLOPT_CUSTOMREQUEST,
+                                         "PUT")) != CURLE_OK) {
+      mkcurl_log(res->logs, "curl_easy_setopt(CURLOPT_CUSTOMREQUEST) failed");
       return res.release();
     }
   }
   if (headers.p != nullptr &&
       (res->error = MKCURL_EASY_SETOPT(
            handle.get(), CURLOPT_HTTPHEADER, headers.p)) != CURLE_OK) {
-    mkcurl_log(&res->logs, "curl_easy_setopt(CURLOPT_HTTPHEADER) failed");
+    mkcurl_log(res->logs, "curl_easy_setopt(CURLOPT_HTTPHEADER) failed");
     return res.release();
   }
   if ((res->error = MKCURL_EASY_SETOPT(handle.get(), CURLOPT_URL,
                                        req->url.c_str())) != CURLE_OK) {
-    mkcurl_log(&res->logs, "curl_easy_setopt(CURLOPT_URL) failed");
+    mkcurl_log(res->logs, "curl_easy_setopt(CURLOPT_URL) failed");
     return res.release();
   }
   if ((res->error = MKCURL_EASY_SETOPT(handle.get(), CURLOPT_WRITEFUNCTION,
                                        mkcurl_body_cb)) != CURLE_OK) {
-    mkcurl_log(&res->logs, "curl_easy_setopt(CURLOPT_WRITEFUNCTION) failed");
+    mkcurl_log(res->logs, "curl_easy_setopt(CURLOPT_WRITEFUNCTION) failed");
     return res.release();
   }
   if ((res->error = MKCURL_EASY_SETOPT(handle.get(), CURLOPT_WRITEDATA,
                                        res.get())) != CURLE_OK) {
-    mkcurl_log(&res->logs, "curl_easy_setopt(CURLOPT_WRITEDATA) failed");
+    mkcurl_log(res->logs, "curl_easy_setopt(CURLOPT_WRITEDATA) failed");
     return res.release();
   }
   // CURL uses MSG_NOSIGNAL where available (i.e. Linux) and SO_NOSIGPIPE
@@ -663,59 +745,59 @@ mkcurl_response_t *mkcurl_request_perform(const mkcurl_request_t *req) {
   //
   // Note: disabling signal handlers makes the default non-threaded CURL
   // resolver non interruptible, so we need to make sure we recompile using
-  // either the threaded or the c-ares CURL backend.
+  // either the threaded or the c-ares CURL backend. TODO(bassosimone)
   if ((res->error = MKCURL_EASY_SETOPT(
            handle.get(), CURLOPT_NOSIGNAL, 1L)) != CURLE_OK) {
-    mkcurl_log(&res->logs, "curl_easy_setopt(CURLOPT_NOSIGNAL) failed");
+    mkcurl_log(res->logs, "curl_easy_setopt(CURLOPT_NOSIGNAL) failed");
     return res.release();
   }
   if (req->timeout >= 0 &&
       (res->error = MKCURL_EASY_SETOPT(handle.get(), CURLOPT_TIMEOUT,
                                        req->timeout)) != CURLE_OK) {
-    mkcurl_log(&res->logs, "curl_easy_setopt(CURLOPT_TIMEOUT) failed");
+    mkcurl_log(res->logs, "curl_easy_setopt(CURLOPT_TIMEOUT) failed");
     return res.release();
   }
   if ((res->error = MKCURL_EASY_SETOPT(handle.get(), CURLOPT_DEBUGFUNCTION,
                                        mkcurl_debug_cb)) != CURLE_OK) {
-    mkcurl_log(&res->logs, "curl_easy_setopt(CURLOPT_DEBUGFUNCTION) failed");
+    mkcurl_log(res->logs, "curl_easy_setopt(CURLOPT_DEBUGFUNCTION) failed");
     return res.release();
   }
   if ((res->error = MKCURL_EASY_SETOPT(handle.get(), CURLOPT_DEBUGDATA,
                                        res.get())) != CURLE_OK) {
-    mkcurl_log(&res->logs, "curl_easy_setopt(CURLOPT_DEBUGDATA) failed");
+    mkcurl_log(res->logs, "curl_easy_setopt(CURLOPT_DEBUGDATA) failed");
     return res.release();
   }
   if ((res->error = MKCURL_EASY_SETOPT(handle.get(), CURLOPT_VERBOSE,
                                        1L)) != CURLE_OK) {
-    mkcurl_log(&res->logs, "curl_easy_setopt(CURLOPT_VERBOSE) failed");
+    mkcurl_log(res->logs, "curl_easy_setopt(CURLOPT_VERBOSE) failed");
     return res.release();
   }
   if (!req->proxy_url.empty() &&
       (res->error = MKCURL_EASY_SETOPT(handle.get(), CURLOPT_PROXY,
                                        req->proxy_url.c_str())) != CURLE_OK) {
-    mkcurl_log(&res->logs, "curl_easy_setopt(CURLOPT_PROXY) failed");
+    mkcurl_log(res->logs, "curl_easy_setopt(CURLOPT_PROXY) failed");
     return res.release();
   }
   if (req->follow_redir == true &&
       (res->error = MKCURL_EASY_SETOPT(handle.get(), CURLOPT_FOLLOWLOCATION,
                                        1L)) != CURLE_OK) {
-    mkcurl_log(&res->logs, "curl_easy_setopt(CURLOPT_FOLLOWLOCATION) failed");
+    mkcurl_log(res->logs, "curl_easy_setopt(CURLOPT_FOLLOWLOCATION) failed");
     return res.release();
   }
   if ((res->error = MKCURL_EASY_SETOPT(handle.get(), CURLOPT_CERTINFO,
                                        1L)) != CURLE_OK) {
-    mkcurl_log(&res->logs, "curl_easy_setopt(CURLOPT_CERTINFO) failed");
+    mkcurl_log(res->logs, "curl_easy_setopt(CURLOPT_CERTINFO) failed");
     return res.release();
   }
   if ((res->error = MKCURL_EASY_PERFORM(handle.get())) != CURLE_OK) {
-    mkcurl_log(&res->logs, "curl_easy_perform() failed");
+    mkcurl_log(res->logs, "curl_easy_perform() failed");
     return res.release();
   }
   {
     long status_code = 0;
     if ((res->error = MKCURL_EASY_GETINFO(
              handle.get(), CURLINFO_RESPONSE_CODE, &status_code)) != CURLE_OK) {
-      mkcurl_log(&res->logs, "curl_easy_getinfo(CURLINFO_RESPONSE_CODE) failed");
+      mkcurl_log(res->logs, "curl_easy_getinfo(CURLINFO_RESPONSE_CODE) failed");
       return res.release();
     }
     res->status_code = (int64_t)status_code;
@@ -724,7 +806,7 @@ mkcurl_response_t *mkcurl_request_perform(const mkcurl_request_t *req) {
     char *url = nullptr;
     if ((res->error = MKCURL_EASY_GETINFO(
              handle.get(), CURLINFO_REDIRECT_URL, &url)) != CURLE_OK) {
-      mkcurl_log(&res->logs, "curl_easy_getinfo(CURLINFO_REDIRECT_URL) failed");
+      mkcurl_log(res->logs, "curl_easy_getinfo(CURLINFO_REDIRECT_URL) failed");
       return res.release();
     }
     if (url != nullptr) res->redirect_url = url;
@@ -733,7 +815,7 @@ mkcurl_response_t *mkcurl_request_perform(const mkcurl_request_t *req) {
     curl_certinfo *certinfo = nullptr;
     if ((res->error = MKCURL_EASY_GETINFO(
              handle.get(), CURLINFO_CERTINFO, &certinfo)) != CURLE_OK) {
-      mkcurl_log(&res->logs, "curl_easy_getinfo(CURLINFO_CERTINFO) failed");
+      mkcurl_log(res->logs, "curl_easy_getinfo(CURLINFO_CERTINFO) failed");
       return res.release();
     }
     if (certinfo != nullptr && certinfo->num_of_certs > 0) {
@@ -755,36 +837,42 @@ mkcurl_response_t *mkcurl_request_perform(const mkcurl_request_t *req) {
     char *ct = nullptr;
     if ((res->error = MKCURL_EASY_GETINFO(
              handle.get(), CURLINFO_CONTENT_TYPE, &ct)) != CURLE_OK) {
-      mkcurl_log(&res->logs, "curl_easy_getinfo(CURLINFO_CONTENT_TYPE) failed");
+      mkcurl_log(res->logs, "curl_easy_getinfo(CURLINFO_CONTENT_TYPE) failed");
       return res.release();
     }
     if (ct != nullptr) res->content_type = ct;
   }
-  mkcurl_log(&res->logs, "curl_easy_perform() success");
+  mkcurl_log(res->logs, "curl_easy_perform() success");
   return res.release();
 }
 
-void mkcurl_request_movein_body(mkcurl_request_t *req, std::string &&b) {
-  if (req != nullptr) std::swap(req->body, b);
+void mkcurl_request_movein_body_v2(mkcurl_request_uptr &req, std::string &&b) {
+  if (req == nullptr) {
+    MKCURL_ABORT();
+  }
+  std::swap(req->body, b);
 }
 
-int64_t mkcurl_response_moveout_body(mkcurl_response_t *res, std::string *s) {
-  if (res == nullptr || s == nullptr) return false;
-  std::swap(res->body, *s);
-  return true;
+std::string mkcurl_response_moveout_body_v2(mkcurl_response_uptr &res) {
+  if (res == nullptr) {
+    MKCURL_ABORT();
+  }
+  return std::move(res->body);
 }
 
-int64_t mkcurl_response_moveout_logs(mkcurl_response_t *res, std::string *s) {
-  if (res == nullptr || s == nullptr) return false;
-  std::swap(res->logs, *s);
-  return true;
+std::string mkcurl_response_moveout_logs_v2(mkcurl_response_uptr &res) {
+  if (res == nullptr) {
+    MKCURL_ABORT();
+  }
+  return std::move(res->logs);
 }
 
-int64_t mkcurl_response_moveout_response_headers(
-    mkcurl_response_t *res, std::string *s) {
-  if (res == nullptr || s == nullptr) return false;
-  std::swap(res->response_headers, *s);
-  return true;
+std::string mkcurl_response_moveout_response_headers_v2(
+    mkcurl_response_uptr &res) {
+  if (res == nullptr) {
+    MKCURL_ABORT();
+  }
+  return std::move(res->response_headers);
 }
 
 #endif  // MKCURL_INLINE_IMPL
