@@ -1,7 +1,7 @@
 #!/bin/sh
 set -ex
-version=v0.8.3
-name=mkcurl
+version=v0.1.2
+name=mkiplookup
 destdir=include/measurement_kit/vendor
 install -d $destdir
 url=https://raw.githubusercontent.com/measurement-kit/$name/$version/$name.h
