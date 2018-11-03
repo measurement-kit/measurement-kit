@@ -108,3 +108,27 @@ matrix:
         - docker
       script:
         - ./build/ci/travis
+
+    - sudo: required
+      script:
+        - ./.ci/common/script/travis asan
+
+    - sudo: required
+      script:
+        - ./.ci/common/script/travis clang
+
+    - sudo: required
+      script:
+        - ./.ci/common/script/travis coverage
+
+    - sudo: required
+      script:
+        - ./.ci/common/script/travis lsan
+
+    - sudo: required
+      script:
+        - ./.ci/common/script/travis ubsan
+
+    - sudo: required
+      script:
+        - ./.ci/common/script/travis vanilla
