@@ -233,12 +233,12 @@ TEST_CASE("extract_html_title works") {
     std::string body = "<html>\n"
         "<head>\n"
         "<meta>\n"
-        "<title>TITLE</title>\n"
+        "<title>TiTLE</title>\n"
         "</head>\n"
         "<body>\n"
         "</body>\n"
         "</html>\n";
-    REQUIRE(ooni::extract_html_title(body) == "TITLE");
+    REQUIRE(ooni::extract_html_title(body) == "TiTLE");
 }
 
 TEST_CASE("represent_string works") {

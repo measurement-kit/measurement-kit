@@ -153,7 +153,7 @@ ErrorOr<std::string> GeoipDatabase::resolve_asn_full(
 }
 
 std::string extract_html_title(std::string body) {
-  std::regex TITLE_REGEXP("<title>([\\s\\S]*?)</title>", std::regex::icase);
+  std::regex TITLE_REGEXP(R"(<title>(.*)</title>)", std::regex::icase);
   std::smatch match;
 
   if (std::regex_search(body, match, TITLE_REGEXP) && match.size() > 1) {
