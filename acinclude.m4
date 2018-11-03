@@ -1,17 +1,3 @@
-AC_DEFUN([MK_AM_ENABLE_COVERAGE], [
-  AC_ARG_ENABLE([coverage],
-    AS_HELP_STRING([--enable-coverage, build for coverage]),
-      [enable_coverage=yes], [])
-])
-
-AC_DEFUN([MK_AM_ADD_COVERAGE_FLAGS_IF_NEEDED], [
-  if test "$enable_coverage" = "yes"; then
-    CFLAGS="$CFLAGS --coverage -g -O0"
-    CXXFLAGS="$CXXFLAGS --coverage -g -O0"
-    LDFLAGS="$LDFLAGS --coverage"
-  fi
-])
-
 AC_DEFUN([MK_AM_DISABLE_EXAMPLES], [
   AC_ARG_ENABLE([examples],
     AS_HELP_STRING([--disable-examples, skip building of examples programs]),
