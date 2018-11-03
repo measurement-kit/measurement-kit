@@ -114,7 +114,6 @@ if [ $cmake -eq 0 ]; then
     echo "    - libevent"
     echo "    - libcurl"
     echo "    - libmaxminddb"
-    echo "    - zlib"
     echo ""
     echo "If any of these dependencies is missing, the './configure' script"
     echo "shall stop and tell you how you could install it."
