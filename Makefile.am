@@ -1,6 +1,8 @@
 AUTOMAKE_OPTIONS = foreign 1.9 subdir-objects
 ACLOCAL_AMFLAGS = -I m4
 
+AM_LIBTOOLFLAGS = --silent
+
 VERSION_INFO = -release @VERSION@ -version-info 0
 
 lib_LTLIBRARIES               = libmeasurement_kit.la
