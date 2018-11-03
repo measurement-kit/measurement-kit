@@ -20,7 +20,6 @@
 #include "src/libmeasurement_kit/common/non_movable.hpp"
 #include "src/libmeasurement_kit/common/mock.hpp"
 #include "src/libmeasurement_kit/ext/tls_internal.h"
-#include "src/libmeasurement_kit/net/builtin_ca_bundle.h"
 #include <cassert>
 #include <map>
 #include <measurement_kit/common/logger.hpp>
@@ -124,12 +123,7 @@ class Context : public NonCopyable, public NonMovable {
         false in a boolean context) or a `SharedPtr` shared pointer wrapping a
         Context instance on success.
     */
-    template <MK_MOCK(SSL_CTX_new), MK_MOCK(SSL_CTX_load_verify_locations)
-#if (defined LIBRESSL_VERSION_NUMBER && LIBRESSL_VERSION_NUMBER >= 0x2010400fL)
-                                            ,
-            MK_MOCK(SSL_CTX_load_verify_mem)
-#endif
-            >
+    template <MK_MOCK(SSL_CTX_new), MK_MOCK(SSL_CTX_load_verify_locations)>
     static ErrorOr<SharedPtr<Context>> make(
             std::string ca_bundle_path, SharedPtr<Logger> logger) {
         // Implementation note: we need to initialize libssl early otherwise
@@ -161,21 +155,8 @@ class Context : public NonCopyable, public NonMovable {
                 return {SslCtxLoadVerifyLocationsError(), {}};
             }
         } else {
-#if (defined LIBRESSL_VERSION_NUMBER && LIBRESSL_VERSION_NUMBER >= 0x2010400fL)
-            // Note: we disable the CA bundle on Windows where the compiler
-            // fails with internal error when compiling the builtin vector that
-            // contains the bytes of the CA file.
-            logger->debug("ssl: using builtin libressl's ca bundle");
-            if (!SSL_CTX_load_verify_mem(ctx, mk_ca_bundle_pem,
-                  mk_ca_bundle_pem_len)) {
-                logger->warn("ssl: failed to load default ca bundle");
-                SSL_CTX_free(ctx);
-                return {SslCtxLoadVerifyMemError(), {}};
-            }
-#else
             SSL_CTX_free(ctx);
             return {MissingCaBundlePathError(), {}};
-#endif
         }
         SSL_CTX_set_verify(ctx, SSL_VERIFY_PEER, nullptr);
         SharedPtr<Context> context{new Context};
