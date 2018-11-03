@@ -9,6 +9,9 @@
 
 #include "src/libmeasurement_kit/common/worker.hpp"
 #include "src/libmeasurement_kit/ooni/utils_impl.hpp"
+#include "src/libmeasurement_kit/common/utils.hpp"
+
+#include <sstream>
 
 using namespace mk;
 
@@ -230,15 +233,24 @@ TEST_CASE("is_private_ipv4_addr works") {
 }
 
 TEST_CASE("extract_html_title works") {
-    std::string body = "<html>\n"
-        "<head>\n"
-        "<meta>\n"
-        "<title>TiTLE</title>\n"
-        "</head>\n"
-        "<body>\n"
-        "</body>\n"
-        "</html>\n";
-    REQUIRE(ooni::extract_html_title(body) == "TiTLE");
+    SECTION("For a simple string") {
+        std::string body = "<html>\n"
+                           "<head>\n"
+                           "<meta>\n"
+                           "<title>TiTLE</title>\n"
+                           "</head>\n"
+                           "<body>\n"
+                           "</body>\n"
+                           "</html>\n";
+        REQUIRE(ooni::extract_html_title(body) == "TiTLE");
+    }
+    SECTION("For a very long string") {
+        std::stringstream ss;
+        ss << "<html><head><meta><title>";
+        ss << random_printable(1 << 25);
+        ss << "</title></head></body></html>";
+        REQUIRE(ooni::extract_html_title(ss.str()) != "");
+    }
 }
 
 TEST_CASE("represent_string works") {
