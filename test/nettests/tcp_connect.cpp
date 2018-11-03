@@ -5,7 +5,6 @@
 
 #include "test/winsock.hpp"
 
-#define CATCH_CONFIG_MAIN
 #include "src/libmeasurement_kit/ext/catch.hpp"
 
 #include "utils.hpp"
@@ -18,6 +17,4 @@ TEST_CASE("Synchronous tcp-connect test") {
     });
 }
 
-#else
-int main() {}
 #endif

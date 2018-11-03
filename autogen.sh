@@ -61,13 +61,13 @@ gen_executables() {
                 echo "    $1 += $2/$bin_name"
                 echo "endif"
                 echo "$(slug $2/$bin_name)_SOURCES = $2/$name"
-                echo "$(slug $2/$bin_name)_LDADD = libmeasurement_kit.la"
+                echo "$(slug $2/$bin_name)_LDADD = libmeasurement_kit.la $4"
             fi
         fi
     done
     for name in `ls $2`; do
         if [ -d $2/$name ]; then
-            gen_executables $1 $2/$name $3
+            gen_executables $1 $2/$name $3 $4
         fi
     done
 }
@@ -80,7 +80,7 @@ gen_sources measurement_kit_SOURCES src/measurement_kit          >> include.am
 echo ""                                                          >> include.am
 gen_headers include/measurement_kit                              >> include.am
 gen_executables noinst_PROGRAMS example BUILD_EXAMPLES           >> include.am
-gen_executables ALL_TESTS test BUILD_TESTS                       >> include.am
+gen_executables ALL_TESTS test BUILD_TESTS libtest_main.la       >> include.am
 
 if [ $no_geoip -ne 1 ]; then
     autogen_get_geoip

@@ -6,7 +6,6 @@
 
 #ifdef ENABLE_INTEGRATION_TESTS
 
-#define CATCH_CONFIG_MAIN
 #include "src/libmeasurement_kit/ext/catch.hpp"
 
 #include "utils.hpp"
@@ -17,6 +16,4 @@ TEST_CASE("Synchronous multi NDT test") {
     test::nettests::with_test<MultiNdtTest>(test::nettests::run_test);
 }
 
-#else
-int main(){}
 #endif

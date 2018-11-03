@@ -6,7 +6,6 @@
 
 #ifdef ENABLE_INTEGRATION_TESTS
 
-#define CATCH_CONFIG_MAIN
 #include "src/libmeasurement_kit/ext/catch.hpp"
 
 #include "utils.hpp"
@@ -24,6 +23,4 @@ TEST_CASE("Synchronous http-invalid-request-line test with HTTP backend") {
     });
 }
 
-#else
-int main() {}
 #endif

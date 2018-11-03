@@ -6,7 +6,6 @@
 
 #include "test/winsock.hpp"
 
-#define CATCH_CONFIG_MAIN
 #include "src/libmeasurement_kit/ext/catch.hpp"
 
 #include "utils.hpp"
@@ -17,6 +16,4 @@ TEST_CASE("Synchronous NDT test") {
     test::nettests::with_test<NdtTest>(test::nettests::run_test);
 }
 
-#else
-int main(){}
 #endif

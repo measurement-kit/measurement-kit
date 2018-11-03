@@ -6,7 +6,6 @@
 
 #include "test/winsock.hpp"
 
-#define CATCH_CONFIG_MAIN
 #include "src/libmeasurement_kit/ooni/whatsapp.hpp"
 #include "src/libmeasurement_kit/ext/catch.hpp"
 
@@ -74,6 +73,4 @@ TEST_CASE("Whatsapp and related utility functions") {
     }
 }
 
-#else
-int main() {}
 #endif

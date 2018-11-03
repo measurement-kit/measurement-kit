@@ -5,7 +5,6 @@
 #include "test/winsock.hpp"
 
 #ifdef ENABLE_INTEGRATION_TESTS
-#define CATCH_CONFIG_MAIN
 #include "src/libmeasurement_kit/ext/catch.hpp"
 
 #include "../nettests/utils.hpp"
@@ -17,6 +16,4 @@ TEST_CASE("Captive portal test") {
     test::nettests::with_test<CaptivePortalTest>(test::nettests::run_test);
 }
 
-#else
-int main() {}
 #endif

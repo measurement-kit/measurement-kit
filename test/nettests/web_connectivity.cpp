@@ -6,7 +6,6 @@
 
 #include "test/winsock.hpp"
 
-#define CATCH_CONFIG_MAIN
 #include "src/libmeasurement_kit/ext/catch.hpp"
 
 #include "src/libmeasurement_kit/ooni/utils.hpp"
@@ -21,6 +20,4 @@ TEST_CASE("Synchronous web connectivity test") {
                                                    test::nettests::run_test);
 }
 
-#else
-int main() {}
 #endif

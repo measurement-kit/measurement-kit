@@ -15,6 +15,12 @@ if BUILD_BINARIES
     measurement_kit_LDADD = libmeasurement_kit.la
 endif
 
+if BUILD_TESTS
+    noinst_LTLIBRARIES       = libtest_main.la
+    libtest_main_la_CPPFLAGS = -DCATCH_CONFIG_MAIN
+    libtest_main_la_SOURCES  = test/main.cpp
+endif
+
 noinst_PROGRAMS    = # Empty
 ALL_TESTS          = # Empty
 

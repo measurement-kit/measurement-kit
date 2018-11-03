@@ -6,7 +6,6 @@
 
 #include "test/winsock.hpp"
 
-#define CATCH_CONFIG_MAIN
 #include "src/libmeasurement_kit/ext/catch.hpp"
 
 #include "../nettests/utils.hpp"
@@ -18,6 +17,4 @@ TEST_CASE("Synchronous telegram test") {
     test::nettests::with_test<TelegramTest>(test::nettests::run_test);
 }
 
-#else
-int main() {}
 #endif
