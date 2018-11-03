@@ -13,8 +13,7 @@ AC_CONFIG_MACRO_DIR([m4])
 # Force parallel tests to make sure we can run tests through Valgrind.
 AM_INIT_AUTOMAKE([parallel-tests 1.11])
 
-m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES])
-LT_INIT
+LT_INIT([disable-shared], [pic-only])
 AC_CONFIG_HEADERS([config.h])
 
 AM_CONDITIONAL([BUILD_TESTS], [test "yes" = "yes"])  # for now, build always
