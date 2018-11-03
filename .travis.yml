@@ -7,7 +7,13 @@ matrix:
     - env: BUILD_TYPE="asan"
     - env: BUILD_TYPE="clang"
     - env: BUILD_TYPE="coverage"
-    - env: BUILD_TYPE="lsan"
+    # Basically on Linux lsan is enabled by default when using asan [1]. So
+    # disable it such that we have five parallel builds (i.e. we finish in
+    # less time, because travis runs five parallel builds by default).
+    #
+    # [1] https://github.com/google/sanitizers/wiki/AddressSanitizerLeakSanitizer
+    #
+    #- env: BUILD_TYPE="lsan"
     - env: BUILD_TYPE="ubsan"
     - env: BUILD_TYPE="vanilla"
 script:
