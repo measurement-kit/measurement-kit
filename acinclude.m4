@@ -338,15 +338,3 @@ AC_DEFUN([MK_AM_CXXFLAGS_ADD_WARNINGS], [
     AC_MSG_RESULT([yes])
   fi
 ])
-
-AC_DEFUN([MK_AM_PRINT_SUMMARY], [
-  echo "==== configured variables ==="
-  echo "CPP      : $CPP"
-  echo "CC       : $CC"
-  echo "CXX      : $CXX"
-  echo "CFLAGS   : $CFLAGS"
-  echo "CPPFLAGS : $CPPFLAGS"
-  echo "CXXFLAGS : $CXXFLAGS"
-  echo "LDFLAGS  : $LDFLAGS"
-  echo "LIBS     : $LIBS"
-])
