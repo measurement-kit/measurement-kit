@@ -7,9 +7,6 @@ autom4te.cache/
 /build/android/jni/spec
 builtin/
 /citizenlab-test-lists.*.csv
-/CMakeCache.txt
-/CMakeFiles/
-/cmake_install.cmake
 compile
 config.guess
 config.h
@@ -20,7 +17,6 @@ config.status
 config.sub
 configure
 /country.mmdb
-/CTestTestfile.cmake
 depcomp
 .deps
 .dirstamp
