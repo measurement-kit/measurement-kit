@@ -63,16 +63,6 @@ TEST_CASE("Context::make() works") {
         REQUIRE(!maybe_ctx);
         REQUIRE(maybe_ctx.as_error() == SslCtxLoadVerifyLocationsError());
     }
-
-#if (defined LIBRESSL_VERSION_NUMBER && LIBRESSL_VERSION_NUMBER >= 0x2010400fL)
-    SECTION("when SSL_CTX_load_verify_mem() fails") {
-        auto maybe_ctx =
-              Context::make<SSL_CTX_new, SSL_CTX_load_verify_locations,
-                            ssl_ctx_load_verify_mem_fail>("", Logger::global());
-        REQUIRE(!maybe_ctx);
-        REQUIRE(maybe_ctx.as_error() == SslCtxLoadVerifyMemError());
-    }
-#endif
 }
 
 static ErrorOr<SharedPtr<Context>> context_make_fail(std::string, SharedPtr<Logger>) {
