@@ -7,7 +7,7 @@
 /// Tests Android traceroute prober
 
 // This is meant to run on Android but can run on all Linux systems
-#if (defined __linux__ && defined ENABLE_TRACEROUTE)
+#if (defined __linux__)
 
 #include "src/libmeasurement_kit/ext/catch.hpp"
 

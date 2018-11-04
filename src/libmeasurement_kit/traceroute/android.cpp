@@ -35,7 +35,7 @@
 /// Android implementation of prober
 
 // This is meant to run on Android but can run on all Linux systems
-#if (!defined __linux__ || !defined ENABLE_TRACEROUTE)
+#if (!defined __linux__)
 void mk_traceroute_android_unused();
 void mk_traceroute_android_unused() {}
 #else
