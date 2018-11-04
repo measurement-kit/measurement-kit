@@ -39,8 +39,8 @@ MK_MAYBE_CA_BUNDLE
 CPPFLAGS="-I \$(top_srcdir)/include $CPPFLAGS"
 
 for flag in -Wall -Wextra -pedantic -Wmissing-prototypes; do
-  MK_MAYBE_ADD_CFLAG([$flag])
-  MK_MAYBE_ADD_CXXFLAG([$flag])
+  MK_MAYBE_APPEND_CFLAG([$flag])
+  MK_MAYBE_APPEND_CXXFLAG([$flag])
 done
 
 AX_ADD_FORTIFY_SOURCE

@@ -203,62 +203,29 @@ AC_DEFUN([MK_AM_OPENSSL], [
   fi
 ])
 
-AC_DEFUN([MK_MAYBE_ADD_CFLAG], [
-  AX_SAVE_FLAGS([mk])
-  mk_maybe_add_flag=false
-  CFLAGS="$1 -Werror"
-  AC_MSG_CHECKING([whether $CC supports $1 when compiling])
+AC_DEFUN([MK_MAYBE_APPEND_CFLAG], [
   AC_LANG_PUSH([C])
-  AC_COMPILE_IFELSE([AC_LANG_PROGRAM([])],
-                    [AC_MSG_RESULT([yes])
-                     mk_maybe_add_flag=true],
-                    [AC_MSG_RESULT([no])])
+  AX_APPEND_COMPILE_FLAGS([$1])
   AC_LANG_POP([C])
-  AX_RESTORE_FLAGS([mk])
-  if [ "$mk_maybe_add_flag" = "true" ]; then CFLAGS="$CFLAGS $1"; fi
 ])
 
-AC_DEFUN([MK_MAYBE_ADD_CXXFLAG], [
-  AX_SAVE_FLAGS([mk])
-  mk_maybe_add_flag=false
-  CXXFLAGS="$1 -Werror"
-  AC_MSG_CHECKING([whether $CXX supports $1 when compiling])
+AC_DEFUN([MK_MAYBE_APPEND_CXXFLAG], [
   AC_LANG_PUSH([C++])
-  AC_COMPILE_IFELSE([AC_LANG_PROGRAM([])],
-                    [AC_MSG_RESULT([yes])
-                     mk_maybe_add_flag=true],
-                    [AC_MSG_RESULT([no])])
+  AX_APPEND_COMPILE_FLAGS([$1])
   AC_LANG_POP([C++])
-  AX_RESTORE_FLAGS([mk])
-  if [ "$mk_maybe_add_flag" = "true" ]; then CXXFLAGS="$CXXFLAGS $1"; fi
 ])
 
-AC_DEFUN([MK_MAYBE_ADD_LDFLAG], [
-  AX_SAVE_FLAGS([mk])
-  mk_maybe_add_flag=false
-  LDFLAGS="$1 -Werror"
-  AC_MSG_CHECKING([whether $CC supports $1 when linking])
-  AC_LANG_PUSH([C])
-  AC_LINK_IFELSE([AC_LANG_PROGRAM([])],
-                 [AC_MSG_RESULT([yes])
-                  mk_maybe_add_flag=true],
-                 [AC_MSG_RESULT([no])])
-  AC_LANG_POP([C])
-  AX_RESTORE_FLAGS([mk])
-  if [ "$mk_maybe_add_flag" = "true" ]; then LDFLAGS="$LDFLAGS $1"; fi
+AC_DEFUN([MK_MAYBE_APPEND_LDFLAG], [
+  AC_LANG_PUSH([C++])
+  AX_APPEND_LINK_FLAGS([$1])
+  AC_LANG_POP([C++])
 ])
 
 AC_DEFUN([MK_REQUIRE_CFLAG], [
-  AX_SAVE_FLAGS([mk])
-  CFLAGS="$1 -Werror"
-  AC_MSG_CHECKING([whether $CC supports $1 when compiling])
-  AC_LANG_PUSH([C])
-  AC_COMPILE_IFELSE([AC_LANG_PROGRAM([])], [AC_MSG_RESULT([yes])],
-                    [AC_MSG_RESULT([no])
-                     AC_MSG_ERROR([$CC does not support $1])])
-  AC_LANG_POP([C])
-  AX_RESTORE_FLAGS([mk])
-  CFLAGS="$CFLAGS $1"
+  MK_MAYBE_APPEND_CFLAG([$1])
+  if ! echo "$CFLAGS" | grep -q -- $1; then
+    AC_MSG_ERROR([$CC does not support the $1 CFLAG])
+  fi
 ])
 
 AC_DEFUN([MK_REQUIRE_CXX14], [
@@ -266,16 +233,17 @@ AC_DEFUN([MK_REQUIRE_CXX14], [
 ])
 
 AC_DEFUN([MK_REQUIRE_CXXFLAG], [
-  AX_SAVE_FLAGS([mk])
-  CXXFLAGS="$1 -Werror"
-  AC_MSG_CHECKING([whether $CXX supports $1 when compiling])
-  AC_LANG_PUSH([C++])
-  AC_COMPILE_IFELSE([AC_LANG_PROGRAM([])], [AC_MSG_RESULT([yes])],
-                    [AC_MSG_RESULT([no])
-                     AC_MSG_ERROR([$CXX does not support $1])])
-  AC_LANG_POP([C++])
-  AX_RESTORE_FLAGS([mk])
-  CXXFLAGS="$CXXFLAGS $1"
+  MK_MAYBE_APPEND_CXXFLAG([$1])
+  if ! echo "$CXXFLAGS" | grep -q -- $1; then
+    AC_MSG_ERROR([$CXX does not support the $1 CXXFLAG])
+  fi
+])
+
+AC_DEFUN([MK_REQUIRE_LDFLAG], [
+  MK_MAYBE_APPEND_LDFLAG([$1])
+  if ! echo "$LDFLAGS" | grep -q -- $1; then
+    AC_MSG_ERROR([$CXX does not support the $1 LDFLAG])
+  fi
 ])
 
 AC_DEFUN([MK_MAYBE_CA_BUNDLE], [
