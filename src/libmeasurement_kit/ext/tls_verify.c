@@ -1,4 +1,4 @@
-/* $OpenBSD: tls_verify.c,v 1.19 2017/04/10 17:11:13 jsing Exp $ */
+/* $OpenBSD: tls_verify.c,v 1.20 2018/02/05 00:52:24 jsing Exp $ */
 /*
  * Part of Measurement Kit <https://measurement-kit.github.io/>.
  * Measurement Kit is free software under the BSD license. See AUTHORS
@@ -221,16 +221,16 @@ tls_check_common_name(struct tls *ctx, X509 *cert, const char *name,
 
 	subject_name = X509_get_subject_name(cert);
 	if (subject_name == NULL)
-		goto out;
+		goto done;
 
 	common_name_len = X509_NAME_get_text_by_NID(subject_name,
 	    NID_commonName, NULL, 0);
 	if (common_name_len < 0)
-		goto out;
+		goto done;
 
 	common_name = calloc(common_name_len + 1, 1);
 	if (common_name == NULL)
-		goto out;
+		goto done;
 
 	X509_NAME_get_text_by_NID(subject_name, NID_commonName, common_name,
 	    common_name_len + 1);
@@ -242,7 +242,7 @@ tls_check_common_name(struct tls *ctx, X509 *cert, const char *name,
 		    "NUL byte in Common Name field, "
 		    "probably a malicious certificate", name);
 		rv = -1;
-		goto out;
+		goto done;
 	}
 
 	/*
@@ -253,13 +253,13 @@ tls_check_common_name(struct tls *ctx, X509 *cert, const char *name,
 	    inet_pton(AF_INET6, name, &addrbuf) == 1) {
 		if (strcmp(common_name, name) == 0)
 			*cn_match = 1;
-		goto out;
+		goto done;
 	}
 
 	if (tls_match_name(common_name, name) == 0)
 		*cn_match = 1;
 
- out:
+ done:
 	free(common_name);
 	return rv;
 }

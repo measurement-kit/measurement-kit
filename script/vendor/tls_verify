@@ -1,0 +1,5 @@
+#!/bin/sh
+set -ex
+baseurl=https://raw.githubusercontent.com/libressl-portable/openbsd/master
+curl -fsSLO $baseurl/src/lib/libtls/tls_verify.c
+mv tls_verify.c src/libmeasurement_kit/ext
