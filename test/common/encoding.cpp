@@ -10,7 +10,6 @@
 
 #if !defined HAVE_CONFIG_H || (defined HAVE_RESOLV_H && defined HAVE_LIBRESOLV)
 
-#define CATCH_CONFIG_MAIN
 #include "src/libmeasurement_kit/ext/catch.hpp"
 
 #include "src/libmeasurement_kit/common/encoding.hpp"
@@ -112,6 +111,4 @@ TEST_CASE("base64_encode() works as expected") {
 #endif
 }
 
-#else
-int main() {}
 #endif

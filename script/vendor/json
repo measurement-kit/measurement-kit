@@ -1,0 +1,6 @@
+#!/bin/sh
+set -ex
+version=v2.1.1
+url=https://github.com/nlohmann/json/releases/download/$version/json.hpp
+curl -fsSLO $url
+mv json.hpp include/measurement_kit/common/nlohmann

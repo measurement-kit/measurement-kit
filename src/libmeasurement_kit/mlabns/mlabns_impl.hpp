@@ -9,8 +9,7 @@
 #include <measurement_kit/common/json.hpp>
 #include "src/libmeasurement_kit/common/mock.hpp"
 #include "src/libmeasurement_kit/http/http.hpp"
-
-#include <regex>
+#include "src/libmeasurement_kit/regexp/regexp.hpp"
 
 namespace mk {
 namespace mlabns {
@@ -35,8 +34,7 @@ static inline ErrorOr<std::string> as_query(Settings &settings) {
         query += "policy=" + policy;
     }
     if (country != "") {
-        std::regex valid_country("^[A-Z]{2}$");
-        if (!std::regex_match(country, valid_country)) {
+        if (!regexp::valid_country_code(country)) {
             return {InvalidCountryError(), std::string{}};
         }
         if (query != "") {
@@ -45,8 +43,7 @@ static inline ErrorOr<std::string> as_query(Settings &settings) {
         query += "country=" + country;
     }
     if (metro != "") {
-        std::regex valid_metro("^[a-z]{3}$");
-        if (!std::regex_match(metro, valid_metro)) {
+        if (!regexp::valid_airport_iata_code(metro)) {
             return {InvalidMetroError(), std::string{}};
         }
         if (query != "") {
@@ -78,8 +75,7 @@ void query_impl(std::string tool, Callback<Error, Reply> callback,
     std::string url = settings.get("mlabns/base_url", std::string{
                                        "https://mlab-ns.appspot.com/"
                                    });
-    std::regex valid_tool("^[a-z]+$");
-    if (!std::regex_match(tool, valid_tool)) {
+    if (!regexp::lowercase_letters_only(tool)) {
         callback(InvalidToolNameError(), Reply());
         return;
     }

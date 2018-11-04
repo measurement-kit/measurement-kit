@@ -4,7 +4,6 @@
 
 #include "test/winsock.hpp"
 
-#define CATCH_CONFIG_MAIN
 #include "src/libmeasurement_kit/ext/catch.hpp"
 
 #include "src/libmeasurement_kit/dns/ping.hpp"
@@ -14,8 +13,6 @@
 #include <iostream>
 
 using namespace mk;
-
-#ifdef ENABLE_INTEGRATION_TESTS
 
 TEST_CASE("The dns::ping() template works") {
     SharedPtr<Reactor> reactor = Reactor::make();
@@ -49,5 +46,3 @@ TEST_CASE("The dns::ping() template works") {
     REQUIRE(delta > 9.0);
     REQUIRE(delta < 11.0);
 }
-
-#endif

@@ -2,11 +2,8 @@
 // Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
-#ifdef ENABLE_INTEGRATION_TESTS
-
 #include "test/winsock.hpp"
 
-#define CATCH_CONFIG_MAIN
 #include "src/libmeasurement_kit/ext/catch.hpp"
 
 #include "src/libmeasurement_kit/ooni/utils.hpp"
@@ -20,7 +17,3 @@ TEST_CASE("Synchronous web connectivity test") {
     test::nettests::with_test<WebConnectivityTest>("urls.txt",
                                                    test::nettests::run_test);
 }
-
-#else
-int main() {}
-#endif

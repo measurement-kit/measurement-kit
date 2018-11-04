@@ -6,19 +6,5 @@ environment:
       MSYSTEM: MINGW64
       BUILD_TOOL: msys2
 
-# Disabled! Measurement Kit as a whole is mainly used by OONI and OONI uses
-# mingw for Windows. The complexity of maintaining two build system is making
-# me slower on other fronts. For this reason, when building for Windows make
-# sure that we're building for the environment that we mostly care about,
-# and let us ignore CMake for a while. The plan with smaller building blocks
-# detailed in #1666 can be helpful, here, because these small libs use by
-# default CMake and compile on Windows with MSVC, therefore, in going forward
-# increasingly large parts of MK will be guaranteed to compile with MSVC in
-# any case, thus reducing the damage of not compiling with MSVC here.
-#
-#   - BUILD_TOOL: msvc
-#     CMAKE_GENERATOR: "Visual Studio 15 2017 Win64"
-#     WINDOWS_ARCH_NAME: x64
-
 build_script:
   - cmd: .ci\appveyor\%BUILD_TOOL%.bat

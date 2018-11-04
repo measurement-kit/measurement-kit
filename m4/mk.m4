@@ -1,59 +1,3 @@
-AC_DEFUN([MK_AM_ENABLE_COVERAGE], [
-  AC_ARG_ENABLE([coverage],
-    AS_HELP_STRING([--enable-coverage, build for coverage]),
-      [enable_coverage=yes], [])
-])
-
-AC_DEFUN([MK_AM_ADD_COVERAGE_FLAGS_IF_NEEDED], [
-  if test "$enable_coverage" = "yes"; then
-    CFLAGS="$CFLAGS --coverage -g -O0"
-    CXXFLAGS="$CXXFLAGS --coverage -g -O0"
-    LDFLAGS="$LDFLAGS --coverage"
-  fi
-])
-
-AC_DEFUN([MK_AM_DISABLE_EXAMPLES], [
-  AC_ARG_ENABLE([examples],
-    AS_HELP_STRING([--disable-examples, skip building of examples programs]),
-                   [], [enable_examples=yes])
-  AM_CONDITIONAL([BUILD_EXAMPLES], [test "$enable_examples" = "yes"])
-])
-
-AC_DEFUN([MK_AM_DISABLE_BINARIES], [
-  AC_ARG_ENABLE([binaries],
-    AS_HELP_STRING([--disable-binaries, skip building of binary programs]),
-                   [], [enable_binaries=yes])
-  AM_CONDITIONAL([BUILD_BINARIES], [test "$enable_binaries" = "yes"])
-])
-
-AC_DEFUN([MK_AM_DISABLE_INTEGRATION_TESTS], [
-  AC_ARG_ENABLE([integration-tests],
-    AS_HELP_STRING([--disable-integration-tests, skip building of integration tests]),
-                   [], [CPPFLAGS="$CPPFLAGS -DENABLE_INTEGRATION_TESTS"])
-])
-
-AC_DEFUN([MK_AM_DISABLE_TRACEROUTE], [
-  AC_ARG_ENABLE([traceroute],
-    AS_HELP_STRING([--disable-traceroute, do not build traceroute]),
-                   [], [CPPFLAGS="$CPPFLAGS -DENABLE_TRACEROUTE"])
-])
-
-AC_DEFUN([MK_AM_CHECK_LIBC_FUNCS], [
-  AC_CHECK_FUNCS([ \
-    err \
-    errx \
-    warn \
-    warnx \
-    getopt \
-    getopt_long \
-    getopt_long_only \
-    gmtime_r \
-    strcasecmp \
-    strtonum \
-  ])
-  AC_CHECK_DECLS([optreset], [], [], [#include <getopt.h>])
-])
-
 AC_DEFUN([MK_AM_RESOLV], [
   mk_not_found=""
   AC_CHECK_HEADERS(resolv.h, [], [mk_not_found=1])
@@ -164,26 +108,6 @@ AC_DEFUN([MK_AM_LIBMAXMINDDB], [
   fi
 ])
 
-AC_DEFUN([MK_AM_ZLIB], [
-  AC_ARG_WITH([zlib],
-              [AS_HELP_STRING([--with-zlib],
-                [cURL library @<:@default=check@:>@])
-              ],
-              [
-                CPPFLAGS="$CPPFLAGS -I$withval/include"
-                LDFLAGS="$LDFLAGS -L$withval/lib"
-              ],
-              [])
-  mk_not_found=""
-  AC_CHECK_HEADERS(zlib.h, [], [mk_not_found=1])
-  AC_CHECK_LIB(z, inflate, [], [mk_not_found=1])
-  if test "$mk_not_found" = "1"; then
-    AC_MSG_WARN([Failed to find dependency: zlib])
-    echo "    - to install on Debian: sudo apt-get install zlib1g-dev"
-    AC_MSG_ERROR([Please, install zlib and run configure again])
-  fi
-])
-
 AC_DEFUN([MK_AM_OPENSSL], [
 
   AC_ARG_WITH([openssl],
@@ -279,50 +203,85 @@ AC_DEFUN([MK_AM_OPENSSL], [
   fi
 ])
 
-AC_DEFUN([MK_AM_REQUIRE_C99], [
-  AC_PROG_CC_C99
-  if test x"$ac_cv_prog_cc_c99" = xno; then
-    AC_MSG_ERROR([a C99 compiler is required])
-  fi
+AC_DEFUN([MK_MAYBE_APPEND_CFLAG], [
+  AC_LANG_PUSH([C])
+  AX_APPEND_COMPILE_FLAGS([$1], [], [-Werror])
+  AC_LANG_POP([C])
 ])
 
-AC_DEFUN([MK_AM_REQUIRE_CXX14], [
-  mk_saved_cxxflags="$CXXFLAGS"
-  CXXFLAGS=-std=c++14
-  AC_MSG_CHECKING([whether CXX supports -std=c++14])
+AC_DEFUN([MK_MAYBE_APPEND_CXXFLAG], [
   AC_LANG_PUSH([C++])
-  AC_COMPILE_IFELSE([AC_LANG_PROGRAM([])],
-    [AC_MSG_RESULT([yes])]
-    [],
-    [
-     AC_MSG_RESULT([no])
-     AC_MSG_ERROR([a C++14 compiler is required])
-    ])
-  CXXFLAGS="$mk_saved_cxxflags -std=c++14"
+  AX_APPEND_COMPILE_FLAGS([$1], [], [-Werror])
   AC_LANG_POP([C++])
 ])
 
-AC_DEFUN([MK_CHECK_CA_BUNDLE], [
-  AC_MSG_CHECKING([CA bundle path])
+AC_DEFUN([MK_MAYBE_APPEND_LDFLAG], [
+  AC_LANG_PUSH([C++])
+  AX_APPEND_LINK_FLAGS([$1], [], [-Werror])
+  AC_LANG_POP([C++])
+])
 
-  AC_ARG_WITH([ca-bundle],
-              AC_HELP_STRING([--with-ca-bundle=FILE],
-               [Path to a file containing CA certificates (example: /etc/ca-bundle.crt)]),
-              [
-               want_ca="$withval"
-              ],
-              [want_ca="unset"])
-  
+AC_DEFUN([MK_REQUIRE_CFLAG], [
+  MK_MAYBE_APPEND_CFLAG([$1])
+  if ! echo "$CFLAGS" | grep -q -- $1; then
+    AC_MSG_ERROR([$CC does not support the $1 CFLAG])
+  fi
+])
+
+AC_DEFUN([MK_REQUIRE_CXX14], [
+  AX_CXX_COMPILE_STDCXX(14, noext, mandatory)
+])
+
+AC_DEFUN([MK_REQUIRE_CXXFLAG], [
+  MK_MAYBE_APPEND_CXXFLAG([$1])
+  if ! echo "$CXXFLAGS" | grep -q -- $1; then
+    AC_MSG_ERROR([$CXX does not support the $1 CXXFLAG])
+  fi
+])
+
+AC_DEFUN([MK_REQUIRE_LDFLAG], [
+  MK_MAYBE_APPEND_LDFLAG([$1])
+  if ! echo "$LDFLAGS" | grep -q -- $1; then
+    AC_MSG_ERROR([$CXX does not support the $1 LDFLAG])
+  fi
+])
+
+dnl Adapted from cURL code <https://github.com/curl/curl>.
+dnl
+dnl Portions Copyright (c) 1996 - 2016, Daniel Stenberg, daniel@haxx.se, and
+dnl many contributors, see the THANKS file.
+dnl
+dnl All rights reserved.
+dnl
+dnl Permission to use, copy, modify, and distribute this software for any purpose
+dnl with or without fee is hereby granted, provided that the above copyright notice
+dnl and this permission notice appear in all copies.
+dnl
+dnl THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+dnl IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+dnl FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF THIRD PARTY RIGHTS.
+dnl IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+dnl DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+dnl ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+dnl DEALINGS IN THE SOFTWARE.
+dnl
+dnl Except as contained in this notice, the name of a copyright holder shall not be
+dnl used in advertising or otherwise to promote the sale, use or other dealings in
+dnl this Software without prior written authorization of the copyright holder.
+AC_DEFUN([MK_MAYBE_CA_BUNDLE], [
+  AC_MSG_CHECKING([CA bundle path])
+  AC_ARG_WITH([ca-bundle], AC_HELP_STRING([--with-ca-bundle=FILE],
+               [Path to CA bundle]), [want_ca="$withval"], [want_ca="unset"])
   if test "x$want_ca" != "xunset"; then
     ca="$want_ca"
   else
     ca="no"
     if test "x$cross_compiling" != "xyes"; then
-        for a in /etc/ssl/certs/ca-certificates.crt \
-                 /etc/pki/tls/certs/ca-bundle.crt \
-                 /usr/share/ssl/certs/ca-bundle.crt \
-                 /usr/local/share/certs/ca-root.crt \
-                 /etc/ssl/cert.pem \
+        for a in /etc/ssl/certs/ca-certificates.crt                            \
+                 /etc/pki/tls/certs/ca-bundle.crt                              \
+                 /usr/share/ssl/certs/ca-bundle.crt                            \
+                 /usr/local/share/certs/ca-root.crt                            \
+                 /etc/ssl/cert.pem                                             \
                  /usr/local/etc/openssl/cert.pem; do
           if test -f "$a"; then
             ca="$a"
@@ -331,7 +290,6 @@ AC_DEFUN([MK_CHECK_CA_BUNDLE], [
         done
     fi
   fi
-
   if test "x$ca" != "xno"; then
     MK_CA_BUNDLE="$ca"
     AC_DEFINE_UNQUOTED(MK_CA_BUNDLE, "$ca", [Location of default ca bundle])
@@ -348,25 +306,9 @@ AC_DEFUN([MK_CHECK_CA_BUNDLE], [
   fi
 ])
 
-
-AC_DEFUN([MK_AM_CXXFLAGS_ADD_WARNINGS], [
-  AC_MSG_CHECKING([whether compiler is clang to add clang specific warnings])
-  if test echo | $CXX -dM -E - | grep __clang__ > /dev/null; then
-    AC_MSG_RESULT([yes])
-    CXXFLAGS="$CXXFLAGS -Wmissing-prototypes"
-  else
-    AC_MSG_RESULT([yes])
-  fi
-])
-
-AC_DEFUN([MK_AM_PRINT_SUMMARY], [
-  echo "==== configured variables ==="
-  echo "CPP      : $CPP"
-  echo "CC       : $CC"
-  echo "CXX      : $CXX"
-  echo "CFLAGS   : $CFLAGS"
-  echo "CPPFLAGS : $CPPFLAGS"
-  echo "CXXFLAGS : $CXXFLAGS"
-  echo "LDFLAGS  : $LDFLAGS"
-  echo "LIBS     : $LIBS"
+AC_DEFUN([MK_PTHREAD], [
+  AX_PTHREAD
+  CFLAGS="$CFLAGS $PTHREAD_CFLAGS"
+  CXXFLAGS="$CXXFLAGS $PTHREAD_CFLAGS"
+  LIBS="$PTHREAD_LIBS $LIBS"
 ])

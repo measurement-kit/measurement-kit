@@ -2,11 +2,8 @@
 // Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
-#ifdef ENABLE_INTEGRATION_TESTS
-
 #include "test/winsock.hpp"
 
-#define CATCH_CONFIG_MAIN
 #include "src/libmeasurement_kit/ooni/whatsapp.hpp"
 #include "src/libmeasurement_kit/ext/catch.hpp"
 
@@ -73,7 +70,3 @@ TEST_CASE("Whatsapp and related utility functions") {
         REQUIRE(result.as_value() == false);
     }
 }
-
-#else
-int main() {}
-#endif

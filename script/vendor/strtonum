@@ -1,0 +1,5 @@
+#!/bin/sh
+set -ex
+baseurl=https://raw.githubusercontent.com/libressl-portable/openbsd/master
+curl -fsSLO $baseurl/src/lib/libc/stdlib/strtonum.c
+mv strtonum.c src/libmeasurement_kit/portable

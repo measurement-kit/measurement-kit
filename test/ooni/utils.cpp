@@ -4,7 +4,6 @@
 
 #include "test/winsock.hpp"
 
-#define CATCH_CONFIG_MAIN
 #include "src/libmeasurement_kit/ext/catch.hpp"
 
 #include "src/libmeasurement_kit/common/worker.hpp"
@@ -94,11 +93,11 @@ TEST_CASE("ip lookup works") {
         });
     }
 
-    SECTION("is robust to invalid ip addrress in page") {
+    SECTION("is robust to invalid ip address in page") {
         SharedPtr<Reactor> reactor = Reactor::make();
         reactor->run_with_initial_event([=]() {
             ooni::ip_lookup_impl<no_ip>([=](Error err, std::string) {
-                REQUIRE(err == ValueError());
+                REQUIRE(err == ooni::RegexSearchError());
                 reactor->stop();
             }, {}, reactor, Logger::global());
         });
@@ -126,7 +125,6 @@ TEST_CASE("ip lookup works") {
         });
     }
 
-#ifdef ENABLE_INTEGRATION_TESTS
     SECTION("integration test") {
         SharedPtr<Reactor> reactor = Reactor::make();
         reactor->run_with_initial_event([=]() {
@@ -136,7 +134,6 @@ TEST_CASE("ip lookup works") {
             }, {}, reactor, Logger::global());
         });
     }
-#endif
 }
 
 TEST_CASE("geoip works") {
@@ -233,12 +230,12 @@ TEST_CASE("extract_html_title works") {
     std::string body = "<html>\n"
         "<head>\n"
         "<meta>\n"
-        "<title>TITLE</title>\n"
+        "<title>TiTLE</title>\n"
         "</head>\n"
         "<body>\n"
         "</body>\n"
         "</html>\n";
-    REQUIRE(ooni::extract_html_title(body) == "TITLE");
+    REQUIRE(ooni::extract_html_title(body) == "TiTLE");
 }
 
 TEST_CASE("represent_string works") {
@@ -266,7 +263,6 @@ TEST_CASE("represent_string works") {
     }
 }
 
-#ifdef ENABLE_INTEGRATION_TESTS
 TEST_CASE("find_location() works correctly") {
     ooni::find_location("GeoIP.dat", "GeoIPASNum.dat", {}, Logger::global(),
             [](Error &&err, std::string &&asn, std::string &&cc) {
@@ -283,4 +279,3 @@ TEST_CASE("find_location() works correctly") {
      */
     mk::Worker::default_tasks_queue()->wait_empty_();
 }
-#endif

@@ -4,7 +4,6 @@
 
 #include "test/winsock.hpp"
 
-#define CATCH_CONFIG_MAIN
 #include "src/libmeasurement_kit/ext/catch.hpp"
 
 #include "src/libmeasurement_kit/common/utils.hpp"
@@ -159,8 +158,6 @@ TEST_CASE("orchestrate::login() works correctly") {
      */
 }
 
-#ifdef ENABLE_INTEGRATION_TESTS
-
 TEST_CASE("Orchestration works") {
     Client client;
     client.logger->increase_verbosity();
@@ -221,5 +218,3 @@ TEST_CASE("Orchestration works") {
      */
     Worker::default_tasks_queue()->wait_empty_();
 }
-
-#endif

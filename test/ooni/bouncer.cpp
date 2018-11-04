@@ -4,7 +4,6 @@
 
 #include "test/winsock.hpp"
 
-#define CATCH_CONFIG_MAIN
 #include "src/libmeasurement_kit/ext/catch.hpp"
 
 #include "src/libmeasurement_kit/ooni/bouncer_impl.hpp"
@@ -142,8 +141,6 @@ TEST_CASE("post_net_tests() works") {
         });
     }
 
-#ifdef ENABLE_INTEGRATION_TESTS
-
     SECTION("When the collector is not found") {
         SharedPtr<Reactor> reactor = Reactor::make();
         reactor->run_with_initial_event([=]() {
@@ -194,5 +191,4 @@ TEST_CASE("post_net_tests() works") {
                 {}, reactor, Logger::global());
         });
     }
-#endif
 }

@@ -11,7 +11,8 @@
 
 #include <fstream>
 #include <random>
-#include <regex>
+
+#include "src/libmeasurement_kit/regexp/regexp.hpp"
 
 namespace mk {
 namespace nettests {
@@ -45,9 +46,8 @@ Error process_input_filepaths_impl(std::deque<std::string> &inputs,
         }
 
         for (auto input_filepath : input_filepaths) {
-            input_filepath = std::regex_replace(input_filepath,
-                                                std::regex{R"(\$\{probe_cc\})"},
-                                                probe_cc_lowercase);
+            input_filepath = regexp::replace_probe_cc(std::move(input_filepath),
+                                                      probe_cc_lowercase);
             SharedPtr<std::istream> input_generator = open_file_(input_filepath);
             if (!input_generator->good()) {
                 logger->warn("cannot open input file");

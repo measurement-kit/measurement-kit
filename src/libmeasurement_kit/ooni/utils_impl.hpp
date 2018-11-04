@@ -10,7 +10,7 @@
 
 #include "src/libmeasurement_kit/http/http.hpp"
 
-#include <regex>
+#include "src/libmeasurement_kit/regexp/regexp.hpp"
 
 namespace mk {
 namespace ooni {
@@ -29,17 +29,16 @@ void ip_lookup_impl(Callback<Error, std::string> callback, Settings settings = {
                     callback(HttpRequestError(), "");
                     return;
                 }
-                std::smatch m;
-                std::regex regex("<Ip>(.*)</Ip>");
-                if (std::regex_search(response->body, m, regex) == false) {
+                std::string ip = regexp::ubuntu_xml_extract_ip(response->body);
+                if (ip.empty()) {
                     callback(RegexSearchError(), "");
                     return;
                 }
-                if (!net::is_ip_addr(m[1])) {
+                if (!net::is_ip_addr(ip)) {
                     callback(ValueError(), "");
                     return;
                 }
-                callback(NoError(), m[1]);
+                callback(NoError(), ip);
             },
             {}, settings, reactor, logger, nullptr, 0);
 }

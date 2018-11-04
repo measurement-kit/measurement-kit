@@ -4,14 +4,11 @@
 
 #include "test/winsock.hpp"
 
-#define CATCH_CONFIG_MAIN
 #include "src/libmeasurement_kit/ext/catch.hpp"
 
 #include "src/libmeasurement_kit/mlabns/mlabns_impl.hpp"
 
 using namespace mk;
-
-#ifdef ENABLE_INTEGRATION_TESTS
 
 TEST_CASE("Query works as expected") {
     Settings settings;
@@ -55,8 +52,6 @@ TEST_CASE("Query can pass the settings to the dns level") {
                       settings, reactor);
     });
 }
-
-#endif
 
 TEST_CASE("Make sure that an error is passed to callback with invalid "
           "address_family settings") {

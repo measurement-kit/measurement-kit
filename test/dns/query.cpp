@@ -4,7 +4,6 @@
 
 #include "test/winsock.hpp"
 
-#define CATCH_CONFIG_MAIN
 #include "src/libmeasurement_kit/ext/catch.hpp"
 
 #include "src/libmeasurement_kit/dns/resolve_hostname.hpp"
@@ -219,8 +218,6 @@ TEST_CASE("dns::query deals with invalid PTR name") {
           {{"dns/engine", "libevent"}});
 }
 
-#ifdef ENABLE_INTEGRATION_TESTS
-
 // Test resolve_hostname
 
 TEST_CASE("resolve_hostname works with IPv4 address") {
@@ -386,5 +383,3 @@ TEST_CASE("The libevent resolver works as expected") {
               }, {{"dns/engine", "libevent"}}, reactor);
     });
 }
-
-#endif

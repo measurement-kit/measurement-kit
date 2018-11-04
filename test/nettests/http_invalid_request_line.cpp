@@ -4,9 +4,6 @@
 
 #include "test/winsock.hpp"
 
-#ifdef ENABLE_INTEGRATION_TESTS
-
-#define CATCH_CONFIG_MAIN
 #include "src/libmeasurement_kit/ext/catch.hpp"
 
 #include "utils.hpp"
@@ -23,7 +20,3 @@ TEST_CASE("Synchronous http-invalid-request-line test with HTTP backend") {
         test.set_option("backend", "http://data.neubot.org/").run();
     });
 }
-
-#else
-int main() {}
-#endif

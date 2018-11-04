@@ -4,7 +4,6 @@
 
 #include "test/winsock.hpp"
 
-#define CATCH_CONFIG_MAIN
 #include "src/libmeasurement_kit/ext/catch.hpp"
 
 #include "src/libmeasurement_kit/net/connect_impl.hpp"
@@ -140,8 +139,6 @@ TEST_CASE("net::connect_many() correctly handles net::connect() failure") {
 |_|_| |_|\__\___|\__, |_|  \__,_|\__|_|\___/|_| |_|
                  |___/
 */
-
-#ifdef ENABLE_INTEGRATION_TESTS
 
 TEST_CASE("connect_base works with ipv4") {
     SharedPtr<Reactor> reactor = Reactor::make();
@@ -435,5 +432,3 @@ TEST_CASE("net::connect() works in case of error") {
                 reactor);
     });
 }
-
-#endif

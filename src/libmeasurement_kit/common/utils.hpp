@@ -14,7 +14,6 @@
 #include <measurement_kit/common.hpp>
 #include <openssl/sha.h>
 #include <random>
-#include <regex>
 
 struct timeval;
 
@@ -161,14 +160,25 @@ ErrorOr<std::string> timestamp(const struct tm *t) {
 timeval *timeval_init(timeval *tv, double delta);
 
 template <typename T=std::list<std::string>>
-T split(std::string s, std::string pattern = "\\s+") {
-    // See <http://stackoverflow.com/questions/9435385/>
-    // passing -1 as the submatch index parameter performs splitting
-    std::regex re{pattern};
-    std::sregex_token_iterator
-        first{s.begin(), s.end(), re, -1},
-        last;
-    return {first, last};
+T split(std::string s, std::string pattern = " ") {
+    T res{};
+    if (pattern.size() <= 0) {
+        res.push_back(std::move(s));
+        return res;
+    }
+    while (!s.empty()) {
+        size_t idx = s.find(pattern);
+        if (idx == std::string::npos) {
+            res.push_back(std::move(s));
+            break;
+        }
+        std::string r = s.substr(0, idx);
+        if (!r.empty()) {
+            res.push_back(std::move(r));
+        }
+        s = s.substr(idx + pattern.size());
+    }
+    return res;
 }
 
 std::string random_within_charset(const std::string charset, size_t length);

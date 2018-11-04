@@ -4,7 +4,6 @@
 
 #include "test/winsock.hpp"
 
-#define CATCH_CONFIG_MAIN
 #include "src/libmeasurement_kit/ext/catch.hpp"
 #include "src/libmeasurement_kit/ooni/http_header_field_manipulation.hpp"
 
@@ -13,14 +12,10 @@
 using namespace mk::nettests;
 using namespace mk;
 
-#ifdef ENABLE_INTEGRATION_TESTS
-
 TEST_CASE("Synchronous http-header-field-manipulation test") {
     test::nettests::with_test<HttpHeaderFieldManipulationTest>(
           test::nettests::run_test);
 }
-
-#endif
 
 TEST_CASE("compare_headers_response works") {
     SharedPtr<report::Entry> entry(new report::Entry);

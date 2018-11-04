@@ -4,7 +4,6 @@
 
 #include "test/winsock.hpp"
 
-#define CATCH_CONFIG_MAIN
 #include "src/libmeasurement_kit/ext/catch.hpp"
 
 #include <measurement_kit/ooni.hpp>
@@ -17,8 +16,6 @@
 using namespace mk;
 using namespace mk::ooni;
 using namespace mk::report;
-
-#ifdef ENABLE_INTEGRATION_TESTS
 
 TEST_CASE("dns query template works as expected") {
     SharedPtr<Reactor> reactor = Reactor::make();
@@ -188,8 +185,6 @@ TEST_CASE("http requests template works as expected") {
             }, reactor);
     });
 }
-
-#endif
 
 static void mocked_request(Settings settings, http::Headers,
         std::string, Callback<Error, SharedPtr<http::Response>> cb,

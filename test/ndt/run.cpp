@@ -4,7 +4,6 @@
 
 #include "test/winsock.hpp"
 
-#define CATCH_CONFIG_MAIN
 #include "src/libmeasurement_kit/ext/catch.hpp"
 
 #include "src/libmeasurement_kit/ndt/run_impl.hpp"
@@ -123,8 +122,6 @@ TEST_CASE("run() deals with mlab-ns query error") {
                  |___/
 */
 
-#ifdef ENABLE_INTEGRATION_TESTS
-
 TEST_CASE("NDT test run() should work") {
     SharedPtr<Entry> entry{new Entry};
     SharedPtr<Reactor> reactor = Reactor::make();
@@ -135,5 +132,3 @@ TEST_CASE("NDT test run() should work") {
         }, {}, reactor);
     });
 }
-
-#endif
