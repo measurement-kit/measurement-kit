@@ -41,7 +41,10 @@ MK_MAYBE_ADD_CFLAG([-pthread])
 MK_MAYBE_ADD_CXXFLAG([-pthread])
 MK_MAYBE_ADD_LDFLAG([-pthread])
 
-MK_AM_CHECK_LIBC_FUNCS
+AC_CHECK_FUNCS([err errx warn warnx getopt getopt_long getopt_long_only        \
+                gmtime_r strcasecmp strtonum])
+AC_CHECK_DECLS([optreset], [], [], [#include <getopt.h>])
+
 MK_AM_OPENSSL
 MK_AM_LIBEVENT
 MK_AM_GEOIP

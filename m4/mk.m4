@@ -1,19 +1,3 @@
-AC_DEFUN([MK_AM_CHECK_LIBC_FUNCS], [
-  AC_CHECK_FUNCS([ \
-    err \
-    errx \
-    warn \
-    warnx \
-    getopt \
-    getopt_long \
-    getopt_long_only \
-    gmtime_r \
-    strcasecmp \
-    strtonum \
-  ])
-  AC_CHECK_DECLS([optreset], [], [], [#include <getopt.h>])
-])
-
 AC_DEFUN([MK_AM_RESOLV], [
   mk_not_found=""
   AC_CHECK_HEADERS(resolv.h, [], [mk_not_found=1])
