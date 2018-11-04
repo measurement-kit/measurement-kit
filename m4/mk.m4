@@ -245,27 +245,30 @@ AC_DEFUN([MK_AM_OPENSSL], [
   fi
 ])
 
-AC_DEFUN([MK_AM_REQUIRE_C99], [
-  AC_PROG_CC_C99
-  if test x"$ac_cv_prog_cc_c99" = xno; then
-    AC_MSG_ERROR([a C99 compiler is required])
-  fi
+AC_DEFUN([MK_REQUIRE_CFLAG], [
+  AX_SAVE_FLAGS([mk])
+  CFLAGS="$1 -Werror"
+  AC_MSG_CHECKING([whether $CC supports $1])
+  AC_LANG_PUSH([C])
+  AC_COMPILE_IFELSE([AC_LANG_PROGRAM([])], [AC_MSG_RESULT([yes])],
+                    [AC_MSG_RESULT([no])
+                     AC_MSG_ERROR([$CC does not support $1])])
+  AC_LANG_POP([C])
+  AX_RESTORE_FLAGS([mk])
+  CFLAGS="$CFLAGS $1"
 ])
 
-AC_DEFUN([MK_AM_REQUIRE_CXX14], [
-  mk_saved_cxxflags="$CXXFLAGS"
-  CXXFLAGS=-std=c++14
-  AC_MSG_CHECKING([whether CXX supports -std=c++14])
+AC_DEFUN([MK_REQUIRE_CXXFLAG], [
+  AX_SAVE_FLAGS([mk])
+  CXXFLAGS="$1 -Werror"
+  AC_MSG_CHECKING([whether $CXX supports $1])
   AC_LANG_PUSH([C++])
-  AC_COMPILE_IFELSE([AC_LANG_PROGRAM([])],
-    [AC_MSG_RESULT([yes])]
-    [],
-    [
-     AC_MSG_RESULT([no])
-     AC_MSG_ERROR([a C++14 compiler is required])
-    ])
-  CXXFLAGS="$mk_saved_cxxflags -std=c++14"
+  AC_COMPILE_IFELSE([AC_LANG_PROGRAM([])], [AC_MSG_RESULT([yes])],
+                    [AC_MSG_RESULT([no])
+                     AC_MSG_ERROR([$CXX does not support $1])])
   AC_LANG_POP([C++])
+  AX_RESTORE_FLAGS([mk])
+  CXXFLAGS="$CXXFLAGS $1"
 ])
 
 AC_DEFUN([MK_CHECK_CA_BUNDLE], [

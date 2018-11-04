@@ -43,7 +43,6 @@ libtool
 *.lo
 *.log
 ltmain.sh
-m4/*.m4
 Makefile
 Makefile.in
 /maxmind-geoip.*.dat*
