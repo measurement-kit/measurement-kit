@@ -1,16 +1,8 @@
-# Autoconf requirements
 AC_INIT(measurement_kit, 0.9.0-alpha.10, bassosimone@gmail.com)
 
-# information on the package
 AC_CONFIG_SRCDIR([Makefile.am])
 AC_CONFIG_MACRO_DIR([m4])
 
-# Travis uses Ubuntu 12.04 where the default automake was 1.11 in which
-# by default tests were run in serial mode; as such, the LOG_COMPILER hack
-# used to run tests using Valgrind was not working because automake 1.11
-# wasn't honouring the LOG_COMPILER definition in the Makefile.
-#
-# Force parallel tests to make sure we can run tests through Valgrind.
 AM_INIT_AUTOMAKE([parallel-tests 1.11])
 
 LT_INIT([disable-shared], [pic-only])
@@ -52,14 +44,7 @@ MK_AM_RESOLV
 MK_AM_LIBCURL
 MK_AM_LIBMAXMINDDB
 
-# checks for header files
-# checks for types
-# checks for structures
-
-# checks for ca-bundle
 MK_CHECK_CA_BUNDLE
-
-# checks for compiler characteristics
 
 CPPFLAGS="-I \$(top_srcdir)/include $CPPFLAGS"
 
@@ -78,10 +63,6 @@ CPPFLAGS="$CPPFLAGS -DMK_NETTESTS_INTERNAL"
 
 MK_REQUIRE_CFLAG([-std=c11])
 MK_REQUIRE_CXXFLAG([-std=c++14])
-
-# checks for library functions
-
-# checks for system services
 
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT
