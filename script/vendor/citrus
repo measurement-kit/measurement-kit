@@ -1,0 +1,5 @@
+#!/bin/sh
+set -ex
+baseurl=https://raw.githubusercontent.com/openbsd/src/master
+curl -fsSLO $baseurl/lib/libc/citrus/citrus_utf8.c
+mv citrus_utf8.c src/libmeasurement_kit/common
