@@ -11,7 +11,6 @@
 using namespace mk;
 using namespace mk::dns;
 
-#ifdef ENABLE_INTEGRATION_TESTS
 #ifdef __MINGW32__
 static const char *fail_inet_ntop(int, void *, char *, size_t)
 #elif defined _MSC_VER
@@ -22,7 +21,6 @@ static const char *fail_inet_ntop(int, const void *, char *, socklen_t)
 {
     return nullptr;
 }
-#endif
 
 static int fail_getaddrinfo(const char *, const char *, const struct addrinfo *,
                             struct addrinfo **) {
@@ -51,8 +49,6 @@ TEST_CASE("the system resolver can handle a getaddrinfo error") {
         });
 }
 
-#ifdef ENABLE_INTEGRATION_TESTS
-
 TEST_CASE("the system resolver can handle a inet_ntop error") {
     run_system_resolver<getaddrinfo, fail_inet_ntop>(
             "IN", "A", "neubot.org", [](Error e, SharedPtr<Message>) {
@@ -60,8 +56,6 @@ TEST_CASE("the system resolver can handle a inet_ntop error") {
                 REQUIRE(e.reason == "generic_error: inet_ntop_failed");
             });
 }
-
-#endif
 
 TEST_CASE("the system resolver can handle an unsupported class") {
     run_system_resolver("CS", "A", "neubot.org", [](Error e, SharedPtr<Message>) {
@@ -74,8 +68,6 @@ TEST_CASE("the system resolver can handle an unsupported query type") {
         REQUIRE(e == UnsupportedTypeError());
     });
 }
-
-#ifdef ENABLE_INTEGRATION_TESTS
 
 TEST_CASE("the system resolver returns an error with an invalid_site") {
     run_system_resolver(
@@ -139,5 +131,3 @@ TEST_CASE("the system resolver is able to resolve the canonical name with "
             REQUIRE(message->answers[0].hostname == "ipv4.l.google.com");
         });
 }
-
-#endif

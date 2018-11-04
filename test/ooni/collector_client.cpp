@@ -486,8 +486,6 @@ TEST_CASE("submit_report() deals with collector_create_report error") {
                  |___/
 */
 
-#ifdef ENABLE_INTEGRATION_TESTS
-
 TEST_CASE("The collector client works as expected") {
     SharedPtr<Reactor> reactor = Reactor::make();
     reactor->run_with_initial_event([=]() {
@@ -499,5 +497,3 @@ TEST_CASE("The collector client works as expected") {
                                  }, {}, reactor);
     });
 }
-
-#endif

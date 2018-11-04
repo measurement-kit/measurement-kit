@@ -10,8 +10,6 @@
 
 using namespace mk;
 
-#ifdef ENABLE_INTEGRATION_TESTS
-
 TEST_CASE("Query works as expected") {
     Settings settings;
     settings["mlabns/address_family"] = "ipv4";
@@ -54,8 +52,6 @@ TEST_CASE("Query can pass the settings to the dns level") {
                       settings, reactor);
     });
 }
-
-#endif
 
 TEST_CASE("Make sure that an error is passed to callback with invalid "
           "address_family settings") {

@@ -140,8 +140,6 @@ TEST_CASE("net::connect_many() correctly handles net::connect() failure") {
                  |___/
 */
 
-#ifdef ENABLE_INTEGRATION_TESTS
-
 TEST_CASE("connect_base works with ipv4") {
     SharedPtr<Reactor> reactor = Reactor::make();
     reactor->run_with_initial_event([=]() {
@@ -434,5 +432,3 @@ TEST_CASE("net::connect() works in case of error") {
                 reactor);
     });
 }
-
-#endif

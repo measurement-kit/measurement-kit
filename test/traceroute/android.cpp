@@ -2,8 +2,6 @@
 // Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
-#ifdef ENABLE_INTEGRATION_TESTS
-
 #include "test/winsock.hpp"
 
 /// Tests Android traceroute prober
@@ -103,5 +101,4 @@ TEST_CASE("Check whether it works when destination sends reply") {
     });
 }
 
-#endif
 #endif

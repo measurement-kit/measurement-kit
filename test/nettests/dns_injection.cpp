@@ -10,12 +10,8 @@
 
 using namespace mk::nettests;
 
-#ifdef ENABLE_INTEGRATION_TESTS
-
 TEST_CASE("Synchronous dns-injection test") {
     test::nettests::with_test<DnsInjectionTest>(
           "hosts.txt",
           [](BaseTest &test) { test.set_option("dns/timeout", "0.1").run(); });
 }
-
-#endif

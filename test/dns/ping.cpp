@@ -14,8 +14,6 @@
 
 using namespace mk;
 
-#ifdef ENABLE_INTEGRATION_TESTS
-
 TEST_CASE("The dns::ping() template works") {
     SharedPtr<Reactor> reactor = Reactor::make();
     double now = time_now();
@@ -48,5 +46,3 @@ TEST_CASE("The dns::ping() template works") {
     REQUIRE(delta > 9.0);
     REQUIRE(delta < 11.0);
 }
-
-#endif

@@ -4,7 +4,6 @@
 
 #include "test/winsock.hpp"
 
-#ifdef ENABLE_INTEGRATION_TESTS
 #include "src/libmeasurement_kit/ext/catch.hpp"
 
 #include "utils.hpp"
@@ -16,5 +15,3 @@ TEST_CASE("Synchronous meek-fronted-requests test") {
     test::nettests::with_test<MeekFrontedRequestsTest>(
           "meek_fronted_requests.txt", test::nettests::run_test);
 }
-
-#endif

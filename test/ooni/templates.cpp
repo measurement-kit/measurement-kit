@@ -17,8 +17,6 @@ using namespace mk;
 using namespace mk::ooni;
 using namespace mk::report;
 
-#ifdef ENABLE_INTEGRATION_TESTS
-
 TEST_CASE("dns query template works as expected") {
     SharedPtr<Reactor> reactor = Reactor::make();
     reactor->run_with_initial_event([=]() {
@@ -187,8 +185,6 @@ TEST_CASE("http requests template works as expected") {
             }, reactor);
     });
 }
-
-#endif
 
 static void mocked_request(Settings settings, http::Headers,
         std::string, Callback<Error, SharedPtr<http::Response>> cb,

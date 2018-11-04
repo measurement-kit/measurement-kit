@@ -4,7 +4,6 @@
 
 #include "test/winsock.hpp"
 
-#ifdef ENABLE_INTEGRATION_TESTS
 #include "src/libmeasurement_kit/ext/catch.hpp"
 
 #include "../nettests/utils.hpp"
@@ -15,5 +14,3 @@ using namespace mk;
 TEST_CASE("Synchronous facebook_messenger test") {
     test::nettests::with_test<FacebookMessengerTest>(test::nettests::run_test);
 }
-
-#endif

@@ -1,9 +1,3 @@
-AC_DEFUN([MK_AM_DISABLE_INTEGRATION_TESTS], [
-  AC_ARG_ENABLE([integration-tests],
-    AS_HELP_STRING([--disable-integration-tests, skip building of integration tests]),
-                   [], [CPPFLAGS="$CPPFLAGS -DENABLE_INTEGRATION_TESTS"])
-])
-
 AC_DEFUN([MK_AM_DISABLE_TRACEROUTE], [
   AC_ARG_ENABLE([traceroute],
     AS_HELP_STRING([--disable-traceroute, do not build traceroute]),

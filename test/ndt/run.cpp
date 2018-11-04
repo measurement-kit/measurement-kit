@@ -122,8 +122,6 @@ TEST_CASE("run() deals with mlab-ns query error") {
                  |___/
 */
 
-#ifdef ENABLE_INTEGRATION_TESTS
-
 TEST_CASE("NDT test run() should work") {
     SharedPtr<Entry> entry{new Entry};
     SharedPtr<Reactor> reactor = Reactor::make();
@@ -134,5 +132,3 @@ TEST_CASE("NDT test run() should work") {
         }, {}, reactor);
     });
 }
-
-#endif

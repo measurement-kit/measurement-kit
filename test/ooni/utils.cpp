@@ -125,7 +125,6 @@ TEST_CASE("ip lookup works") {
         });
     }
 
-#ifdef ENABLE_INTEGRATION_TESTS
     SECTION("integration test") {
         SharedPtr<Reactor> reactor = Reactor::make();
         reactor->run_with_initial_event([=]() {
@@ -135,7 +134,6 @@ TEST_CASE("ip lookup works") {
             }, {}, reactor, Logger::global());
         });
     }
-#endif
 }
 
 TEST_CASE("geoip works") {
@@ -265,7 +263,6 @@ TEST_CASE("represent_string works") {
     }
 }
 
-#ifdef ENABLE_INTEGRATION_TESTS
 TEST_CASE("find_location() works correctly") {
     ooni::find_location("GeoIP.dat", "GeoIPASNum.dat", {}, Logger::global(),
             [](Error &&err, std::string &&asn, std::string &&cc) {
@@ -282,4 +279,3 @@ TEST_CASE("find_location() works correctly") {
      */
     mk::Worker::default_tasks_queue()->wait_empty_();
 }
-#endif
