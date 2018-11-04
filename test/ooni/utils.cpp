@@ -51,20 +51,3 @@ TEST_CASE("represent_string works") {
                  .dump()));
     }
 }
-
-TEST_CASE("find_location() works correctly") {
-    ooni::find_location("country.mmdb", "asn.mmdb", {}, Logger::global(),
-            [](Error &&err, std::string &&asn, std::string &&cc) {
-        REQUIRE(!err);
-        REQUIRE(!asn.empty());
-        REQUIRE(!cc.empty());
-    });
-    /*
-     * Wait for the default tasks queue to empty, so we exit from the
-     * process without still running detached threads and we don't leak
-     * memory and, therefore, valgrind memcheck does not fail.
-     *
-     * See also `test/ooni/orchestrate.cpp`.
-     */
-    mk::Worker::default_tasks_queue()->wait_empty_();
-}

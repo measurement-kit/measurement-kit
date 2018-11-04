@@ -15,17 +15,6 @@ void resolver_lookup(Callback<Error, std::string> callback, Settings settings,
     resolver_lookup_impl(callback, settings, reactor, logger);
 }
 
-void find_location(std::string geoip_country_path, std::string geoip_asn_path,
-        Settings settings, SharedPtr<Logger> logger,
-        Callback<Error &&, std::string &&, std::string &&> &&cb) {
-    orchestrate::Client client;
-    client.logger = logger;
-    client.geoip_asn_path = geoip_asn_path;
-    client.geoip_country_path = geoip_country_path;
-    client.settings = settings;
-    client.find_location(std::move(cb));
-}
-
 std::string extract_html_title(std::string body) {
   return regexp::html_extract_title(body);
 }
