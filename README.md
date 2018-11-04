@@ -95,6 +95,6 @@ https://github.com/measurement-kit/ios-example).
 
 To clone Measurement Kit repository, do:
 
-    git clone https://github.com/measurement-kit/measurement-kit
+    git clone --recursive https://github.com/measurement-kit/measurement-kit
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for more information.
