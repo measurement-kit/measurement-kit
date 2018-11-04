@@ -43,6 +43,8 @@ for flag in -Wall -Wextra -pedantic -Wmissing-prototypes; do
   MK_MAYBE_ADD_CXXFLAG([$flag])
 done
 
+AX_ADD_FORTIFY_SOURCE
+
 # Force compiling the http_parser in non-strict mode. This allows us to test
 # partially broken sites like mail.voila.fr that send spaces between the header
 # key and the separator (i.e. ':').
@@ -52,7 +54,7 @@ CPPFLAGS="$CPPFLAGS -DHTTP_PARSER_STRICT=0"
 CPPFLAGS="$CPPFLAGS -DMK_NETTESTS_INTERNAL"
 
 MK_REQUIRE_CFLAG([-std=c11])
-MK_REQUIRE_CXXFLAG([-std=c++14])
+MK_REQUIRE_CXX14
 
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT
