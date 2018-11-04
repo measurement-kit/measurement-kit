@@ -11,7 +11,6 @@ for file in                                                                    \
         Doxyfile                                                               \
         configure.ac                                                           \
         include/measurement_kit/common/version.h.in                            \
-        measurement_kit.podspec                                                \
         script/update-includes; do
     cp $file $file.old
     sed "s/$old_version/$new_version/g" $file.old > $file
