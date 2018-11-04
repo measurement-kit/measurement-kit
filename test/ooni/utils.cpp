@@ -93,11 +93,11 @@ TEST_CASE("ip lookup works") {
         });
     }
 
-    SECTION("is robust to invalid ip addrress in page") {
+    SECTION("is robust to invalid ip address in page") {
         SharedPtr<Reactor> reactor = Reactor::make();
         reactor->run_with_initial_event([=]() {
             ooni::ip_lookup_impl<no_ip>([=](Error err, std::string) {
-                REQUIRE(err == ValueError());
+                REQUIRE(err == ooni::RegexSearchError());
                 reactor->stop();
             }, {}, reactor, Logger::global());
         });

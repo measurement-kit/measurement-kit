@@ -3,7 +3,7 @@
 // and LICENSE for more information on the copying conditions.
 
 #include "src/libmeasurement_kit/ooni/collector_client_impl.hpp"
-#include <regex>
+#include "src/libmeasurement_kit/regexp/regexp.hpp"
 
 namespace mk {
 namespace ooni {
@@ -13,36 +13,15 @@ using namespace mk::http;
 using namespace mk::net;
 using namespace mk::report;
 
-// Regex notes
-// -----------
-//
-// 1. [the default grammar is ECMAScript](
-//      http://en.cppreference.com/w/cpp/regex/basic_regex
-//    )
-//
-// 2. the `re_version` regexp is copied from [sindresorhus/semver-regex](
-//       https://github.com/sindresorhus/semver-regex/blob/624a91ef62e593abebbf8f411449ab0d257eac4d/index.js
-//    )
-//
-// 3. R"(...)" delimits a [raw characters sequence](
-//      http://en.cppreference.com/w/cpp/language/string_literal
-//    )
-
-static const std::regex re_name{R"(^[A-Za-z0-9._-]+$)"};
-static const std::regex re_version{
-    R"(^v?(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)(?:-[\da-z\-]+(?:\.[\da-z\-]+)*)?(?:\+[\da-z\-]+(?:\.[\da-z\-]+)*)?$)",
-    std::regex::icase};
-
-static std::map<std::string, std::regex> mandatory_re{
-    {"software_name", re_name},
-    {"software_version", re_version},
-    {"probe_asn", std::regex{R"(^AS[0-9]+$)"}},
-    {"probe_cc", std::regex{R"(^[A-Z]{2}$)"}},
-    {"test_name", re_name},
-    {"test_version", re_version},
-    {"data_format_version", re_version},
-    {"test_start_time",
-     std::regex{R"(^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}$)"}},
+static std::map<std::string, bool(*)(const std::string &)> mandatory_re{
+    {"software_name", regexp::valid_nettest_name},
+    {"software_version", regexp::valid_nettest_version},
+    {"probe_asn", regexp::valid_probe_asn},
+    {"probe_cc", regexp::valid_country_code},
+    {"test_name", regexp::valid_nettest_name},
+    {"test_version", regexp::valid_nettest_version},
+    {"data_format_version", regexp::valid_nettest_version},
+    {"test_start_time", regexp::valid_test_start_time},
 };
 
 Error valid_entry(Entry entry) {
@@ -52,7 +31,7 @@ Error valid_entry(Entry entry) {
         if (!s) {
             return MissingMandatoryKeyError(s.as_error());
         }
-        if (!std::regex_match(*s, pair.second)) {
+        if (!(*pair.second)(*s)) {
             return InvalidMandatoryValueError(pair.first);
         }
     }

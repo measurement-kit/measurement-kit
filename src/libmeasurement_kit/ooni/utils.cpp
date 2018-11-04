@@ -5,6 +5,7 @@
 #include <measurement_kit/ooni/orchestrate.hpp> // for orchestrate::Client
 #include "src/libmeasurement_kit/ooni/utils_impl.hpp"
 #include "src/libmeasurement_kit/common/utils.hpp"
+#include "src/libmeasurement_kit/regexp/regexp.hpp"
 
 namespace mk {
 namespace ooni {
@@ -153,31 +154,11 @@ ErrorOr<std::string> GeoipDatabase::resolve_asn_full(
 }
 
 std::string extract_html_title(std::string body) {
-  std::regex TITLE_REGEXP(R"(<title>(.*)</title>)", std::regex::icase);
-  std::smatch match;
-
-  if (std::regex_search(body, match, TITLE_REGEXP) && match.size() > 1) {
-    return match.str(1);
-  }
-  return "";
+  return regexp::html_extract_title(body);
 }
 
 bool is_private_ipv4_addr(const std::string &ipv4_addr) {
-  std::regex IPV4_PRIV_ADDR(
-      "(^127\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3})|"
-      "(^192\\.168\\.[0-9]{1,3}\\.[0-9]{1,3})|"
-      "(^10\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3})|"
-      "(^172\\.1[6-9]\\.[0-9]{1,3}\\.[0-9]{1,3})|"
-      "(^172\\.2[0-9]\\.[0-9]{1,3}\\.[0-9]{1,3})|"
-      "(^172\\.3[0-1]\\.[0-9]{1,3}\\.[0-9]{1,3})|"
-      "localhost"
-  );
-  std::smatch match;
-
-  if (std::regex_search(ipv4_addr, match, IPV4_PRIV_ADDR) && match.size() > 1) {
-    return true;
-  }
-  return false;
+  return regexp::private_ipv4(ipv4_addr);
 }
 
 report::Entry represent_string(const std::string &s) {

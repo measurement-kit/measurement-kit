@@ -83,7 +83,7 @@ TEST_CASE("random_tld() does what it should") {
 
 TEST_CASE("split(std::string s) works properly in the common case") {
     REQUIRE((mk::split(" 34    43  17 11 ") == std::list<std::string>{
-                {"", "34", "43", "17", "11"}
+                {"34", "43", "17", "11"}
             }));
 }
 
