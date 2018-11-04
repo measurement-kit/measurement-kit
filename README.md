@@ -6,9 +6,9 @@
 
 - - -
 
-| branch | travis-ci | coveralls | appveyor |
+| branch | Unix      | coverage  | Windows  |
 |--------|-----------|-----------|----------|
-| master | [![Travis Build Status](https://img.shields.io/travis/measurement-kit/measurement-kit/master.svg)](https://travis-ci.org/measurement-kit/measurement-kit) | [![Coverage Status](https://img.shields.io/coveralls/measurement-kit/measurement-kit/master.svg)](https://coveralls.io/github/measurement-kit/measurement-kit?branch=master) | [![Build status](https://ci.appveyor.com/api/projects/status/bvse3kgbp8dpk9ii/branch/master?svg=true)](https://ci.appveyor.com/project/bassosimone/measurement-kit/branch/master) |
+| master | [![Build Status](https://img.shields.io/travis/measurement-kit/measurement-kit/master.svg?label=travis)](https://travis-ci.org/measurement-kit/measurement-kit) [![codecov](https://codecov.io/gh/measurement-kit/measurement-kit/branch/master/graph/badge.svg)](https://codecov.io/gh/measurement-kit/measurement-kit) [![Build status](https://img.shields.io/appveyor/ci/bassosimone/measurement-kit/master.svg?label=appveyor)](https://ci.appveyor.com/project/bassosimone/measurement-kit/branch/master)
 | stable | [![Travis Build Status](https://img.shields.io/travis/measurement-kit/measurement-kit/stable.svg)](https://travis-ci.org/measurement-kit/measurement-kit?branch=stable) | [![Coverage Status](https://img.shields.io/coveralls/measurement-kit/measurement-kit/stable.svg)](https://coveralls.io/github/measurement-kit/measurement-kit?branch=stable) | [![Build status](https://ci.appveyor.com/api/projects/status/bvse3kgbp8dpk9ii/branch/stable?svg=true)](https://ci.appveyor.com/project/bassosimone/measurement-kit/branch/stable) |
 
 Measurement Kit is a library that implements open network measurement
