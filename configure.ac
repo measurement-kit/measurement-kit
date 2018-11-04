@@ -21,10 +21,7 @@ case "$host" in
 esac
 
 AC_PROG_CXX
-
-MK_MAYBE_ADD_CFLAG([-pthread])
-MK_MAYBE_ADD_CXXFLAG([-pthread])
-MK_MAYBE_ADD_LDFLAG([-pthread])
+MK_PTHREAD
 
 AC_CHECK_FUNCS([err errx warn warnx getopt getopt_long getopt_long_only        \
                 gmtime_r strcasecmp strtonum])
