@@ -10,16 +10,12 @@ libmeasurement_kit_la_LDFLAGS = $(VERSION_INFO)
 libmeasurement_kit_la_SOURCES = # Empty
 measurement_kit_SOURCES       = # Empty
 
-if BUILD_BINARIES
-    bin_PROGRAMS = measurement_kit
-    measurement_kit_LDADD = libmeasurement_kit.la
-endif
+bin_PROGRAMS = measurement_kit
+measurement_kit_LDADD = libmeasurement_kit.la
 
-if BUILD_TESTS
-    noinst_LTLIBRARIES       = libtest_main.la
-    libtest_main_la_CPPFLAGS = -DCATCH_CONFIG_MAIN
-    libtest_main_la_SOURCES  = test/main.cpp
-endif
+noinst_LTLIBRARIES       = libtest_main.la
+libtest_main_la_CPPFLAGS = -DCATCH_CONFIG_MAIN
+libtest_main_la_SOURCES  = test/main.cpp
 
 noinst_PROGRAMS    = # Empty
 ALL_TESTS          = # Empty

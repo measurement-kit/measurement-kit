@@ -16,8 +16,6 @@ AM_INIT_AUTOMAKE([parallel-tests 1.11])
 LT_INIT([disable-shared], [pic-only])
 AC_CONFIG_HEADERS([config.h])
 
-AM_CONDITIONAL([BUILD_TESTS], [test "yes" = "yes"])  # for now, build always
-
 AC_CANONICAL_HOST
 AC_PROG_INSTALL
 
@@ -43,8 +41,6 @@ MK_MAYBE_ADD_CFLAG([-pthread])
 MK_MAYBE_ADD_CXXFLAG([-pthread])
 MK_MAYBE_ADD_LDFLAG([-pthread])
 
-MK_AM_DISABLE_BINARIES
-MK_AM_DISABLE_EXAMPLES
 MK_AM_DISABLE_INTEGRATION_TESTS
 MK_AM_DISABLE_TRACEROUTE
 

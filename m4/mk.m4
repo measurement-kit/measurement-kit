@@ -1,17 +1,3 @@
-AC_DEFUN([MK_AM_DISABLE_EXAMPLES], [
-  AC_ARG_ENABLE([examples],
-    AS_HELP_STRING([--disable-examples, skip building of examples programs]),
-                   [], [enable_examples=yes])
-  AM_CONDITIONAL([BUILD_EXAMPLES], [test "$enable_examples" = "yes"])
-])
-
-AC_DEFUN([MK_AM_DISABLE_BINARIES], [
-  AC_ARG_ENABLE([binaries],
-    AS_HELP_STRING([--disable-binaries, skip building of binary programs]),
-                   [], [enable_binaries=yes])
-  AM_CONDITIONAL([BUILD_BINARIES], [test "$enable_binaries" = "yes"])
-])
-
 AC_DEFUN([MK_AM_DISABLE_INTEGRATION_TESTS], [
   AC_ARG_ENABLE([integration-tests],
     AS_HELP_STRING([--disable-integration-tests, skip building of integration tests]),
