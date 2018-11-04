@@ -2,15 +2,15 @@
 set -ex
 BASE_URL=https://github.com/measurement-kit/prebuilt/releases/download
 CHANNEL=testing
-CURL_VERSION=7.61.1-2
+CURL_VERSION=7.61.1-9
 CURL=mingw-curl-$CURL_VERSION
-GEOIP_VERSION=1.6.12-4
+GEOIP_VERSION=1.6.12-9
 GEOIP=mingw-geoip-api-c-$GEOIP_VERSION
-LIBEVENT_VERSION=2.1.8-7
+LIBEVENT_VERSION=2.1.8-9
 LIBEVENT=mingw-libevent-$LIBEVENT_VERSION
-LIBMAXMINDDB_VERSION=1.3.2-2
+LIBMAXMINDDB_VERSION=1.3.2-9
 LIBMAXMINDDB=mingw-libmaxminddb-$LIBMAXMINDDB_VERSION
-LIBRESSL_VERSION=2.7.4-1
+LIBRESSL_VERSION=2.7.4-9
 LIBRESSL=mingw-libressl-$LIBRESSL_VERSION
 curl -fsSLO $BASE_URL/$CHANNEL/$CURL.tar.gz
 curl -fsSLO $BASE_URL/$CHANNEL/$GEOIP.tar.gz
@@ -31,5 +31,12 @@ ARCH=x86_64
             --with-libcurl=$PREFIX/curl/$CURL_VERSION/$ARCH                    \
             --with-libmaxminddb=$PREFIX/libmaxminddb/$LIBMAXMINDDB_VERSION/$ARCH \
             --with-ca-bundle=test/fixtures/saved_ca_bundle.pem                 \
-            --disable-shared $PKG_CONFIGUREFLAGS
-make V=0 -j$(nproc) check
+            --disable-shared --disable-dependency-tracking
+make -j`nproc` all
+make -j`nproc` check TESTS=
+make -j6 check || {
+  if [ -f ./test-suite.log ]; then
+    cat ./test-suite.log
+  fi
+  exit 1
+}
