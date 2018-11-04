@@ -18,7 +18,6 @@ case "$host" in
     # Required to expose inet_pton()
     CPPFLAGS="$CPPFLAGS -D_WIN32_WINNT=0x0600"
   ;;
-  *) ;;
 esac
 
 AC_PROG_CXX
@@ -38,7 +37,7 @@ MK_AM_RESOLV
 MK_AM_LIBCURL
 MK_AM_LIBMAXMINDDB
 
-MK_CHECK_CA_BUNDLE
+MK_MAYBE_CA_BUNDLE
 
 CPPFLAGS="-I \$(top_srcdir)/include $CPPFLAGS"
 

@@ -274,27 +274,20 @@ AC_DEFUN([MK_REQUIRE_CXXFLAG], [
   CXXFLAGS="$CXXFLAGS $1"
 ])
 
-AC_DEFUN([MK_CHECK_CA_BUNDLE], [
+AC_DEFUN([MK_MAYBE_CA_BUNDLE], [
   AC_MSG_CHECKING([CA bundle path])
-
-  AC_ARG_WITH([ca-bundle],
-              AC_HELP_STRING([--with-ca-bundle=FILE],
-               [Path to a file containing CA certificates (example: /etc/ca-bundle.crt)]),
-              [
-               want_ca="$withval"
-              ],
-              [want_ca="unset"])
-  
+  AC_ARG_WITH([ca-bundle], AC_HELP_STRING([--with-ca-bundle=FILE],
+               [Path to CA bundle]), [want_ca="$withval"], [want_ca="unset"])
   if test "x$want_ca" != "xunset"; then
     ca="$want_ca"
   else
     ca="no"
     if test "x$cross_compiling" != "xyes"; then
-        for a in /etc/ssl/certs/ca-certificates.crt \
-                 /etc/pki/tls/certs/ca-bundle.crt \
-                 /usr/share/ssl/certs/ca-bundle.crt \
-                 /usr/local/share/certs/ca-root.crt \
-                 /etc/ssl/cert.pem \
+        for a in /etc/ssl/certs/ca-certificates.crt                            \
+                 /etc/pki/tls/certs/ca-bundle.crt                              \
+                 /usr/share/ssl/certs/ca-bundle.crt                            \
+                 /usr/local/share/certs/ca-root.crt                            \
+                 /etc/ssl/cert.pem                                             \
                  /usr/local/etc/openssl/cert.pem; do
           if test -f "$a"; then
             ca="$a"
@@ -303,7 +296,6 @@ AC_DEFUN([MK_CHECK_CA_BUNDLE], [
         done
     fi
   fi
-
   if test "x$ca" != "xno"; then
     MK_CA_BUNDLE="$ca"
     AC_DEFINE_UNQUOTED(MK_CA_BUNDLE, "$ca", [Location of default ca bundle])
