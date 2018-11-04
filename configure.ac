@@ -35,21 +35,18 @@ case "$host" in
     # Required to expose inet_pton()
     CPPFLAGS="$CPPFLAGS -D_WIN32_WINNT=0x0600"
   ;;
-  *)
-    # Must set -pthread before testing for -levent_pthreads
-    CFLAGS="$CFLAGS -pthread"
-    CXXFLAGS="$CXXFLAGS -pthread"
-    LDFLAGS="$LDFLAGS -pthread"
-  ;;
 esac
+
+AC_PROG_CXX
+
+MK_MAYBE_ADD_CFLAG([-pthread])
+MK_MAYBE_ADD_CXXFLAG([-pthread])
+MK_MAYBE_ADD_LDFLAG([-pthread])
 
 MK_AM_DISABLE_BINARIES
 MK_AM_DISABLE_EXAMPLES
 MK_AM_DISABLE_INTEGRATION_TESTS
 MK_AM_DISABLE_TRACEROUTE
-
-# See above comment
-AC_PROG_CXX
 
 MK_AM_CHECK_LIBC_FUNCS
 MK_AM_OPENSSL
@@ -69,8 +66,11 @@ MK_CHECK_CA_BUNDLE
 # checks for compiler characteristics
 
 CPPFLAGS="-I \$(top_srcdir)/include $CPPFLAGS"
-CFLAGS="-Wall -Wextra -pedantic $CFLAGS"
-CXXFLAGS="-Wall -Wextra -pedantic $CXXFLAGS"
+
+for flag in -Wall -Wextra -pedantic -Wmissing-prototypes; do
+  MK_MAYBE_ADD_CFLAG([$flag])
+  MK_MAYBE_ADD_CXXFLAG([$flag])
+done
 
 # Force compiling the http_parser in non-strict mode. This allows us to test
 # partially broken sites like mail.voila.fr that send spaces between the header
@@ -82,7 +82,6 @@ CPPFLAGS="-DMK_NETTESTS_INTERNAL $CPPFLAGS"
 
 MK_REQUIRE_CFLAG([-std=c11])
 MK_REQUIRE_CXXFLAG([-std=c++14])
-MK_AM_CXXFLAGS_ADD_WARNINGS
 
 # checks for library functions
 

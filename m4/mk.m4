@@ -245,6 +245,51 @@ AC_DEFUN([MK_AM_OPENSSL], [
   fi
 ])
 
+AC_DEFUN([MK_MAYBE_ADD_CFLAG], [
+  AX_SAVE_FLAGS([mk])
+  mk_maybe_add_flag=false
+  CFLAGS="$1 -Werror"
+  AC_MSG_CHECKING([whether $CC supports $1])
+  AC_LANG_PUSH([C])
+  AC_COMPILE_IFELSE([AC_LANG_PROGRAM([])],
+                    [AC_MSG_RESULT([yes])
+                     mk_maybe_add_flag=true],
+                    [AC_MSG_RESULT([no])])
+  AC_LANG_POP([C])
+  AX_RESTORE_FLAGS([mk])
+  if [ "$mk_maybe_add_flag" = "true" ]; then CFLAGS="$CFLAGS $1"; fi
+])
+
+AC_DEFUN([MK_MAYBE_ADD_CXXFLAG], [
+  AX_SAVE_FLAGS([mk])
+  mk_maybe_add_flag=false
+  CXXFLAGS="$1 -Werror"
+  AC_MSG_CHECKING([whether $CXX supports $1])
+  AC_LANG_PUSH([C++])
+  AC_COMPILE_IFELSE([AC_LANG_PROGRAM([])],
+                    [AC_MSG_RESULT([yes])
+                     mk_maybe_add_flag=true],
+                    [AC_MSG_RESULT([no])])
+  AC_LANG_POP([C++])
+  AX_RESTORE_FLAGS([mk])
+  if [ "$mk_maybe_add_flag" = "true" ]; then CXXFLAGS="$CXXFLAGS $1"; fi
+])
+
+AC_DEFUN([MK_MAYBE_ADD_LDFLAG], [
+  AX_SAVE_FLAGS([mk])
+  mk_maybe_add_flag=false
+  LDFLAGS="$1 -Werror"
+  AC_MSG_CHECKING([whether $CC supports $1])
+  AC_LANG_PUSH([C])
+  AC_LINK_IFELSE([AC_LANG_PROGRAM([])],
+                 [AC_MSG_RESULT([yes])
+                  mk_maybe_add_flag=true],
+                 [AC_MSG_RESULT([no])])
+  AC_LANG_POP([C])
+  AX_RESTORE_FLAGS([mk])
+  if [ "$mk_maybe_add_flag" = "true" ]; then LDFLAGS="$LDFLAGS $1"; fi
+])
+
 AC_DEFUN([MK_REQUIRE_CFLAG], [
   AX_SAVE_FLAGS([mk])
   CFLAGS="$1 -Werror"
@@ -314,16 +359,5 @@ AC_DEFUN([MK_CHECK_CA_BUNDLE], [
   else
     AC_MSG_RESULT([no])
     AC_MSG_ERROR([you should give a ca-bundle location])
-  fi
-])
-
-
-AC_DEFUN([MK_AM_CXXFLAGS_ADD_WARNINGS], [
-  AC_MSG_CHECKING([whether compiler is clang to add clang specific warnings])
-  if test echo | $CXX -dM -E - | grep __clang__ > /dev/null; then
-    AC_MSG_RESULT([yes])
-    CXXFLAGS="$CXXFLAGS -Wmissing-prototypes"
-  else
-    AC_MSG_RESULT([yes])
   fi
 ])
