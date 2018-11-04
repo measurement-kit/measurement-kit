@@ -12,19 +12,13 @@ AC_CANONICAL_HOST
 AC_PROG_INSTALL
 
 case "$host" in
-  *-apple-darwin*)
-    if test "$cross_compiling" != yes; then
-      # On my macOS, /usr/local is not added automatically
-      CPPFLAGS="$CPPFLAGS -I/usr/local/include"
-      LDFLAGS="$LDFLAGS -L/usr/local/lib"
-    fi
-  ;;
   *-w64-mingw32)
     # Must link with ws2_32
     LIBS="$LIBS -lws2_32"
     # Required to expose inet_pton()
     CPPFLAGS="$CPPFLAGS -D_WIN32_WINNT=0x0600"
   ;;
+  *) ;;
 esac
 
 AC_PROG_CXX
