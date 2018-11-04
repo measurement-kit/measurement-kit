@@ -207,7 +207,7 @@ AC_DEFUN([MK_MAYBE_ADD_CFLAG], [
   AX_SAVE_FLAGS([mk])
   mk_maybe_add_flag=false
   CFLAGS="$1 -Werror"
-  AC_MSG_CHECKING([whether $CC supports $1])
+  AC_MSG_CHECKING([whether $CC supports $1 when compiling])
   AC_LANG_PUSH([C])
   AC_COMPILE_IFELSE([AC_LANG_PROGRAM([])],
                     [AC_MSG_RESULT([yes])
@@ -222,7 +222,7 @@ AC_DEFUN([MK_MAYBE_ADD_CXXFLAG], [
   AX_SAVE_FLAGS([mk])
   mk_maybe_add_flag=false
   CXXFLAGS="$1 -Werror"
-  AC_MSG_CHECKING([whether $CXX supports $1])
+  AC_MSG_CHECKING([whether $CXX supports $1 when compiling])
   AC_LANG_PUSH([C++])
   AC_COMPILE_IFELSE([AC_LANG_PROGRAM([])],
                     [AC_MSG_RESULT([yes])
@@ -237,7 +237,7 @@ AC_DEFUN([MK_MAYBE_ADD_LDFLAG], [
   AX_SAVE_FLAGS([mk])
   mk_maybe_add_flag=false
   LDFLAGS="$1 -Werror"
-  AC_MSG_CHECKING([whether $CC supports $1])
+  AC_MSG_CHECKING([whether $CC supports $1 when linking])
   AC_LANG_PUSH([C])
   AC_LINK_IFELSE([AC_LANG_PROGRAM([])],
                  [AC_MSG_RESULT([yes])
@@ -251,7 +251,7 @@ AC_DEFUN([MK_MAYBE_ADD_LDFLAG], [
 AC_DEFUN([MK_REQUIRE_CFLAG], [
   AX_SAVE_FLAGS([mk])
   CFLAGS="$1 -Werror"
-  AC_MSG_CHECKING([whether $CC supports $1])
+  AC_MSG_CHECKING([whether $CC supports $1 when compiling])
   AC_LANG_PUSH([C])
   AC_COMPILE_IFELSE([AC_LANG_PROGRAM([])], [AC_MSG_RESULT([yes])],
                     [AC_MSG_RESULT([no])
@@ -264,7 +264,7 @@ AC_DEFUN([MK_REQUIRE_CFLAG], [
 AC_DEFUN([MK_REQUIRE_CXXFLAG], [
   AX_SAVE_FLAGS([mk])
   CXXFLAGS="$1 -Werror"
-  AC_MSG_CHECKING([whether $CXX supports $1])
+  AC_MSG_CHECKING([whether $CXX supports $1 when compiling])
   AC_LANG_PUSH([C++])
   AC_COMPILE_IFELSE([AC_LANG_PROGRAM([])], [AC_MSG_RESULT([yes])],
                     [AC_MSG_RESULT([no])
