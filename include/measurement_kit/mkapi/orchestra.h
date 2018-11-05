@@ -37,13 +37,13 @@ void mkapi_orchestra_client_set_ca_bundle_path(
     mkapi_orchestra_client_t *client, const char *ca_bundle_path);
 
 /// mkapi_orchestra_client_set_geoip_country_path sets the @p geoip_country_path
-/// for @p client. Note that we expectd a GeoLite2 MaxMindDB (i.e. `.mmdb`)
+/// for @p client. Note that we expect a GeoLite2 MaxMindDB (i.e. `.mmdb`)
 /// file here, not a legacy `.dat` file. Aborts if passed null arguments.
 void mkapi_orchestra_client_set_geoip_country_path(
     mkapi_orchestra_client_t *client, const char *geoip_country_path);
 
 /// mkapi_orchestra_client_set_geoip_asn_path sets the @p geoip_asn_path
-/// for @p client. Note that we expectd a GeoLite2 MaxMindDB (i.e. `.mmdb`)
+/// for @p client. Note that we expect a GeoLite2 MaxMindDB (i.e. `.mmdb`)
 /// file here, not a legacy `.dat` file. Aborts if passed null arguments.
 void mkapi_orchestra_client_set_geoip_asn_path(
     mkapi_orchestra_client_t *client, const char *geoip_asn_path);
