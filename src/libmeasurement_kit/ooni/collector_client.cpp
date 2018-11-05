@@ -109,7 +109,7 @@ ErrorOr<nlohmann::json> get_next_entry(SharedPtr<std::istream> file, SharedPtr<L
     try {
         entry = nlohmann::json::parse(line);
     } catch (const std::exception &) {
-        e = JsonParseError();
+        e = JsonProcessingError();
     }
     if (e != NoError()) {
         return {e, {}};

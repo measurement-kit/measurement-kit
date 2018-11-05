@@ -164,7 +164,7 @@ TEST_CASE("collector::post deals with invalid json") {
     reactor->run_with_initial_event([=]() {
         collector::post_impl<invalid_json>(nullptr, "", "",
                                        [=](Error err, nlohmann::json r) {
-                                           REQUIRE(err == JsonParseError());
+                                           REQUIRE(err == JsonProcessingError());
                                            REQUIRE(r == nullptr);
                                            reactor->stop();
                                        },
@@ -294,7 +294,7 @@ TEST_CASE("collector::create_report deals with wrong JSON type") {
         collector::create_report_impl<wrong_json_type>(
         nullptr, ENTRY,
         [=](Error err, std::string s) {
-            REQUIRE(err == JsonDomainError());
+            REQUIRE(err == JsonProcessingError());
             REQUIRE(s == "");
             reactor->stop();
         },
@@ -315,7 +315,7 @@ TEST_CASE("collector::create_report deals with missing report_id") {
         collector::create_report_impl<missing_report_id>(
         nullptr, ENTRY,
         [=](Error err, std::string s) {
-            REQUIRE(err == JsonKeyError());
+            REQUIRE(err == JsonProcessingError());
             REQUIRE(s == "");
             reactor->stop();
         },
@@ -356,7 +356,7 @@ TEST_CASE("collector::get_next_entry() works correctly on invalid JSON") {
     SharedPtr<std::istream> input(new std::istringstream("{\n"));
     ErrorOr<nlohmann::json> entry = collector::get_next_entry(input, Logger::global());
     REQUIRE(!entry);
-    REQUIRE(entry.as_error() == JsonParseError());
+    REQUIRE(entry.as_error() == JsonProcessingError());
 }
 
 TEST_CASE("collector::get_next_entry() works correctly on incomplete line") {

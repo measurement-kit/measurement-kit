@@ -16,37 +16,35 @@ TEST_CASE("BouncerReply::create() works") {
         auto maybe_reply = ooni::BouncerReply::create(
             R"({"error": "collector-not-found"})", Logger::global());
         REQUIRE(!maybe_reply);
-        REQUIRE(maybe_reply.as_error() ==
-                ooni::BouncerCollectorNotFoundError());
+        REQUIRE(maybe_reply.as_error() == JsonProcessingError());
     }
 
     SECTION("When the response is invalid") {
         auto maybe_reply = ooni::BouncerReply::create(
             R"({"error": "invalid-request"})", Logger::global());
         REQUIRE(!maybe_reply);
-        REQUIRE(maybe_reply.as_error() == ooni::BouncerInvalidRequestError());
+        REQUIRE(maybe_reply.as_error() == JsonProcessingError());
     }
 
     SECTION("When the error is something else") {
         auto maybe_reply = ooni::BouncerReply::create(
             R"({"error": "xx"})", Logger::global());
         REQUIRE(!maybe_reply);
-        REQUIRE(maybe_reply.as_error() == ooni::BouncerGenericError());
+        REQUIRE(maybe_reply.as_error() == JsonProcessingError());
     }
 
     SECTION("When the net-tests section is missing") {
         auto maybe_reply = ooni::BouncerReply::create(
             R"({})", Logger::global());
         REQUIRE(!maybe_reply);
-        REQUIRE(maybe_reply.as_error() ==
-                ooni::BouncerTestHelperNotFoundError());
+        REQUIRE(maybe_reply.as_error() == JsonProcessingError());
     }
 
     SECTION("When the parser throws invalid_argument") {
         auto maybe_reply = ooni::BouncerReply::create(
             R"({)", Logger::global());
         REQUIRE(!maybe_reply);
-        REQUIRE(maybe_reply.as_error() == JsonParseError());
+        REQUIRE(maybe_reply.as_error() == JsonProcessingError());
     }
 }
 
@@ -130,7 +128,7 @@ TEST_CASE("post_net_tests() works") {
                 ooni::bouncer::production_bouncer_url(), "antani", "0.0.1",
                 {"antani"},
                 [=](Error e, SharedPtr<ooni::BouncerReply>) {
-                    REQUIRE(e == ooni::BouncerCollectorNotFoundError());
+                    REQUIRE(e == JsonProcessingError());
                     reactor->stop();
                 },
                 settings, reactor, Logger::global());

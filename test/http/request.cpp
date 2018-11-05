@@ -840,7 +840,7 @@ TEST_CASE("request_json_string() works as expected") {
             request_json_string_impl<fail_parsing>(
               "GET", "http://www.google.com", "{}", {},
               [=](Error error, SharedPtr<Response>, nlohmann::json) {
-                  REQUIRE(error == JsonParseError());
+                  REQUIRE(error == JsonProcessingError());
               },
               {}, reactor, Logger::global());
         });

@@ -68,7 +68,7 @@ void request_json_string_impl(
                 try {
                     jresponse = nlohmann::json::parse(response->body);
                 } catch (const std::exception &) {
-                    error = JsonParseError();
+                    error = JsonProcessingError();
                 }
                 cb(error, response, jresponse);
             },

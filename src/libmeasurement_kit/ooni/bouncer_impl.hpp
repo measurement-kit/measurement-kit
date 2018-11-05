@@ -38,7 +38,7 @@ ErrorOr<SharedPtr<BouncerReply>> create_impl(std::string data, SharedPtr<Logger>
             throw BouncerTestHelperNotFoundError();
         }
     } catch (const std::exception &) {
-        err = JsonParseError();
+        err = JsonProcessingError();
     }
     if (err) {
         logger->warn("bouncer parsing error: %s", err.what());

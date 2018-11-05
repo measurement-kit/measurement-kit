@@ -27,7 +27,7 @@ void compare_headers_response(http::Headers headers,
     nlohmann::json resp;
     try {
         resp = nlohmann::json::parse(response->body);
-    } catch (const std::invalid_argument &) {
+    } catch (const std::exception &) {
         logger->warn("response body not valid JSON");
         (*entry)["tampering"]["total"] = true;
         (*entry)["tampering"]["request_line_capitalization"] = true;

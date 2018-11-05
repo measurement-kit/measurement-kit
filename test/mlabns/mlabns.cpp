@@ -194,7 +194,7 @@ TEST_CASE("Make sure that an error is passed to callback if the response does "
         mlabns::query_impl<get_debug_invalid_incomplete_json>(
             tool,
             [=](Error error, mlabns::Reply) {
-                REQUIRE(error == JsonKeyError());
+                REQUIRE(error == JsonProcessingError());
                 reactor->stop();
             },
             settings, reactor, Logger::global());
@@ -231,7 +231,7 @@ TEST_CASE("Make sure that an error is passed to callback if the response "
         mlabns::query_impl<get_debug_json_with_unexpected_type>(
             tool,
             [=](Error error, mlabns::Reply) {
-                REQUIRE(error == JsonDomainError());
+                REQUIRE(error == JsonProcessingError());
                 reactor->stop();
             },
             settings, reactor, Logger::global());

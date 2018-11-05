@@ -103,7 +103,7 @@ void query_impl(std::string tool, Callback<Error, Reply> callback,
                 reply.site = node.at("site");
                 reply.country = node.at("country");
             } catch (const std::exception &) {
-                err = JsonParseError();
+                err = JsonProcessingError();
             }
             if (err) {
                 logger->warn("mlabns: cannot parse json: %s", err.what());

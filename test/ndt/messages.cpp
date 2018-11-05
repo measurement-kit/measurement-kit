@@ -61,7 +61,7 @@ TEST_CASE("read_json() deals with read_ndt() error") {
 TEST_CASE("read_json() deals with invalid JSON") {
     SharedPtr<Context> ctx(new Context);
     messages::read_json_impl<succeed>(ctx, [](Error err, uint8_t, nlohmann::json) {
-        REQUIRE(err == JsonParseError());
+        REQUIRE(err == JsonProcessingError());
     }, Reactor::global());
 }
 
@@ -85,7 +85,7 @@ TEST_CASE("read() deals with read_json() error") {
 TEST_CASE("read() deals with json without 'msg' field") {
     SharedPtr<Context> ctx(new Context);
     messages::read_msg_impl<invalid>(ctx, [](Error err, uint8_t, std::string) {
-        REQUIRE(err == JsonKeyError());
+        REQUIRE(err == JsonProcessingError());
     }, Reactor::global());
 }
 
@@ -97,7 +97,7 @@ static void bad_type(SharedPtr<Context>, Callback<Error, uint8_t, nlohmann::json
 TEST_CASE("read() deals with json with 'msg' field of the wrong type") {
     SharedPtr<Context> ctx(new Context);
     messages::read_msg_impl<bad_type>(ctx, [](Error err, uint8_t, std::string) {
-        REQUIRE(err == JsonDomainError());
+        REQUIRE(err == JsonProcessingError());
     }, Reactor::global());
 }
 

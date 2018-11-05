@@ -68,7 +68,7 @@ void login(Auth &&auth, std::string registry_url, Settings settings,
                   auth.logged_in = true;
                   logger->info("Logged in with orchestrator");
               } catch (const std::exception &) {
-                  error = JsonParseError();
+                  error = JsonProcessingError();
               }
               if (error) {
                   logger->warn("orchestrator: json processing error: %s",
@@ -137,7 +137,7 @@ void register_probe_(const ClientMetadata &m, std::string password,
                       throw RegistryEmptyClientIdError();
                   }
               } catch (const std::exception &) {
-                  error = JsonParseError();
+                  error = JsonProcessingError();
               }
               if (error) {
                   logger->warn("orchestrator: JSON processing error: %s",
@@ -196,7 +196,7 @@ void update_(const ClientMetadata &m, Auth &&auth, SharedPtr<Reactor> reactor,
                                 throw RegistryInvalidRequestError();
                             }
                         } catch (const std::exception &) {
-                            err = JsonParseError();
+                            err = JsonProcessingError();
                         }
                         if (!err) {
                             logger->info("Updated orchestrator about "

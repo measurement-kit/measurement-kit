@@ -444,7 +444,7 @@ void negotiate_loop_(SharedPtr<nlohmann::json> entry, SharedPtr<net::Transport> 
                   real_address = respbody.at("real_address");
                   unchoked = respbody.at("unchoked");
               } catch (const std::exception &) {
-                  error = JsonParseError();
+                  error = JsonProcessingError();
               }
               if (error) {
                   logger->warn("neubot: cannot parse negotiate response: %s",
@@ -495,7 +495,7 @@ void collect_(SharedPtr<net::Transport> txp, SharedPtr<nlohmann::json> entry,
               try {
                   nlohmann::json json = nlohmann::json::parse(res->body);
               } catch (const std::exception &) {
-                  error = JsonParseError();
+                  error = JsonProcessingError();
               }
               cb(error);
           },

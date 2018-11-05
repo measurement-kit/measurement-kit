@@ -72,8 +72,8 @@ void read_json_impl(SharedPtr<Context> ctx, Callback<Error, uint8_t, nlohmann::j
         }
         try {
             message = nlohmann::json::parse(m);
-        } catch (const std::invalid_argument &) {
-            callback(JsonParseError(), 0, message);
+        } catch (const std::exception &) {
+            callback(JsonProcessingError(), 0, message);
             return;
         }
         callback(NoError(), type, message);
@@ -93,11 +93,8 @@ void read_msg_impl(SharedPtr<Context> ctx,
         std::string s;
         try {
             s = message.at("msg");
-        } catch (const std::out_of_range &) {
-            callback(JsonKeyError(), 0, "");
-            return;
-        } catch (const std::domain_error &) {
-            callback(JsonDomainError(), 0, "");
+        } catch (const std::exception &) {
+            callback(JsonProcessingError(), 0, "");
             return;
         }
         callback(NoError(), type, s);

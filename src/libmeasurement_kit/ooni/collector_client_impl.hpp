@@ -80,8 +80,8 @@ void post_impl(SharedPtr<Transport> transport, std::string append_to_url,
                               nlohmann::json reply;
                               try {
                                   reply = nlohmann::json::parse(response->body);
-                              } catch (const std::invalid_argument &) {
-                                  callback(JsonParseError(), nullptr);
+                              } catch (const std::exception &) {
+                                  callback(JsonProcessingError(), nullptr);
                                   return;
                               }
                               callback(NoError(), reply);
@@ -157,11 +157,8 @@ void create_report_impl(SharedPtr<Transport> transport, nlohmann::json entry,
                        std::string report_id;
                        try {
                            report_id = reply.at("report_id");
-                       } catch (const std::domain_error &) {
-                           callback(JsonDomainError(), "");
-                           return;
-                       } catch (const std::out_of_range &) {
-                           callback(JsonKeyError(), "");
+                       } catch (const std::exception &) {
+                           callback(JsonProcessingError(), "");
                            return;
                        }
                        // TODO(bassosimone): the code for setting up the

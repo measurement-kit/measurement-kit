@@ -53,7 +53,7 @@ Error Auth::loads(const std::string &s) noexcept {
         username = json.at("username");
         password = json.at("password");
     } catch (const std::exception &) {
-        return JsonParseError();
+        return JsonProcessingError();
     }
     return NoError();
 }

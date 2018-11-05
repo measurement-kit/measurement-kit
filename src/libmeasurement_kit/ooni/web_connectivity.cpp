@@ -401,9 +401,9 @@ static void control_request(http::Headers headers_to_pass_along,
                                   nlohmann::json::parse(response->body);
                               callback(NoError());
                               return;
-                          } catch (const std::invalid_argument &) {
+                          } catch (const std::exception &) {
                               (*entry)["control_failure"] = "json_parse_error";
-                              callback(JsonParseError());
+                              callback(JsonProcessingError());
                               return;
                           }
                       }
