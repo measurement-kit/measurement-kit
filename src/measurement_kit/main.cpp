@@ -11,6 +11,7 @@
 
 #include <cstdio>
 #include <cstring>
+#include <iostream>
 
 static const struct {
     const char *mod_name;
