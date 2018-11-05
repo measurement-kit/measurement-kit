@@ -35,7 +35,12 @@ TEST_CASE("extract_html_title works") {
         ss << "<html><head><meta><title>";
         ss << random_printable(1 << 25);
         ss << "</title></head></body></html>";
-        REQUIRE(ooni::extract_html_title(ss.str()) != "");
+        // Note: we expect the title to be empty because the regular
+        // expression is bounded, i.e. it does not look for titles
+        // beyond a specific length. (We should probably parse bodies
+        // in a test helper rather than in MK but, still, at least
+        // with this fix we don't overflow the stack.)
+        REQUIRE(ooni::extract_html_title(ss.str()) == "");
     }
 }
 
