@@ -260,25 +260,9 @@ void connect(std::string address, int port,
                                     return;
                                 }
                                 if (*allow_dirty_shutdown == true) {
-                                    /*
-                                     * This useful libevent function is only
-                                     * available since libevent 2.1.0:
-                                     */
-#ifdef HAVE_BUFFEREVENT_OPENSSL_SET_ALLOW_DIRTY_SHUTDOWN
                                     bufferevent_openssl_set_allow_dirty_shutdown(
                                         bev, 1);
                                     logger->info("Allowing dirty SSL shutdown");
-#else
-                                    logger->warn("Cannot tell libevent to "
-                                                 "allow SSL dirty shutdowns "
-                                                 "as requested by the "
-                                                 "programmer: as a result "
-                                                 "some SSL connections may "
-                                                 "interrupt abruptly with an "
-                                                 "error. This happens because "
-                                                 "you are not using version "
-                                                 "2.1.x of libevent.");
-#endif
                                 }
                                 assert(err == NoError());
                                 callback(err, make_txp(
