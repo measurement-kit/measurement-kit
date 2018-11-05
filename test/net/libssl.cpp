@@ -34,20 +34,11 @@ static int ssl_ctx_load_verify_locations_fail(SSL_CTX *, const char *,
     return 0;
 }
 
-#if (defined LIBRESSL_VERSION_NUMBER && LIBRESSL_VERSION_NUMBER >= 0x2010400fL)
-static int ssl_ctx_load_verify_mem_fail(SSL_CTX *, void *, int) { return 0; }
-#endif
-
 TEST_CASE("Context::make() works") {
     SECTION("when the ca_bundle_path is empty") {
         auto maybe_ctx = Context::make("", Logger::global());
-#if (defined LIBRESSL_VERSION_NUMBER && LIBRESSL_VERSION_NUMBER >= 0x2010400fL)
-        REQUIRE(!!maybe_ctx);
-        REQUIRE(maybe_ctx->get() != nullptr);
-#else
         REQUIRE(!maybe_ctx);
         REQUIRE(maybe_ctx.as_error() == MissingCaBundlePathError());
-#endif
     }
 
     SECTION("when SSL_CTX_new() fails") {
