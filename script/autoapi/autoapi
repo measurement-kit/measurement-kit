@@ -84,6 +84,9 @@ def main():
                     Attribute("int64_t", "idx"),
                     Attribute("std::string", "json_str")),
 
+              Event("failure.network_name_lookup",
+                    Attribute("std::string", "failure")),
+
               Event("failure.report_create",
                     Attribute("std::string", "failure")),
 
@@ -195,13 +198,11 @@ def main():
                Attribute("bool", "no_ip_lookup", "false"),
                Attribute("bool", "no_file_report", "false"),
                Attribute("bool", "no_resolver_lookup", "false"),
-               Attribute("std::string", "probe_asn"),
-               Attribute("std::string", "probe_cc"),
-               Attribute("std::string", "probe_ip"),
                Attribute("bool", "randomize_input", "true"),
                Attribute("bool", "save_real_probe_asn", "true"),
                Attribute("bool", "save_real_probe_cc", "true"),
                Attribute("bool", "save_real_probe_ip", "false"),
+               Attribute("bool", "save_real_probe_network_name", "false"),
                Attribute("bool", "save_real_resolver_ip", "true"),
                Attribute("std::string", "software_name"),
                Attribute("std::string", "software_version")]
@@ -220,14 +221,6 @@ def main():
                 Nettest("web_connectivity", ["needs_input", "websites"]),
                 Nettest("whatsapp", None,
                         Attribute("bool", "all_endpoints", "false"))]
-
-    with open("./script/autoapi/nettest.hpp.j2", "r") as sourcefp:
-        tpl = jinja2.Template(sourcefp.read())
-        render = tpl.render(events=events, log_levels=log_levels,
-                            settings=settings, options=options,
-                            nettests=nettests)
-        with open("./include/measurement_kit/experimental/nettest.hpp", "w") as destfp:
-            destfp.write(render)
 
     with open("./script/autoapi/nettests-ffi.hpp.j2", "r") as sourcefp:
         tpl = jinja2.Template(sourcefp.read())

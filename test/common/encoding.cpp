@@ -10,7 +10,7 @@
 
 #if !defined HAVE_CONFIG_H || (defined HAVE_RESOLV_H && defined HAVE_LIBRESOLV)
 
-#include "src/libmeasurement_kit/ext/catch.hpp"
+#include "include/private/catch.hpp"
 
 #include "src/libmeasurement_kit/common/encoding.hpp"
 

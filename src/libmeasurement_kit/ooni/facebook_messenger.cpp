@@ -4,10 +4,11 @@
 
 #include "src/libmeasurement_kit/ooni/constants.hpp"
 #include "src/libmeasurement_kit/ooni/nettests.hpp"
-#include "src/libmeasurement_kit/ooni/utils.hpp"
 #include "src/libmeasurement_kit/common/fcompose.hpp"
 #include "src/libmeasurement_kit/common/utils.hpp"
 #include "src/libmeasurement_kit/ooni/templates.hpp"
+
+#include <measurement_kit/vendor/mkmmdb.h>
 
 #include <measurement_kit/ooni.hpp>
 
@@ -29,12 +30,17 @@ static const std::map<std::string, std::string> &FB_SERVICE_HOSTNAMES = {
 
 static bool ip_in_fb_asn(Settings options, std::string ip) {
     std::string asn_p = options.get("geoip_asn_path", std::string{});
-    auto geoip = GeoipCache::thread_local_instance()->get(asn_p);
-    ErrorOr<std::string> asn = geoip->resolve_asn(ip);
-    if (!!asn && asn.as_value() != "AS0") {
-        return asn.as_value().c_str() == FB_ASN;
+    mkmmdb_uptr mmdb{mkmmdb_open_nonnull(asn_p.c_str())};
+    if (!mkmmdb_good(mmdb.get())) {
+        return false;
     }
-    return false;
+    int64_t n = mkmmdb_lookup_asn(mmdb.get(), ip.c_str());
+    if (n <= 0) {
+        return false;
+    }
+    std::string s = "AS";
+    s += std::to_string(n);
+    return s == FB_ASN;
 }
 
 static void

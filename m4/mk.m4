@@ -32,37 +32,11 @@ AC_DEFUN([MK_AM_LIBEVENT], [
   AC_CHECK_LIB(event_openssl, bufferevent_openssl_filter_new, [],
                [mk_not_found=1])
 
-  AC_CHECK_FUNCS([bufferevent_openssl_set_allow_dirty_shutdown])
-
   if test "$mk_not_found" = "1"; then
     AC_MSG_WARN([Failed to find dependency: libevent])
     echo "    - to install on Debian: sudo apt-get install libevent-dev"
     echo "    - to install on OSX: brew install libevent"
     AC_MSG_ERROR([Please, install libevent and run configure again])
-  fi
-])
-
-AC_DEFUN([MK_AM_GEOIP], [
-
-  AC_ARG_WITH([geoip],
-              [AS_HELP_STRING([--with-geoip],
-                [GeoIP library @<:@default=check@:>@])
-              ],
-              [
-                CPPFLAGS="$CPPFLAGS -I$withval/include"
-                LDFLAGS="$LDFLAGS -L$withval/lib"
-              ],
-              [])
-
-  mk_not_found=""
-  AC_CHECK_HEADERS(GeoIP.h, [], [mk_not_found=1])
-  AC_CHECK_LIB(GeoIP, GeoIP_open, [], [mk_not_found=1])
-
-  if test "$mk_not_found" = "1"; then
-    AC_MSG_WARN([Failed to find dependency: geoip])
-    echo "    - to install on Debian: sudo apt-get install libgeoip-dev"
-    echo "    - to install on OSX: brew install libgeoip"
-    AC_MSG_ERROR([Please, install geoip and run configure again])
   fi
 ])
 

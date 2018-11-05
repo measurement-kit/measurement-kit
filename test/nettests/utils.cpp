@@ -6,7 +6,7 @@
 
 #include <measurement_kit/ooni.hpp>
 
-#include "src/libmeasurement_kit/ext/catch.hpp"
+#include "include/private/catch.hpp"
 
 #include "src/libmeasurement_kit/nettests/utils_impl.hpp"
 
@@ -136,7 +136,7 @@ TEST_CASE("process_input_filepaths() works as expected") {
                 intercept_randomize>(inputs, true, {"./test/fixtures/urls.txt"}, "IT",
                                      {{"randomize_input", "1"}},
                                      mk::Logger::global(), nullptr, nullptr)),
-            const mk::MockedError &);
+            mk::MockedError);
     }
 
     SECTION("The randomize functionality is invoked by default") {
@@ -146,7 +146,7 @@ TEST_CASE("process_input_filepaths() works as expected") {
                               intercept_randomize>(inputs,
                               true, {"./test/fixtures/urls.txt"}, "IT", {},
                               mk::Logger::global(), nullptr, nullptr)),
-                          const mk::MockedError &);
+                          mk::MockedError);
     }
 
     SECTION("The randomize functionality is not invoked when not requested") {

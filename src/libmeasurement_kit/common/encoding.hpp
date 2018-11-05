@@ -9,9 +9,9 @@
 
 namespace mk {
 
-Error utf8_parse(const std::string &s);
+Error utf8_parse(const std::string &str);
 
-std::string base64_encode(std::string s);
+std::string base64_encode(std::string str);
 
 } // namespace mk
 #endif

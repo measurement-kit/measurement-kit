@@ -4,8 +4,10 @@
 
 #include "test/winsock.hpp"
 
-#include "src/libmeasurement_kit/ext/catch.hpp"
+#include "include/private/catch.hpp"
 #include "src/libmeasurement_kit/ooni/http_header_field_manipulation.hpp"
+
+#include <set>
 
 #include "utils.hpp"
 

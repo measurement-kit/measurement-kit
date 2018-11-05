@@ -4,7 +4,7 @@
 
 #include "test/winsock.hpp"
 
-#include "src/libmeasurement_kit/ext/catch.hpp"
+#include "include/private/catch.hpp"
 
 #include "src/libmeasurement_kit/http/request_impl.hpp"
 #include "src/libmeasurement_kit/net/error.hpp"
@@ -550,6 +550,7 @@ TEST_CASE("http::request() correctly follows redirects") {
             {
                 {"http/url", "http://fsrn.org"},
                 {"http/max_redirects", 32},
+                {"net/ca_bundle_path", "cacert.pem"},
             },
             {
                 {"Accept", "*/*"},
@@ -576,6 +577,7 @@ TEST_CASE("Headers are preserved across redirects") {
             {
                 {"http/url", "http://httpbin.org/absolute-redirect/3"},
                 {"http/max_redirects", 4},
+                {"net/ca_bundle_path", "cacert.pem"},
             },
             {
                 {"Spam", "Ham"}, {"Accept", "*/*"},
@@ -609,6 +611,7 @@ TEST_CASE("We correctly deal with end-of-response signalled by EOF") {
             {
                 {"http/url", "http://hushmail.com"},
                 {"http/max_redirects", 4},
+                {"net/ca_bundle_path", "cacert.pem"},
             },
             {
                 {"Accept", "*/*"},
@@ -641,6 +644,7 @@ TEST_CASE("We correctly deal with schema-less redirect") {
                 {"http/url",
                 "https://httpbin.org/redirect-to?url=%2F%2Fhttpbin.org%2Fheaders"},
                 {"http/max_redirects", 4},
+                {"net/ca_bundle_path", "cacert.pem"},
             },
             {
                 {"Accept", "*/*"},

@@ -59,14 +59,5 @@ bool private_ipv4(const std::string &input) {
   return std::regex_match(input, std::regex{pattern});
 }
 
-std::string ubuntu_xml_extract_ip(const std::string &input) {
-  std::smatch match;
-  std::regex re{R"(<Ip>([0-9.]{7,15}|[A-Fa-f0-9:]{3,39})<\/Ip>)"};
-  if (std::regex_search(input, match, re) == false) {
-    return "";
-  }
-  return (match.size() >= 2) ? match[1] : std::string{};
-}
-
 } // namespace regexp
 } // namespace mk

@@ -70,8 +70,8 @@ int main(void) {
         // Tell MK where to find files useful to identify the country code
         // and the ISP autonomous system number. You should probably have
         // them installed under /usr/local/ in a reall program.
-        .set_option("geoip_country_path", "GeoIP.dat")
-        .set_option("geoip_asn_path", "GeoIPASNum.dat")
+        .set_option("geoip_country_path", "country.mmdb")
+        .set_option("geoip_asn_path", "asn.mmdb")
 
         // Will become the default in MK v0.5.0. Better to use this flag
         // to avoid the need to discover the DNS server on mobile.

@@ -4,7 +4,7 @@
 
 #include "test/winsock.hpp"
 
-#include "src/libmeasurement_kit/ext/catch.hpp"
+#include "include/private/catch.hpp"
 
 #include "src/libmeasurement_kit/report/entry.hpp"
 
@@ -57,7 +57,7 @@ TEST_CASE("We raise mk::JsonDomainError when keys cannot be added to entry") {
     // more than one access cycle we're still using the Entry type, which raises
     // JsonDomainError, rather than the base type nlohmann/json.
     entry["list"].push_back(17.0);
-    REQUIRE_THROWS_AS((entry["list"]["foo"] = "foobar"), const JsonDomainError &);
+    REQUIRE_THROWS_AS((entry["list"]["foo"] = "foobar"), JsonDomainError);
 }
 
 TEST_CASE("We raise mk::JsonDomainError when we cannot append added to entry") {
@@ -66,7 +66,7 @@ TEST_CASE("We raise mk::JsonDomainError when we cannot append added to entry") {
     // more than one access cycle we're still using the Entry type, which raises
     // JsonDomainError, rather than the base type nlohmann/json.
     entry["dict"]["foo"] = "foobar";
-    REQUIRE_THROWS_AS((entry["dict"].push_back(17.0)), const JsonDomainError &);
+    REQUIRE_THROWS_AS((entry["dict"].push_back(17.0)), JsonDomainError);
 }
 
 TEST_CASE("We can create an Array") {

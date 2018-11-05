@@ -4,7 +4,7 @@
 
 #include "test/winsock.hpp"
 
-#include "src/libmeasurement_kit/ext/catch.hpp"
+#include "include/private/catch.hpp"
 
 #include "src/libmeasurement_kit/common/utils.hpp"
 #include "src/libmeasurement_kit/common/worker.hpp"
@@ -129,8 +129,10 @@ TEST_CASE("orchestrate::login() works correctly") {
 
     SECTION("When the username is missing") {
         Error err;
+        Settings settings;
+        settings["net/ca_bundle_path"] = "cacert.pem";
         reactor->run_with_initial_event([&]() {
-            login({}, testing_registry_url(), {}, reactor, Logger::global(),
+            login({}, testing_registry_url(), settings, reactor, Logger::global(),
                   [&](Error &&e, Auth &&) {
                       err = e;
                       reactor->stop();
@@ -143,8 +145,10 @@ TEST_CASE("orchestrate::login() works correctly") {
         Auth auth;
         auth.username = "antani";
         Error err;
+        Settings settings;
+        settings["net/ca_bundle_path"] = "cacert.pem";
         reactor->run_with_initial_event([&]() {
-            login(std::move(auth), testing_registry_url(), {}, reactor,
+            login(std::move(auth), testing_registry_url(), settings, reactor,
                   Logger::global(), [&](Error &&e, Auth &&) {
                       err = e;
                       reactor->stop();
@@ -161,8 +165,9 @@ TEST_CASE("orchestrate::login() works correctly") {
 TEST_CASE("Orchestration works") {
     Client client;
     client.logger->increase_verbosity();
-    client.geoip_country_path = "GeoIP.dat";
-    client.geoip_asn_path = "GeoIPASNum.dat";
+    client.ca_bundle_path = "cacert.pem";
+    client.geoip_country_path = "country.mmdb";
+    client.geoip_asn_path = "asn.mmdb";
     client.network_type = "wifi";
     // client.device_token = "{TOKEN}";  /* Not needed on PC devices */
     client.registry_url = testing_registry_url();

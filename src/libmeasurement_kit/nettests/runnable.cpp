@@ -17,6 +17,8 @@
 #include "src/libmeasurement_kit/report/ooni_reporter.hpp"
 
 #include <measurement_kit/nettests.hpp>
+#include <measurement_kit/vendor/mkiplookup.h>
+#include <measurement_kit/vendor/mkmmdb.h>
 
 namespace mk {
 namespace nettests {
@@ -179,134 +181,130 @@ void Runnable::run_next_measurement(size_t thread_id, Callback<Error> cb,
 }
 
 void Runnable::geoip_lookup(Callback<> cb) {
-
     // This is to ensure that when calling multiple times geoip_lookup we
     // always reset the probe_ip, probe_asn and probe_cc values.
     probe_ip = "127.0.0.1";
     probe_asn = "AS0";
     probe_cc = "ZZ";
+    probe_network_name = "";
 
-    auto save_ip = options.get("save_real_probe_ip", false);
-    auto save_asn = options.get("save_real_probe_asn", true);
-    auto save_cc = options.get("save_real_probe_cc", true);
+    bool save_ip = options.get("save_real_probe_ip", false);
+    bool save_asn = options.get("save_real_probe_asn", true);
+    bool save_cc = options.get("save_real_probe_cc", true);
+    bool save_network_name = options.get("save_real_probe_network_name", true);
 
-    // This code block allows the caller to override probe variables
-    if (save_ip and options.find("probe_ip") != options.end()) {
-        probe_ip = options.at("probe_ip");
-        save_ip = false; // We already have it, don't look it up and save it
-    }
-    if (save_asn and options.find("probe_asn") != options.end()) {
-        probe_asn = options.at("probe_asn");
-        save_asn = false; // Ditto
-    }
-    if (save_cc and options.find("probe_cc") != options.end()) {
-        probe_cc = options.at("probe_cc");
-        save_cc = false; // Ditto
-    }
-
-    // No need to perform further lookups if we don't need to save anything
-    if (not save_ip and not save_asn and not save_cc) {
-        if (probe_ip == "127.0.0.1") {
-            logger->warn("Not knowing user_ip means we cannot attempt to "
-                         "scrub it from the report");
-        }
-        /*
-         * XXX Passing down the stack the real probe IP to allow
-         * specific tests to scrub entries.
-         *
-         * See also measurement-kit/measurement-kit#1110.
-         */
-        options["real_probe_ip_"] = probe_ip;
-        cb();
-        return;
-    }
-
-    ip_lookup(
-        [=](Error err, std::string ip) {
-            if (err) {
-                logger->warn("ip_lookup() failed: error code: %d", err.code);
-                logger->warn("Not knowing user_ip means we cannot attempt "
-                             "to scrub it from the report");
-                cb();
-                return;
-            }
-            logger->info("Your public IP address: %s", ip.c_str());
-            if (save_ip) {
-                logger->debug("saving user's real ip on user's request");
-                probe_ip = ip;
-            }
-            /*
-             * XXX Passing down the stack the real probe IP to allow
-             * specific tests to scrub entries.
-             *
-             * See also measurement-kit/measurement-kit#1110.
-             */
-            options["real_probe_ip_"] = ip;
-
-            auto country_path = options.get("geoip_country_path",
-                                            std::string{});
-            if (save_cc and country_path != "") {
-                auto inst = GeoipCache::thread_local_instance();
-                if (!!inst) {
-                    auto rv = inst->resolve_country_code(
-                            country_path, ip, logger);
-                    if (!!rv) {
-                        probe_cc = rv.as_value();
-                    } else {
-                        // Error message already printed
-                    }
-                } else {
-                    logger->warn("cannot access GeoIP instance");
-                }
-                if (probe_cc != "ZZ") {
-                    logger->info("Your country: %s", probe_cc.c_str());
-                }
-            } else if (country_path == "") {
-                logger->warn("geoip_country_path is not set");
-            }
-
-            auto asn_path = options.get("geoip_asn_path", std::string{});
-            if (save_asn and asn_path != "") {
-                auto inst = GeoipCache::thread_local_instance();
-                if (!!inst) {
-                    auto rv = inst->resolve_asn_full(asn_path, ip, logger);
-                    if (!!rv) {
-                        auto asninfo = rv.as_value();
-                        auto p = asninfo.find(" ");
-                        if (p != std::string::npos) {
-                            probe_asn = asninfo.substr(0, p);
-                            // Note that p + 1 cannot overflow SIZE_MAX since
-                            // std::string::npos is SIZE_MAX and we have already
-                            // excluded that specific case above.
-                            if (asninfo.size() > p + 1) {
-                                probe_network_name = asninfo.substr(p + 1);
-                            }
-                        } else {
-                            probe_asn = asninfo;
-                        }
-                    } else {
-                        // Error message already printed
-                    }
-                } else {
-                    logger->warn("cannot access GeoIP instance");
-                }
-                if (probe_asn != "AS0") {
-                    logger->info("Your ISP identifier: %s", probe_asn.c_str());
-                }
-            } else if (asn_path == "") {
-                logger->warn("geoip_asn_path is not set");
-            }
-
-            logger->emit_event_ex("status.geoip_lookup", {
-                {"probe_asn", probe_asn},
-                {"probe_cc", probe_cc},
-                {"probe_ip", ip},
-                {"probe_network_name", probe_network_name},
+    std::string real_probe_ip = "127.0.0.1";
+    {
+        double timeout = options.get("net/timeout", 10.0);
+        std::string ca = options.get("net/ca_bundle_path", std::string{});
+        mkiplookup_request_uptr req{mkiplookup_request_new_nonnull()};
+        mkiplookup_request_set_timeout(req.get(), (int64_t)timeout);
+        mkiplookup_request_set_ca_bundle_path(req.get(), ca.c_str());
+        mkiplookup_response_uptr res{
+                mkiplookup_request_perform_nonnull(req.get())};
+        std::string logs = mkiplookup_response_moveout_logs(res);
+        if (!mkiplookup_response_good(res.get())) {
+            logger->emit_event_ex("failure.ip_lookup", {
+                {"failure", "generic_error"},
             });
+            logger->warn("=== BEGIN IP_LOOKUP LOGS ===");
+            logger->warn("%s", logs.c_str());
+            logger->warn("=== END IP_LOOKUP LOGS ===");
+        } else {
+            real_probe_ip = mkiplookup_response_get_probe_ip(res.get());
+            logger->debug("=== BEGIN IP_LOOKUP LOGS ===");
+            logger->debug("%s", logs.c_str());
+            logger->debug("=== END IP_LOOKUP LOGS ===");
+        }
+    }
 
-            cb();
-        },
-        options, reactor, logger);
+    std::string real_probe_cc = "ZZ";
+    {
+        std::string path = options.get("geoip_country_path", std::string{});
+        mkmmdb_uptr mmdb{mkmmdb_open_nonnull(path.c_str())};
+        std::string cc = mkmmdb_lookup_cc(mmdb.get(), real_probe_ip.c_str());
+        if (cc.empty()) {
+            logger->emit_event_ex("failure.cc_lookup", {
+                {"failure", "generic_error"},
+            });
+            logger->warn("=== BEGIN CC_LOOKUP LOGS ===");
+            logger->warn("%s", mkmmdb_get_last_lookup_logs(mmdb.get()));
+            logger->warn("=== END CC_LOOKUP LOGS ===");
+        } else {
+            std::swap(cc, real_probe_cc);
+        }
+    }
+
+    std::string real_probe_asn = "AS0";
+    {
+        std::string path = options.get("geoip_asn_path", std::string{});
+        mkmmdb_uptr mmdb{mkmmdb_open_nonnull(path.c_str())};
+        int64_t n = mkmmdb_lookup_asn(mmdb.get(), real_probe_ip.c_str());
+        if (n <= 0) {
+            logger->emit_event_ex("failure.asn_lookup", {
+                {"failure", "generic_error"},
+            });
+            logger->warn("=== BEGIN ASN_LOOKUP LOGS ===");
+            logger->warn("%s", mkmmdb_get_last_lookup_logs(mmdb.get()));
+            logger->warn("=== END ASN_LOOKUP LOGS ===");
+        } else {
+            real_probe_asn = "AS";
+            real_probe_asn += std::to_string(n);
+        }
+    }
+
+    std::string real_probe_network_name;
+    {
+        std::string path = options.get("geoip_asn_path", std::string{});
+        mkmmdb_uptr mmdb{mkmmdb_open_nonnull(path.c_str())};
+        std::string nn = mkmmdb_lookup_org(mmdb.get(), real_probe_ip.c_str());
+        if (nn.empty()) {
+            logger->emit_event_ex("failure.network_name_lookup", {
+                {"failure", "generic_error"},
+            });
+            logger->warn("=== BEGIN NETWORK_NAME_LOOKUP LOGS ===");
+            logger->warn("%s", mkmmdb_get_last_lookup_logs(mmdb.get()));
+            logger->warn("=== END NETWORK_NAME_LOOKUP LOGS ===");
+        } else {
+            std::swap(nn, real_probe_network_name);
+        }
+    }
+
+    if (save_ip) {
+        logger->info("Your public IP address: %s", real_probe_ip.c_str());
+        logger->debug("saving user's real ip on user's request");
+        probe_ip = real_probe_ip;
+    }
+    if (save_cc) {
+        logger->info("Your country: %s", real_probe_cc.c_str());
+        probe_cc = real_probe_cc;
+    }
+    if (save_asn) {
+        logger->info("Your ISP identifier: %s", real_probe_asn.c_str());
+        probe_asn = real_probe_asn;
+    }
+    if (save_network_name) {
+        logger->info("Your ISP name: %s", real_probe_network_name.c_str());
+        probe_network_name = real_probe_network_name;
+    }
+
+    // Note: using real_probe_xxx variables because the result of this phase
+    // SHOULD be independent of the configured privacy settings.
+    logger->emit_event_ex("status.geoip_lookup", {
+        {"probe_asn", real_probe_asn},
+        {"probe_cc", real_probe_cc},
+        {"probe_ip", real_probe_ip},
+        {"probe_network_name", real_probe_network_name},
+    });
+
+    /*
+     * XXX Passing down the stack the real probe IP to allow
+     * specific tests to scrub entries.
+     *
+     * See also measurement-kit/measurement-kit#1110.
+     */
+    options["real_probe_ip_"] = real_probe_ip;
+    cb();
 }
 
 void Runnable::open_report(Callback<Error> callback) {

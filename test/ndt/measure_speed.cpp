@@ -4,7 +4,7 @@
 
 #include "test/winsock.hpp"
 
-#include "src/libmeasurement_kit/ext/catch.hpp"
+#include "include/private/catch.hpp"
 
 #include <measurement_kit/common.hpp>
 #include "src/libmeasurement_kit/ndt/measure_speed.hpp"

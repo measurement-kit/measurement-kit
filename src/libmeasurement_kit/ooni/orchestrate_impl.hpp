@@ -9,10 +9,10 @@
 #include "src/libmeasurement_kit/common/mock.hpp"
 #include "src/libmeasurement_kit/common/utils.hpp"
 
+#include <measurement_kit/vendor/mkgeoip.h>
+
 #include <measurement_kit/ooni.hpp>
 #include "src/libmeasurement_kit/http/http.hpp"
-
-#include "../ooni/utils.hpp"
 
 namespace mk {
 namespace ooni {
@@ -202,47 +202,44 @@ void update_(const ClientMetadata &m, Auth &&auth, SharedPtr<Reactor> reactor,
           });
 }
 
-template <MK_MOCK_AS(ooni::ip_lookup, ooni_ip_lookup)>
-void do_find_location(const ClientMetadata &m, SharedPtr<Reactor> reactor,
+static inline
+void do_find_location(const ClientMetadata &m, SharedPtr<Reactor> /*reactor*/,
                       Callback<Error &&, std::string &&, std::string &&> &&cb) {
-    ooni_ip_lookup(
-          [
-            logger = m.logger, geoip_asn_path = m.geoip_asn_path,
-            geoip_country_path = m.geoip_country_path, cb = std::move(cb)
-          ](Error error, std::string ip) mutable {
-              if (error) {
-                  cb(std::move(error), "", "");
-                  return;
-              }
-              logger->debug("Probe IP is: %s", ip.c_str());
-              auto query_geoip = [&](const std::string &path, std::string &dest,
-                                     const std::string &fallback,
-                                     auto callable) {
-                  // Using local database to avoid thread safety issues
-                  ooni::GeoipDatabase db{path};
-                  ErrorOr<std::string> x = callable(db, ip, logger);
-                  if (!x) {
-                      logger->warn("geoip failed for '%s': %s", ip.c_str(),
-                                   x.as_error().what());
-                      dest = fallback;
-                      return;
-                  }
-                  logger->debug("IP %s maps to %s", ip.c_str(), x->c_str());
-                  dest = *x;
-              };
-              std::string probe_asn;
-              std::string probe_cc;
-              query_geoip(geoip_asn_path, probe_asn, "AS0",
-                          [](auto db, auto ip, auto logger) {
-                              return db.resolve_asn(ip, logger);
-                          });
-              query_geoip(geoip_country_path, probe_cc, "ZZ",
-                          [](auto db, auto ip, auto logger) {
-                              return db.resolve_country_code(ip, logger);
-                          });
-              cb(NoError(), std::move(probe_asn), std::move(probe_cc));
-          },
-          m.settings, reactor, m.logger);
+    mkgeoip_lookup_settings_uptr ls{mkgeoip_lookup_settings_new_nonnull()};
+    {
+        double timeout = m.settings.get("net/timeout", 10.0);
+        mkgeoip_lookup_settings_set_timeout_v2(ls.get(), (int64_t)timeout);
+    }
+    {
+        const std::string &cabp = m.ca_bundle_path;
+        mkgeoip_lookup_settings_set_ca_bundle_path_v2(ls.get(), cabp.c_str());
+    }
+    {
+        const std::string &p = m.geoip_country_path;
+        mkgeoip_lookup_settings_set_country_db_path_v2(ls.get(), p.c_str());
+    }
+    {
+        const std::string &p = m.geoip_asn_path;
+        mkgeoip_lookup_settings_set_asn_db_path_v2(ls.get(), p.c_str());
+    }
+    mkgeoip_lookup_results_uptr lr{
+            mkgeoip_lookup_settings_perform_nonnull(ls.get())};
+    std::string logs = mkgeoip_lookup_results_moveout_logs_v2(lr.get());
+    if (!mkgeoip_lookup_results_good_v2(lr.get())) {
+        m.logger->warn("=== BEGIN FIND_LOCATION RESULTS ===");
+        m.logger->warn("%s", logs.c_str());
+        m.logger->warn("=== END FIND_LOCATION RESULTS ===");
+        cb(GenericError(), "", "");
+        return;
+    }
+    m.logger->debug("=== BEGIN FIND_LOCATION RESULTS ===");
+    m.logger->debug("%s", logs.c_str());
+    m.logger->debug("=== END FIND_LOCATION RESULTS ===");
+    std::string probe_cc = mkgeoip_lookup_results_get_probe_cc_v2(lr.get());
+    int64_t n = mkgeoip_lookup_results_get_probe_asn_v2(lr.get());
+    std::string probe_asn = "AS";
+    probe_asn += std::to_string(n);
+    cb(NoError(), std::move(probe_asn), std::move(probe_cc));
 }
 
 class RegistryCtx {
@@ -257,6 +254,12 @@ static inline void ctx_enter_(Auth &&auth, ClientMetadata &&meta,
                               SharedPtr<Reactor> reactor,
                               Callback<SharedPtr<RegistryCtx>> &&cb) {
     auto ctx = SharedPtr<RegistryCtx>::make();
+    // We need to set the ca_bundle_path. The one set in the ClientMetadata
+    // structure will take preference. This is disgusting however it is also
+    // unavoidable until we can migrate over to mkorchestra.
+    {
+      meta.settings["net/ca_bundle_path"] = meta.ca_bundle_path;
+    }
     ctx->auth = std::move(auth);
     ctx->metadata = std::move(meta);
     ctx->reactor = reactor;
@@ -282,7 +285,7 @@ void ctx_register_(Error &&error, SharedPtr<RegistryCtx> ctx,
           });
 }
 
-template <MK_MOCK_AS(ooni::ip_lookup, ooni_ip_lookup)>
+static inline
 void ctx_retrieve_missing_meta_(SharedPtr<RegistryCtx> ctx,
                                 Callback<Error &&, SharedPtr<RegistryCtx>> &&cb) {
     if (ctx->metadata.platform == "") {
@@ -303,7 +306,7 @@ void ctx_retrieve_missing_meta_(SharedPtr<RegistryCtx> ctx,
         return;
     }
     ctx->logger->info("Looking up probe IP to guess ASN and/or CC");
-    do_find_location<ooni_ip_lookup>(ctx->metadata, ctx->reactor, [
+    do_find_location(ctx->metadata, ctx->reactor, [
         cb = std::move(cb), ctx
     ](Error && error, std::string && asn, std::string && cc) mutable {
         ctx->metadata.probe_asn = std::move(asn);
@@ -332,8 +335,7 @@ static inline void ctx_leave_(Error &&error, SharedPtr<RegistryCtx> ctx,
     cb(std::move(error), std::move(ctx->auth));
 }
 
-template <MK_MOCK_AS(http::request_json_object, http_request_json_object),
-          MK_MOCK_AS(ooni::ip_lookup, ooni_ip_lookup)>
+template <MK_MOCK_AS(http::request_json_object, http_request_json_object)>
 void do_register_probe(std::string &&password, const ClientMetadata &m,
                        SharedPtr<Reactor> reactor, Callback<Error &&, Auth &&> &&cb) {
     // For uniformity we pass an `Auth` structure to `ctx_enter_` and we
@@ -341,17 +343,16 @@ void do_register_probe(std::string &&password, const ClientMetadata &m,
     Auth auth;
     auth.password = std::move(password);
     mk::fcompose(mk::fcompose_policy_async(), ctx_enter_,
-                 ctx_retrieve_missing_meta_<ooni_ip_lookup>,
+                 ctx_retrieve_missing_meta_,
                  ctx_register_<http_request_json_object>,
                  ctx_leave_)(std::move(auth), m, reactor, std::move(cb));
 }
 
-template <MK_MOCK_AS(http::request_json_object, http_request_json_object),
-          MK_MOCK_AS(ooni::ip_lookup, ooni_ip_lookup)>
+template <MK_MOCK_AS(http::request_json_object, http_request_json_object)>
 void do_update(Auth &&auth, const ClientMetadata &m, SharedPtr<Reactor> reactor,
                Callback<Error &&, Auth &&> &&cb) {
     mk::fcompose(mk::fcompose_policy_async(), ctx_enter_,
-                 ctx_retrieve_missing_meta_<ooni_ip_lookup>,
+                 ctx_retrieve_missing_meta_,
                  ctx_update_<http_request_json_object>,
                  ctx_leave_)(std::move(auth), m, reactor, std::move(cb));
 }

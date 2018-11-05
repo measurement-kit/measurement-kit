@@ -9,7 +9,7 @@
 // This is meant to run on Android but can run on all Linux systems
 #if (defined __linux__)
 
-#include "src/libmeasurement_kit/ext/catch.hpp"
+#include "include/private/catch.hpp"
 
 #include "src/libmeasurement_kit/traceroute/error.hpp"
 #include "src/libmeasurement_kit/traceroute/android.hpp"

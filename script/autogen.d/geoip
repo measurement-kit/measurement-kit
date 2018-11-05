@@ -3,15 +3,6 @@ set -e
 
 autogen_get_geoip() {
     echo "* Fetching geoip databases"
-    base=https://download.maxmind.com/download/geoip/database
-    if [ ! -f "GeoIP.dat" ]; then
-        curl -fsSLO $base/GeoLiteCountry/GeoIP.dat.gz
-        gzip -d GeoIP.dat.gz
-    fi
-    if [ ! -f "GeoIPASNum.dat" ]; then
-        curl -fsSLO $base/asnum/GeoIPASNum.dat.gz -O
-        gzip -d GeoIPASNum.dat.gz
-    fi
     base=https://geolite.maxmind.com/download/geoip/database
     if [ ! -f "country.mmdb" ]; then
         curl -fsSLO $base/GeoLite2-Country.tar.gz

@@ -4,7 +4,7 @@
 
 #include "test/winsock.hpp"
 
-#include "src/libmeasurement_kit/ext/catch.hpp"
+#include "include/private/catch.hpp"
 
 #include "src/libmeasurement_kit/ndt/run_impl.hpp"
 
@@ -125,10 +125,12 @@ TEST_CASE("run() deals with mlab-ns query error") {
 TEST_CASE("NDT test run() should work") {
     SharedPtr<Entry> entry{new Entry};
     SharedPtr<Reactor> reactor = Reactor::make();
+    Settings settings;
+    settings["net/ca_bundle_path"] = "cacert.pem";
     reactor->run_with_initial_event([=]() {
         ndt::run(entry, [=](Error err) {
             REQUIRE(!err);
             reactor->stop();
-        }, {}, reactor);
+        }, settings, reactor);
     });
 }
