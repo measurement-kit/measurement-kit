@@ -6,6 +6,8 @@
 
 #include <measurement_kit/common/error.hpp>
 
+#include <stdexcept>
+
 namespace mk {
 
 /// \brief `ErrorOr` wraps either a type or an `Error`. We often use ErrorOr in
