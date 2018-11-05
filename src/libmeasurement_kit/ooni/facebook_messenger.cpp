@@ -7,10 +7,9 @@
 #include "src/libmeasurement_kit/common/fcompose.hpp"
 #include "src/libmeasurement_kit/common/utils.hpp"
 #include "src/libmeasurement_kit/ooni/templates.hpp"
+#include "src/libmeasurement_kit/ooni/error.hpp"
 
 #include <measurement_kit/vendor/mkmmdb.h>
-
-#include <measurement_kit/ooni.hpp>
 
 namespace mk {
 namespace ooni {

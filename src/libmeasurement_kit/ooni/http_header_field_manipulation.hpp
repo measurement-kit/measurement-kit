@@ -4,8 +4,7 @@
 #ifndef SRC_LIBMEASUREMENT_KIT_OONI_HTTP_HEADER_FIELD_MANIPULATION_HPP
 #define SRC_LIBMEASUREMENT_KIT_OONI_HTTP_HEADER_FIELD_MANIPULATION_HPP
 
-#include <measurement_kit/ooni.hpp>
-
+#include "src/libmeasurement_kit/ooni/error.hpp"
 #include "src/libmeasurement_kit/http/http.hpp"
 #include "src/libmeasurement_kit/report/entry.hpp"
 

@@ -11,7 +11,8 @@
 
 #include <measurement_kit/vendor/mkgeoip.h>
 
-#include <measurement_kit/ooni.hpp>
+#include "src/libmeasurement_kit/ooni/error.hpp"
+#include "src/libmeasurement_kit/ooni/orchestrate.hpp"
 #include "src/libmeasurement_kit/http/http.hpp"
 
 namespace mk {

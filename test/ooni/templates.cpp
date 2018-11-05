@@ -6,10 +6,8 @@
 
 #include "include/private/catch.hpp"
 
-#include <measurement_kit/ooni.hpp>
-
+#include "src/libmeasurement_kit/ooni/error.hpp"
 #include "src/libmeasurement_kit/ooni/templates.hpp"
-
 #include "src/libmeasurement_kit/ooni/templates_impl.hpp"
 #include "src/libmeasurement_kit/report/entry.hpp"
 
@@ -85,7 +83,6 @@ TEST_CASE("dns query template works as expected with system engine") {
                     Json answers;
                     Json root;
                     Json query;
-                    int resolver_port;
                     root = Json::parse(entry->dump());
                     REQUIRE(root.is_object());
                     Json queries = root["queries"];

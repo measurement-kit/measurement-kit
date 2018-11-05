@@ -2,8 +2,7 @@
 // Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
-#include <measurement_kit/ooni.hpp>
-
+#include "src/libmeasurement_kit/ooni/error.hpp"
 #include "src/libmeasurement_kit/report/ooni_reporter.hpp"
 #include "src/libmeasurement_kit/report/error.hpp"
 #include "src/libmeasurement_kit/ooni/collector_client.hpp"

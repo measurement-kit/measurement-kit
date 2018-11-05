@@ -7,7 +7,7 @@
 #include <future>
 #include <mutex>
 
-#include "measurement_kit/ooni/orchestrate.hpp"
+#include "src/libmeasurement_kit/ooni/orchestrate.hpp"
 
 struct mkapi_orchestra_client {
   mk::ooni::orchestrate::Client client;

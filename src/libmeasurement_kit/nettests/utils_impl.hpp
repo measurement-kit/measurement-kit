@@ -7,7 +7,7 @@
 #include "src/libmeasurement_kit/common/mock.hpp"
 #include "../nettests/utils.hpp"
 
-#include <measurement_kit/ooni.hpp>
+#include "src/libmeasurement_kit/ooni/error.hpp"
 
 #include <fstream>
 #include <random>

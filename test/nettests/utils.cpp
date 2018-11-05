@@ -4,7 +4,7 @@
 
 #include "test/winsock.hpp"
 
-#include <measurement_kit/ooni.hpp>
+#include "src/libmeasurement_kit/ooni/error.hpp"
 
 #include "include/private/catch.hpp"
 
