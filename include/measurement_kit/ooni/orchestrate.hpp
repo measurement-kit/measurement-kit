@@ -60,10 +60,10 @@ class ClientMetadata {
     std::string device_token;
     std::string ca_bundle_path;
     std::string events_url = production_events_url();
-    std::string language;
-    std::string network_type;
     std::string geoip_country_path;
     std::string geoip_asn_path;
+    std::string language;
+    std::string network_type;
     std::string platform;
     std::string probe_asn;
     std::string probe_cc;

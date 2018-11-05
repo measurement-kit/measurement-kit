@@ -27,6 +27,7 @@
 .libs
 .vagrant
 /*.njson
+/.orchestra.json
 /GeoLite2-ASN.tar.gz
 /GeoLite2-Country.tar.gz
 /MK_BUILD/
