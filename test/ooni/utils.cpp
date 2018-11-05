@@ -43,11 +43,14 @@ TEST_CASE("represent_string works") {
     }
 
     SECTION("For a binary body") {
-        std::vector<uint8_t> v{0x04, 0x03, 0x02, 0x01, 0x00, 0x01, 0x02, 0x03};
+        // Note: the following MUST be invalid UTF-8. Otherwise it can still
+        // be converted as a UTF-8 string. The 0xbc 0bc sequence is invalid in
+        // UTF-8, hence we'll expect the result to be base64-ed.
+        std::vector<uint8_t> v{0x04, 0x03, 0xbc, 0xbc, 0x00, 0x01, 0x02, 0x03};
         std::string s{v.begin(), v.end()};
         REQUIRE(
             ooni::represent_string(s).dump() ==
-            (report::Entry{{"format", "base64"}, {"data", "BAMCAQABAgM="}}
+            (report::Entry{{"format", "base64"}, {"data", "BAO8vAABAgM="}}
                  .dump()));
     }
 }
