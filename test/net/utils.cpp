@@ -6,7 +6,7 @@
 
 #include <cerrno>
 
-#include "src/libmeasurement_kit/ext/catch.hpp"
+#include "include/private/catch.hpp"
 
 #include "src/libmeasurement_kit/net/error.hpp"
 #include "src/libmeasurement_kit/net/utils.hpp"

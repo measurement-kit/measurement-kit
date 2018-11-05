@@ -4,7 +4,7 @@
 
 #include "test/winsock.hpp"
 
-#include "src/libmeasurement_kit/ext/catch.hpp"
+#include "include/private/catch.hpp"
 
 #include "src/libmeasurement_kit/http/response_parser.hpp"
 
@@ -24,7 +24,7 @@ TEST_CASE("ResponseParserNg deals with an invalid message") {
     data += "\r\n";
     data += "1234567";
 
-    REQUIRE_THROWS_AS(parser.feed(data), const ParserError &);
+    REQUIRE_THROWS_AS(parser.feed(data), ParserError);
 }
 
 TEST_CASE("ResponseParserNg deals with an UPGRADE request") {
@@ -185,7 +185,7 @@ TEST_CASE("ResponseParserNg stops after first message") {
 
     REQUIRE(data.size() > 0);
     auto c = data.front();
-    REQUIRE_THROWS_AS(parser.feed(c), const ParserError &);
+    REQUIRE_THROWS_AS(parser.feed(c), ParserError);
 }
 
 TEST_CASE("ResponseParserNg eof() works as expected") {

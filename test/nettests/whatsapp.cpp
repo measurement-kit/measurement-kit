@@ -5,7 +5,7 @@
 #include "test/winsock.hpp"
 
 #include "src/libmeasurement_kit/ooni/whatsapp.hpp"
-#include "src/libmeasurement_kit/ext/catch.hpp"
+#include "include/private/catch.hpp"
 
 #include "../nettests/utils.hpp"
 

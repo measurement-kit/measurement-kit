@@ -4,7 +4,7 @@
 
 #include "test/winsock.hpp"
 
-#include "src/libmeasurement_kit/ext/catch.hpp"
+#include "include/private/catch.hpp"
 
 #include "src/libmeasurement_kit/common/worker.hpp"
 #include "src/libmeasurement_kit/common/range.hpp"
@@ -17,7 +17,7 @@
 
 TEST_CASE("The worker is robust to submitting many tasks in a row") {
     auto worker = mk::SharedPtr<mk::Worker>::make();
-    for (auto _: mk::range<int>(128)) {
+    for (size_t i = 0; i < 128; ++i) {
         worker->call_in_thread(mk::Logger::global(), []() {
             using namespace std::chrono_literals;
             std::this_thread::sleep_for(2s);

@@ -4,7 +4,7 @@
 
 #include "test/winsock.hpp"
 
-#include "src/libmeasurement_kit/ext/catch.hpp"
+#include "include/private/catch.hpp"
 
 #include "src/libmeasurement_kit/http/http.hpp"
 
@@ -34,12 +34,12 @@ TEST_CASE("Recognizes wrong ports") {
     SECTION("Negative port") {
         REQUIRE_THROWS_AS(
             http::parse_url("https://www.kernel.org:-4/abc?foobar"),
-            const Error &);
+            Error);
     }
 
     SECTION("Too large port") {
         REQUIRE_THROWS_AS(
             http::parse_url("https://www.kernel.org:65537/abc?foobar"),
-            const Error &);
+            Error);
     }
 }
