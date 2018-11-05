@@ -236,7 +236,7 @@ static bool compare_tcp_connect(SharedPtr<nlohmann::json> entry, nlohmann::json 
         ss << result["port"];
         try {
             ctrl_status = control.at(ss.str())["status"];
-        } catch (const std::out_of_range &) {
+        } catch (const std::exception &) {
             continue;
         }
         if (ctrl_status == true && exp_status == false) {
