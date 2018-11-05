@@ -13,8 +13,9 @@
 
 #include "src/libmeasurement_kit/common/mock.hpp"
 
-#include "../ndt/internal.hpp"
-#include <cassert>
+#include "src/libmeasurement_kit/ndt/internal.hpp"
+
+#include <assert.h>
 
 namespace mk {
 namespace ndt {
@@ -61,16 +62,16 @@ void read_ll_impl(SharedPtr<Context> ctx,
 
 // Like `read_ll()` but decode the payload using JSON
 template <MK_MOCK(read_ll)>
-void read_json_impl(SharedPtr<Context> ctx, Callback<Error, uint8_t, Json> callback,
+void read_json_impl(SharedPtr<Context> ctx, Callback<Error, uint8_t, nlohmann::json> callback,
                     SharedPtr<Reactor> reactor) {
     read_ll(ctx, [=](Error err, uint8_t type, std::string m) {
-        Json message;
+        nlohmann::json message;
         if (err) {
             callback(err, 0, message);
             return;
         }
         try {
-            message = Json::parse(m);
+            message = nlohmann::json::parse(m);
         } catch (const std::invalid_argument &) {
             callback(JsonParseError(), 0, message);
             return;
@@ -84,7 +85,7 @@ template <MK_MOCK(read_json)>
 void read_msg_impl(SharedPtr<Context> ctx,
                    Callback<Error, uint8_t, std::string> callback,
                    SharedPtr<Reactor> reactor) {
-    read_json(ctx, [=](Error error, uint8_t type, Json message) {
+    read_json(ctx, [=](Error error, uint8_t type, nlohmann::json message) {
         if (error) {
             callback(error, 0, "");
             return;
@@ -103,7 +104,7 @@ void read_msg_impl(SharedPtr<Context> ctx,
     }, reactor);
 }
 
-static inline ErrorOr<Buffer> format_any(unsigned char type, Json message) {
+static inline ErrorOr<Buffer> format_any(unsigned char type, nlohmann::json message) {
     Buffer out;
     out.write_uint8(type);
     std::string s = message.dump();

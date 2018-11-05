@@ -60,7 +60,7 @@
 #include "src/libmeasurement_kit/mlabns/mlabns.hpp"
 #include "src/libmeasurement_kit/http/http.hpp"
 
-#include <measurement_kit/common/json.hpp>
+#include <measurement_kit/common/nlohmann/json.hpp>
 
 #define DASH_INITIAL_RATE 3000
 #define DASH_MAX_ITERATIONS 15
@@ -437,13 +437,15 @@ void negotiate_loop_(SharedPtr<report::Entry> entry, SharedPtr<net::Transport> t
               int queue_pos = 0;
               std::string real_address;
               int unchoked = 0;
-              error = json_process(
-                    res->body, [&](Json &respbody) {
-                        auth = respbody.at("authorization");
-                        queue_pos = respbody.at("queue_pos");
-                        real_address = respbody.at("real_address");
-                        unchoked = respbody.at("unchoked");
-                    });
+              try {
+                  nlohmann::json respbody = nlohmann::json::parse(res->body);
+                  auth = respbody.at("authorization");
+                  queue_pos = respbody.at("queue_pos");
+                  real_address = respbody.at("real_address");
+                  unchoked = respbody.at("unchoked");
+              } catch (const std::exception &) {
+                  error = JsonParseError();
+              }
               if (error) {
                   logger->warn("neubot: cannot parse negotiate response: %s",
                                error.what());
@@ -490,10 +492,11 @@ void collect_(SharedPtr<net::Transport> txp, SharedPtr<report::Entry> entry,
               }
               logger->debug("Response received from server: %s",
                             res->body.c_str());
-              error = json_process(
-                    res->body, [&](Json &json) {
-                        (*entry)["sender_data"] = json;
-                    });
+              try {
+                  nlohmann::json json = nlohmann::json::parse(res->body);
+              } catch (const std::exception &) {
+                  error = JsonParseError();
+              }
               cb(error);
           },
           reactor, logger);

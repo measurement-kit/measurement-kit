@@ -54,23 +54,23 @@ static void succeed(SharedPtr<Context>, Callback<Error, uint8_t, std::string> cb
 TEST_CASE("read_json() deals with read_ndt() error") {
     SharedPtr<Context> ctx(new Context);
     messages::read_json_impl<fail>(
-        ctx, [](Error err, uint8_t, Json) { REQUIRE(err == MockedError()); },
+        ctx, [](Error err, uint8_t, nlohmann::json) { REQUIRE(err == MockedError()); },
         Reactor::global());
 }
 
 TEST_CASE("read_json() deals with invalid JSON") {
     SharedPtr<Context> ctx(new Context);
-    messages::read_json_impl<succeed>(ctx, [](Error err, uint8_t, Json) {
+    messages::read_json_impl<succeed>(ctx, [](Error err, uint8_t, nlohmann::json) {
         REQUIRE(err == JsonParseError());
     }, Reactor::global());
 }
 
-static void fail(SharedPtr<Context>, Callback<Error, uint8_t, Json> cb,
+static void fail(SharedPtr<Context>, Callback<Error, uint8_t, nlohmann::json> cb,
                  SharedPtr<Reactor> = Reactor::global()) {
     cb(MockedError(), 0, {});
 }
 
-static void invalid(SharedPtr<Context>, Callback<Error, uint8_t, Json> cb,
+static void invalid(SharedPtr<Context>, Callback<Error, uint8_t, nlohmann::json> cb,
                     SharedPtr<Reactor> = Reactor::global()) {
     cb(NoError(), 0, {{"foo", "baz"}, {"baz", 1}});
 }
@@ -89,7 +89,7 @@ TEST_CASE("read() deals with json without 'msg' field") {
     }, Reactor::global());
 }
 
-static void bad_type(SharedPtr<Context>, Callback<Error, uint8_t, Json> cb,
+static void bad_type(SharedPtr<Context>, Callback<Error, uint8_t, nlohmann::json> cb,
                     SharedPtr<Reactor> = Reactor::global()) {
     cb(NoError(), 0, 3.14);
 }

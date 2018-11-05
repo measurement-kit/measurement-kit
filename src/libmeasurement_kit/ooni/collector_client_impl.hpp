@@ -7,10 +7,10 @@
 // This file implements the OONI collector client protocol
 // See <https://github.com/TheTorProject/ooni-spec/blob/master/oonib.md>
 
+#include <measurement_kit/common/nlohmann/json.hpp>
+
 #include "src/libmeasurement_kit/common/mock.hpp"
 #include "src/libmeasurement_kit/ooni/collector_client.hpp"
-
-#include <measurement_kit/common/json.hpp>
 #include "src/libmeasurement_kit/ooni/error.hpp"
 #include "src/libmeasurement_kit/http/http.hpp"
 
@@ -34,12 +34,12 @@ using namespace mk::report;
 */
 
 void post(SharedPtr<Transport> transport, std::string url_extra, std::string body,
-          Callback<Error, Json> callback, Settings conf = {},
+          Callback<Error, nlohmann::json> callback, Settings conf = {},
           SharedPtr<Reactor> = Reactor::global(), SharedPtr<Logger> = Logger::global());
 
 template <MK_MOCK_AS(http::request_sendrecv, http_request_sendrecv)>
 void post_impl(SharedPtr<Transport> transport, std::string append_to_url,
-               std::string body, Callback<Error, Json> callback,
+               std::string body, Callback<Error, nlohmann::json> callback,
                Settings settings, SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
     std::string url = "";
     Headers headers;
@@ -77,9 +77,9 @@ void post_impl(SharedPtr<Transport> transport, std::string append_to_url,
                                   callback(NoError(), nullptr);
                                   return;
                               }
-                              Json reply;
+                              nlohmann::json reply;
                               try {
-                                  reply = Json::parse(response->body);
+                                  reply = nlohmann::json::parse(response->body);
                               } catch (const std::invalid_argument &) {
                                   callback(JsonParseError(), nullptr);
                                   return;
@@ -149,7 +149,7 @@ void create_report_impl(SharedPtr<Transport> transport, Entry entry,
     std::string body = request.dump();
 
     collector_post(transport, "/report", body,
-                   [=](Error err, Json reply) {
+                   [=](Error err, nlohmann::json reply) {
                        if (err) {
                            callback(err, "");
                            return;
@@ -228,7 +228,7 @@ void update_report_impl(SharedPtr<Transport> transport, std::string report_id,
     request["content"] = entry;
     std::string body = request.dump();
     collector_post(transport, "/report/" + report_id, body,
-                   [=](Error err, Json) {
+                   [=](Error err, nlohmann::json) {
                        callback(err);
                    },
                    settings, reactor, logger);
@@ -258,7 +258,7 @@ void close_report_impl(SharedPtr<Transport> transport, std::string report_id,
                        Callback<Error> callback, Settings settings,
                        SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
     collector_post(transport, "/report/" + report_id + "/close", "",
-                   [=](Error err, Json) {
+                   [=](Error err, nlohmann::json) {
                        callback(err);
                    },
                    settings, reactor, logger);

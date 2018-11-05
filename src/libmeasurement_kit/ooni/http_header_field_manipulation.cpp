@@ -25,9 +25,9 @@ void compare_headers_response(http::Headers headers,
         return;
     }
 
-    Json resp;
+    nlohmann::json resp;
     try {
-        resp = Json::parse(response->body);
+        resp = nlohmann::json::parse(response->body);
     } catch (const std::invalid_argument &) {
         logger->warn("response body not valid JSON");
         (*entry)["tampering"]["total"] = true;
@@ -47,7 +47,7 @@ void compare_headers_response(http::Headers headers,
 
     // ooni-probe behavior to report header keys in the request or response
     // but not both. (case-sensitive, and ignoring values)
-    Json resp_headers = resp["headers_dict"];
+    nlohmann::json resp_headers = resp["headers_dict"];
     std::set<std::string> req_keys, resp_keys, diff;
     for (auto it = headers.begin(); it != headers.end(); ++it) {
         req_keys.insert(it->first);

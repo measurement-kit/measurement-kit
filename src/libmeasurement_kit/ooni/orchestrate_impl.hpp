@@ -4,13 +4,12 @@
 #ifndef SRC_LIBMEASUREMENT_KIT_OONI_ORCHESTRATE_IMPL_HPP
 #define SRC_LIBMEASUREMENT_KIT_OONI_ORCHESTRATE_IMPL_HPP
 
-#include "src/libmeasurement_kit/common/fcompose.hpp"
-#include <measurement_kit/common/json.hpp>
-#include "src/libmeasurement_kit/common/mock.hpp"
-#include "src/libmeasurement_kit/common/utils.hpp"
-
+#include <measurement_kit/common/nlohmann/json.hpp>
 #include <measurement_kit/vendor/mkgeoip.h>
 
+#include "src/libmeasurement_kit/common/fcompose.hpp"
+#include "src/libmeasurement_kit/common/mock.hpp"
+#include "src/libmeasurement_kit/common/utils.hpp"
 #include "src/libmeasurement_kit/ooni/error.hpp"
 #include "src/libmeasurement_kit/ooni/orchestrate.hpp"
 #include "src/libmeasurement_kit/http/http.hpp"
@@ -28,7 +27,7 @@ void login(Auth &&auth, std::string registry_url, Settings settings,
         cb(MissingRequiredValueError(), std::move(auth));
         return;
     };
-    Json request{{"username", auth.username},
+    nlohmann::json request{{"username", auth.username},
                            {"password", auth.password}};
     logger->info("Logging you in with orchestrator");
     logger->debug("orchestrator: sending login request: %s",
@@ -41,7 +40,7 @@ void login(Auth &&auth, std::string registry_url, Settings settings,
           "POST", registry_url + "/api/v1/login", request, {},
           [ auth = std::move(auth), cb = std::move(cb),
             logger ](Error error, SharedPtr<http::Response> /*http_response*/,
-                     Json json_response) mutable {
+                     nlohmann::json json_response) mutable {
               if (error) {
                   logger->warn("orchestrator: JSON API error: %s",
                                error.what());
@@ -49,26 +48,28 @@ void login(Auth &&auth, std::string registry_url, Settings settings,
                   return;
               }
               logger->debug("orchestrator: processing login response");
-              error = json_process(
-                    json_response, [&](auto response) {
-                        if (response.find("error") != response.end()) {
-                            if (response["error"] ==
-                                "wrong-username-password") {
-                                throw RegistryWrongUsernamePasswordError();
-                            }
-                            if (response["error"] ==
-                                "missing-username-password") {
-                                throw RegistryMissingUsernamePasswordError();
-                            }
-                            // Note: this is basically an error case that we did
-                            // not anticipate when writing the code
-                            throw GenericError();
-                        }
-                        auth.expiry_time = response["expire"];
-                        auth.auth_token = response["token"];
-                        auth.logged_in = true;
-                        logger->info("Logged in with orchestrator");
-                    });
+              try {
+                  const nlohmann::json &response = json_response;
+                  if (response.find("error") != response.end()) {
+                      if (response["error"] ==
+                          "wrong-username-password") {
+                          throw RegistryWrongUsernamePasswordError();
+                      }
+                      if (response["error"] ==
+                          "missing-username-password") {
+                          throw RegistryMissingUsernamePasswordError();
+                      }
+                      // Note: this is basically an error case that we did
+                      // not anticipate when writing the code
+                      throw GenericError();
+                  }
+                  auth.expiry_time = response["expire"];
+                  auth.auth_token = response["token"];
+                  auth.logged_in = true;
+                  logger->info("Logged in with orchestrator");
+              } catch (const std::exception &) {
+                  error = JsonParseError();
+              }
               if (error) {
                   logger->warn("orchestrator: json processing error: %s",
                                error.what());
@@ -109,33 +110,35 @@ void register_probe_(const ClientMetadata &m, std::string password,
         cb(MissingRequiredValueError(), std::move(auth));
         return;
     }
-    Json request = m.as_json();
+    nlohmann::json request = m.as_json();
     request["password"] = password;
     http_request_json_object(
           "POST", m.registry_url + "/api/v1/register", request, {},
           [ cb = std::move(cb), logger = m.logger,
             auth = std::move(auth) ](Error error, SharedPtr<http::Response> /*resp*/,
-                                     Json json_response) mutable {
+                                     nlohmann::json json_response) mutable {
               if (error) {
                   logger->warn("orchestrator: JSON API error: %s",
                                error.what());
                   cb(std::move(error), std::move(auth));
                   return;
               }
-              error = json_process(
-                    json_response, [&](auto jresp) {
-                        if (jresp.find("error") != jresp.end()) {
-                            if (jresp["error"] == "invalid request") {
-                                throw RegistryInvalidRequestError();
-                            }
-                            // A case that we have not anticipated
-                            throw GenericError();
-                        }
-                        auth.username = jresp["client_id"];
-                        if (auth.username == "") {
-                            throw RegistryEmptyClientIdError();
-                        }
-                    });
+              try {
+                  const nlohmann::json &jresp = json_response;
+                  if (jresp.find("error") != jresp.end()) {
+                      if (jresp["error"] == "invalid request") {
+                          throw RegistryInvalidRequestError();
+                      }
+                      // A case that we have not anticipated
+                      throw GenericError();
+                  }
+                  auth.username = jresp["client_id"];
+                  if (auth.username == "") {
+                      throw RegistryEmptyClientIdError();
+                  }
+              } catch (const std::exception &) {
+                  error = JsonParseError();
+              }
               if (error) {
                   logger->warn("orchestrator: JSON processing error: %s",
                                error.what());
@@ -152,7 +155,7 @@ template <MK_MOCK_AS(http::request_json_object, http_request_json_object)>
 void update_(const ClientMetadata &m, Auth &&auth, SharedPtr<Reactor> reactor,
              Callback<Error &&, Auth &&> &&cb) {
     std::string update_url = m.registry_url + "/api/v1/update/" + auth.username;
-    Json update_request = m.as_json();
+    nlohmann::json update_request = m.as_json();
     maybe_login(
           std::move(auth), m.registry_url, m.settings, reactor, m.logger, [
               update_url = std::move(update_url),
@@ -172,27 +175,29 @@ void update_(const ClientMetadata &m, Auth &&auth, SharedPtr<Reactor> reactor,
                     {{"Authorization", "Bearer " + auth_token}},
                     [ cb = std::move(cb), logger, auth = std::move(auth) ](
                           Error err, SharedPtr<http::Response> /*resp*/,
-                          Json json_response) mutable {
+                          nlohmann::json json_response) mutable {
                         if (err) {
                             // Note: error printed by maybe_login()
                             cb(std::move(err), std::move(auth));
                             return;
                         }
-                        err = json_process(
-                              json_response, [&](auto jresp) {
-                                  // XXX add better error handling
-                                  if (jresp.find("error") != jresp.end()) {
-                                      std::string s = jresp["error"];
-                                      logger->warn("orchestrator: update "
-                                                   "failed with \"%s\"",
-                                                   s.c_str());
-                                      throw RegistryInvalidRequestError();
-                                  }
-                                  if (jresp.find("status") == jresp.end() ||
-                                      jresp["status"] != "ok") {
-                                      throw RegistryInvalidRequestError();
-                                  }
-                              });
+                        try {
+                            const nlohmann::json &jresp = json_response;
+                            // XXX add better error handling
+                            if (jresp.find("error") != jresp.end()) {
+                                std::string s = jresp["error"];
+                                logger->warn("orchestrator: update "
+                                             "failed with \"%s\"",
+                                             s.c_str());
+                                throw RegistryInvalidRequestError();
+                            }
+                            if (jresp.find("status") == jresp.end() ||
+                                jresp["status"] != "ok") {
+                                throw RegistryInvalidRequestError();
+                            }
+                        } catch (const std::exception &) {
+                            err = JsonParseError();
+                        }
                         if (!err) {
                             logger->info("Updated orchestrator about "
                                          "this probe state");

@@ -3,8 +3,8 @@
 // and LICENSE for more information on the copying conditions.
 
 #include <measurement_kit/common/aaa_base.h>
+#include <measurement_kit/common/error.hpp>
 #include <measurement_kit/common/callback.hpp>
-#include <measurement_kit/common/json.hpp>
 #include <measurement_kit/common/logger.hpp>
 #include <measurement_kit/common/shared_ptr.hpp>
 
@@ -30,9 +30,9 @@ class DefaultLogger : public Logger, public NonCopyable, public NonMovable {
         consumer_ = [](uint32_t level, const char *s) {
             std::string message;
             if ((level & MK_LOG_EVENT) != 0) {
-                Error err = json_process(
-                    s, [&](auto j) { message = j.dump(4); });
-                if (err) {
+                try {
+                    message = nlohmann::json::parse(s).dump(4);
+                } catch (const std::exception &) {
                     fprintf(
                         stderr, "warning: logger cannot parse json message\n");
                     return;

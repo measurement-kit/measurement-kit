@@ -10,14 +10,6 @@
 
 using namespace mk;
 
-static Error do_out_of_range(const std::string &, Callback<Json &> &&) {
-    return JsonKeyError();
-}
-
-static Error do_domain_error(const std::string &, Callback<Json &> &&) {
-    return JsonDomainError();
-}
-
 TEST_CASE("BouncerReply::create() works") {
 
     SECTION("When the collector is not found") {
@@ -55,20 +47,6 @@ TEST_CASE("BouncerReply::create() works") {
             R"({)", Logger::global());
         REQUIRE(!maybe_reply);
         REQUIRE(maybe_reply.as_error() == JsonParseError());
-    }
-
-    SECTION("When the parser throws out_of_range") {
-        auto maybe_reply = ooni::bouncer::create_impl<do_out_of_range>(
-            R"({})", Logger::global());
-        REQUIRE(!maybe_reply);
-        REQUIRE(maybe_reply.as_error() == JsonKeyError());
-    }
-
-    SECTION("When the parser throws domain_error") {
-        auto maybe_reply = ooni::bouncer::create_impl<do_domain_error>(
-            R"({})", Logger::global());
-        REQUIRE(!maybe_reply);
-        REQUIRE(maybe_reply.as_error() == JsonDomainError());
     }
 }
 

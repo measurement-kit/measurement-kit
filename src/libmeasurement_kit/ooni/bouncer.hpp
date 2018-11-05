@@ -14,7 +14,7 @@ namespace ooni {
 
 class BouncerReply {
   public:
-    Json response;
+    nlohmann::json response;
 
     static ErrorOr<SharedPtr<BouncerReply>> create(std::string, SharedPtr<Logger>);
 
@@ -27,7 +27,7 @@ class BouncerReply {
     ErrorOr<std::string> get_version();
 
   private:
-    Json get_base();
+    nlohmann::json get_base();
 };
 
 namespace bouncer {

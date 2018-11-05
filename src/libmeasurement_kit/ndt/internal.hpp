@@ -147,7 +147,7 @@ namespace messages {
 
 void read_ll(SharedPtr<Context> ctx, Callback<Error, uint8_t, std::string> callback,
              SharedPtr<Reactor> reactor = Reactor::global());
-void read_json(SharedPtr<Context> ctx, Callback<Error, uint8_t, Json> callback,
+void read_json(SharedPtr<Context> ctx, Callback<Error, uint8_t, nlohmann::json> callback,
                SharedPtr<Reactor> reactor = Reactor::global());
 void read_msg(SharedPtr<Context> ctx, Callback<Error, uint8_t, std::string> callback,
               SharedPtr<Reactor> reactor = Reactor::global());

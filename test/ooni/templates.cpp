@@ -27,13 +27,13 @@ TEST_CASE("dns query template works as expected") {
                     entry, "A", "IN", "nexa.polito.it", "8.8.8.1:53",
                     [=](Error err, SharedPtr<dns::Message>) {
                         REQUIRE(!!err);
-                        Json answers;
-                        Json root;
-                        Json query;
+                        nlohmann::json answers;
+                        nlohmann::json root;
+                        nlohmann::json query;
                         int resolver_port;
-                        root = Json::parse(entry->dump());
+                        root = nlohmann::json::parse(entry->dump());
                         REQUIRE(root.is_object());
-                        Json queries = root["queries"];
+                        nlohmann::json queries = root["queries"];
                         REQUIRE(queries.is_array());
                         REQUIRE(queries.size() == 2);
                         /* First query and response (should be ok) */
@@ -80,12 +80,12 @@ TEST_CASE("dns query template works as expected with system engine") {
         templates::dns_query(entry, "A", "IN", "nexa.polito.it", "",
                 [=](Error err, SharedPtr<dns::Message>) {
                     REQUIRE(!err);
-                    Json answers;
-                    Json root;
-                    Json query;
-                    root = Json::parse(entry->dump());
+                    nlohmann::json answers;
+                    nlohmann::json root;
+                    nlohmann::json query;
+                    root = nlohmann::json::parse(entry->dump());
                     REQUIRE(root.is_object());
-                    Json queries = root["queries"];
+                    nlohmann::json queries = root["queries"];
                     REQUIRE(queries.is_array());
                     REQUIRE(queries.size() == 1);
                     /* First query and response (should be ok) */
@@ -149,10 +149,10 @@ TEST_CASE("http requests template works as expected") {
                             {"net/timeout", 1.0}},
                     {}, "", [=](Error err, SharedPtr<http::Response>) {
                         REQUIRE(err);
-                        Json root;
-                        Json requests;
-                        Json req;
-                        root = Json::parse(entry->dump());
+                        nlohmann::json root;
+                        nlohmann::json requests;
+                        nlohmann::json req;
+                        root = nlohmann::json::parse(entry->dump());
                         REQUIRE((root["agent"] == "agent"));
                         REQUIRE((root["socksproxy"] == nullptr));
                         REQUIRE(root.is_object());

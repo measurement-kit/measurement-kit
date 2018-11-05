@@ -6,7 +6,6 @@
 #include <measurement_kit/common/data_usage.hpp>
 #include <measurement_kit/common/error.hpp>
 #include <measurement_kit/common/error_or.hpp>
-#include <measurement_kit/common/json.hpp>
 #include <measurement_kit/common/logger.hpp>
 #include <measurement_kit/common/platform.h>
 #include <measurement_kit/common/scalar.hpp>

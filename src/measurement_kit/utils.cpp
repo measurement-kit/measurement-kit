@@ -9,11 +9,9 @@
 #define MK_CA_BUNDLE "" // Empty
 #endif
 
-#include <measurement_kit/common/json.hpp>
-
 #include <inttypes.h>
 
-#include "../measurement_kit/cmdline.hpp"
+#include "src/measurement_kit/cmdline.hpp"
 
 BaseTest &common_init(std::list<Callback<BaseTest &>> il, BaseTest &test) {
     test

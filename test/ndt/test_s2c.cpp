@@ -176,7 +176,7 @@ static void coro_ok(SharedPtr<Entry>, std::string, test_s2c::Params,
     cb(NoError(), [](Callback<Error, double> cb) { cb(NoError(), 0.0); });
 }
 
-static void failure(SharedPtr<Context>, Callback<Error, uint8_t, Json> cb,
+static void failure(SharedPtr<Context>, Callback<Error, uint8_t, nlohmann::json> cb,
                     SharedPtr<Reactor> = Reactor::global()) {
     cb(MockedError(), 0, {});
 }
@@ -187,7 +187,7 @@ TEST_CASE("run() deals with error when reading TEST_MSG") {
         ctx, [](Error err) { REQUIRE(err == ReadingTestMsgError()); });
 }
 
-static void invalid(SharedPtr<Context>, Callback<Error, uint8_t, Json> cb,
+static void invalid(SharedPtr<Context>, Callback<Error, uint8_t, nlohmann::json> cb,
                     SharedPtr<Reactor> = Reactor::global()) {
     cb(NoError(), MSG_ERROR, {});
 }
@@ -198,7 +198,7 @@ TEST_CASE("run() deals with unexpected message instead of TEST_MSG") {
         ctx, [](Error err) { REQUIRE(err == NotTestMsgError()); });
 }
 
-static void msg_test(SharedPtr<Context>, Callback<Error, uint8_t, Json> cb,
+static void msg_test(SharedPtr<Context>, Callback<Error, uint8_t, nlohmann::json> cb,
                      SharedPtr<Reactor> = Reactor::global()) {
     cb(NoError(), TEST_MSG, {});
 }

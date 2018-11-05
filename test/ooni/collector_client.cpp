@@ -77,7 +77,7 @@ TEST_CASE("collector:post deals with missing URL") {
     SharedPtr<Reactor> reactor = Reactor::make();
     reactor->run_with_initial_event([=]() {
         collector::post_impl(nullptr, "", "",
-                         [=](Error err, Json) {
+                         [=](Error err, nlohmann::json) {
                              REQUIRE(err == MissingCollectorBaseUrlError());
                              reactor->stop();
                          },
@@ -98,7 +98,7 @@ TEST_CASE("collector::post deals with network error") {
     SharedPtr<Reactor> reactor = Reactor::make();
     reactor->run_with_initial_event([=]() {
         collector::post_impl<fail>(nullptr, "", "",
-                               [=](Error err, Json r) {
+                               [=](Error err, nlohmann::json r) {
                                    REQUIRE(err == MockedError());
                                    REQUIRE(r == nullptr);
                                    reactor->stop();
@@ -120,7 +120,7 @@ TEST_CASE("collector::post deals with unexpected response") {
     reactor->run_with_initial_event([=]() {
         collector::post_impl<five_hundred>(
         nullptr, "", "",
-        [=](Error err, Json r) {
+        [=](Error err, nlohmann::json r) {
             REQUIRE(err == HttpRequestFailedError());
             REQUIRE(r == nullptr);
             reactor->stop();
@@ -141,7 +141,7 @@ TEST_CASE("collector::post deals with empty response") {
     SharedPtr<Reactor> reactor = Reactor::make();
     reactor->run_with_initial_event([=]() {
         collector::post_impl<empty>(nullptr, "", "",
-                                [=](Error err, Json r) {
+                                [=](Error err, nlohmann::json r) {
                                     REQUIRE(err == NoError());
                                     REQUIRE(r == nullptr);
                                     reactor->stop();
@@ -163,7 +163,7 @@ TEST_CASE("collector::post deals with invalid json") {
     SharedPtr<Reactor> reactor = Reactor::make();
     reactor->run_with_initial_event([=]() {
         collector::post_impl<invalid_json>(nullptr, "", "",
-                                       [=](Error err, Json r) {
+                                       [=](Error err, nlohmann::json r) {
                                            REQUIRE(err == JsonParseError());
                                            REQUIRE(r == nullptr);
                                            reactor->stop();
@@ -186,7 +186,7 @@ TEST_CASE("collector::connect deals with missing URL") {
 }
 
 static void fail(SharedPtr<Transport>, std::string, std::string,
-                 Callback<Error, Json> cb, Settings, SharedPtr<Reactor>,
+                 Callback<Error, nlohmann::json> cb, Settings, SharedPtr<Reactor>,
                  SharedPtr<Logger>) {
     cb(MockedError(), nullptr);
 }
@@ -202,8 +202,8 @@ static Entry ENTRY{
     {"software_version", "0.2.0-alpha.1+11.1"},
     {"test_keys", {
         {"failure", nullptr},
-        {"received", Json::array()},
-        {"sent", Json::array()},
+        {"received", nlohmann::json::array()},
+        {"sent", nlohmann::json::array()},
     }},
     {"test_name", "tcp_connect"},
     {"test_runtime", 0.253494024276733},
@@ -226,8 +226,8 @@ static Entry BAD_ENTRY{
     {"software_version", "0.2.0-alpha.1+11.1"},
     {"test_keys", {
         {"failure", nullptr},
-        {"received", Json::array()},
-        {"sent", Json::array()},
+        {"received", nlohmann::json::array()},
+        {"sent", nlohmann::json::array()},
     }},
     {"test_name", "tcp_connect"},
     {"test_runtime", 0.253494024276733},
@@ -283,7 +283,7 @@ TEST_CASE("collector::create_report deals with POST error") {
 }
 
 static void wrong_json_type(SharedPtr<Transport>, std::string, std::string,
-                            Callback<Error, Json> cb, Settings,
+                            Callback<Error, nlohmann::json> cb, Settings,
                             SharedPtr<Reactor>, SharedPtr<Logger>) {
     cb(NoError(), 17.0);
 }
@@ -303,9 +303,9 @@ TEST_CASE("collector::create_report deals with wrong JSON type") {
 }
 
 static void missing_report_id(SharedPtr<Transport>, std::string, std::string,
-                              Callback<Error, Json> cb, Settings,
+                              Callback<Error, nlohmann::json> cb, Settings,
                               SharedPtr<Reactor>, SharedPtr<Logger>) {
-    Json json{{"foo", "bar"}, {"bar", "baz"}};
+    nlohmann::json json{{"foo", "bar"}, {"bar", "baz"}};
     cb(NoError(), json);
 }
 

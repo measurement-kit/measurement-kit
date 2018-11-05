@@ -247,7 +247,7 @@ void run_impl(SharedPtr<Context> ctx, Callback<Error> callback) {
                         // The server sends us MSG containing throughput
                         ctx->logger->debug("ndt: recv TEST_MSG ...");
                         messages_read_json(ctx, [=](Error err, uint8_t type,
-                                                    Json m) {
+                                                    nlohmann::json m) {
                             ctx->logger->debug("ndt: recv TEST_MSG ... %d",
                                                (int)err);
                             if (err) {

@@ -1,6 +1,7 @@
 // Public domain 2017, Simone Basso <bassosimone@gmail.com.
 
 #include <measurement_kit/common.hpp>
+#include <measurement_kit/common/nlohmann/json.hpp>
 #include <measurement_kit/nettests.hpp>  // Import mk::nettests
 
 #include <stdio.h>
@@ -30,7 +31,7 @@ int main(void) {
         // Note: in general `Json` throws on error but MK
         // guarantees that on_event() is robust to exceptions.
         .on_event([](const char *s) {
-            mk::Json doc = mk::Json::parse(s);
+            nlohmann::json doc = nlohmann::json::parse(s);
             if (doc["type"] != "download-speed") {
                 return;
             }
@@ -48,7 +49,7 @@ int main(void) {
         // Also in this case we don't care about exceptions because
         // MK suppresses exceptions occurring in this lambda.
         .on_entry([](std::string s) {
-            mk::Json doc = mk::Json::parse(s);
+            nlohmann::json doc = nlohmann::json::parse(s);
             auto simple = doc["test_keys"]["simple"];
             printf("\nTest summary\n");
             printf("------------\n");

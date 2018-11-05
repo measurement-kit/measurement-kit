@@ -57,7 +57,7 @@ TEST_CASE(
 
                     std::ifstream infile(filename);
                     for (std::string line; getline(infile, line);) {
-                        Json entry = Json::parse(line.c_str());
+                        nlohmann::json entry = nlohmann::json::parse(line.c_str());
                         REQUIRE(entry["test_name"].get<std::string>() ==
                                 report.test_name);
                         REQUIRE(entry["test_version"].get<std::string>() ==
