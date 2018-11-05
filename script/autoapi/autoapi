@@ -222,12 +222,12 @@ def main():
                 Nettest("whatsapp", None,
                         Attribute("bool", "all_endpoints", "false"))]
 
-    with open("./script/autoapi/nettests-ffi.hpp.j2", "r") as sourcefp:
+    with open("./script/autoapi/nettests.hpp.j2", "r") as sourcefp:
         tpl = jinja2.Template(sourcefp.read())
         render = tpl.render(events=events, log_levels=log_levels,
                             settings=settings, options=options,
                             nettests=nettests)
-        with open("./include/measurement_kit/nettests/ffi.hpp", "w") as destfp:
+        with open("./include/measurement_kit/nettests.hpp", "w") as destfp:
             destfp.write(render)
 
     with open("./script/autoapi/engine.cpp.j2", "r") as sourcefp:

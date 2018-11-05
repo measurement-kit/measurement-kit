@@ -4,7 +4,7 @@
 #ifndef SRC_LIBMEASUREMENT_KIT_OONI_BOUNCER_IMPL_HPP
 #define SRC_LIBMEASUREMENT_KIT_OONI_BOUNCER_IMPL_HPP
 
-#include <measurement_kit/ooni/error.hpp>
+#include "src/libmeasurement_kit/ooni/error.hpp"
 #include <measurement_kit/common/json.hpp>
 
 #include "src/libmeasurement_kit/common/mock.hpp"

@@ -1,8 +1,8 @@
 // Part of Measurement Kit <https://measurement-kit.github.io/>.
 // Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
-#ifndef MEASUREMENT_KIT_OONI_ORCHESTRATE_HPP
-#define MEASUREMENT_KIT_OONI_ORCHESTRATE_HPP
+#ifndef SRC_LIBMEASUREMENT_KIT_OONI_ORCHESTRATE_HPP
+#define SRC_LIBMEASUREMENT_KIT_OONI_ORCHESTRATE_HPP
 
 #include <measurement_kit/common/error.hpp>
 #include <measurement_kit/common/json.hpp>
@@ -60,10 +60,10 @@ class ClientMetadata {
     std::string device_token;
     std::string ca_bundle_path;
     std::string events_url = production_events_url();
-    std::string language;
-    std::string network_type;
     std::string geoip_country_path;
     std::string geoip_asn_path;
+    std::string language;
+    std::string network_type;
     std::string platform;
     std::string probe_asn;
     std::string probe_cc;

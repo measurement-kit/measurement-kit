@@ -20,7 +20,7 @@
 #include "src/libmeasurement_kit/net/error.hpp"
 #include "src/libmeasurement_kit/net/transport.hpp"
 
-#include <measurement_kit/ndt/defs.hpp>
+#include "measurement_kit/ndt.hpp"
 
 /*
  ____        __ _       _ _   _

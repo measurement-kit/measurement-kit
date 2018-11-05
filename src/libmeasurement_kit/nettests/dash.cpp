@@ -3,7 +3,6 @@
 // and LICENSE for more information on the copying conditions.
 
 #include "src/libmeasurement_kit/nettests/runnable.hpp"
-#include <measurement_kit/nettests.hpp>
 #include "src/libmeasurement_kit/neubot/dash.hpp"
 
 namespace mk {

@@ -11,7 +11,7 @@
 #include "src/libmeasurement_kit/ooni/collector_client.hpp"
 
 #include <measurement_kit/common/json.hpp>
-#include <measurement_kit/ooni.hpp>
+#include "src/libmeasurement_kit/ooni/error.hpp"
 #include "src/libmeasurement_kit/http/http.hpp"
 
 #include <fstream>

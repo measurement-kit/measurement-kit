@@ -11,9 +11,9 @@
 #include "src/libmeasurement_kit/ooni/templates.hpp"
 #include "src/libmeasurement_kit/report/entry.hpp"
 #include "src/libmeasurement_kit/net/utils.hpp"
+#include "src/libmeasurement_kit/ooni/error.hpp"
 
 #include <cassert>
-#include <measurement_kit/ooni.hpp>
 
 namespace mk {
 namespace ooni {

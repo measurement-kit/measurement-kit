@@ -16,7 +16,6 @@
 #include "src/libmeasurement_kit/report/file_reporter.hpp"
 #include "src/libmeasurement_kit/report/ooni_reporter.hpp"
 
-#include <measurement_kit/nettests.hpp>
 #include <measurement_kit/vendor/mkiplookup.h>
 #include <measurement_kit/vendor/mkmmdb.h>
 

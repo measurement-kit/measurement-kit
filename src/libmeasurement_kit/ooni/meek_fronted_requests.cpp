@@ -7,8 +7,7 @@
 #include "src/libmeasurement_kit/ooni/nettests.hpp"
 #include "src/libmeasurement_kit/ooni/templates.hpp"
 #include "src/libmeasurement_kit/report/entry.hpp"
-
-#include <measurement_kit/ooni.hpp>
+#include "src/libmeasurement_kit/ooni/error.hpp"
 
 namespace mk {
 namespace ooni {

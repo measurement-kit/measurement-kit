@@ -6,8 +6,6 @@
 #include "src/libmeasurement_kit/nettests/runnable.hpp"
 #include "src/libmeasurement_kit/ooni/nettests.hpp"
 
-#include <measurement_kit/nettests.hpp>
-
 namespace mk {
 namespace nettests {
 
