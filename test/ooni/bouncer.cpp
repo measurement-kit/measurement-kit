@@ -128,6 +128,8 @@ TEST_CASE("post_net_tests() works") {
 
     SECTION("On network error") {
         SharedPtr<Reactor> reactor = Reactor::make();
+        Settings settings;
+        settings["net/ca_bundle_path"] = "cacert.pem";
         reactor->run_with_initial_event([=]() {
             // Mocked http request that returns an invalid-request
             ooni::bouncer::post_net_tests_impl<request_error>(
@@ -137,12 +139,14 @@ TEST_CASE("post_net_tests() works") {
                     REQUIRE(e == MockedError());
                     reactor->stop();
                 },
-                {}, reactor, Logger::global());
+                settings, reactor, Logger::global());
         });
     }
 
     SECTION("When the collector is not found") {
         SharedPtr<Reactor> reactor = Reactor::make();
+        Settings settings;
+        settings["net/ca_bundle_path"] = "cacert.pem";
         reactor->run_with_initial_event([=]() {
             ooni::bouncer::post_net_tests(
                 ooni::bouncer::production_bouncer_url(), "antani", "0.0.1",
@@ -151,12 +155,14 @@ TEST_CASE("post_net_tests() works") {
                     REQUIRE(e == ooni::BouncerCollectorNotFoundError());
                     reactor->stop();
                 },
-                {}, reactor, Logger::global());
+                settings, reactor, Logger::global());
         });
     }
 
     SECTION("When the input is correct") {
         SharedPtr<Reactor> reactor = Reactor::make();
+        Settings settings;
+        settings["net/ca_bundle_path"] = "cacert.pem";
         reactor->run_with_initial_event([=]() {
             ooni::bouncer::post_net_tests(
                 ooni::bouncer::production_bouncer_url(), "web-connectivity",
@@ -188,7 +194,7 @@ TEST_CASE("post_net_tests() works") {
                                 "web-connectivity", "cloudfront"));
                     reactor->stop();
                 },
-                {}, reactor, Logger::global());
+                settings, reactor, Logger::global());
         });
     }
 }

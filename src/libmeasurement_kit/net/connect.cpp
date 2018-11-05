@@ -2,13 +2,6 @@
 // Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
-#ifdef HAVE_CONFIG_H
-#include "config.h" // For MK_CA_BUNDLE
-#endif
-#ifndef MK_CA_BUNDLE
-#define MK_CA_BUNDLE "" // Empty
-#endif
-
 #include "src/libmeasurement_kit/ext/tls_internal.h"
 
 #include "src/libmeasurement_kit/net/connect_impl.hpp"
@@ -219,10 +212,13 @@ void connect(std::string address, int port,
                 return;
             }
             if (settings.find("net/ssl") != settings.end()) {
-                std::string cbp = MK_CA_BUNDLE;
-                if (settings.find("net/ca_bundle_path") != settings.end()) {
-                    cbp = settings.at("net/ca_bundle_path");
+                std::string cbp;
+                if (settings.find("net/ca_bundle_path") == settings.end()) {
+                    callback(MissingCaBundlePathError(), make_txp<Emitter>(
+                          timeout, r, reactor, logger));
+                    return;
                 }
+                cbp = settings.at("net/ca_bundle_path");
                 ErrorOr<SSL *> cssl = libssl::Cache<>::thread_local_instance()
                     ->get_client_ssl(cbp, address, logger);
                 if (!cssl) {
@@ -276,7 +272,7 @@ void connect(std::string address, int port,
                                     logger->warn("Cannot tell libevent to "
                                                  "allow SSL dirty shutdowns "
                                                  "as requested by the "
-                                                 "programmer: as a result"
+                                                 "programmer: as a result "
                                                  "some SSL connections may "
                                                  "interrupt abruptly with an "
                                                  "error. This happens because "

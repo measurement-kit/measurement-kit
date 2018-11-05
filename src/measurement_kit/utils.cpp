@@ -2,6 +2,13 @@
 // Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
+#ifdef HAVE_CONFIG_H
+#include "config.h" // For MK_CA_BUNDLE
+#endif
+#ifndef MK_CA_BUNDLE
+#define MK_CA_BUNDLE "" // Empty
+#endif
+
 #include <measurement_kit/common/json.hpp>
 
 #include <inttypes.h>
@@ -11,6 +18,7 @@
 BaseTest &common_init(std::list<Callback<BaseTest &>> il, BaseTest &test) {
     test
         .set_verbosity(MK_LOG_INFO)
+        .set_option("net/ca_bundle_path", MK_CA_BUNDLE)
         .set_option("geoip_country_path", "country.mmdb")
         .set_option("geoip_asn_path", "asn.mmdb")
         .on_progress([](double progress, std::string msg) {

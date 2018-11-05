@@ -14,14 +14,16 @@
  * statically with its own version of libc++.
  */
 int main() {
-    mk_task_t *task = mk_nettest_start("{\n"
-                                       "    \"inputs\": [\n"
-                                       "        \"https://www.google.com\","
-                                       "        \"https://www.x.org\""
-                                       "    ],\n"
-                                       "    \"name\": \"WebConnectivity\",\n"
-                                       "    \"log_level\": \"INFO\"\n"
-                                       "}\n");
+    mk_task_t *task = mk_nettest_start(R"({
+        "inputs": [
+            "https://www.google.com",
+            "https://www.x.org"
+        ],
+        "name": "WebConnectivity",
+        "log_level": "INFO",
+        "options": {
+            "net/ca_bundle_path": "cacert.pem"
+        }})");
     if (task == nullptr) {
         fprintf(stderr, "ERROR: cannot create/start task\n");
         exit(1);

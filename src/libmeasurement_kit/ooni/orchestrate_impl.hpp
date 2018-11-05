@@ -254,6 +254,12 @@ static inline void ctx_enter_(Auth &&auth, ClientMetadata &&meta,
                               SharedPtr<Reactor> reactor,
                               Callback<SharedPtr<RegistryCtx>> &&cb) {
     auto ctx = SharedPtr<RegistryCtx>::make();
+    // We need to set the ca_bundle_path. The one set in the ClientMetadata
+    // structure will take preference. This is disgusting however it is also
+    // unavoidable until we can migrate over to mkorchestra.
+    {
+      meta.settings["net/ca_bundle_path"] = meta.ca_bundle_path;
+    }
     ctx->auth = std::move(auth);
     ctx->metadata = std::move(meta);
     ctx->reactor = reactor;

@@ -488,12 +488,14 @@ TEST_CASE("submit_report() deals with collector_create_report error") {
 
 TEST_CASE("The collector client works as expected") {
     SharedPtr<Reactor> reactor = Reactor::make();
+    Settings settings;
+    settings["net/ca_bundle_path"] = "cacert.pem";
     reactor->run_with_initial_event([=]() {
         collector::submit_report("test/fixtures/report.njson",
                                  collector::testing_collector_url(),
                                  [=](Error err) {
                                      REQUIRE(err == NoError());
                                      reactor->stop();
-                                 }, {}, reactor);
+                                 }, settings, reactor);
     });
 }

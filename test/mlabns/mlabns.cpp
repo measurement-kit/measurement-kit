@@ -15,6 +15,7 @@ TEST_CASE("Query works as expected") {
     settings["mlabns/address_family"] = "ipv4";
     settings["mlabns/metro"] = "iad";
     settings["mlabns/policy"] = "random";
+    settings["net/ca_bundle_path"] = "cacert.pem";
     std::string tool = "neubot";
 
     SharedPtr<Reactor> reactor = Reactor::make();
@@ -40,6 +41,7 @@ TEST_CASE("Query can pass the settings to the dns level") {
     settings["dns/nameserver"] = "8.8.8.8";
     settings["dns/timeout"] = 0.0001;
     settings["dns/engine"] = "libevent";
+    settings["net/ca_bundle_path"] = "cacert.pem";
     std::string tool = "neubot";
 
     SharedPtr<Reactor> reactor = Reactor::make();
@@ -59,6 +61,7 @@ TEST_CASE("Make sure that an error is passed to callback with invalid "
     settings["mlabns/address_family"] = "ip4"; // Invalid
     settings["mlabns/metro"] = "iad";
     settings["mlabns/policy"] = "random";
+    settings["net/ca_bundle_path"] = "cacert.pem";
     std::string tool = "neubot";
     SharedPtr<Reactor> reactor = Reactor::make();
 
@@ -78,6 +81,7 @@ TEST_CASE("Make sure that an error is passed to callback with invalid metro "
     settings["mlabns/address_family"] = "ipv4";
     settings["mlabns/metro"] = "trno"; // Invalid
     settings["mlabns/policy"] = "random";
+    settings["net/ca_bundle_path"] = "cacert.pem";
     std::string tool = "neubot";
 
     SharedPtr<Reactor> reactor = Reactor::make();
@@ -97,6 +101,7 @@ TEST_CASE("Make sure that an error is passed to callback with invalid policy "
     settings["mlabns/address_family"] = "ipv4";
     settings["mlabns/metro"] = "iad";
     settings["mlabns/policy"] = "antani"; // Invalid
+    settings["net/ca_bundle_path"] = "cacert.pem";
     std::string tool = "neubot";
 
     SharedPtr<Reactor> reactor = Reactor::make();
@@ -116,6 +121,7 @@ TEST_CASE("Make sure that an error is passed to callback with invalid tool "
     settings["mlabns/address_family"] = "ipv4";
     settings["mlabns/metro"] = "iad";
     settings["mlabns/policy"] = "random";
+    settings["net/ca_bundle_path"] = "cacert.pem";
     std::string tool = "antani"; // Invalid
 
     SharedPtr<Reactor> reactor = Reactor::make();
@@ -142,6 +148,7 @@ TEST_CASE(
     settings["mlabns/address_family"] = "ipv4";
     settings["mlabns/metro"] = "iad";
     settings["mlabns/policy"] = "random";
+    settings["net/ca_bundle_path"] = "cacert.pem";
     std::string tool = "neubot";
 
     SharedPtr<Reactor> reactor = Reactor::make();
@@ -179,6 +186,7 @@ TEST_CASE("Make sure that an error is passed to callback if the response does "
     settings["mlabns/address_family"] = "ipv4";
     settings["mlabns/metro"] = "iad";
     settings["mlabns/policy"] = "random";
+    settings["net/ca_bundle_path"] = "cacert.pem";
     std::string tool = "neubot";
 
     SharedPtr<Reactor> reactor = Reactor::make();
@@ -215,6 +223,7 @@ TEST_CASE("Make sure that an error is passed to callback if the response "
     settings["mlabns/address_family"] = "ipv4";
     settings["mlabns/metro"] = "iad";
     settings["mlabns/policy"] = "random";
+    settings["net/ca_bundle_path"] = "cacert.pem";
     std::string tool = "neubot";
 
     SharedPtr<Reactor> reactor = Reactor::make();

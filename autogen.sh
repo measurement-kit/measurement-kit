@@ -3,6 +3,7 @@
 set -e
 export LC_ALL=C  # Stable sorting regardless of the locale
 
+. script/autogen.d/ca-bundle
 . script/autogen.d/geoip
 
 no_geoip=0
@@ -81,6 +82,7 @@ gen_executables noinst_PROGRAMS example                          >> include.am
 gen_executables ALL_TESTS test libtest_main.la                   >> include.am
 
 if [ $no_geoip -ne 1 ]; then
+    autogen_get_ca_bundle
     autogen_get_geoip
 fi
 

@@ -29,6 +29,7 @@ template <typename T> void with_test(with_test_cb &&lambda) {
           T{}.set_option("geoip_country_path", "country.mmdb")
                 .add_annotation("continuous_integration", "true")
                 .set_option("geoip_asn_path", "asn.mmdb")
+                .set_option("net/ca_bundle_path", "cacert.pem")
                 .set_verbosity(MK_LOG_INFO)
                 // Using the new collector for testing purposes.
                 // TODO(bassosimone): switch to production collector when
@@ -58,6 +59,7 @@ static inline void
 with_runnable(std::function<void(mk::nettests::Runnable &)> lambda) {
     mk::nettests::Runnable test;
     test.annotations["continuous_integration"] = "true";
+    test.options["net/ca_bundle_path"] = "cacert.pem";
     // TODO(bassosimone): see above comment regarding collector and bouncer
     test.options["collector_base_url"] = "https://collector-sandbox.ooni.io";
     test.options["bouncer_base_url"] =
