@@ -5,6 +5,8 @@
 #include "src/libmeasurement_kit/report/error.hpp"
 #include "src/libmeasurement_kit/report/file_reporter.hpp"
 
+#include <iostream>
+
 namespace mk {
 namespace report {
 
