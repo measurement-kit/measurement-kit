@@ -4,8 +4,6 @@
 
 #include "src/libmeasurement_kit/nettests/runnable.hpp"
 
-#include <measurement_kit/nettests.hpp>
-
 #include "src/libmeasurement_kit/ndt/utils.hpp"
 #include "src/libmeasurement_kit/ndt/run.hpp"
 
