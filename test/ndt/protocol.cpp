@@ -277,7 +277,7 @@ static void fail(SharedPtr<Context>, Callback<Error> cb) { cb(MockedError()); }
 TEST_CASE("run_tests() deals with test failure") {
     SharedPtr<Context> ctx(new Context);
     ctx->granted_suite.push_front(std::to_string(TEST_C2S));
-    ctx->entry = SharedPtr<Entry>::make();
+    ctx->entry = SharedPtr<nlohmann::json>::make();
     protocol::run_tests_impl<fail>(ctx, [ctx](Error err) {
         REQUIRE(err == NoError());
         REQUIRE((*ctx->entry)["phase_result"][id_to_name(TEST_C2S)] ==

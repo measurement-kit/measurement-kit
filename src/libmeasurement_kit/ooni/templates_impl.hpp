@@ -15,12 +15,10 @@ namespace mk {
 namespace ooni {
 namespace templates {
 
-using namespace mk::report;
-
 // Mockable implementation of OONI's http_request() template where we can
 // override the underlying function we use in regress tests.
 template <decltype(http::request) mocked_http_request>
-void http_request_impl(SharedPtr<Entry> entry, Settings settings,
+void http_request_impl(SharedPtr<nlohmann::json> entry, Settings settings,
                        http::Headers headers, std::string body,
                        Callback<Error, SharedPtr<http::Response>> cb,
                        SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
@@ -55,7 +53,7 @@ void http_request_impl(SharedPtr<Entry> entry, Settings settings,
         [=](Error error, SharedPtr<http::Response> response) {
 
             auto dump = [&](SharedPtr<http::Response> response) {
-                Entry rr;
+                nlohmann::json rr;
 
                 if (!!error) {
                     rr["failure"] = error.reason;

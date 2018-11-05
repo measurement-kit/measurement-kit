@@ -15,7 +15,7 @@ DnsInjectionRunnable::DnsInjectionRunnable() noexcept {
 }
 
 void DnsInjectionRunnable::main(std::string input, Settings options,
-                                Callback<SharedPtr<report::Entry>> cb) {
+                                Callback<SharedPtr<nlohmann::json>> cb) {
     ooni::dns_injection(input, options, cb, reactor, logger);
 }
 

@@ -5,7 +5,6 @@
 #define SRC_LIBMEASUREMENT_KIT_OONI_UTILS_HPP
 
 #include "src/libmeasurement_kit/ooni/error.hpp"
-#include "src/libmeasurement_kit/report/entry.hpp"
 #include "src/libmeasurement_kit/dns/query.hpp"
 
 namespace mk {
@@ -24,7 +23,7 @@ void resolver_lookup(Callback<Error, std::string> callback, Settings = {},
                      SharedPtr<Reactor> reactor = Reactor::global(),
                      SharedPtr<Logger> logger = Logger::global());
 
-report::Entry represent_string(const std::string &s);
+nlohmann::json represent_string(const std::string &s);
 
 } // namespace ooni
 } // namespace mk

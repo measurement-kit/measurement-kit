@@ -77,7 +77,7 @@ void write_noasync(SharedPtr<Context> ctx, Buffer buff) {
     ctx->txp->write(buff);
 }
 
-Error add_to_report(SharedPtr<Entry> entry, std::string key, std::string item) {
+Error add_to_report(SharedPtr<nlohmann::json> entry, std::string key, std::string item) {
     std::list<std::string> list = split(item, ":");
     if (list.size() != 2) {
         return GenericError(); /* XXX use more specific error */

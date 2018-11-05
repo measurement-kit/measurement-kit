@@ -15,7 +15,7 @@ WhatsappRunnable::WhatsappRunnable() noexcept {
 }
 
 void WhatsappRunnable::main(std::string /*input*/, Settings options,
-                            Callback<SharedPtr<report::Entry>> cb) {
+                            Callback<SharedPtr<nlohmann::json>> cb) {
     ooni::whatsapp(options, cb, reactor, logger);
 }
 

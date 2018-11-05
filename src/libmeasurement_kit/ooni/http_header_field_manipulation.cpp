@@ -2,6 +2,7 @@
 // Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
+#include "src/libmeasurement_kit/common/reactor.hpp"
 #include "src/libmeasurement_kit/common/utils.hpp"
 #include "src/libmeasurement_kit/ooni/constants.hpp"
 #include "src/libmeasurement_kit/ooni/http_header_field_manipulation.hpp"
@@ -13,10 +14,8 @@
 namespace mk {
 namespace ooni {
 
-using namespace mk::report;
-
 void compare_headers_response(http::Headers headers,
-                             SharedPtr<http::Response> response, SharedPtr<report::Entry> entry,
+                             SharedPtr<http::Response> response, SharedPtr<nlohmann::json> entry,
                              SharedPtr<Logger> logger) {
     if (response->body.empty()) {
         logger->warn("empty response body");
@@ -69,10 +68,10 @@ void compare_headers_response(http::Headers headers,
 }
 
 void http_header_field_manipulation(std::string /*input*/, Settings options,
-                                    Callback<SharedPtr<report::Entry>> callback,
+                                    Callback<SharedPtr<nlohmann::json>> callback,
                                     SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
-    SharedPtr<Entry> entry(new Entry);
-    (*entry)["tampering"] = Entry::object();
+    SharedPtr<nlohmann::json> entry(new nlohmann::json);
+    (*entry)["tampering"] = nlohmann::json::object();
     (*entry)["tampering"]["total"] = nullptr;
     (*entry)["tampering"]["request_line_capitalization"] = nullptr;
     (*entry)["tampering"]["header_name_diff"] = nullptr;

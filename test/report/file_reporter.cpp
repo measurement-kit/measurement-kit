@@ -44,7 +44,7 @@ TEST_CASE(
         std::string filename("example_test_report.njson");
         report.add_reporter(FileReporter::make(filename));
 
-        mk::report::Entry entry;
+        nlohmann::json entry;
         entry["input"] = input;
         entry["antani"] = "fuffa";
         report.fill_entry(entry);

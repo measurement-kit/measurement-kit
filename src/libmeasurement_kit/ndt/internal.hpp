@@ -101,7 +101,6 @@ namespace mk {
 namespace ndt {
 
 using namespace mk::net;
-using namespace mk::report;
 
 /*
   ____            _            _
@@ -117,7 +116,7 @@ struct Context {
     std::string address;
     SharedPtr<Buffer> buff = Buffer::make();
     Callback<Error> callback;
-    SharedPtr<Entry> entry;
+    SharedPtr<nlohmann::json> entry;
     std::list<std::string> granted_suite;
     size_t granted_suite_count = 0;
     size_t current_test_count = 0;
@@ -159,7 +158,7 @@ ErrorOr<Buffer> format_msg_waiting();
 void write(SharedPtr<Context>, Buffer, Callback<Error>);
 void write_noasync(SharedPtr<Context>, Buffer);
 
-Error add_to_report(SharedPtr<Entry> entry, std::string key, std::string item);
+Error add_to_report(SharedPtr<nlohmann::json> entry, std::string key, std::string item);
 
 } // namespace messages
 
@@ -198,7 +197,7 @@ void disconnect_and_callback(SharedPtr<Context> ctx, Error err);
 */
 namespace test_c2s {
 
-void coroutine(SharedPtr<Entry>, std::string address, int port, double runtime,
+void coroutine(SharedPtr<nlohmann::json>, std::string address, int port, double runtime,
                Callback<Error, Continuation<Error>> cb, double timeout = 10.0,
                Settings settings = {}, SharedPtr<Reactor> reactor = Reactor::global(),
                SharedPtr<Logger> logger = Logger::global());
@@ -249,13 +248,13 @@ struct Params {
     Params(int port) : port(port) {}
 };
 
-void coroutine(SharedPtr<Entry> report_entry, std::string address, Params params,
+void coroutine(SharedPtr<nlohmann::json> report_entry, std::string address, Params params,
                Callback<Error, Continuation<Error, double>> cb,
                double timeout = 10.0, Settings settings = {},
                SharedPtr<Reactor> reactor = Reactor::global(),
                SharedPtr<Logger> logger = Logger::global());
 
-void finalizing_test(SharedPtr<Context> ctx, SharedPtr<Entry> cur_entry,
+void finalizing_test(SharedPtr<Context> ctx, SharedPtr<nlohmann::json> cur_entry,
                      Callback<Error> callback);
 
 void run(SharedPtr<Context> ctx, Callback<Error> callback);

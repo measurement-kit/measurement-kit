@@ -19,12 +19,10 @@
 namespace mk {
 namespace ooni {
 
-using namespace mk::report;
-
 typedef std::vector<std::pair<std::string, int>> SocketList;
 
-static void compare_http_requests(SharedPtr<Entry> entry,
-                                  SharedPtr<http::Response> response, Entry control,
+static void compare_http_requests(SharedPtr<nlohmann::json> entry,
+                                  SharedPtr<http::Response> response, nlohmann::json control,
                                   SharedPtr<Logger> logger) {
 
     // The response may be null if HTTP fails due to network errors
@@ -75,7 +73,7 @@ static void compare_http_requests(SharedPtr<Entry> entry,
     std::set<std::string> lowercase_ctrl_headers;
     std::set<std::string> lowercase_exp_headers;
 
-    for (Entry::iterator it = control["headers"].begin();
+    for (nlohmann::json::iterator it = control["headers"].begin();
          it != control["headers"].end(); ++it) {
         std::string lower_header(it.key());
         std::transform(lower_header.begin(),
@@ -141,9 +139,9 @@ static void compare_http_requests(SharedPtr<Entry> entry,
     }
 }
 
-static void compare_dns_queries(SharedPtr<Entry> entry,
+static void compare_dns_queries(SharedPtr<nlohmann::json> entry,
                                 std::vector<std::string> experiment_addresses,
-                                Entry control, Settings options) {
+                                nlohmann::json control, Settings options) {
 
     SharedPtr<Logger> logger = Logger::global();
     // When the controls fails in the same way as the experiment we consider the
@@ -224,7 +222,7 @@ static void compare_dns_queries(SharedPtr<Entry> entry,
     (*entry)["dns_consistency"] = "inconsistent";
 }
 
-static bool compare_tcp_connect(SharedPtr<Entry> entry, Entry control) {
+static bool compare_tcp_connect(SharedPtr<nlohmann::json> entry, nlohmann::json control) {
     bool success = true;
     int idx = 0;
     for (auto result : (*entry)["tcp_connect"]) {
@@ -252,7 +250,7 @@ static bool compare_tcp_connect(SharedPtr<Entry> entry, Entry control) {
     return success;
 }
 
-static void compare_control_experiment(std::string input, SharedPtr<Entry> entry,
+static void compare_control_experiment(std::string input, SharedPtr<nlohmann::json> entry,
                                        SharedPtr<http::Response> response,
                                        std::vector<std::string> addresses,
                                        Settings options, SharedPtr<Logger> logger) {
@@ -347,7 +345,7 @@ static void compare_control_experiment(std::string input, SharedPtr<Entry> entry
 }
 
 static void control_request(http::Headers headers_to_pass_along,
-                            SharedPtr<Entry> entry, SocketList socket_list,
+                            SharedPtr<nlohmann::json> entry, SocketList socket_list,
                             std::string url, Callback<Error> callback,
                             Settings settings, SharedPtr<Reactor> reactor,
                             SharedPtr<Logger> logger) {
@@ -359,8 +357,8 @@ static void control_request(http::Headers headers_to_pass_along,
     // considering that from time to time we add new options)
 
     http::Headers headers;
-    Entry request;
-    request["tcp_connect"] = Entry::array();
+    nlohmann::json request;
+    request["tcp_connect"] = nlohmann::json::array();
     for (auto socket : socket_list) {
         // Formats the sockets as IP:PORT
         std::ostringstream ss;
@@ -375,7 +373,7 @@ static void control_request(http::Headers headers_to_pass_along,
     request["http_request"] = url;
     // XXX in OONI headers are like `key: [value,...]` whereas in MK
     // they are like `key: value`. Adapt to OONI format.
-    Entry true_headers;
+    nlohmann::json true_headers;
     for (auto pair: headers_to_pass_along) {
         true_headers[pair.first].push_back(pair.second);
     }
@@ -400,7 +398,7 @@ static void control_request(http::Headers headers_to_pass_along,
                       if (!error) {
                           try {
                               (*entry)["control"] =
-                                  Entry::parse(response->body);
+                                  nlohmann::json::parse(response->body);
                               callback(NoError());
                               return;
                           } catch (const std::invalid_argument &) {
@@ -417,7 +415,7 @@ static void control_request(http::Headers headers_to_pass_along,
 }
 
 static void experiment_http_request(
-        SharedPtr<Entry> entry, std::string url,
+        SharedPtr<nlohmann::json> entry, std::string url,
         Callback<Error, http::Headers, SharedPtr<http::Response>> cb,
         Settings options, SharedPtr<Reactor> reactor,
         SharedPtr<Logger> logger) {
@@ -451,7 +449,7 @@ static void experiment_http_request(
                             reactor, logger);
 }
 
-static void experiment_tcp_connect(SharedPtr<Entry> entry, SocketList sockets,
+static void experiment_tcp_connect(SharedPtr<nlohmann::json> entry, SocketList sockets,
                                    Callback<Error> cb, SharedPtr<Reactor> reactor,
                                    SharedPtr<Logger> logger) {
 
@@ -467,7 +465,7 @@ static void experiment_tcp_connect(SharedPtr<Entry> entry, SocketList sockets,
         return [=](Error err, SharedPtr<net::Transport> txp) {
             *sockets_tested += 1;
             bool close_txp = true;
-            Entry result = {
+            nlohmann::json result = {
                 {"ip", ip},
                 {"port", port},
                 {"status",
@@ -517,7 +515,7 @@ static void experiment_tcp_connect(SharedPtr<Entry> entry, SocketList sockets,
 }
 
 static void experiment_dns_query(
-    SharedPtr<Entry> entry, std::string hostname, std::string nameserver,
+    SharedPtr<nlohmann::json> entry, std::string hostname, std::string nameserver,
     Callback<Error, std::vector<std::string>> callback, Settings options,
     SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
 
@@ -551,7 +549,7 @@ static void experiment_dns_query(
 }
 
 void web_connectivity(std::string input, Settings options,
-                      Callback<SharedPtr<Entry>> callback, SharedPtr<Reactor> reactor,
+                      Callback<SharedPtr<nlohmann::json>> callback, SharedPtr<Reactor> reactor,
                       SharedPtr<Logger> logger) {
 
     logger->emit_event_ex("status.update.websites", {
@@ -560,7 +558,7 @@ void web_connectivity(std::string input, Settings options,
     });
 
     options["http/max_redirects"] = 20;
-    SharedPtr<Entry> entry(new Entry);
+    SharedPtr<nlohmann::json> entry(new nlohmann::json);
     // This is set from ooni test
     // (*entry)["client_resolver"] = nullptr;
     (*entry)["retries"] = nullptr;
@@ -579,8 +577,8 @@ void web_connectivity(std::string input, Settings options,
     (*entry)["http_experiment_failure"] = nullptr;
     (*entry)["dns_experiment_failure"] = nullptr;
 
-    (*entry)["tcp_connect"] = Entry::array();
-    (*entry)["control"] = Entry({});
+    (*entry)["tcp_connect"] = nlohmann::json::array();
+    (*entry)["control"] = nlohmann::json({});
 
     if (!mk::startswith(input, "http://") &&
         !mk::startswith(input, "https://")) {

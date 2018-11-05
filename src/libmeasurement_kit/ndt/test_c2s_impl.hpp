@@ -13,7 +13,7 @@ namespace ndt {
 namespace test_c2s {
 
 template <MK_MOCK_AS(net::connect, net_connect)>
-void coroutine_impl(SharedPtr<Entry> report_entry, std::string address, int port, double runtime,
+void coroutine_impl(SharedPtr<nlohmann::json> report_entry, std::string address, int port, double runtime,
                     Callback<Error, Continuation<Error>> cb, double timeout,
                     Settings settings, SharedPtr<Reactor> reactor,
                     SharedPtr<Logger> logger) {
@@ -105,11 +105,11 @@ void run_impl(SharedPtr<Context> ctx, Callback<Error> callback) {
             return;
         }
 
-        SharedPtr<Entry> cur_entry{std::make_shared<Entry>()};
-        (*cur_entry)["connect_times"] = Entry::array();
+        SharedPtr<nlohmann::json> cur_entry{std::make_shared<nlohmann::json>()};
+        (*cur_entry)["connect_times"] = nlohmann::json::array();
         (*cur_entry)["params"] = {{"num_streams", 1}};
         (*cur_entry)["receiver_data"] = {{"avg_speed", nullptr}};
-        (*cur_entry)["sender_data"] = Entry::array();
+        (*cur_entry)["sender_data"] = nlohmann::json::array();
 
         // We connect to the port and wait for coroutine to pause
         ctx->logger->debug("ndt: start c2s coroutine ...");

@@ -6,18 +6,15 @@
 #include "src/libmeasurement_kit/ooni/constants.hpp"
 #include "src/libmeasurement_kit/ooni/nettests.hpp"
 #include "src/libmeasurement_kit/ooni/templates.hpp"
-#include "src/libmeasurement_kit/report/entry.hpp"
 #include "src/libmeasurement_kit/ooni/error.hpp"
 
 namespace mk {
 namespace ooni {
 
-using namespace mk::report;
-
 void meek_fronted_requests(std::string input, Settings options,
-                   Callback<SharedPtr<report::Entry>> callback,
+                   Callback<SharedPtr<nlohmann::json>> callback,
                    SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
-    SharedPtr<Entry> entry(new Entry);
+    SharedPtr<nlohmann::json> entry(new nlohmann::json);
 
     std::string expected_body, outer_host, inner_host;
 

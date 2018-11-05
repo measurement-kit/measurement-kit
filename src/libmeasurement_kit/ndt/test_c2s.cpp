@@ -8,7 +8,7 @@ namespace mk {
 namespace ndt {
 namespace test_c2s {
 
-void coroutine(SharedPtr<Entry> e, std::string address, int port, double runtime,
+void coroutine(SharedPtr<nlohmann::json> e, std::string address, int port, double runtime,
                Callback<Error, Continuation<Error>> cb, double timeout,
                Settings settings, SharedPtr<Reactor> reactor,
                SharedPtr<Logger> logger) {

@@ -5,7 +5,6 @@
 #include "src/libmeasurement_kit/common/utils.hpp"
 #include "src/libmeasurement_kit/ooni/nettests.hpp"
 #include "src/libmeasurement_kit/ooni/templates.hpp"
-#include "src/libmeasurement_kit/report/entry.hpp"
 #include "src/libmeasurement_kit/net/transport.hpp"
 #include "src/libmeasurement_kit/ooni/error.hpp"
 
@@ -16,13 +15,13 @@ static const int timeout = 5;
 
 static void send_receive_invalid_request_line(net::Endpoint endpoint,
                                               std::string request_line,
-                                              Callback<SharedPtr<report::Entry>> cb,
+                                              Callback<SharedPtr<nlohmann::json>> cb,
                                               Settings settings,
                                               SharedPtr<Reactor> reactor,
                                               SharedPtr<Logger> logger) {
     settings["host"] = endpoint.hostname;
     settings["port"] = endpoint.port;
-    SharedPtr<report::Entry> entry{new report::Entry{
+    SharedPtr<nlohmann::json> entry{new nlohmann::json{
         {"tampering", nullptr},
         {"received", nullptr},
         {"sent", nullptr},
@@ -63,14 +62,14 @@ static void send_receive_invalid_request_line(net::Endpoint endpoint,
 }
 
 void http_invalid_request_line(Settings options,
-                               Callback<SharedPtr<report::Entry>> cb,
+                               Callback<SharedPtr<nlohmann::json>> cb,
                                SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
-    SharedPtr<report::Entry> entry(new report::Entry);
+    SharedPtr<nlohmann::json> entry(new nlohmann::json);
     (*entry)["tampering"] = nullptr;
-    (*entry)["received"] = report::Entry::array();
-    (*entry)["sent"] = report::Entry::array();
-    (*entry)["tampering_list"] = report::Entry::array();
-    (*entry)["failure_list"] = report::Entry::array();
+    (*entry)["received"] = nlohmann::json::array();
+    (*entry)["sent"] = nlohmann::json::array();
+    (*entry)["tampering_list"] = nlohmann::json::array();
+    (*entry)["failure_list"] = nlohmann::json::array();
     SharedPtr<int> tests_run(new int(0));
 
     ErrorOr<net::Endpoint> endpoint =
@@ -87,7 +86,7 @@ void http_invalid_request_line(Settings options,
 
     logger->info("Using helper: %s", options["backend"].c_str());
 
-    auto handle_response = [=](SharedPtr<report::Entry> inner) {
+    auto handle_response = [=](SharedPtr<nlohmann::json> inner) {
         *tests_run += 1;
         (*entry)["tampering_list"].push_back((*inner)["tampering"]);
         (*entry)["received"].push_back((*inner)["received"]);

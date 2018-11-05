@@ -15,7 +15,7 @@ FacebookMessengerRunnable::FacebookMessengerRunnable() noexcept {
 }
 
 void FacebookMessengerRunnable::main(std::string /*input*/, Settings options,
-                            Callback<SharedPtr<report::Entry>> cb) {
+                            Callback<SharedPtr<nlohmann::json>> cb) {
     ooni::facebook_messenger(options, cb, reactor, logger);
 }
 

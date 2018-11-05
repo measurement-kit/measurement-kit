@@ -47,7 +47,7 @@ TEST_CASE("extract_html_title works") {
 TEST_CASE("represent_string works") {
     SECTION("For an ASCII body") {
         std::string s = "an ASCII body";
-        report::Entry e = s;
+        nlohmann::json e = s;
         REQUIRE(ooni::represent_string(s).dump() == e.dump());
     }
 
@@ -55,7 +55,7 @@ TEST_CASE("represent_string works") {
         std::vector<uint8_t> v{'a',  'b',  'c', 'd', 'e',
                                0xc3, 0xa8, 'i', 'o', 'u'};
         std::string s{v.begin(), v.end()};
-        report::Entry e = s;
+        nlohmann::json e = s;
         REQUIRE(ooni::represent_string(s).dump() == e.dump());
     }
 
@@ -67,7 +67,7 @@ TEST_CASE("represent_string works") {
         std::string s{v.begin(), v.end()};
         REQUIRE(
             ooni::represent_string(s).dump() ==
-            (report::Entry{{"format", "base64"}, {"data", "BAO8vAABAgM="}}
+            (nlohmann::json{{"format", "base64"}, {"data", "BAO8vAABAgM="}}
                  .dump()));
     }
 }

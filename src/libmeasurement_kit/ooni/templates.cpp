@@ -14,9 +14,7 @@ namespace mk {
 namespace ooni {
 namespace templates {
 
-using namespace mk::report;
-
-void dns_query(SharedPtr<Entry> entry, dns::QueryType query_type,
+void dns_query(SharedPtr<nlohmann::json> entry, dns::QueryType query_type,
                dns::QueryClass query_class, std::string query_name,
                std::string nameserver, Callback<Error, SharedPtr<dns::Message>> cb,
                Settings options, SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
@@ -26,7 +24,7 @@ void dns_query(SharedPtr<Entry> entry, dns::QueryType query_type,
     uint16_t resolver_port = 0;
     std::string resolver_hostname;
 
-    SharedPtr<report::Entry> query_entry{new report::Entry};
+    SharedPtr<nlohmann::json> query_entry{new nlohmann::json};
 
     if (not_system_engine) {
         ErrorOr<net::Endpoint> maybe_epnt = net::parse_endpoint(nameserver, 53);
@@ -62,7 +60,7 @@ void dns_query(SharedPtr<Entry> entry, dns::QueryType query_type,
                    logger->debug("dns_test: got response!");
                    (*query_entry)["engine"] = engine;
                    (*query_entry)["failure"] = nullptr;
-                   (*query_entry)["answers"] = Entry::array();
+                   (*query_entry)["answers"] = nlohmann::json::array();
                    if (query_type == dns::MK_DNS_TYPE_A) {
                        (*query_entry)["query_type"] = "A";
                        (*query_entry)["hostname"] = query_name;
@@ -98,7 +96,7 @@ void dns_query(SharedPtr<Entry> entry, dns::QueryType query_type,
                options, reactor);
 }
 
-void http_request(SharedPtr<Entry> entry, Settings settings, http::Headers headers,
+void http_request(SharedPtr<nlohmann::json> entry, Settings settings, http::Headers headers,
                   std::string body, Callback<Error, SharedPtr<http::Response>> cb,
                   SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
     http_request_impl<http::request>(entry, settings, headers, body,

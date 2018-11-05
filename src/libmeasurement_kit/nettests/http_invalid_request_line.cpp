@@ -15,7 +15,7 @@ HttpInvalidRequestLineRunnable::HttpInvalidRequestLineRunnable() noexcept {
 }
 
 void HttpInvalidRequestLineRunnable::main(std::string, Settings options,
-                                          Callback<SharedPtr<report::Entry>> cb) {
+                                          Callback<SharedPtr<nlohmann::json>> cb) {
     ooni::http_invalid_request_line(options, cb, reactor, logger);
 }
 

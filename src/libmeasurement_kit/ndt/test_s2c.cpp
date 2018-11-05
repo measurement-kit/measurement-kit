@@ -8,9 +8,7 @@ namespace mk {
 namespace ndt {
 namespace test_s2c {
 
-using namespace mk::report;
-
-void coroutine(SharedPtr<Entry> report_entry, std::string address, Params params,
+void coroutine(SharedPtr<nlohmann::json> report_entry, std::string address, Params params,
                Callback<Error, Continuation<Error, double>> cb, double timeout,
                Settings settings, SharedPtr<Reactor> reactor,
                SharedPtr<Logger> logger) {
@@ -18,7 +16,7 @@ void coroutine(SharedPtr<Entry> report_entry, std::string address, Params params
                    reactor, logger);
 }
 
-void finalizing_test(SharedPtr<Context> ctx, SharedPtr<Entry> cur_entry,
+void finalizing_test(SharedPtr<Context> ctx, SharedPtr<nlohmann::json> cur_entry,
                      Callback<Error> callback) {
     finalizing_test_impl(ctx, cur_entry, callback);
 }

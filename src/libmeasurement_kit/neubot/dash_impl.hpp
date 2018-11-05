@@ -91,7 +91,7 @@ class DashLoopCtx {
     std::string auth_token;
     Callback<Error> cb;
     int speed_kbit = -1; // Means: determine best initial value
-    SharedPtr<report::Entry> entry;
+    SharedPtr<nlohmann::json> entry;
     int iteration = 1;
     SharedPtr<Logger> logger;
     SharedPtr<Reactor> reactor;
@@ -282,7 +282,7 @@ void run_loop_(SharedPtr<DashLoopCtx> ctx) {
                             ctx->cb(GenericError("negative_time_error"));
                             return;
                         }
-                        (*ctx->entry)["receiver_data"].push_back(report::Entry{
+                        (*ctx->entry)["receiver_data"].push_back(nlohmann::json{
                               {"connect_time", ctx->txp->connect_time()},
                               {"constant_bitrate", *constant_bitrate != 0},
                               {"delta_user_time", 0.0},
@@ -348,7 +348,7 @@ template <MK_MOCK_AS(http::request_connect, http_request_connect),
           MK_MOCK_AS(http::request_send, http_request_send),
           MK_MOCK_AS(http::request_recv_response, http_request_recv_response)>
 void run_impl(std::string url, std::string auth_token, std::string real_address,
-              SharedPtr<report::Entry> entry, Settings settings, SharedPtr<Reactor> reactor,
+              SharedPtr<nlohmann::json> entry, Settings settings, SharedPtr<Reactor> reactor,
               SharedPtr<Logger> logger, Callback<Error> cb) {
     SharedPtr<DashLoopCtx> ctx = SharedPtr<DashLoopCtx>::make();
     ctx->auth_token = auth_token;
@@ -399,12 +399,12 @@ void run_impl(std::string url, std::string auth_token, std::string real_address,
  * implemented by Neubot (probably using a Continuation).
  */
 template <MK_MOCK_AS(http::request_sendrecv, http_request_sendrecv)>
-void negotiate_loop_(SharedPtr<report::Entry> entry, SharedPtr<net::Transport> txp,
+void negotiate_loop_(SharedPtr<nlohmann::json> entry, SharedPtr<net::Transport> txp,
                      Settings settings, SharedPtr<Reactor> reactor,
                      SharedPtr<Logger> logger,
                      Callback<Error, std::string, std::string> callback,
                      int iteration = 0, std::string auth_token = "") {
-    report::Entry value = {{"dash_rates", dash_rates()}};
+    nlohmann::json value = {{"dash_rates", dash_rates()}};
     std::string body = value.dump();
     settings["http/path"] = "/negotiate/dash";
     settings["http/method"] = "POST";
@@ -465,7 +465,7 @@ void negotiate_loop_(SharedPtr<report::Entry> entry, SharedPtr<net::Transport> t
 }
 
 template <MK_MOCK_AS(http::request_sendrecv, http_request_sendrecv)>
-void collect_(SharedPtr<net::Transport> txp, SharedPtr<report::Entry> entry,
+void collect_(SharedPtr<net::Transport> txp, SharedPtr<nlohmann::json> entry,
               std::string auth, Settings settings, SharedPtr<Reactor> reactor,
               SharedPtr<Logger> logger, Callback<Error> cb) {
     std::string body = (*entry)["receiver_data"].dump();
@@ -505,7 +505,7 @@ void collect_(SharedPtr<net::Transport> txp, SharedPtr<report::Entry> entry,
 template <MK_MOCK_AS(http::request_connect, http_request_connect),
           MK_MOCK_AS(http::request_sendrecv, http_request_sendrecv_negotiate),
           MK_MOCK_AS(http::request_sendrecv, http_request_sendrecv_collect)>
-void negotiate_with_(std::string hostname, SharedPtr<report::Entry> entry,
+void negotiate_with_(std::string hostname, SharedPtr<nlohmann::json> entry,
                      Settings settings, SharedPtr<Reactor> reactor,
                      SharedPtr<Logger> logger, Callback<Error> cb) {
     logger->info("Negotiating with: %s", hostname.c_str());
@@ -558,7 +558,7 @@ void negotiate_with_(std::string hostname, SharedPtr<report::Entry> entry,
 }
 
 template <MK_MOCK_AS(mlabns::query, mlabns_query)>
-void negotiate_impl(SharedPtr<report::Entry> entry, Settings settings,
+void negotiate_impl(SharedPtr<nlohmann::json> entry, Settings settings,
                     SharedPtr<Reactor> reactor, SharedPtr<Logger> logger,
                     Callback<Error> cb) {
     if (settings.find("hostname") != settings.end()) {

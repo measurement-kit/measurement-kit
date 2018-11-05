@@ -191,7 +191,7 @@ static void fail(SharedPtr<Transport>, std::string, std::string,
     cb(MockedError(), nullptr);
 }
 
-static Entry ENTRY{
+static nlohmann::json ENTRY{
     {"data_format_version", "0.2.0"},
     {"input", "torproject.org"},
     {"measurement_start_time", "2016-06-04 17:53:13"},
@@ -215,7 +215,7 @@ static Entry ENTRY{
     }},
 };
 
-static Entry BAD_ENTRY{
+static nlohmann::json BAD_ENTRY{
     {"data_format_version", "0.2.0"},
     {"input", "torproject.org"},
     {"measurement_start_time", "2016-06-04 17:53:13"},
@@ -242,7 +242,7 @@ static Entry BAD_ENTRY{
 TEST_CASE("collector::create_report deals with entry with missing key") {
     SharedPtr<Reactor> reactor = Reactor::make();
     reactor->run_with_initial_event([=]() {
-        Entry entry;
+        nlohmann::json entry;
         collector::create_report_impl<fail>(
         nullptr, entry,
         [=](Error err, std::string s) {
@@ -326,7 +326,7 @@ TEST_CASE("collector::create_report deals with missing report_id") {
 TEST_CASE("collector::update_report deals with entry with missing key") {
     SharedPtr<Reactor> reactor = Reactor::make();
     reactor->run_with_initial_event([=]() {
-        Entry entry;
+        nlohmann::json entry;
         collector::update_report_impl<fail>(
         nullptr, "xx", entry,
         [=](Error err) {
@@ -339,7 +339,7 @@ TEST_CASE("collector::update_report deals with entry with missing key") {
 
 TEST_CASE("collector::get_next_entry() works correctly at EOF") {
     SharedPtr<std::istream> input(new std::istringstream(""));
-    ErrorOr<Entry> entry = collector::get_next_entry(input, Logger::global());
+    ErrorOr<nlohmann::json> entry = collector::get_next_entry(input, Logger::global());
     REQUIRE(!entry);
     REQUIRE(entry.as_error() == FileEofError());
 }
@@ -347,26 +347,26 @@ TEST_CASE("collector::get_next_entry() works correctly at EOF") {
 TEST_CASE("collector::get_next_entry() works correctly on I/O error") {
     SharedPtr<std::istream> input(new std::istringstream(""));
     input->setstate(input->badbit);
-    ErrorOr<Entry> entry = collector::get_next_entry(input, Logger::global());
+    ErrorOr<nlohmann::json> entry = collector::get_next_entry(input, Logger::global());
     REQUIRE(!entry);
     REQUIRE(entry.as_error() == FileIoError());
 }
 
 TEST_CASE("collector::get_next_entry() works correctly on invalid JSON") {
     SharedPtr<std::istream> input(new std::istringstream("{\n"));
-    ErrorOr<Entry> entry = collector::get_next_entry(input, Logger::global());
+    ErrorOr<nlohmann::json> entry = collector::get_next_entry(input, Logger::global());
     REQUIRE(!entry);
     REQUIRE(entry.as_error() == JsonParseError());
 }
 
 TEST_CASE("collector::get_next_entry() works correctly on incomplete line") {
     SharedPtr<std::istream> input(new std::istringstream("{}"));
-    ErrorOr<Entry> entry = collector::get_next_entry(input, Logger::global());
+    ErrorOr<nlohmann::json> entry = collector::get_next_entry(input, Logger::global());
     REQUIRE(!entry);
     REQUIRE(entry.as_error() == FileEofError());
 }
 
-static void fail(SharedPtr<Transport>, std::string, Entry, Callback<Error> cb,
+static void fail(SharedPtr<Transport>, std::string, nlohmann::json, Callback<Error> cb,
                  Settings, SharedPtr<Reactor>, SharedPtr<Logger>) {
     cb(MockedError());
 }
@@ -384,12 +384,12 @@ TEST_CASE("update_and_fetch_next() deals with update_report error") {
     });
 }
 
-static void success(SharedPtr<Transport>, std::string, Entry, Callback<Error> cb,
+static void success(SharedPtr<Transport>, std::string, nlohmann::json, Callback<Error> cb,
                     Settings, SharedPtr<Reactor>, SharedPtr<Logger>) {
     cb(NoError());
 }
 
-static ErrorOr<Entry> fail(SharedPtr<std::istream>, SharedPtr<Logger>) {
+static ErrorOr<nlohmann::json> fail(SharedPtr<std::istream>, SharedPtr<Logger>) {
     return {MockedError(), {}};
 }
 
@@ -432,8 +432,8 @@ TEST_CASE("submit_report() deals with get_next_entry error") {
     });
 }
 
-static ErrorOr<Entry> success(SharedPtr<std::istream>, SharedPtr<Logger>) {
-    return ErrorOr<Entry>{NoError(), Entry{}};
+static ErrorOr<nlohmann::json> success(SharedPtr<std::istream>, SharedPtr<Logger>) {
+    return ErrorOr<nlohmann::json>{NoError(), nlohmann::json{}};
 }
 
 static void fail(Settings, Callback<Error, SharedPtr<Transport>> cb, SharedPtr<Reactor>,
@@ -459,7 +459,7 @@ static void success(Settings, Callback<Error, SharedPtr<Transport>> cb,
     cb(NoError(), MockConnection::make(reactor));
 }
 
-static void fail(SharedPtr<Transport>, Entry, Callback<Error, std::string> cb,
+static void fail(SharedPtr<Transport>, nlohmann::json, Callback<Error, std::string> cb,
                  Settings, SharedPtr<Reactor>, SharedPtr<Logger>) {
     cb(MockedError(), "");
 }

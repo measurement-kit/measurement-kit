@@ -24,14 +24,16 @@ static std::map<std::string, bool(*)(const std::string &)> mandatory_re{
     {"test_start_time", regexp::valid_test_start_time},
 };
 
-Error valid_entry(Entry entry) {
+Error valid_entry(nlohmann::json entry) {
     // TODO: also validate the optional values
     for (auto pair : mandatory_re) {
-        ErrorOr<std::string> s = entry[pair.first];
-        if (!s) {
-            return MissingMandatoryKeyError(s.as_error());
+        std::string s;
+        try {
+          s = entry.at(pair.first);
+        } catch (const std::exception &) {
+            return MissingMandatoryKeyError();
         }
-        if (!(*pair.second)(*s)) {
+        if (!(*pair.second)(s)) {
             return InvalidMandatoryValueError(pair.first);
         }
     }
@@ -49,27 +51,27 @@ void connect(Settings settings, Callback<Error, SharedPtr<Transport>> callback,
     connect_impl(settings, callback, reactor, logger);
 }
 
-void create_report(SharedPtr<Transport> transport, Entry entry,
+void create_report(SharedPtr<Transport> transport, nlohmann::json entry,
                    Callback<Error, std::string> callback, Settings settings,
                    SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
     create_report_impl(transport, entry, callback, settings, reactor, logger);
 }
 
-void connect_and_create_report(report::Entry entry,
+void connect_and_create_report(nlohmann::json entry,
                                Callback<Error, std::string> callback,
                                Settings settings, SharedPtr<Reactor> reactor,
                                SharedPtr<Logger> logger) {
     connect_and_create_report_impl(entry, callback, settings, reactor, logger);
 }
 
-void update_report(SharedPtr<Transport> transport, std::string report_id, Entry entry,
+void update_report(SharedPtr<Transport> transport, std::string report_id, nlohmann::json entry,
                    Callback<Error> callback, Settings settings,
                    SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
     update_report_impl(transport, report_id, entry, callback, settings, reactor,
                        logger);
 }
 
-void connect_and_update_report(std::string report_id, report::Entry entry,
+void connect_and_update_report(std::string report_id, nlohmann::json entry,
                                Callback<Error> callback, Settings settings,
                                SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
     connect_and_update_report_impl(report_id, entry, callback, settings,
@@ -90,7 +92,7 @@ void connect_and_close_report(std::string report_id, Callback<Error> callback,
                                   logger);
 }
 
-ErrorOr<Entry> get_next_entry(SharedPtr<std::istream> file, SharedPtr<Logger> logger) {
+ErrorOr<nlohmann::json> get_next_entry(SharedPtr<std::istream> file, SharedPtr<Logger> logger) {
     std::string line;
     std::getline(*file, line);
     if (file->eof()) {
@@ -102,10 +104,9 @@ ErrorOr<Entry> get_next_entry(SharedPtr<std::istream> file, SharedPtr<Logger> lo
         return {FileIoError(), {}};
     }
     logger->debug("Read line from report: %s", line.c_str());
-    Entry entry;
+    nlohmann::json entry;
     Error e = NoError();
     try {
-        // Works because we are using nlohmann::json::json() as Entry::Entry()
         entry = nlohmann::json::parse(line);
     } catch (const std::exception &) {
         e = JsonParseError();

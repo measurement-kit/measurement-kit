@@ -8,19 +8,18 @@
 #include "src/libmeasurement_kit/net/transport.hpp"
 #include "src/libmeasurement_kit/dns/query.hpp"
 #include "src/libmeasurement_kit/http/http.hpp"
-#include "src/libmeasurement_kit/report/entry.hpp"
 
 namespace mk {
 namespace ooni {
 namespace templates {
 
-void dns_query(SharedPtr<report::Entry> entry, dns::QueryType, dns::QueryClass,
+void dns_query(SharedPtr<nlohmann::json> entry, dns::QueryType, dns::QueryClass,
                std::string query_name, std::string nameserver,
                Callback<Error, SharedPtr<dns::Message>>, Settings = {},
                SharedPtr<Reactor> = Reactor::global(),
                SharedPtr<Logger> = Logger::global());
 
-void http_request(SharedPtr<report::Entry> entry, Settings settings, http::Headers headers,
+void http_request(SharedPtr<nlohmann::json> entry, Settings settings, http::Headers headers,
                   std::string body, Callback<Error, SharedPtr<http::Response>> cb,
                   SharedPtr<Reactor> reactor = Reactor::global(),
                   SharedPtr<Logger> logger = Logger::global());
