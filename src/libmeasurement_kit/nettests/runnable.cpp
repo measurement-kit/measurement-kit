@@ -209,6 +209,7 @@ void Runnable::geoip_lookup(Callback<> cb) {
             logger->warn("=== BEGIN IP_LOOKUP LOGS ===");
             logger->warn("%s", logs.c_str());
             logger->warn("=== END IP_LOOKUP LOGS ===");
+            annotations["failure_ip_lookup"] = "true";
         } else {
             real_probe_ip = mkiplookup_response_get_probe_ip(res.get());
             logger->debug("=== BEGIN IP_LOOKUP LOGS ===");
@@ -229,6 +230,7 @@ void Runnable::geoip_lookup(Callback<> cb) {
             logger->warn("=== BEGIN CC_LOOKUP LOGS ===");
             logger->warn("%s", mkmmdb_get_last_lookup_logs(mmdb.get()));
             logger->warn("=== END CC_LOOKUP LOGS ===");
+            annotations["failure_cc_lookup"] = "true";
         } else {
             std::swap(cc, real_probe_cc);
         }
@@ -246,6 +248,7 @@ void Runnable::geoip_lookup(Callback<> cb) {
             logger->warn("=== BEGIN ASN_LOOKUP LOGS ===");
             logger->warn("%s", mkmmdb_get_last_lookup_logs(mmdb.get()));
             logger->warn("=== END ASN_LOOKUP LOGS ===");
+            annotations["failure_asn_lookup"] = "true";
         } else {
             real_probe_asn = "AS";
             real_probe_asn += std::to_string(n);
@@ -264,6 +267,7 @@ void Runnable::geoip_lookup(Callback<> cb) {
             logger->warn("=== BEGIN NETWORK_NAME_LOOKUP LOGS ===");
             logger->warn("%s", mkmmdb_get_last_lookup_logs(mmdb.get()));
             logger->warn("=== END NETWORK_NAME_LOOKUP LOGS ===");
+            annotations["failure_network_name_lookup"] = "true";
         } else {
             std::swap(nn, real_probe_network_name);
         }
