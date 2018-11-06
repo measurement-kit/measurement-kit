@@ -29,7 +29,7 @@ class CountedReporter : public BaseReporter {
         });
     }
 
-    Continuation<Error> write_entry(Entry e) override {
+    Continuation<Error> write_entry(nlohmann::json e) override {
         return do_write_entry_(e, [=](Callback<Error> cb) {
             ++write_count;
             return cb(NoError());
@@ -68,7 +68,7 @@ class FailingReporter : public BaseReporter {
         });
     }
 
-    Continuation<Error> write_entry(Entry e) override {
+    Continuation<Error> write_entry(nlohmann::json e) override {
         return do_write_entry_(e, [=](Callback<Error> cb) {
             if (write_count++ == 0) {
                 cb(MockedError());
@@ -143,7 +143,7 @@ TEST_CASE("We can retry a partially successful open") {
 TEST_CASE("The write_entry() method works correctly") {
     Report report;
     report.add_reporter(BaseReporter::make());
-    Entry entry;
+    nlohmann::json entry;
     report.write_entry(entry, [&](Error err) {
         REQUIRE(err == ParallelOperationError());
         REQUIRE(err.child_errors.size() == 1);
@@ -197,7 +197,7 @@ TEST_CASE("We can retry a partially successful write_entry()") {
     report.add_reporter(failing_reporter.as<BaseReporter>());
     report.open([&](Error err) {
         REQUIRE(err == NoError());
-        Entry entry;
+        nlohmann::json entry;
         entry["foobar"] = 17;
         entry["baz"] = "foobar";
         report.write_entry(entry, [&](Error err) {
@@ -270,7 +270,7 @@ TEST_CASE("We can retry a partially successful close") {
 
 TEST_CASE("We can override software name and version") {
     Report report;
-    Entry entry;
+    nlohmann::json entry;
 
     // We must set the `test_start_time` because otherwise the
     // test fails with an `error_or_contains_error` failure.

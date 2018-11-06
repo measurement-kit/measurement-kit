@@ -37,13 +37,13 @@ Runnable::~Runnable() {
 
 void Runnable::setup(std::string) {}
 void Runnable::teardown(std::string) {}
-void Runnable::main(std::string, Settings, Callback<SharedPtr<report::Entry>> cb) {
+void Runnable::main(std::string, Settings, Callback<SharedPtr<nlohmann::json>> cb) {
     // Deferring calling `cb` a little bit to better emulate real tests
     // workflow because no test actually completes "immediately".
     reactor->call_later(0.74,
-        [=]() { cb(SharedPtr<report::Entry>{new report::Entry}); });
+        [=]() { cb(SharedPtr<nlohmann::json>{new nlohmann::json}); });
 }
-void Runnable::fixup_entry(report::Entry &) {}
+void Runnable::fixup_entry(nlohmann::json &) {}
 
 void Runnable::run_next_measurement(size_t thread_id, Callback<Error> cb,
                                     size_t num_entries,
@@ -97,8 +97,8 @@ void Runnable::run_next_measurement(size_t thread_id, Callback<Error> cb,
         {"input", next_input},
     }));
 
-    main(next_input, options, [=](SharedPtr<report::Entry> test_keys) {
-        report::Entry entry;
+    main(next_input, options, [=](SharedPtr<nlohmann::json> test_keys) {
+        nlohmann::json entry;
         entry["input"] = next_input;
         // Make sure the input is `null` rather than empty string
         if (entry["input"] == "") {
@@ -112,13 +112,13 @@ void Runnable::run_next_measurement(size_t thread_id, Callback<Error> cb,
         entry["id"] = mk::sole::uuid4().str();
 
         // Until we have support for passing options, leave it empty
-        entry["options"] = Entry::array();
+        entry["options"] = nlohmann::json::array();
 
         // Until we have support for it, just put `null`
         entry["probe_city"] = nullptr;
 
         // Add test helpers
-        entry["test_helpers"] = Entry::object();
+        entry["test_helpers"] = nlohmann::json::object();
         for (auto &name : test_helpers_option_names()) {
             if (options.count(name) != 0) {
                 entry["test_helpers"][name] = options[name];
@@ -126,7 +126,7 @@ void Runnable::run_next_measurement(size_t thread_id, Callback<Error> cb,
         }
 
         // Add empty input hashes
-        entry["input_hashes"] = Entry::array();
+        entry["input_hashes"] = nlohmann::json::array();
 
         logger->debug("net_test: tearing down");
         teardown(next_input);

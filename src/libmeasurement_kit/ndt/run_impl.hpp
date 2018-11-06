@@ -18,7 +18,7 @@ template <Phase connect, Phase send_login, Phase recv_and_ignore_kickoff,
           Phase wait_in_queue, Phase recv_version, Phase recv_tests_id,
           Phase run_tests, Phase recv_results_and_logout, Phase wait_close,
           Cleanup disconnect_and_callback>
-void run_with_specific_server_impl(SharedPtr<Entry> entry, std::string address,
+void run_with_specific_server_impl(SharedPtr<nlohmann::json> entry, std::string address,
                                    int port, Callback<Error> callback,
                                    Settings settings, SharedPtr<Reactor> reactor,
                                    SharedPtr<Logger> logger) {
@@ -48,9 +48,9 @@ void run_with_specific_server_impl(SharedPtr<Entry> entry, std::string address,
     (*ctx->entry)["server_address"] = address;
     (*ctx->entry)["server_port"] = port;
     (*ctx->entry)["server_version"] = nullptr;
-    (*ctx->entry)["summary_data"] = Entry::object();
-    (*ctx->entry)["test_c2s"] = Entry::array();
-    (*ctx->entry)["test_s2c"] = Entry::array();
+    (*ctx->entry)["summary_data"] = nlohmann::json::object();
+    (*ctx->entry)["test_c2s"] = nlohmann::json::array();
+    (*ctx->entry)["test_s2c"] = nlohmann::json::array();
     (*ctx->entry)["test_suite"] = ctx->test_suite;
 
 #define TRAP_ERRORS(e)                                                         \
@@ -119,7 +119,7 @@ void run_with_specific_server_impl(SharedPtr<Entry> entry, std::string address,
 
 template <MK_MOCK(run_with_specific_server),
           MK_MOCK_AS(mlabns::query, mlabns_query)>
-void run_impl(SharedPtr<Entry> entry, Callback<Error> callback, Settings settings,
+void run_impl(SharedPtr<nlohmann::json> entry, Callback<Error> callback, Settings settings,
               SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
     ErrorOr<int> port = settings.get_noexcept<int>("port", NDT_PORT);
     if (!port) {

@@ -14,7 +14,7 @@ CaptivePortalRunnable::CaptivePortalRunnable() noexcept {
 }
 
 void CaptivePortalRunnable::main(std::string input, Settings options,
-                                 Callback<SharedPtr<report::Entry>> cb) {
+                                 Callback<SharedPtr<nlohmann::json>> cb) {
     ooni::captiveportal(input, options, cb, reactor, logger);
 }
 

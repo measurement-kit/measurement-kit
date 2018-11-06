@@ -8,7 +8,6 @@
 #include "src/libmeasurement_kit/common/non_copyable.hpp"
 #include "src/libmeasurement_kit/common/non_movable.hpp"
 #include "src/libmeasurement_kit/report/report.hpp"
-#include "src/libmeasurement_kit/report/entry.hpp"
 
 namespace mk {
 namespace report {
@@ -27,7 +26,7 @@ class BaseReporter : public NonCopyable, public NonMovable {
         return do_open_([=](Callback<Error> cb) { cb(NoError()); });
     }
 
-    virtual Continuation<Error> write_entry(Entry e) {
+    virtual Continuation<Error> write_entry(nlohmann::json e) {
         return do_write_entry_(e, [=](Callback<Error> cb) { cb(NoError()); });
     }
 
@@ -44,7 +43,7 @@ class BaseReporter : public NonCopyable, public NonMovable {
 
     Continuation<Error> do_open_(Continuation<Error> cc);
 
-    Continuation<Error> do_write_entry_(Entry, Continuation<Error> cc);
+    Continuation<Error> do_write_entry_(nlohmann::json, Continuation<Error> cc);
 
     Continuation<Error> do_close_(Continuation<Error> cc);
 

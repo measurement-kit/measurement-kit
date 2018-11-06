@@ -5,7 +5,6 @@
 #define SRC_LIBMEASUREMENT_KIT_OONI_COLLECTOR_CLIENT_HPP
 
 #include "src/libmeasurement_kit/http/http.hpp"
-#include "src/libmeasurement_kit/report/entry.hpp"
 
 namespace mk {
 namespace ooni {
@@ -42,21 +41,21 @@ void submit_report(std::string filepath, std::string collector_base_url,
 void connect(Settings, Callback<Error, SharedPtr<net::Transport>>,
              SharedPtr<Reactor> = Reactor::global(), SharedPtr<Logger> = Logger::global());
 
-void create_report(SharedPtr<net::Transport>, report::Entry,
+void create_report(SharedPtr<net::Transport>, nlohmann::json,
                    Callback<Error, std::string>, Settings = {},
                    SharedPtr<Reactor> = Reactor::global(),
                    SharedPtr<Logger> = Logger::global());
 
-void connect_and_create_report(report::Entry, Callback<Error, std::string>,
+void connect_and_create_report(nlohmann::json, Callback<Error, std::string>,
                                Settings = {}, SharedPtr<Reactor> = Reactor::global(),
                                SharedPtr<Logger> = Logger::global());
 
-void update_report(SharedPtr<net::Transport>, std::string report_id, report::Entry,
+void update_report(SharedPtr<net::Transport>, std::string report_id, nlohmann::json,
                    Callback<Error>, Settings = {},
                    SharedPtr<Reactor> = Reactor::global(),
                    SharedPtr<Logger> = Logger::global());
 
-void connect_and_update_report(std::string report_id, report::Entry,
+void connect_and_update_report(std::string report_id, nlohmann::json,
                                Callback<Error>, Settings = {},
                                SharedPtr<Reactor> = Reactor::global(),
                                SharedPtr<Logger> = Logger::global());

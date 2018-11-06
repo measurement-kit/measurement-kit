@@ -51,7 +51,7 @@ Continuation<Error> OoniReporter::open(Report &report) {
     });
 }
 
-Continuation<Error> OoniReporter::write_entry(Entry entry) {
+Continuation<Error> OoniReporter::write_entry(nlohmann::json entry) {
 
     // Register action for when we will be asked to write the entry
     return do_write_entry_(entry, [=](Callback<Error> cb) {

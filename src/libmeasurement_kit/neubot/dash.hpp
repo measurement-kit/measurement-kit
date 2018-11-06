@@ -4,8 +4,9 @@
 #ifndef SRC_LIBMEASUREMENT_KIT_NEUBOT_DASH_HPP
 #define SRC_LIBMEASUREMENT_KIT_NEUBOT_DASH_HPP
 
+#include <measurement_kit/common/settings.hpp>
+
 #include "src/libmeasurement_kit/common/reactor.hpp"
-#include "src/libmeasurement_kit/report/entry.hpp"
 
 namespace mk {
 namespace neubot {
@@ -18,7 +19,7 @@ void run(
         std::string measurement_server_hostname,
         std::string auth_token,
         std::string real_address,
-        SharedPtr<report::Entry> entry,
+        SharedPtr<nlohmann::json> entry,
         Settings settings,
         SharedPtr<Reactor> reactor,
         SharedPtr<Logger> logger,
@@ -26,7 +27,7 @@ void run(
 );
 
 void negotiate(
-        SharedPtr<report::Entry> entry,
+        SharedPtr<nlohmann::json> entry,
         Settings settings,
         SharedPtr<Reactor> reactor,
         SharedPtr<Logger> logger,

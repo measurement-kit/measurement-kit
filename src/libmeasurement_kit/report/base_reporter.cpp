@@ -35,7 +35,7 @@ Continuation<Error> BaseReporter::do_open_(Continuation<Error> cc) {
 }
 
 Continuation<Error>
-BaseReporter::do_write_entry_(Entry entry, Continuation<Error> cc) {
+BaseReporter::do_write_entry_(nlohmann::json entry, Continuation<Error> cc) {
     return [=](Callback<Error> cb) {
         if (!openned_) {
             cb(ReportNotOpenError());

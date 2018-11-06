@@ -18,7 +18,7 @@ HttpHeaderFieldManipulationRunnable::HttpHeaderFieldManipulationRunnable()
 
 void HttpHeaderFieldManipulationRunnable::main(std::string input,
                                                Settings options,
-                                               Callback<SharedPtr<report::Entry>> cb) {
+                                               Callback<SharedPtr<nlohmann::json>> cb) {
     ooni::http_header_field_manipulation(input, options, cb, reactor, logger);
 }
 

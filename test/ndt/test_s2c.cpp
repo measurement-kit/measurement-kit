@@ -17,7 +17,7 @@ static void failure(std::string, int, int, ConnectManyCb callback,
 }
 
 TEST_CASE("coroutine() is robust to connect error") {
-    SharedPtr<Entry> entry{new Entry};
+    SharedPtr<nlohmann::json> entry{new nlohmann::json};
     test_s2c::coroutine_impl<failure>(
         entry, "www.google.com", 3301,
         [](Error err, Continuation<Error, double>) {
@@ -33,7 +33,7 @@ static void failure(SharedPtr<Context>, Callback<Error, uint8_t, std::string> cb
 
 TEST_CASE("finalizing_test() deals with read_msg() error") {
     SharedPtr<Context> ctx(new Context);
-    SharedPtr<Entry> entry(new Entry);
+    SharedPtr<nlohmann::json> entry(new nlohmann::json);
     test_s2c::finalizing_test_impl<failure>(
         ctx, entry, [](Error err) { REQUIRE(err == ReadingTestMsgError()); });
 }
@@ -45,7 +45,7 @@ static void invalid(SharedPtr<Context>, Callback<Error, uint8_t, std::string> cb
 
 TEST_CASE("finalizing_test() deals with receiving invalid message") {
     SharedPtr<Context> ctx(new Context);
-    SharedPtr<Entry> entry(new Entry);
+    SharedPtr<nlohmann::json> entry(new nlohmann::json);
     test_s2c::finalizing_test_impl<invalid>(
         ctx, entry, [](Error err) { REQUIRE(err == NotTestMsgError()); });
 }
@@ -63,8 +63,8 @@ static void empty(SharedPtr<Context>, Callback<Error, uint8_t, std::string> cb,
 
 TEST_CASE("finalizing_test() deals with receiving invalid json") {
     SharedPtr<Context> ctx(new Context);
-    ctx->entry.reset(new Entry);  // Required for when we reach TEST_FINALIZE
-    SharedPtr<Entry> entry(new Entry);
+    ctx->entry.reset(new nlohmann::json);  // Required for when we reach TEST_FINALIZE
+    SharedPtr<nlohmann::json> entry(new nlohmann::json);
     test_s2c::finalizing_test_impl<empty>(
         ctx, entry, [](Error err) { REQUIRE(err == NoError()); });
 }
@@ -120,7 +120,7 @@ static void success(SharedPtr<Context>, Callback<Error, uint8_t, std::string> cb
     cb(NoError(), TEST_PREPARE, "3010");
 }
 
-static void failure(SharedPtr<Entry>, std::string, test_s2c::Params,
+static void failure(SharedPtr<nlohmann::json>, std::string, test_s2c::Params,
                     Callback<Error, Continuation<Error, double>> cb, double,
                     Settings, SharedPtr<Reactor>, SharedPtr<Logger>) {
     cb(MockedError(), [](Callback<Error, double>) {
@@ -141,7 +141,7 @@ static void test_prepare(SharedPtr<Context>,
 }
 
 static void
-connect_but_fail_later(SharedPtr<Entry>, std::string, test_s2c::Params,
+connect_but_fail_later(SharedPtr<nlohmann::json>, std::string, test_s2c::Params,
                        Callback<Error, Continuation<Error, double>> cb, double,
                        Settings, SharedPtr<Reactor>, SharedPtr<Logger>) {
     cb(NoError(), [](Callback<Error, double> cb) { cb(MockedError(), 0.0); });
@@ -170,13 +170,13 @@ TEST_CASE("run() deals with coroutine terminating with error") {
         ctx, [](Error err) { REQUIRE(err == MockedError()); });
 }
 
-static void coro_ok(SharedPtr<Entry>, std::string, test_s2c::Params,
+static void coro_ok(SharedPtr<nlohmann::json>, std::string, test_s2c::Params,
                     Callback<Error, Continuation<Error, double>> cb, double,
                     Settings, SharedPtr<Reactor>, SharedPtr<Logger>) {
     cb(NoError(), [](Callback<Error, double> cb) { cb(NoError(), 0.0); });
 }
 
-static void failure(SharedPtr<Context>, Callback<Error, uint8_t, Json> cb,
+static void failure(SharedPtr<Context>, Callback<Error, uint8_t, nlohmann::json> cb,
                     SharedPtr<Reactor> = Reactor::global()) {
     cb(MockedError(), 0, {});
 }
@@ -187,7 +187,7 @@ TEST_CASE("run() deals with error when reading TEST_MSG") {
         ctx, [](Error err) { REQUIRE(err == ReadingTestMsgError()); });
 }
 
-static void invalid(SharedPtr<Context>, Callback<Error, uint8_t, Json> cb,
+static void invalid(SharedPtr<Context>, Callback<Error, uint8_t, nlohmann::json> cb,
                     SharedPtr<Reactor> = Reactor::global()) {
     cb(NoError(), MSG_ERROR, {});
 }
@@ -198,7 +198,7 @@ TEST_CASE("run() deals with unexpected message instead of TEST_MSG") {
         ctx, [](Error err) { REQUIRE(err == NotTestMsgError()); });
 }
 
-static void msg_test(SharedPtr<Context>, Callback<Error, uint8_t, Json> cb,
+static void msg_test(SharedPtr<Context>, Callback<Error, uint8_t, nlohmann::json> cb,
                      SharedPtr<Reactor> = Reactor::global()) {
     cb(NoError(), TEST_MSG, {});
 }

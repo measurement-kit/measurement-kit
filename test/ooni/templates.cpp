@@ -9,16 +9,14 @@
 #include "src/libmeasurement_kit/ooni/error.hpp"
 #include "src/libmeasurement_kit/ooni/templates.hpp"
 #include "src/libmeasurement_kit/ooni/templates_impl.hpp"
-#include "src/libmeasurement_kit/report/entry.hpp"
 
 using namespace mk;
 using namespace mk::ooni;
-using namespace mk::report;
 
 TEST_CASE("dns query template works as expected") {
     SharedPtr<Reactor> reactor = Reactor::make();
     reactor->run_with_initial_event([=]() {
-        SharedPtr<Entry> entry(new Entry);
+        SharedPtr<nlohmann::json> entry(new nlohmann::json);
         templates::dns_query(
             entry, "A", "IN", "nexa.polito.it", "8.8.8.8:53",
             [=](Error err, SharedPtr<dns::Message>) {
@@ -27,13 +25,13 @@ TEST_CASE("dns query template works as expected") {
                     entry, "A", "IN", "nexa.polito.it", "8.8.8.1:53",
                     [=](Error err, SharedPtr<dns::Message>) {
                         REQUIRE(!!err);
-                        Json answers;
-                        Json root;
-                        Json query;
+                        nlohmann::json answers;
+                        nlohmann::json root;
+                        nlohmann::json query;
                         int resolver_port;
-                        root = Json::parse(entry->dump());
+                        root = nlohmann::json::parse(entry->dump());
                         REQUIRE(root.is_object());
-                        Json queries = root["queries"];
+                        nlohmann::json queries = root["queries"];
                         REQUIRE(queries.is_array());
                         REQUIRE(queries.size() == 2);
                         /* First query and response (should be ok) */
@@ -76,16 +74,16 @@ TEST_CASE("dns query template works as expected") {
 TEST_CASE("dns query template works as expected with system engine") {
     SharedPtr<Reactor> reactor = Reactor::make();
     reactor->run_with_initial_event([=]() {
-        SharedPtr<Entry> entry(new Entry);
+        SharedPtr<nlohmann::json> entry(new nlohmann::json);
         templates::dns_query(entry, "A", "IN", "nexa.polito.it", "",
                 [=](Error err, SharedPtr<dns::Message>) {
                     REQUIRE(!err);
-                    Json answers;
-                    Json root;
-                    Json query;
-                    root = Json::parse(entry->dump());
+                    nlohmann::json answers;
+                    nlohmann::json root;
+                    nlohmann::json query;
+                    root = nlohmann::json::parse(entry->dump());
                     REQUIRE(root.is_object());
-                    Json queries = root["queries"];
+                    nlohmann::json queries = root["queries"];
                     REQUIRE(queries.is_array());
                     REQUIRE(queries.size() == 1);
                     /* First query and response (should be ok) */
@@ -136,7 +134,7 @@ TEST_CASE("tcp connect returns error if port is invalid") {
 }
 
 TEST_CASE("http requests template works as expected") {
-    SharedPtr<Entry> entry(new Entry);
+    SharedPtr<nlohmann::json> entry(new nlohmann::json);
     SharedPtr<Reactor> reactor = Reactor::make();
     reactor->run_with_initial_event([=]() {
         templates::http_request(
@@ -149,10 +147,10 @@ TEST_CASE("http requests template works as expected") {
                             {"net/timeout", 1.0}},
                     {}, "", [=](Error err, SharedPtr<http::Response>) {
                         REQUIRE(err);
-                        Json root;
-                        Json requests;
-                        Json req;
-                        root = Json::parse(entry->dump());
+                        nlohmann::json root;
+                        nlohmann::json requests;
+                        nlohmann::json req;
+                        root = nlohmann::json::parse(entry->dump());
                         REQUIRE((root["agent"] == "agent"));
                         REQUIRE((root["socksproxy"] == nullptr));
                         REQUIRE(root.is_object());
@@ -214,9 +212,9 @@ static void mocked_request(Settings settings, http::Headers,
 TEST_CASE("Http template scrubs IP addresses") {
     const char *ip = "1.1.1.1";
 
-    auto test = [ip](Settings settings, Callback<SharedPtr<Entry>> &&cb) {
+    auto test = [ip](Settings settings, Callback<SharedPtr<nlohmann::json>> &&cb) {
         using namespace mk::ooni::templates;
-        SharedPtr<Entry> entry{new Entry};
+        SharedPtr<nlohmann::json> entry{new nlohmann::json};
         settings["real_probe_ip_"] = ip;
         http::Headers headers;
         std::string body = "";
@@ -231,7 +229,7 @@ TEST_CASE("Http template scrubs IP addresses") {
 
     SECTION("By default the probe IP is scrubbed") {
         Settings settings;
-        test(settings, [ip](SharedPtr<Entry> entry) {
+        test(settings, [ip](SharedPtr<nlohmann::json> entry) {
             REQUIRE(entry->dump().find(ip) == std::string::npos);
         });
     }
@@ -239,7 +237,7 @@ TEST_CASE("Http template scrubs IP addresses") {
     SECTION("IP is redacted when its inclusion is NOT requested") {
         Settings settings;
         settings["save_real_probe_ip"] = false;
-        test(settings, [ip](SharedPtr<Entry> entry) {
+        test(settings, [ip](SharedPtr<nlohmann::json> entry) {
             REQUIRE(entry->dump().find(ip) == std::string::npos);
         });
     }
@@ -247,7 +245,7 @@ TEST_CASE("Http template scrubs IP addresses") {
     SECTION("IP is NOT redacted when its inclusion is requested") {
         Settings settings;
         settings["save_real_probe_ip"] = true;
-        test(settings, [ip](SharedPtr<Entry> entry) {
+        test(settings, [ip](SharedPtr<nlohmann::json> entry) {
             REQUIRE(entry->dump().find(ip) != std::string::npos);
         });
     }

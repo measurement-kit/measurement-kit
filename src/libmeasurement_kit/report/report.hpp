@@ -8,8 +8,6 @@
 
 #include <ctime>
 
-#include "src/libmeasurement_kit/report/entry.hpp"
-
 namespace mk {
 namespace report {
 
@@ -38,13 +36,13 @@ class Report {
 
     void add_reporter(SharedPtr<BaseReporter> reporter);
 
-    void fill_entry(Entry &entry) const;
+    void fill_entry(nlohmann::json &entry) const;
 
-    Entry get_dummy_entry() const;
+    nlohmann::json get_dummy_entry() const;
 
     void open(Callback<Error> callback);
 
-    void write_entry(Entry entry, Callback<Error> callback, SharedPtr<Logger> logger);
+    void write_entry(nlohmann::json entry, Callback<Error> callback, SharedPtr<Logger> logger);
 
     void close(Callback<Error> callback);
 

@@ -16,7 +16,7 @@ namespace utils {
  * in input any valid JSON (`null`, numbers, strings, lists, objects).
  */
 
-report::Entry compute_ping(report::Entry &test_s2c, SharedPtr<Logger> logger) {
+nlohmann::json compute_ping(nlohmann::json &test_s2c, SharedPtr<Logger> logger) {
 
     try {
         // Note: do static cast to make sure it's convertible to a double
@@ -47,7 +47,7 @@ report::Entry compute_ping(report::Entry &test_s2c, SharedPtr<Logger> logger) {
     return sum / rtts.size();  /* Division by zero excluded above */
 }
 
-report::Entry compute_speed(report::Entry &sender_or_receiver_data,
+nlohmann::json compute_speed(nlohmann::json &sender_or_receiver_data,
                             const char *speed_type, SharedPtr<Logger> logger) {
     /*
      * This algorithm computes the speed in a way that is similar to the one
@@ -82,10 +82,10 @@ report::Entry compute_speed(report::Entry &sender_or_receiver_data,
     return nullptr;
 }
 
-report::Entry compute_simple_stats(report::Entry &entry, SharedPtr<Logger> logger) {
-    report::Entry test_s2c;
-    report::Entry test_c2s;
-    report::Entry simple_stats;
+nlohmann::json compute_simple_stats(nlohmann::json &entry, SharedPtr<Logger> logger) {
+    nlohmann::json test_s2c;
+    nlohmann::json test_c2s;
+    nlohmann::json simple_stats;
 
     try {
         /*
@@ -123,12 +123,12 @@ report::Entry compute_simple_stats(report::Entry &entry, SharedPtr<Logger> logge
     return simple_stats;
 }
 
-report::Entry compute_advanced_stats(report::Entry &entry, SharedPtr<Logger>) {
+nlohmann::json compute_advanced_stats(nlohmann::json &entry, SharedPtr<Logger>) {
     /*
      * Typically we have just one entry. But see above comment.
      */
-    report::Entry test_s2c = entry["test_s2c"][0];
-    report::Entry advanced_stats;
+    nlohmann::json test_s2c = entry["test_s2c"][0];
+    nlohmann::json advanced_stats;
 
     // See: https://github.com/ndt-project/ndt/wiki/NDTTestMethodology#computed-variables
 

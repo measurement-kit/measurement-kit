@@ -16,8 +16,8 @@ NdtRunnable::NdtRunnable() noexcept {
 }
 
 void NdtRunnable::main(std::string, Settings settings,
-                       Callback<SharedPtr<report::Entry>> cb) {
-    SharedPtr<report::Entry> entry(new report::Entry);
+                       Callback<SharedPtr<nlohmann::json>> cb) {
+    SharedPtr<nlohmann::json> entry(new nlohmann::json);
     (*entry)["failure"] = nullptr;
     // Note: `options` is the class attribute and `settings` is instead a
     // possibly modified copy of the `options` object

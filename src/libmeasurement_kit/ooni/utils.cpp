@@ -23,10 +23,10 @@ bool is_private_ipv4_addr(const std::string &ipv4_addr) {
   return regexp::private_ipv4(ipv4_addr);
 }
 
-report::Entry represent_string(const std::string &s) {
+nlohmann::json represent_string(const std::string &s) {
     Error error = utf8_parse(s);
     if (error != NoError()) {
-        return report::Entry{{"format", "base64"},
+        return nlohmann::json{{"format", "base64"},
                               {"data", base64_encode(s)}};
     }
     return s;

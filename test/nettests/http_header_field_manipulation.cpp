@@ -20,8 +20,8 @@ TEST_CASE("Synchronous http-header-field-manipulation test") {
 }
 
 TEST_CASE("compare_headers_response works") {
-    SharedPtr<report::Entry> entry(new report::Entry);
-    (*entry)["tampering"] = report::Entry::object();
+    SharedPtr<nlohmann::json> entry(new nlohmann::json);
+    (*entry)["tampering"] = nlohmann::json::object();
 
     SharedPtr<http::Response> response{new http::Response};
 

@@ -45,13 +45,17 @@ Error Auth::load(const std::string &filepath) noexcept {
 }
 
 Error Auth::loads(const std::string &s) noexcept {
-    return json_process(s, [&](auto json) {
+    try {
+        nlohmann::json json = nlohmann::json::parse(s);
         auth_token = json.at("auth_token");
         expiry_time = json.at("expiry_time");
         logged_in = json.at("logged_in");
         username = json.at("username");
         password = json.at("password");
-    });
+    } catch (const std::exception &) {
+        return JsonProcessingError();
+    }
+    return NoError();
 }
 
 Error Auth::dump(const std::string &filepath) noexcept {
@@ -59,7 +63,7 @@ Error Auth::dump(const std::string &filepath) noexcept {
 }
 
 std::string Auth::dumps() noexcept {
-    auto json = Json{{"auth_token", auth_token},
+    auto json = nlohmann::json{{"auth_token", auth_token},
                                {"expiry_time", expiry_time},
                                {"logged_in", logged_in},
                                {"username", username},
@@ -132,8 +136,8 @@ bool Auth::is_valid(SharedPtr<Logger> logger) const noexcept {
  * Registry database
  */
 
-Json ClientMetadata::as_json() const {
-    Json j;
+nlohmann::json ClientMetadata::as_json() const {
+    nlohmann::json j;
     // Keep the following sorted to ease comparison with class definition
     if (!available_bandwidth.empty()) {
         j["available_bandwidth"] = available_bandwidth;

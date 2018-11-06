@@ -15,7 +15,7 @@ MeekFrontedRequestsRunnable::MeekFrontedRequestsRunnable() noexcept {
 }
 
 void MeekFrontedRequestsRunnable::main(std::string input, Settings options,
-                                Callback<SharedPtr<report::Entry>> cb) {
+                                Callback<SharedPtr<nlohmann::json>> cb) {
     ooni::meek_fronted_requests(input, options, cb, reactor, logger);
 }
 

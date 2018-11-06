@@ -15,7 +15,7 @@ TcpConnectRunnable::TcpConnectRunnable() noexcept {
 }
 
 void TcpConnectRunnable::main(std::string input, Settings options,
-                              Callback<SharedPtr<report::Entry>> cb) {
+                              Callback<SharedPtr<nlohmann::json>> cb) {
     ooni::tcp_connect(input, options, cb, reactor, logger);
 }
 

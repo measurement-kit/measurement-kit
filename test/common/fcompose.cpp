@@ -10,6 +10,8 @@
 #include "src/libmeasurement_kit/common/reactor.hpp"
 #include "src/libmeasurement_kit/common/non_copyable.hpp"
 
+#include <iostream>
+
 #include <measurement_kit/common.hpp>
 
 using namespace mk;

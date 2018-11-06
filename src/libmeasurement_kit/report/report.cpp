@@ -20,7 +20,7 @@ void Report::add_reporter(SharedPtr<BaseReporter> reporter) {
     reporters_.push_back(reporter);
 }
 
-void Report::fill_entry(Entry &entry) const {
+void Report::fill_entry(nlohmann::json &entry) const {
     entry["test_name"] = test_name;
     entry["test_version"] = test_version;
     entry["test_start_time"] = *mk::timestamp(&test_start_time);
@@ -40,8 +40,8 @@ void Report::fill_entry(Entry &entry) const {
     entry["report_id"] = report_id;
 }
 
-Entry Report::get_dummy_entry() const {
-    Entry entry;
+nlohmann::json Report::get_dummy_entry() const {
+    nlohmann::json entry;
     fill_entry(entry);
     return entry;
 }
@@ -54,7 +54,7 @@ void Report::open(Callback<Error> callback) {
     }), callback);
 }
 
-void Report::write_entry(Entry entry, Callback<Error> callback,
+void Report::write_entry(nlohmann::json entry, Callback<Error> callback,
                          SharedPtr<Logger>) {
     mk::parallel(FMAP(reporters_, [=](SharedPtr<BaseReporter> r) {
         return r->write_entry(entry);

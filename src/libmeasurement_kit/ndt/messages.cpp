@@ -16,7 +16,7 @@ void read_ll(SharedPtr<Context> ctx,
     read_ll_impl(ctx, callback, reactor);
 }
 
-void read_json(SharedPtr<Context> ctx, Callback<Error, uint8_t, Json> callback,
+void read_json(SharedPtr<Context> ctx, Callback<Error, uint8_t, nlohmann::json> callback,
                SharedPtr<Reactor> reactor) {
     read_json_impl(ctx, callback, reactor);
 }
@@ -27,20 +27,20 @@ void read_msg(SharedPtr<Context> ctx, Callback<Error, uint8_t, std::string> cb,
 }
 
 ErrorOr<Buffer> format_msg_extended_login(unsigned char tests) {
-    return format_any(MSG_EXTENDED_LOGIN, Json{
+    return format_any(MSG_EXTENDED_LOGIN, nlohmann::json{
                           {"msg", MSG_NDT_VERSION},
                           {"tests", std::to_string((int)tests)},
                       });
 }
 
 ErrorOr<Buffer> format_test_msg(std::string s) {
-    return format_any(TEST_MSG, Json{
+    return format_any(TEST_MSG, nlohmann::json{
                           {"msg", s},
                       });
 }
 
 ErrorOr<Buffer> format_msg_waiting() {
-    return format_any(MSG_WAITING, Json{
+    return format_any(MSG_WAITING, nlohmann::json{
                           {"msg", ""},
                       });
 }
@@ -77,7 +77,7 @@ void write_noasync(SharedPtr<Context> ctx, Buffer buff) {
     ctx->txp->write(buff);
 }
 
-Error add_to_report(SharedPtr<Entry> entry, std::string key, std::string item) {
+Error add_to_report(SharedPtr<nlohmann::json> entry, std::string key, std::string item) {
     std::list<std::string> list = split(item, ":");
     if (list.size() != 2) {
         return GenericError(); /* XXX use more specific error */

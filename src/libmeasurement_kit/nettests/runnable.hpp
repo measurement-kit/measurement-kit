@@ -9,7 +9,6 @@
 #include "src/libmeasurement_kit/common/non_movable.hpp"
 #include "src/libmeasurement_kit/common/reactor.hpp"
 
-#include "src/libmeasurement_kit/report/entry.hpp"
 #include "src/libmeasurement_kit/report/report.hpp"
 
 #include <ctime>
@@ -55,8 +54,8 @@ class Runnable : public NonCopyable, public NonMovable {
     // Functions that derived classes SHOULD override
     virtual void setup(std::string);
     virtual void teardown(std::string);
-    virtual void main(std::string, Settings, Callback<SharedPtr<report::Entry>>);
-    virtual void fixup_entry(report::Entry &);
+    virtual void main(std::string, Settings, Callback<SharedPtr<nlohmann::json>>);
+    virtual void fixup_entry(nlohmann::json &);
 
     // Functions that derived classes should access
     std::list<std::string> test_helpers_option_names();
@@ -80,7 +79,7 @@ class Runnable : public NonCopyable, public NonMovable {
         _name_() noexcept;                                                     \
                                                                                \
         void main(std::string, Settings,                                       \
-                  Callback<SharedPtr<report::Entry>>) override;                \
+                  Callback<SharedPtr<nlohmann::json>>) override;                \
     }
 
 MK_DECLARE_RUNNABLE(DashRunnable);
@@ -101,8 +100,8 @@ class WebConnectivityRunnable : public Runnable {
   public:
     WebConnectivityRunnable() noexcept;
     void main(
-            std::string, Settings, Callback<SharedPtr<report::Entry>>) override;
-    void fixup_entry(report::Entry &) override;
+            std::string, Settings, Callback<SharedPtr<nlohmann::json>>) override;
+    void fixup_entry(nlohmann::json &) override;
 };
 
 } // namespace nettests

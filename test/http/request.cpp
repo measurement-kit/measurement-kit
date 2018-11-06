@@ -502,7 +502,7 @@ TEST_CASE("http::request() works as expected using httpo URLs") {
                 REQUIRE(check_error_after_tor(error));
                 if (!error) {
                     REQUIRE(response->status_code == 200);
-                    Json body = Json::parse(response->body);
+                    nlohmann::json body = nlohmann::json::parse(response->body);
                     auto check = [](std::string s) {
                         REQUIRE(s.substr(0, 8) == "httpo://");
                         REQUIRE(s.size() >= 6);
@@ -590,7 +590,7 @@ TEST_CASE("Headers are preserved across redirects") {
                 REQUIRE(response->previous->status_code == 302);
                 REQUIRE(response->previous->request->url.path ==
                         "/absolute-redirect/1");
-                auto body = Json::parse(response->body);
+                auto body = nlohmann::json::parse(response->body);
                 REQUIRE(body["headers"]["Spam"] == "Ham");
                 reactor->stop();
             },
@@ -814,7 +814,7 @@ TEST_CASE("request_json_string() works as expected") {
         reactor->run_with_initial_event([=]() {
             request_json_string_impl<fail_request>(
               "GET", "http://www.google.com", "", {},
-              [=](Error error, SharedPtr<Response>, Json) {
+              [=](Error error, SharedPtr<Response>, nlohmann::json) {
                   REQUIRE(error == MockedError());
                     reactor->stop();
               },
@@ -826,7 +826,7 @@ TEST_CASE("request_json_string() works as expected") {
         reactor->run_with_initial_event([=]() {
             request_json_string_impl<non_200_response>(
               "GET", "http://www.google.com", "", {},
-              [=](Error error, SharedPtr<Response> resp, Json) {
+              [=](Error error, SharedPtr<Response> resp, nlohmann::json) {
                   REQUIRE(error == NoError());
                   REQUIRE(resp->status_code != 200);
                   reactor->stop();
@@ -839,8 +839,8 @@ TEST_CASE("request_json_string() works as expected") {
         reactor->run_with_initial_event([=]() {
             request_json_string_impl<fail_parsing>(
               "GET", "http://www.google.com", "{}", {},
-              [=](Error error, SharedPtr<Response>, Json) {
-                  REQUIRE(error == JsonParseError());
+              [=](Error error, SharedPtr<Response>, nlohmann::json) {
+                  REQUIRE(error == JsonProcessingError());
               },
               {}, reactor, Logger::global());
         });

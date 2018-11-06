@@ -15,8 +15,8 @@ DashRunnable::DashRunnable() noexcept {
 }
 
 void DashRunnable::main(std::string /*input*/, Settings options,
-                        Callback<SharedPtr<report::Entry>> cb) {
-    auto entry = SharedPtr<report::Entry>::make();
+                        Callback<SharedPtr<nlohmann::json>> cb) {
+    auto entry = SharedPtr<nlohmann::json>::make();
     neubot::dash::negotiate(entry, options, reactor, logger, [=](Error error) {
         if (error) {
             (*entry)["failure"] = error.reason;

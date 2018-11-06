@@ -5,18 +5,15 @@
 #include "src/libmeasurement_kit/ooni/error.hpp"
 #include "src/libmeasurement_kit/ooni/nettests.hpp"
 #include "src/libmeasurement_kit/net/transport.hpp"
-#include "src/libmeasurement_kit/report/entry.hpp"
 #include "src/libmeasurement_kit/ooni/templates.hpp"
 
 namespace mk {
 namespace ooni {
 
-using namespace mk::report;
-
 void tcp_connect(std::string input, Settings options,
-                 Callback<SharedPtr<Entry>> callback, SharedPtr<Reactor> reactor,
+                 Callback<SharedPtr<nlohmann::json>> callback, SharedPtr<Reactor> reactor,
                  SharedPtr<Logger> logger) {
-    SharedPtr<Entry> entry(new Entry);
+    SharedPtr<nlohmann::json> entry(new nlohmann::json);
     (*entry)["connection"] = nullptr;
     // Note: unlike ooni-probe, here we also accept endpoints where the port
     // is not specified, defaulting to 80 in such case.

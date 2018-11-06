@@ -15,7 +15,7 @@ TelegramRunnable::TelegramRunnable() noexcept {
 }
 
 void TelegramRunnable::main(std::string /*input*/, Settings options,
-                            Callback<SharedPtr<report::Entry>> cb) {
+                            Callback<SharedPtr<nlohmann::json>> cb) {
     ooni::telegram(options, cb, reactor, logger);
 }
 

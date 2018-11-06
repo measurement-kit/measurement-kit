@@ -6,7 +6,7 @@
 
 #include "src/libmeasurement_kit/common/encoding.hpp"
 #include "src/libmeasurement_kit/common/mock.hpp"
-#include "../ooni/utils.hpp"
+#include "src/libmeasurement_kit/ooni/utils.hpp"
 
 #include "src/libmeasurement_kit/http/http.hpp"
 

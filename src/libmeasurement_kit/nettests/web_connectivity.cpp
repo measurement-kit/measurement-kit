@@ -17,11 +17,11 @@ WebConnectivityRunnable::WebConnectivityRunnable() noexcept {
 }
 
 void WebConnectivityRunnable::main(std::string input, Settings options,
-                                   Callback<SharedPtr<report::Entry>> cb) {
+                                   Callback<SharedPtr<nlohmann::json>> cb) {
     ooni::web_connectivity(input, options, cb, reactor, logger);
 }
 
-void WebConnectivityRunnable::fixup_entry(report::Entry &entry) {
+void WebConnectivityRunnable::fixup_entry(nlohmann::json &entry) {
     try {
         auto backend = entry["test_helpers"]["backend"].get<std::string>();
         if (mk::startswith(backend, "https://")) {

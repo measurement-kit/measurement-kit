@@ -4,9 +4,9 @@
 #ifndef SRC_LIBMEASUREMENT_KIT_MLABNS_MLABNS_IMPL_HPP
 #define SRC_LIBMEASUREMENT_KIT_MLABNS_MLABNS_IMPL_HPP
 
-#include "src/libmeasurement_kit/mlabns/mlabns.hpp"
+#include <measurement_kit/common/nlohmann/json.hpp>
 
-#include <measurement_kit/common/json.hpp>
+#include "src/libmeasurement_kit/mlabns/mlabns.hpp"
 #include "src/libmeasurement_kit/common/mock.hpp"
 #include "src/libmeasurement_kit/http/http.hpp"
 #include "src/libmeasurement_kit/regexp/regexp.hpp"
@@ -85,14 +85,15 @@ void query_impl(std::string tool, Callback<Error, Reply> callback,
     logger->debug("mlabns url: %s", url.c_str());
     request_json_no_body("GET", url, {},
         [callback, logger](Error error, SharedPtr<http::Response> /*response*/,
-                           Json json_response) {
+                           nlohmann::json node) {
             if (error) {
                 logger->warn("mlabns: HTTP error: %s", error.what());
                 callback(error, Reply());
                 return;
             }
             Reply reply;
-            Error err = json_process(json_response, [&](auto node) {
+            Error err = NoError();
+            try {
                 reply.city = node.at("city");
                 reply.url = node.at("url");
                 for (auto ip2 : node.at("ip")) {
@@ -101,7 +102,9 @@ void query_impl(std::string tool, Callback<Error, Reply> callback,
                 reply.fqdn = node.at("fqdn");
                 reply.site = node.at("site");
                 reply.country = node.at("country");
-            });
+            } catch (const std::exception &) {
+                err = JsonProcessingError();
+            }
             if (err) {
                 logger->warn("mlabns: cannot parse json: %s", err.what());
             } else {

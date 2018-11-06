@@ -6,14 +6,13 @@
 
 #include "src/libmeasurement_kit/ooni/error.hpp"
 #include "src/libmeasurement_kit/http/http.hpp"
-#include "src/libmeasurement_kit/report/entry.hpp"
 
 namespace mk {
 namespace ooni {
 
 void compare_headers_response(http::Headers headers,
                              SharedPtr<http::Response> response,
-                             SharedPtr<report::Entry> entry, SharedPtr<Logger> logger);
+                             SharedPtr<nlohmann::json> entry, SharedPtr<Logger> logger);
 
 } // namespace ooni
 } // namespace mk

@@ -9,16 +9,13 @@
 #include "src/libmeasurement_kit/common/parallel.hpp"
 #include "src/libmeasurement_kit/common/utils.hpp"
 #include "src/libmeasurement_kit/ooni/templates.hpp"
-#include "src/libmeasurement_kit/report/entry.hpp"
 #include "src/libmeasurement_kit/net/utils.hpp"
 #include "src/libmeasurement_kit/ooni/error.hpp"
 
-#include <cassert>
+#include <assert.h>
 
 namespace mk {
 namespace ooni {
-
-using namespace mk::report;
 
 typedef std::map<std::string, std::vector<std::string>> host_to_ips_t;
 
@@ -203,18 +200,18 @@ bool ip_in_nets(std::string ip, std::vector<std::string> nets) {
     return false;
 }
 
-static void tcp_many(host_to_ips_t host_to_ips, SharedPtr<Entry> entry,
+static void tcp_many(host_to_ips_t host_to_ips, SharedPtr<nlohmann::json> entry,
         Settings options, SharedPtr<Reactor> reactor,
         SharedPtr<Logger> logger, Callback<Error> cb) {
     // a hostname is DNS inconsistent if ALL of its IPs are inconsistent.
-    (*entry)["whatsapp_endpoints_dns_inconsistent"] = Entry::array();
+    (*entry)["whatsapp_endpoints_dns_inconsistent"] = nlohmann::json::array();
     // on first TCP success of a consistent IP, set to "ok".
     (*entry)["whatsapp_endpoints_status"] = "blocked";
     // all hostnames start here;removed upon a TCP success to a consistent IP
     SharedPtr<std::set<std::string>> blocked_hostnames(
           new std::set<std::string>);
     // at the end, we copy these ^ hostnames into the report:
-    (*entry)["whatsapp_endpoints_blocked"] = Entry::array();
+    (*entry)["whatsapp_endpoints_blocked"] = nlohmann::json::array();
     size_t ips_count = 0;
     SharedPtr<size_t> ips_tested(new size_t(0));
     for (auto const& hostname_ipv : host_to_ips) {
@@ -225,7 +222,7 @@ static void tcp_many(host_to_ips_t host_to_ips, SharedPtr<Entry> entry,
     auto tcp_cb = [=](std::string hostname, std::string ip, int port,
                       bool this_ip_consistent) {
         return [=](Error connect_err, SharedPtr<net::Transport> txp) {
-            Entry result = {
+            nlohmann::json result = {
                     {"ip", ip}, {"port", port},
                     {"status", {{"success", nullptr}, {"failure", nullptr}}},
             };
@@ -299,7 +296,7 @@ static void tcp_many(host_to_ips_t host_to_ips, SharedPtr<Entry> entry,
     }
 }
 
-static void dns_many(std::vector<std::string> hostnames, SharedPtr<Entry> entry,
+static void dns_many(std::vector<std::string> hostnames, SharedPtr<nlohmann::json> entry,
         Settings options, SharedPtr<Reactor> reactor, SharedPtr<Logger> logger,
         Callback<Error, host_to_ips_t> cb) {
     int names_count = hostnames.size();
@@ -351,7 +348,7 @@ static void dns_many(std::vector<std::string> hostnames, SharedPtr<Entry> entry,
 }
 
 static void http_many(const std::vector<std::string> urls,
-        std::string resource_name, SharedPtr<Entry> entry, Settings options,
+        std::string resource_name, SharedPtr<nlohmann::json> entry, Settings options,
         SharedPtr<Reactor> reactor, SharedPtr<Logger> logger,
         Callback<Error> cb) {
     // resource_name is "registration_server" or "whatsapp_web"
@@ -390,7 +387,7 @@ static void http_many(const std::vector<std::string> urls,
     }
 }
 
-void whatsapp(Settings options, Callback<SharedPtr<report::Entry>> callback,
+void whatsapp(Settings options, Callback<SharedPtr<nlohmann::json>> callback,
         SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
     std::vector<std::string> WHATSAPP_REG_URLS = {
             "https://v.whatsapp.net/v2/register"};
@@ -414,7 +411,7 @@ void whatsapp(Settings options, Callback<SharedPtr<report::Entry>> callback,
     }
 
     logger->info("starting whatsapp test");
-    SharedPtr<Entry> entry(new Entry);
+    SharedPtr<nlohmann::json> entry(new nlohmann::json);
 
     mk::fcompose(mk::fcompose_policy_async(),
             [=](Callback<> cb) {

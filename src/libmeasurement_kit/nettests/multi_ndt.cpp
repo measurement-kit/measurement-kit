@@ -17,13 +17,13 @@ MultiNdtRunnable::MultiNdtRunnable() noexcept {
     test_version = "0.1.0";  /* Forked from `ndt` v0.0.4 */
 }
 
-static void write_simple_stats(report::Entry &entry, SharedPtr<Logger> logger) {
-    report::Entry single = mk::ndt::utils::compute_simple_stats(entry["single_stream"], logger);
+static void write_simple_stats(nlohmann::json &entry, SharedPtr<Logger> logger) {
+    nlohmann::json single = mk::ndt::utils::compute_simple_stats(entry["single_stream"], logger);
     single["fastest_test"] = "single_stream";
-    report::Entry multi = mk::ndt::utils::compute_simple_stats(entry["multi_stream"], logger);
+    nlohmann::json multi = mk::ndt::utils::compute_simple_stats(entry["multi_stream"], logger);
     multi["fastest_test"] = "multi_stream";
 
-    report::Entry selected;
+    nlohmann::json selected;
 
     /*
      * Here we basically pick up the fastest of the two tests.
@@ -60,11 +60,11 @@ static void write_simple_stats(report::Entry &entry, SharedPtr<Logger> logger) {
 }
 
 void MultiNdtRunnable::main(std::string, Settings ndt_settings,
-                            Callback<SharedPtr<report::Entry>> cb) {
+                            Callback<SharedPtr<nlohmann::json>> cb) {
     // Note: `options` is the class attribute and `settings` is instead a
     // possibly modified copy of the `options` object
 
-    SharedPtr<report::Entry> ndt_entry(new report::Entry);
+    SharedPtr<nlohmann::json> ndt_entry(new nlohmann::json);
     (*ndt_entry)["failure"] = nullptr;
     // By default we only run download but let's allow clients to decide
     if (ndt_settings.count("single_test_suite") != 0) {
@@ -82,7 +82,7 @@ void MultiNdtRunnable::main(std::string, Settings ndt_settings,
             // FALLTHROUGH
         }
 
-        SharedPtr<report::Entry> neubot_entry(new report::Entry);
+        SharedPtr<nlohmann::json> neubot_entry(new nlohmann::json);
         (*neubot_entry)["failure"] = nullptr;
         Settings neubot_settings{ndt_settings.begin(), ndt_settings.end()};
         neubot_settings["test_suite"] = MK_NDT_DOWNLOAD_EXT;
@@ -97,7 +97,7 @@ void MultiNdtRunnable::main(std::string, Settings ndt_settings,
                 logger->warn("Test failed: %s", neubot_error.what());
                 // FALLTHROUGH
             }
-            SharedPtr<report::Entry> overall_entry(new report::Entry);
+            SharedPtr<nlohmann::json> overall_entry(new nlohmann::json);
             (*overall_entry)["failure"] = nullptr;
             (*overall_entry)["multi_stream"] = *neubot_entry;
             (*overall_entry)["single_stream"] = *ndt_entry;

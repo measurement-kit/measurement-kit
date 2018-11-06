@@ -5,6 +5,7 @@
 #include "src/libmeasurement_kit/ooni/constants.hpp"
 #include "src/libmeasurement_kit/ooni/nettests.hpp"
 #include "src/libmeasurement_kit/common/fcompose.hpp"
+#include "src/libmeasurement_kit/common/reactor.hpp"
 #include "src/libmeasurement_kit/common/utils.hpp"
 #include "src/libmeasurement_kit/ooni/templates.hpp"
 #include "src/libmeasurement_kit/ooni/error.hpp"
@@ -13,8 +14,6 @@
 
 namespace mk {
 namespace ooni {
-
-using namespace mk::report;
 
 static const std::string FB_ASN = "AS32934";
 
@@ -43,9 +42,9 @@ static bool ip_in_fb_asn(Settings options, std::string ip) {
 }
 
 static void
-dns_many(Error error, SharedPtr<Entry> entry, Settings options, SharedPtr<Reactor> reactor,
+dns_many(Error error, SharedPtr<nlohmann::json> entry, Settings options, SharedPtr<Reactor> reactor,
          SharedPtr<Logger> logger,
-         Callback<Error, SharedPtr<Entry>,
+         Callback<Error, SharedPtr<nlohmann::json>,
                   SharedPtr<std::map<std::string, std::vector<std::string>>>,
                   Settings, SharedPtr<Reactor>, SharedPtr<Logger>>
                cb) {
@@ -107,10 +106,10 @@ dns_many(Error error, SharedPtr<Entry> entry, Settings options, SharedPtr<Reacto
 }
 
 static void
-tcp_many(Error error, SharedPtr<Entry> entry,
+tcp_many(Error error, SharedPtr<nlohmann::json> entry,
          SharedPtr<std::map<std::string, std::vector<std::string>>> fb_service_ips,
          Settings options, SharedPtr<Reactor> reactor, SharedPtr<Logger> logger,
-         Callback<SharedPtr<Entry>> cb) {
+         Callback<SharedPtr<nlohmann::json>> cb) {
 
     if (error) {
         cb(entry);
@@ -135,7 +134,7 @@ tcp_many(Error error, SharedPtr<Entry> entry,
             bool this_ip_consistent) {
         return [=](Error err, SharedPtr<net::Transport> txp) {
             assert(!!txp);
-            Entry current_entry{
+            nlohmann::json current_entry{
                   {"ip", ip}, {"port", port}, {"status", nullptr}};
             if (!!err) {
                 logger->info("tcp failure to %s at %s:%d", service.c_str(),
@@ -233,10 +232,10 @@ tcp_many(Error error, SharedPtr<Entry> entry,
 
 }
 
-void facebook_messenger(Settings options, Callback<SharedPtr<report::Entry>> callback,
+void facebook_messenger(Settings options, Callback<SharedPtr<nlohmann::json>> callback,
                         SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
     logger->info("starting facebook_messenger");
-    SharedPtr<Entry> entry(new Entry);
+    SharedPtr<nlohmann::json> entry(new nlohmann::json);
     mk::fcompose(mk::fcompose_policy_async(), dns_many, tcp_many)(
           NoError(), entry, options, reactor, logger, callback);
 }

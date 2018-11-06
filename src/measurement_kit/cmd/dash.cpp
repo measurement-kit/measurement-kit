@@ -2,8 +2,9 @@
 // Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
-#include "../cmdline.hpp"
-#include <measurement_kit/common/json.hpp>
+#include "src/measurement_kit/cmdline.hpp"
+
+#include "measurement_kit/common/nlohmann/json.hpp"
 
 namespace dash {
 
@@ -39,7 +40,7 @@ int main(std::list<Callback<BaseTest &>> &initializers, int argc, char **argv) {
 
     common_init(initializers, test)
           .on_entry([](std::string s) {
-              Json doc = Json::parse(s);
+              nlohmann::json doc = nlohmann::json::parse(s);
               auto simple = doc["test_keys"]["simple"];
               printf("\nTest summary\n");
               printf("------------\n");

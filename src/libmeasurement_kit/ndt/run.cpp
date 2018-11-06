@@ -7,7 +7,7 @@
 namespace mk {
 namespace ndt {
 
-void run_with_specific_server(SharedPtr<Entry> entry, std::string address, int port,
+void run_with_specific_server(SharedPtr<nlohmann::json> entry, std::string address, int port,
                               Callback<Error> callback, Settings settings,
                               SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
     run_with_specific_server_impl<
@@ -19,7 +19,7 @@ void run_with_specific_server(SharedPtr<Entry> entry, std::string address, int p
                                            reactor, logger);
 }
 
-void run(SharedPtr<Entry> entry, Callback<Error> callback, Settings settings,
+void run(SharedPtr<nlohmann::json> entry, Callback<Error> callback, Settings settings,
          SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
     run_impl(entry, callback, settings, reactor, logger);
 }

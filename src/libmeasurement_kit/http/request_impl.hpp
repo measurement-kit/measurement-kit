@@ -4,9 +4,9 @@
 #ifndef SRC_LIBMEASUREMENT_KIT_HTTP_REQUEST_IMPL_HPP
 #define SRC_LIBMEASUREMENT_KIT_HTTP_REQUEST_IMPL_HPP
 
-#include <measurement_kit/common/json.hpp>
-#include "src/libmeasurement_kit/common/mock.hpp"
+#include <measurement_kit/common/nlohmann/json.hpp>
 
+#include "src/libmeasurement_kit/common/mock.hpp"
 #include "src/libmeasurement_kit/http/response_parser.hpp"
 #include "src/libmeasurement_kit/http/http.hpp"
 #include "src/libmeasurement_kit/net/connect.hpp"
@@ -51,7 +51,7 @@ template <MK_MOCK_AS(mk::http::request, request)>
 void request_json_string_impl(
       std::string method, std::string url, std::string data,
       http::Headers headers,
-      Callback<Error, SharedPtr<http::Response>, Json> cb,
+      Callback<Error, SharedPtr<http::Response>, nlohmann::json> cb,
       Settings settings, SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
     settings["http/url"] = url;
     settings["http/method"] = method;
@@ -60,14 +60,16 @@ void request_json_string_impl(
                   data.c_str());
     request(settings, headers, data,
             [=](Error error, SharedPtr<http::Response> response) {
-                Json jresponse;
+                nlohmann::json jresponse;
                 if (error) {
                     cb(error, response, jresponse);
                     return;
                 }
-                error = json_process(response->body, [&](auto json) {
-                    jresponse = std::move(json);
-                });
+                try {
+                    jresponse = nlohmann::json::parse(response->body);
+                } catch (const std::exception &) {
+                    error = JsonProcessingError();
+                }
                 cb(error, response, jresponse);
             },
             reactor, logger, {}, 0);

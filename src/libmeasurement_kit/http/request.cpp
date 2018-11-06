@@ -398,7 +398,7 @@ bool HeadersComparator::operator() (
 void request_json_string(
       std::string method, std::string url, std::string data,
       http::Headers headers,
-      Callback<Error, SharedPtr<http::Response>, Json> cb,
+      Callback<Error, SharedPtr<http::Response>, nlohmann::json> cb,
       Settings settings, SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
     request_json_string_impl(method, url, data, headers, cb, settings, reactor,
                              logger);
@@ -406,16 +406,16 @@ void request_json_string(
 
 void request_json_no_body(
       std::string method, std::string url, http::Headers headers,
-      Callback<Error, SharedPtr<http::Response>, Json> cb,
+      Callback<Error, SharedPtr<http::Response>, nlohmann::json> cb,
       Settings settings, SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
     request_json_string(method, url, "", headers, cb, settings, reactor,
                         logger);
 }
 
 void request_json_object(
-      std::string method, std::string url, Json jdata,
+      std::string method, std::string url, nlohmann::json jdata,
       http::Headers headers,
-      Callback<Error, SharedPtr<http::Response>, Json> cb,
+      Callback<Error, SharedPtr<http::Response>, nlohmann::json> cb,
       Settings settings, SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
     request_json_string(method, url, jdata.dump(), headers, cb, settings,
                         reactor, logger);

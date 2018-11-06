@@ -14,14 +14,12 @@
 namespace mk {
 namespace ooni {
 
-using namespace mk::report;
-
-static void tcp_many(const std::vector<std::string> ip_ports, SharedPtr<Entry> entry,
+static void tcp_many(const std::vector<std::string> ip_ports, SharedPtr<nlohmann::json> entry,
         Settings options, SharedPtr<Reactor> reactor, SharedPtr<Logger> logger,
         Callback<Error> all_done_cb) {
     auto connected_cb = [=](std::string ip, int port, Callback<Error> done_cb) {
         return [=](Error connect_error, SharedPtr<net::Transport> txp) {
-            Entry result = {
+            nlohmann::json result = {
                 {"ip", ip}, {"port", port},
                 {"status", {{"success", nullptr}, {"failure", nullptr}}},
             };
@@ -65,7 +63,7 @@ static void tcp_many(const std::vector<std::string> ip_ports, SharedPtr<Entry> e
 }
 
 static void http_many(const std::vector<std::string> urls, std::string type,
-    SharedPtr<Entry> entry, Settings options, SharedPtr<Reactor> reactor,
+    SharedPtr<nlohmann::json> entry, Settings options, SharedPtr<Reactor> reactor,
     SharedPtr<Logger> logger, Callback<Error> all_done_cb) {
     if (type == "web") {
         // if any titles are not "Telegram Web", switch this to blocked
@@ -109,7 +107,7 @@ static void http_many(const std::vector<std::string> urls, std::string type,
     mk::parallel(continuations, all_done_cb, 3 /* parallelism */);
 }
 
-void telegram(Settings options, Callback<SharedPtr<report::Entry>> callback,
+void telegram(Settings options, Callback<SharedPtr<nlohmann::json>> callback,
     SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
     std::vector<std::string> TELEGRAM_WEB_URLS = {
         "http://web.telegram.org/", "https://web.telegram.org/"};
@@ -130,7 +128,7 @@ void telegram(Settings options, Callback<SharedPtr<report::Entry>> callback,
         "http://149.154.171.5:80", "http://149.154.171.5:443"};
 
     logger->info("starting telegram test");
-    SharedPtr<Entry> entry(new Entry);
+    SharedPtr<nlohmann::json> entry(new nlohmann::json);
 
     // if any endpoints are (TCP or HTTP) reachable, switch this to false
     (*entry)["telegram_tcp_blocking"] = true;

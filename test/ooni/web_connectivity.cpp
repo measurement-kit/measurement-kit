@@ -17,7 +17,7 @@ TEST_CASE("Web connectivity works as expected") {
         auto reactor = Reactor::make();
         bool okay = false;
         ooni::web_connectivity("http://mail.voila.fr", Settings{},
-                [&](SharedPtr<report::Entry> entry) {
+                [&](SharedPtr<nlohmann::json> entry) {
                     okay = ((*entry)["failure"] == nullptr);
                     reactor->stop();
                 },
@@ -30,7 +30,7 @@ TEST_CASE("Web connectivity works as expected") {
         auto reactor = Reactor::make();
         bool okay = false;
         ooni::web_connectivity("http://www.aseansec.org", Settings{},
-                [&](SharedPtr<report::Entry> entry) {
+                [&](SharedPtr<nlohmann::json> entry) {
                     okay = ((*entry)["failure"] == nullptr);
                     reactor->stop();
                 },

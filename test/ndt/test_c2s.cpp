@@ -17,7 +17,7 @@ static void fail(std::string, int, Callback<Error, SharedPtr<Transport>> cb, Set
 }
 
 TEST_CASE("coroutine() is robust to connect error") {
-    SharedPtr<Entry> entry{new Entry};
+    SharedPtr<nlohmann::json> entry{new nlohmann::json};
     test_c2s::coroutine_impl<fail>(
         entry, "www.google.com", 3301, 10.0,
         [](Error err, Continuation<Error>) { REQUIRE(err == MockedError()); },
@@ -86,7 +86,7 @@ static void test_prepare(SharedPtr<Context>,
     cb(NoError(), TEST_PREPARE, "3010");
 }
 
-static void fail(SharedPtr<Entry>, std::string, int, double,
+static void fail(SharedPtr<nlohmann::json>, std::string, int, double,
                  Callback<Error, Continuation<Error>> cb, double, Settings,
                  SharedPtr<Reactor>, SharedPtr<Logger>) {
     cb(MockedError(), [](Callback<Error>) {
@@ -100,7 +100,7 @@ TEST_CASE("run() deals with coroutine fail") {
         ctx, [](Error err) { REQUIRE(err == ConnectTestConnectionError()); });
 }
 
-static void connect_but_fail_later(SharedPtr<Entry>, std::string, int, double,
+static void connect_but_fail_later(SharedPtr<nlohmann::json>, std::string, int, double,
                                    Callback<Error, Continuation<Error>> cb,
                                    double, Settings, SharedPtr<Reactor>,
                                    SharedPtr<Logger>) {
@@ -130,7 +130,7 @@ TEST_CASE("run() deals with coroutine terminating with error") {
         ctx, [](Error err) { REQUIRE(err == MockedError()); });
 }
 
-static void coro_ok(SharedPtr<Entry>, std::string, int, double,
+static void coro_ok(SharedPtr<nlohmann::json>, std::string, int, double,
                     Callback<Error, Continuation<Error>> cb, double, Settings,
                     SharedPtr<Reactor>, SharedPtr<Logger>) {
     cb(NoError(), [](Callback<Error> cb) { cb(NoError()); });
@@ -155,14 +155,14 @@ static void test_msg(SharedPtr<Context>, Callback<Error, uint8_t, std::string> c
 
 TEST_CASE("run() deals with error when reading TEST_FINALIZE") {
     SharedPtr<Context> ctx(new Context);
-    ctx->entry.reset(new Entry);
+    ctx->entry.reset(new nlohmann::json);
     test_c2s::run_impl<test_prepare, coro_ok, test_start, test_msg, fail>(
         ctx, [](Error err) { REQUIRE(err == ReadingTestFinalizeError()); });
 }
 
 TEST_CASE("run() deals with unexpected message instead of TEST_FINALIZE") {
     SharedPtr<Context> ctx(new Context);
-    ctx->entry.reset(new Entry);
+    ctx->entry.reset(new nlohmann::json);
     test_c2s::run_impl<test_prepare, coro_ok, test_start, test_msg, invalid>(
         ctx, [](Error err) { REQUIRE(err == NotTestFinalizeError()); });
 }

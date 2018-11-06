@@ -133,17 +133,9 @@ MK_DEFINE_ERR(3, ValueError, "value_error")
 /// sure that the returned error was actually correctly mocked.
 MK_DEFINE_ERR(4, MockedError, "mocked_error")
 
-/// `JsonParseError` indicates that we could not parse a JSON.
-MK_DEFINE_ERR(5, JsonParseError, "json_parse_error")
-
-/// `JsonKeyError` indicates that a specific key does not exists in a JSON.
-MK_DEFINE_ERR(6, JsonKeyError, "json_key_error")
-
-/// \brief `JsonDomainError` indicates that we are using a JSON of
-/// a specific type assuming that it is of another type. For example, the
-/// JSON may be `null` and we may be trying to using it like a map from
-/// string to string, which obviously is not possible.
-MK_DEFINE_ERR(7, JsonDomainError, "json_domain_error")
+//MK_DEFINE_ERR(5, JsonParseError, "json_parse_error")
+//MK_DEFINE_ERR(6, JsonKeyError, "json_key_error")
+//MK_DEFINE_ERR(7, JsonDomainError, "json_domain_error")
 
 /// `FileEofError` indicates that we hit premature EOF when reading a file.
 MK_DEFINE_ERR(8, FileEofError, "file_eof_error")

@@ -12,10 +12,8 @@ namespace mk {
 namespace ndt {
 namespace test_s2c {
 
-using namespace mk::report;
-
 template <MK_MOCK_AS(net::connect_many, net_connect_many)>
-void coroutine_impl(SharedPtr<Entry> report_entry, std::string address, Params params,
+void coroutine_impl(SharedPtr<nlohmann::json> report_entry, std::string address, Params params,
                     Callback<Error, Continuation<Error, double>> cb,
                     double timeout, Settings settings, SharedPtr<Reactor> reactor,
                     SharedPtr<Logger> logger) {
@@ -32,7 +30,7 @@ void coroutine_impl(SharedPtr<Entry> report_entry, std::string address, Params p
                 cb(err, nullptr);
                 return;
             }
-            (*report_entry)["connect_times"] = Entry::array();
+            (*report_entry)["connect_times"] = nlohmann::json::array();
             for (auto &txp : txp_list) {
                 (*report_entry)["connect_times"].push_back(txp->connect_time());
             }
@@ -105,7 +103,7 @@ void coroutine_impl(SharedPtr<Entry> report_entry, std::string address, Params p
 }
 
 template <MK_MOCK_AS(messages::read_msg, messages_read_msg)>
-void finalizing_test_impl(SharedPtr<Context> ctx, SharedPtr<Entry> cur_entry,
+void finalizing_test_impl(SharedPtr<Context> ctx, SharedPtr<nlohmann::json> cur_entry,
                           Callback<Error> callback) {
 
     ctx->logger->debug("ndt: recv TEST_MSG ...");
@@ -205,10 +203,10 @@ void run_impl(SharedPtr<Context> ctx, Callback<Error> callback) {
         }
         ctx->logger->debug("Num-streams: %d", params.num_streams);
 
-        SharedPtr<Entry> cur_entry{std::make_shared<Entry>()};
-        (*cur_entry)["web100_data"] = Entry::object();
-        (*cur_entry)["params"] = Entry::object();
-        (*cur_entry)["receiver_data"] = Entry::array();
+        SharedPtr<nlohmann::json> cur_entry{std::make_shared<nlohmann::json>()};
+        (*cur_entry)["web100_data"] = nlohmann::json::object();
+        (*cur_entry)["params"] = nlohmann::json::object();
+        (*cur_entry)["receiver_data"] = nlohmann::json::array();
 
         // We connect to the port and wait for coroutine to pause
         ctx->logger->debug("ndt: start s2c coroutine ...");
@@ -247,7 +245,7 @@ void run_impl(SharedPtr<Context> ctx, Callback<Error> callback) {
                         // The server sends us MSG containing throughput
                         ctx->logger->debug("ndt: recv TEST_MSG ...");
                         messages_read_json(ctx, [=](Error err, uint8_t type,
-                                                    Json m) {
+                                                    nlohmann::json m) {
                             ctx->logger->debug("ndt: recv TEST_MSG ... %d",
                                                (int)err);
                             if (err) {

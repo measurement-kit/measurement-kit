@@ -4,9 +4,9 @@
 #ifndef SRC_LIBMEASUREMENT_KIT_OONI_BOUNCER_IMPL_HPP
 #define SRC_LIBMEASUREMENT_KIT_OONI_BOUNCER_IMPL_HPP
 
-#include "src/libmeasurement_kit/ooni/error.hpp"
-#include <measurement_kit/common/json.hpp>
+#include <measurement_kit/common/nlohmann/json.hpp>
 
+#include "src/libmeasurement_kit/ooni/error.hpp"
 #include "src/libmeasurement_kit/common/mock.hpp"
 #include "src/libmeasurement_kit/ooni/bouncer.hpp"
 #include "src/libmeasurement_kit/http/http.hpp"
@@ -15,14 +15,12 @@ namespace mk {
 namespace ooni {
 namespace bouncer {
 
-Error
-my_json_parse_process_and_filter_errors(const std::string &data,
-                                        Callback<Json &> &&callable);
-
-template <MK_MOCK(my_json_parse_process_and_filter_errors)>
+static inline
 ErrorOr<SharedPtr<BouncerReply>> create_impl(std::string data, SharedPtr<Logger> logger) {
     SharedPtr<BouncerReply> reply{new BouncerReply};
-    Error err = my_json_parse_process_and_filter_errors(data, [&](auto j) {
+    Error err = NoError();
+    try {
+        nlohmann::json j = nlohmann::json::parse(data);
         reply->response = j;
         if (reply->response.find("error") != reply->response.end()) {
             if (reply->response["error"] == "collector-not-found") {
@@ -39,7 +37,9 @@ ErrorOr<SharedPtr<BouncerReply>> create_impl(std::string data, SharedPtr<Logger>
         if (reply->response["net-tests"].empty()) {
             throw BouncerTestHelperNotFoundError();
         }
-    });
+    } catch (const std::exception &) {
+        err = JsonProcessingError();
+    }
     if (err) {
         logger->warn("bouncer parsing error: %s", err.what());
         return {err, {}};
@@ -55,8 +55,8 @@ void post_net_tests_impl(std::string base_bouncer_url, std::string test_name,
                          Settings settings, SharedPtr<Reactor> reactor,
                          SharedPtr<Logger> logger) {
 
-    Json request;
-    Json net_tests;
+    nlohmann::json request;
+    nlohmann::json net_tests;
     net_tests["input-hashes"] = {};
     net_tests["name"] = test_name;
     net_tests["test-helpers"] = helpers;
