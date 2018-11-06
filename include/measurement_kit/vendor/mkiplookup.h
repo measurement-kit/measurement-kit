@@ -114,6 +114,14 @@ std::string mkiplookup_response_moveout_logs(
 // If you're just into understanding the API, you can stop reading here.
 #ifdef MKIPLOOKUP_INLINE_IMPL
 
+#ifdef _WIN32
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#else
+#include <sys/socket.h>
+#include <netdb.h>
+#endif
+
 #include <ctype.h>
 
 #include "mkdata.h"
@@ -203,6 +211,14 @@ struct mkiplookup_response {
   double bytes_recv = 0.0;
 };
 
+// mkiplookup_ainfop_deleter is a deleter for `addrinfo **`.
+struct mkiplookup_ainfop_deleter {
+  void operator()(addrinfo **infop) {
+    if (infop != nullptr) freeaddrinfo(*infop);
+    delete infop;
+  }
+};
+
 mkiplookup_response_t *mkiplookup_request_perform_nonnull(
     const mkiplookup_request_t *request) {
   if (request == nullptr) {
@@ -230,12 +246,26 @@ mkiplookup_response_t *mkiplookup_request_perform_nonnull(
   response->logs += "=== BEGIN RECEIVED BODY ===\n";
   response->logs += body;
   response->logs += "=== END RECEIVED BODY ===\n";
-  if (!mkiplookup_ubuntu_parse(std::move(body), &response->probe_ip)) {
+  std::string maybe_probe_ip;
+  if (!mkiplookup_ubuntu_parse(std::move(body), &maybe_probe_ip)) {
     response->logs += "Cannot parse the response body.\n";
     return response.release();
   }
+  {
+    addrinfo hints{};
+    hints.ai_flags |= AI_NUMERICHOST | AI_NUMERICSERV;
+    hints.ai_family = AF_UNSPEC;
+    hints.ai_socktype = SOCK_STREAM;
+    std::unique_ptr<addrinfo *, mkiplookup_ainfop_deleter> ap{new addrinfo *{}};
+    int rv = ::getaddrinfo(maybe_probe_ip.c_str(), "443", &hints, ap.get());
+    if (rv != 0) {
+      response->logs += "Not a valid IP address: ";
+      response->logs += gai_strerror(rv);
+      return response.release();
+    }
+  }
+  std::swap(response->probe_ip, maybe_probe_ip);
   response->good = true;
-  response->logs += "All good.\n";
   return response.release();
 }
 
