@@ -19,7 +19,8 @@ AC_DEFUN([MK_AM_LIBEVENT], [
 
   mk_not_found=""
   AC_CHECK_HEADERS(event2/event.h, [], [mk_not_found=1])
-  AC_CHECK_LIB(event, event_new, [], [mk_not_found=1])
+  AC_CHECK_LIB(event_core, event_base_new, [], [mk_not_found=1])
+  AC_CHECK_LIB(event_extra, evdns_base_new, [], [mk_not_found=1])
   AC_CHECK_HEADERS(event2/thread.h, [], [mk_not_found=1])
   case $host in
     *-w64-mingw32)
