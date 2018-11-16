@@ -23,10 +23,10 @@ void http_request_impl(SharedPtr<nlohmann::json> entry, Settings settings,
                        Callback<Error, SharedPtr<http::Response>> cb,
                        SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
 
-    (*entry)["agent"] = "agent";
     (*entry)["socksproxy"] = nullptr;
 
     // Include the name of the agent, like ooni-probe does
+    (*entry)["agent"] = "agent";
     ErrorOr<int> max_redirects = settings.get_noexcept("http/max_redirects", 0);
     if (!!max_redirects && *max_redirects > 0) {
         (*entry)["agent"] = "redirect";
@@ -52,10 +52,12 @@ void http_request_impl(SharedPtr<nlohmann::json> entry, Settings settings,
         settings, headers, body,
         [=](Error error, SharedPtr<http::Response> response) {
 
-            auto dump = [&](SharedPtr<http::Response> response) {
+            auto dump = [&](SharedPtr<http::Response> response, bool first) {
                 nlohmann::json rr;
 
-                if (!!error) {
+                // We only set the error for the first response. This fixes
+                // the bug documented in issue #1549.
+                if (!!error && first) {
                     rr["failure"] = error.reason;
                 } else {
                     rr["failure"] = nullptr;
@@ -123,11 +125,13 @@ void http_request_impl(SharedPtr<nlohmann::json> entry, Settings settings,
             };
 
             if (!!response) {
+                bool first = true;
                 for (SharedPtr<http::Response> x = response; !!x; x = x->previous) {
-                    (*entry)["requests"].push_back(dump(x));
+                    (*entry)["requests"].push_back(dump(x, first));
+                    first = false;
                 }
             } else {
-                (*entry)["requests"].push_back(dump(response));
+                (*entry)["requests"].push_back(dump(response, true));
             }
             cb(error, response);
         },
