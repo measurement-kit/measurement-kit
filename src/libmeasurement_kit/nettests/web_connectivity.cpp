@@ -5,6 +5,7 @@
 #include "src/libmeasurement_kit/common/utils.hpp"
 #include "src/libmeasurement_kit/nettests/runnable.hpp"
 #include "src/libmeasurement_kit/ooni/nettests.hpp"
+#include "src/libmeasurement_kit/http/http.hpp"
 
 namespace mk {
 namespace nettests {
@@ -40,6 +41,32 @@ void WebConnectivityRunnable::fixup_entry(nlohmann::json &entry) {
     } catch (const std::exception &exc) {
         logger->warn("Cannot fixup entry: %s", exc.what());
     }
+}
+
+std::deque<std::string>
+WebConnectivityRunnable::fixup_inputs(std::deque<std::string> &&il) {
+    std::deque<std::string> rv;
+    while (!il.empty()) {
+        std::string s;
+        std::swap(s, il.front());
+        il.pop_front();
+        ErrorOr<http::Url> maybe_url = http::parse_url_noexcept(s);
+        if (maybe_url.as_error() != NoError()) {
+            // Incorrect URL. WebConnectivity will complain for us later.
+            rv.push_back(std::move(s));
+            continue;
+        }
+        if (maybe_url->schema == "https" && maybe_url->port == 443) {
+            // "Test both http and https versions of a website" #1560
+            http::Url httpURL = *maybe_url;
+            httpURL.schema = "http";
+            httpURL.port = 80;
+            rv.push_back(httpURL.str());
+            // FALLTHROUGH
+        }
+        rv.push_back(maybe_url->str());
+    }
+    return rv;
 }
 
 } // namespace nettests
