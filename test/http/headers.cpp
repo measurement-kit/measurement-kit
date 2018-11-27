@@ -12,6 +12,6 @@ using namespace mk;
 
 TEST_CASE("HTTP headers search is case insensitive") {
     http::Headers headers;
-    headers["Location"] = "https://www.x.org/";
-    REQUIRE((headers["locAtion"] == "https://www.x.org/"));
+    http::headers_push_back(headers, "Location", "https://www.x.org");
+    REQUIRE((headers_find_first(headers, "locAtion") == "https://www.x.org"));
 }

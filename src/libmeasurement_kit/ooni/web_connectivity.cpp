@@ -84,7 +84,7 @@ static void compare_http_requests(SharedPtr<nlohmann::json> entry,
     }
     for (auto it = response->headers.begin(); it != response->headers.end();
          ++it) {
-        std::string lower_header(it->first);
+        std::string lower_header(it->key);
         std::transform(lower_header.begin(),
                        lower_header.end(),
                        lower_header.begin(),
@@ -374,15 +374,15 @@ static void control_request(http::Headers headers_to_pass_along,
     // XXX in OONI headers are like `key: [value,...]` whereas in MK
     // they are like `key: value`. Adapt to OONI format.
     nlohmann::json true_headers;
-    for (auto pair: headers_to_pass_along) {
-        true_headers[pair.first].push_back(pair.second);
+    for (auto h: headers_to_pass_along) {
+        true_headers[h.key].push_back(h.value);
     }
     request["http_request_headers"] = true_headers;
     std::string body = request.dump();
 
     settings["http/url"] = settings["backend"];
     settings["http/method"] = "POST";
-    headers["Content-Type"] = "application/json";
+    headers_push_back(headers, "Content-Type", "application/json");
 
     if (settings["backend/type"] == "cloudfront") {
         // TODO set the appropriate headers to support cloud-fronting.

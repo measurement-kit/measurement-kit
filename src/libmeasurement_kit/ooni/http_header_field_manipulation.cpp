@@ -49,8 +49,8 @@ void compare_headers_response(http::Headers headers,
     nlohmann::json resp_headers = resp["headers_dict"];
     std::set<std::string> req_keys, resp_keys, diff;
     for (auto it = headers.begin(); it != headers.end(); ++it) {
-        req_keys.insert(it->first);
-        logger->debug("ins %s in req_keys", it->first.c_str());
+        req_keys.insert(it->key);
+        logger->debug("ins %s in req_keys", it->key.c_str());
     }
     for (auto it = resp_headers.begin(); it != resp_headers.end(); ++it) {
         resp_keys.insert(it.key());

@@ -6,9 +6,8 @@
 #include "src/libmeasurement_kit/common/utils.hpp"
 #include "src/libmeasurement_kit/net/error.hpp"
 
-#if defined _WIN32 && !defined __MINGW32__
-#define strcasecmp _stricmp
-#endif
+#include <deque>
+#include <set>
 
 namespace mk {
 namespace http {
@@ -67,12 +66,12 @@ void Request::serialize(net::Buffer &buff, SharedPtr<Logger> logger) {
         buff << url.pathquery;
     }
     buff << " " << protocol << "\r\n";
-    for (auto kv : headers) {
-        buff << kv.first << ": " << kv.second << "\r\n";
+    for (auto h : headers) {
+        buff << h.key << ": " << h.value << "\r\n";
     }
     // if the host: header is passed explicitly,
     // don't construct it again here.
-    if (headers.find("host") == headers.end()) {
+    if (headers_find_first(headers, "host") == "") {
         buff << "Host: " << url.address;
         if ((url.schema == "http" and url.port != 80) or
             (url.schema == "https" and url.port != 443)) {
@@ -88,6 +87,7 @@ void Request::serialize(net::Buffer &buff, SharedPtr<Logger> logger) {
     for (auto s: mk::split(buff.peek(), "\r\n")) {
         logger->debug("> %s", s.c_str());
     }
+    logger->debug(">");
     if (body != "") {
         logger->debug2("%s", body.c_str());
         buff << body;
@@ -355,7 +355,8 @@ void request(Settings settings, Headers headers, std::string body,
                         if (response->status_code / 100 == 3 and
                             *max_redirects > 0) {
                             logger->debug("following redirect...");
-                            std::string loc = response->headers["Location"];
+                            std::string loc = headers_find_first(
+                                response->headers, "Location");
                             if (loc == "") {
                                 callback(EmptyLocationError(), response);
                                 return;
@@ -376,8 +377,73 @@ void request(Settings settings, Headers headers, std::string body,
                                 callback(TooManyRedirectsError(), response);
                                 return;
                             }
+                            // Basic attempt at honouring cookies when we
+                            // follow redirects. It does not really process
+                            // the cookie and does not check domain and/or
+                            // path, which makes us look a bit stupid.
+                            //
+                            // Step 1: build a set of cookies from the cookies
+                            // that were present in the response.
+                            std::set<std::string> cookies;
+                            for (auto &h : response->headers) {
+                                if (strcasecmp(h.key.c_str(), "Set-Cookie") != 0) {
+                                    continue;
+                                }
+                                std::string s;
+                                size_t idx = h.value.find(";");
+                                if (idx == 0) {
+                                    continue;  // Does not follow syntax
+                                }
+                                if (idx != std::string::npos) {
+                                    s = h.value.substr(0, idx - 1);
+                                } else {
+                                    s = h.value;
+                                }
+                                cookies.insert(std::move(s));
+                            }
+                            // Again cookies, step 2. Now we want to consult
+                            // the original request and insert into the set
+                            // also the cookies that were in there. Note that
+                            // one SHOULD NOT send multiple cookie headers
+                            // however the code doesn't assume that.
+                            for (auto &h : headers) {
+                                if (strcasecmp(h.key.c_str(), "Cookie") != 0) {
+                                    continue;
+                                }
+                                // So, RFC6265 sect. 4.2.1 provides this
+                                // syntax `cookie-pair *( ";" SP cookie-pair )`
+                                // and for this reason here I'm including a
+                                // space. However, a SP could also be something
+                                // different from a space. TODO(bassosimone):
+                                // we should improve this code part.
+                                auto d = mk::split<std::deque<std::string>>(
+                                    h.value, "; ");
+                                while (!d.empty()) {
+                                    std::string s = std::move(d.front());
+                                    d.pop_front();
+                                    cookies.insert(std::move(s));
+                                }
+                            }
+                            std::string cookiestring;
+                            if (!cookies.empty()) {
+                                std::deque<std::string> d{
+                                    cookies.begin(), cookies.end()};
+                                while (!d.empty()) {
+                                    if (!cookiestring.empty()) {
+                                      cookiestring += "; ";
+                                    }
+                                    cookiestring += d.front();
+                                    d.pop_front();
+                                }
+                            }
+                            // And again cookies, now at step 3. Here we want
+                            // to replace the original header in the vector.
+                            Headers new_headers = headers;
+                            if (!cookiestring.empty()) {
+                                headers_push_back(new_headers, "Cookie", cookiestring);
+                            }
                             reactor->call_soon([=]() {
-                                request(new_settings, headers, body, callback,
+                                request(new_settings, new_headers, body, callback,
                                     reactor, logger, response, num_redirs + 1);
                             });
                             return;
@@ -388,11 +454,6 @@ void request(Settings settings, Headers headers, std::string body,
                 reactor, logger);
         },
         reactor, logger);
-}
-
-bool HeadersComparator::operator() (
-        const std::string &l, const std::string &r) const {
-    return strcasecmp(l.c_str(), r.c_str()) < 0;
 }
 
 void request_json_string(

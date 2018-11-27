@@ -55,7 +55,7 @@ void request_json_string_impl(
       Settings settings, SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
     settings["http/url"] = url;
     settings["http/method"] = method;
-    headers["Content-Type"] = "application/json";
+    headers_push_back(headers, "Content-Type", "application/json");
     logger->debug("%s to %s (body: '%s')", method.c_str(), url.c_str(),
                   data.c_str());
     request(settings, headers, data,

@@ -67,9 +67,9 @@ TEST_CASE("ResponseParserNg works as expected") {
             REQUIRE(r.status_code == 200);
             REQUIRE(r.reason == "Ok");
             REQUIRE(r.headers.size() == 3);
-            REQUIRE(r.headers.at("Content-Type") == "text/plain");
-            REQUIRE(r.headers.at("Content-Length") == "7");
-            REQUIRE(r.headers.at("Server") == "Antani/1.0.0.0");
+            REQUIRE(headers_find_first(r.headers, "Content-Type") == "text/plain");
+            REQUIRE(headers_find_first(r.headers, "Content-Length") == "7");
+            REQUIRE(headers_find_first(r.headers, "Server") == "Antani/1.0.0.0");
         });
 
         body = "";
@@ -101,9 +101,9 @@ TEST_CASE("ResponseParserNg works as expected") {
             REQUIRE(r.status_code == 202);
             REQUIRE(r.reason == "Accepted");
             REQUIRE(r.headers.size() == 3);
-            REQUIRE(r.headers.at("Content-Type") == "text/html");
-            REQUIRE(r.headers.at("Transfer-Encoding") == "chunked");
-            REQUIRE(r.headers.at("Server") == "Antani/2.0.0.0");
+            REQUIRE(headers_find_first(r.headers, "Content-Type") == "text/html");
+            REQUIRE(headers_find_first(r.headers, "Transfer-Encoding") == "chunked");
+            REQUIRE(headers_find_first(r.headers, "Server") == "Antani/2.0.0.0");
         });
 
         body = "";
@@ -141,9 +141,9 @@ TEST_CASE("ResponseParserNg stops after first message") {
         REQUIRE(r.status_code == 200);
         REQUIRE(r.reason == "Ok");
         REQUIRE(r.headers.size() == 3);
-        REQUIRE(r.headers.at("Content-Type") == "text/plain");
-        REQUIRE(r.headers.at("Content-Length") == "7");
-        REQUIRE(r.headers.at("Server") == "Antani/1.0.0.0");
+        REQUIRE(headers_find_first(r.headers, "Content-Type") == "text/plain");
+        REQUIRE(headers_find_first(r.headers, "Content-Length") == "7");
+        REQUIRE(headers_find_first(r.headers, "Server") == "Antani/1.0.0.0");
     });
 
     body = "";

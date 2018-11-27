@@ -195,11 +195,11 @@ static void mocked_request(Settings settings, http::Headers,
     response->http_minor = 1;
     response->status_code = 200;
     response->reason = "Ok";
-    response->headers["Content-Type"] = "text/html";
+    http::headers_push_back(response->headers, "Content-Type", "text/html");
     {
       std::stringstream ss;
       ss << "aaa " << probe_ip << " aaa";
-      response->headers["X-IP-Address"] = ss.str();
+      http::headers_push_back(response->headers,"X-IP-Address", ss.str());
     }
     {
       std::stringstream ss;

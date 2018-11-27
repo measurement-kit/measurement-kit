@@ -92,12 +92,35 @@ ErrorOr<Url> parse_url_noexcept(std::string url);
     HTTP request and response structs, logic to make requests.
 */
 
-class HeadersComparator {
+class Header {
   public:
-    bool operator() (const std::string &l, const std::string &r) const;
+    std::string key;
+    std::string value;
 };
 
-using Headers = std::map<std::string, std::string, HeadersComparator>;
+using Headers = std::vector<Header>;
+
+#if defined _WIN32 && !defined __MINGW32__
+#define strcasecmp _stricmp
+#endif
+
+inline std::string
+headers_find_first(const Headers &headers, const std::string &key) {
+  for (auto h : headers) {
+    if (strcasecmp(h.key.c_str(), key.c_str()) == 0) {
+      return h.value;
+    }
+  }
+  return "";
+}
+
+inline void headers_push_back(
+    Headers &headers, const std::string &key, const std::string &value) {
+  Header header;
+  header.key = key;
+  header.value = value;
+  headers.push_back(std::move(header));
+}
 
 class Request {
   public:

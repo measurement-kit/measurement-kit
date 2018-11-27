@@ -90,9 +90,9 @@ void http_request_impl(SharedPtr<nlohmann::json> entry, Settings settings,
                         * Note: `probe_ip` comes from an external service, hence
                         * we MUST call `represent_string` _after_ `redact()`.
                         */
-                        for (auto pair : response->headers) {
-                            rr["response"]["headers"][pair.first] =
-                                represent_string(redact(pair.second));
+                        for (auto h : response->headers) {
+                            rr["response"]["headers"][h.key] =
+                                represent_string(redact(h.value));
                         }
                         rr["response"]["body"] =
                             represent_string(redact(response->body));
@@ -105,9 +105,9 @@ void http_request_impl(SharedPtr<nlohmann::json> entry, Settings settings,
                     }
                     auto request = response->request;
                     // Note: we checked above that we can deref `request`
-                    for (auto pair : request->headers) {
-                        rr["request"]["headers"][pair.first] =
-                            represent_string(redact(pair.second));
+                    for (auto h : request->headers) {
+                        rr["request"]["headers"][h.key] =
+                            represent_string(redact(h.value));
                     }
                     rr["request"]["body"] =
                         represent_string(redact(request->body));

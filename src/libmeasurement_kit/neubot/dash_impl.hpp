@@ -269,7 +269,8 @@ void run_loop_(SharedPtr<DashLoopCtx> ctx) {
                          * in measurement-kit/measurement-kit#1322. In such case
                          * what we do is that we abort the test.
                          */
-                        if (res->headers["connection"] == "close") {
+                        if (headers_find_first(
+                              res->headers, "connection") == "close") {
                             ctx->logger->warn("dash: middlebox detected error");
                             ctx->cb(MiddleboxDetectedError());
                             return;
