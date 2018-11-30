@@ -35,7 +35,7 @@ void NdtRunnable::main(std::string, Settings settings,
             (*entry)["advanced"] =
                 mk::ndt::utils::compute_advanced_stats_throws(*entry, logger);
         } catch (const std::exception &) {
-            (*entry)["failure"] = "compute_simple_advanced_stats_error";
+            (*entry)["failure"] = "compute_advanced_stats_error";
         }
         cb(entry);
     }, settings, reactor, logger);
