@@ -1,22 +1,17 @@
 // Part of Measurement Kit <https://measurement-kit.github.io/>.
 // Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
+
 #include "src/libmeasurement_kit/ndt/utils.hpp"
+
+#include <stdexcept>
 
 namespace mk {
 namespace ndt {
 namespace utils {
 
-/*
- * Note: in the following function and other functions below we're going to
- * take advantage of the fact that `Entry` is a JSON type, thus we are going
- * to return, e.g., `nullptr` to indicate error and otherwise a double.
- *
- * This behavior is correct C++ because the constructor of `Entry` can take
- * in input any valid JSON (`null`, numbers, strings, lists, objects).
- */
-
-nlohmann::json compute_ping(nlohmann::json &test_s2c, SharedPtr<Logger> logger) {
+static nlohmann::json
+compute_ping_throws(nlohmann::json &test_s2c, SharedPtr<Logger> logger) {
 
     try {
         // Note: do static cast to make sure it's convertible to a double
@@ -37,7 +32,7 @@ nlohmann::json compute_ping(nlohmann::json &test_s2c, SharedPtr<Logger> logger) 
     }
     if (rtts.size() <= 0) {
         logger->warn("Did not find any reliable way to compute RTT");
-        return nullptr; /* We cannot compute the RTT */
+        throw std::runtime_error("Cannot compute the RTT");
     }
 
     double sum = 0.0;
@@ -47,8 +42,9 @@ nlohmann::json compute_ping(nlohmann::json &test_s2c, SharedPtr<Logger> logger) 
     return sum / rtts.size();  /* Division by zero excluded above */
 }
 
-nlohmann::json compute_speed(nlohmann::json &sender_or_receiver_data,
-                            const char *speed_type, SharedPtr<Logger> logger) {
+static nlohmann::json compute_speed_throws(
+    nlohmann::json &sender_or_receiver_data, const char *speed_type,
+    SharedPtr<Logger> logger) {
     /*
      * This algorithm computes the speed in a way that is similar to the one
      * implemented by OOKLA, as documented here:
@@ -79,51 +75,44 @@ nlohmann::json compute_speed(nlohmann::json &sender_or_receiver_data,
         logger->warn("Cannot compute %s speed", speed_type);
         // FALLTHROUGH
     }
-    return nullptr;
+    throw std::runtime_error("Cannot compute the speed");
 }
 
-nlohmann::json compute_simple_stats(nlohmann::json &entry, SharedPtr<Logger> logger) {
+nlohmann::json compute_simple_stats_throws(
+        nlohmann::json &entry, SharedPtr<Logger> logger) {
     nlohmann::json test_s2c;
     nlohmann::json test_c2s;
     nlohmann::json simple_stats;
 
-    try {
-        /*
-         * XXX The following code assumes there is just one entry, which is
-         * really what usually happens. But there are ways to run the test
-         * and have multiple S2C entries (e.g., pass both `-T download` and
-         * `-T download_ext` to `./measurement_kit`).
-         */
-        if (entry["test_s2c"].size() <= 0) {
-            throw std::runtime_error("missing entry");
-        }
-        test_s2c = entry["test_s2c"][0];
-        simple_stats["download"] = compute_speed(test_s2c["receiver_data"],
-                "download", logger);
-        simple_stats["ping"] = compute_ping(test_s2c, logger);
-    } catch (const std::exception &x) {
-        logger->warn("cannot access entry[\"test_s2c\"][0]: %s", x.what());
-        /* Cannot compute this stat */
+    /*
+     * XXX The following code assumes there is just one entry, which is
+     * really what usually happens. But there are ways to run the test
+     * and have multiple S2C entries (e.g., pass both `-T download` and
+     * `-T download_ext` to `./measurement_kit`).
+     */
+    if (entry["test_s2c"].size() <= 0) {
+        throw std::runtime_error("missing entry");
     }
+    test_s2c = entry["test_s2c"][0];
+    simple_stats["download"] = compute_speed_throws(
+        test_s2c["receiver_data"], "download", logger);
+    simple_stats["ping"] = compute_ping_throws(test_s2c, logger);
 
-    try {
-        /*
-         * As of v0.4.0, we cannot have more than one entry here.
-         */
-        if (entry["test_c2s"].size() <= 0) {
-            throw std::runtime_error("missing entry");
-        }
-        test_c2s = entry["test_c2s"][0];
-        simple_stats["upload"] = compute_speed(test_c2s["sender_data"],
-                "upload", logger);
-    } catch (const std::exception &x) {
-        logger->warn("cannot access entry[\"test_c2s\"][0]: %s", x.what());
-        /* Cannot compute this stat */
+    /*
+     * As of v0.4.0, we cannot have more than one entry here.
+     */
+    if (entry["test_c2s"].size() <= 0) {
+        throw std::runtime_error("missing entry");
     }
+    test_c2s = entry["test_c2s"][0];
+    simple_stats["upload"] = compute_speed_throws(test_c2s["sender_data"],
+            "upload", logger);
+
     return simple_stats;
 }
 
-nlohmann::json compute_advanced_stats(nlohmann::json &entry, SharedPtr<Logger>) {
+nlohmann::json
+compute_advanced_stats_throws(nlohmann::json &entry, SharedPtr<Logger>) {
     /*
      * Typically we have just one entry. But see above comment.
      */

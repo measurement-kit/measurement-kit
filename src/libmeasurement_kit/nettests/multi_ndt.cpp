@@ -17,10 +17,13 @@ MultiNdtRunnable::MultiNdtRunnable() noexcept {
     test_version = "0.1.0";  /* Forked from `ndt` v0.0.4 */
 }
 
-static void write_simple_stats(nlohmann::json &entry, SharedPtr<Logger> logger) {
-    nlohmann::json single = mk::ndt::utils::compute_simple_stats(entry["single_stream"], logger);
+static void write_simple_stats_throws(
+        nlohmann::json &entry, SharedPtr<Logger> logger) {
+    nlohmann::json single = mk::ndt::utils::compute_simple_stats_throws(
+        entry["single_stream"], logger);
     single["fastest_test"] = "single_stream";
-    nlohmann::json multi = mk::ndt::utils::compute_simple_stats(entry["multi_stream"], logger);
+    nlohmann::json multi = mk::ndt::utils::compute_simple_stats_throws(
+        entry["multi_stream"], logger);
     multi["fastest_test"] = "multi_stream";
 
     nlohmann::json selected;
@@ -109,16 +112,16 @@ void MultiNdtRunnable::main(std::string, Settings ndt_settings,
                 // FALLTHROUGH
             }
             try {
-                write_simple_stats(*overall_entry, logger);
+                write_simple_stats_throws(*overall_entry, logger);
             } catch (const std::exception &) {
-                /* Just in case */ ;
+                (*overall_entry)["failure"] = "compute_simple_stats_error";
             }
             try {
                 (*overall_entry)["advanced"] =
-                    mk::ndt::utils::compute_advanced_stats(
+                    mk::ndt::utils::compute_advanced_stats_throws(
                         (*overall_entry)["single_stream"], logger);
             } catch (const std::exception &) {
-                /* Just in case */ ;
+                (*overall_entry)["failure"] = "compute_advanced_stats_error";
             }
             cb(overall_entry);
         }, neubot_settings, reactor, logger);
