@@ -85,7 +85,7 @@ class ResponseParserNg : public NonCopyable, public NonMovable {
     int do_headers_complete_() {
         logger_->debug2("http: HEADERS_COMPLETE");
         if (field_ != "") { // Also copy last header
-            response_.headers[field_] = value_;
+            headers_push_back(response_.headers, field_, value_);
         }
         response_.http_major = parser_.http_major;
         response_.status_code = parser_.status_code;
@@ -95,8 +95,8 @@ class ResponseParserNg : public NonCopyable, public NonMovable {
             << " " << response_.status_code << " " << response_.reason;
         response_.response_line = sst.str();
         logger_->debug("< %s", response_.response_line.c_str());
-        for (auto kv : response_.headers) {
-            logger_->debug("< %s: %s", kv.first.c_str(), kv.second.c_str());
+        for (auto h : response_.headers) {
+            logger_->debug("< %s: %s", h.key.c_str(), h.value.c_str());
         }
         logger_->debug("<");
         if (response_fn_) {
@@ -157,7 +157,7 @@ class ResponseParserNg : public NonCopyable, public NonMovable {
         if (prev_ == HPS::NOTHING && cur == HPS::FIELD) {
             field_ = std::string(s, n);
         } else if (prev_ == HPS::VALUE && cur == HPS::FIELD) {
-            response_.headers[field_] = value_;
+            headers_push_back(response_.headers, field_, value_);
             field_ = std::string(s, n);
         } else if (prev_ == HPS::FIELD && cur == HPS::FIELD) {
             field_.append(s, n);

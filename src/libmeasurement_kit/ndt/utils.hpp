@@ -10,14 +10,11 @@ namespace mk {
 namespace ndt {
 namespace utils {
 
-nlohmann::json compute_ping(nlohmann::json &test_s2c, SharedPtr<Logger> logger);
+nlohmann::json
+compute_simple_stats_throws(nlohmann::json &entry, SharedPtr<Logger> logger);
 
-nlohmann::json compute_speed(nlohmann::json &sender_or_receiver_data,
-                            const char *speed_type, SharedPtr<Logger> logger);
-
-nlohmann::json compute_simple_stats(nlohmann::json &entry, SharedPtr<Logger> logger);
-
-nlohmann::json compute_advanced_stats(nlohmann::json &entry, SharedPtr<Logger> logger);
+nlohmann::json
+compute_advanced_stats_throws(nlohmann::json &entry, SharedPtr<Logger> logger);
 
 } // namespace utils
 } // namespace ndt

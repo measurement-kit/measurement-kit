@@ -26,14 +26,16 @@ void NdtRunnable::main(std::string, Settings settings,
             (*entry)["failure"] = error.reason;
         }
         try {
-            (*entry)["simple"] = mk::ndt::utils::compute_simple_stats(*entry, logger);
+            (*entry)["simple"] = mk::ndt::utils::compute_simple_stats_throws(
+                *entry, logger);
         } catch (const std::exception &) {
-            /* Just in case */ ;
+            (*entry)["failure"] = "compute_simple_stats_error";
         }
         try {
-            (*entry)["advanced"] = mk::ndt::utils::compute_advanced_stats(*entry, logger);
+            (*entry)["advanced"] =
+                mk::ndt::utils::compute_advanced_stats_throws(*entry, logger);
         } catch (const std::exception &) {
-            /* Just in case */ ;
+            (*entry)["failure"] = "compute_advanced_stats_error";
         }
         cb(entry);
     }, settings, reactor, logger);

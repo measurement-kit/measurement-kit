@@ -52,7 +52,7 @@ void post_impl(SharedPtr<Transport> transport, std::string append_to_url,
         url = "https://";
         url += settings["collector_front_domain"];
         url += base_url.path; // XXX should we do more?
-        headers["Host"] = base_url.address; // XXX this is confusing that it's called address
+        headers_push_back(headers, "Host",  base_url.address); // XXX this is confusing that it's called address
     } else {
         url = settings["collector_base_url"];
     }
@@ -60,7 +60,7 @@ void post_impl(SharedPtr<Transport> transport, std::string append_to_url,
     settings["http/url"] = url;
     settings["http/method"] = "POST";
     if (body != "") {
-        headers["Content-Type"] = "application/json";
+        headers_push_back(headers, "Content-Type", "application/json");
     }
     http_request_sendrecv(transport, settings, headers, body,
                           [=](Error err, SharedPtr<Response> response) {
