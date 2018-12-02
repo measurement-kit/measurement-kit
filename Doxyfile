@@ -4,6 +4,6 @@ INPUT = include/measurement_kit/ffi.h
 JAVADOC_AUTOBRIEF = YES
 PROJECT_BRIEF = "Portable C++14 network measurement library"
 PROJECT_NAME = measurement-kit
-PROJECT_NUMBER = v0.9.0-beta
+PROJECT_NUMBER = v0.9.0
 RECURSIVE = NO
 STRIP_FROM_INC_PATH = include
