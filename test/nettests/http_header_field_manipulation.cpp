@@ -1,28 +1,27 @@
-// Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software under the BSD license. See AUTHORS
+// Part of Measurement Kit <https://measurement-kit.github.io/>.
+// Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
-#define CATCH_CONFIG_MAIN
-#include "private/ext/catch.hpp"
-#include "private/ooni/http_header_field_manipulation.hpp"
+#include "test/winsock.hpp"
+
+#include "include/private/catch.hpp"
+#include "src/libmeasurement_kit/ooni/http_header_field_manipulation.hpp"
+
+#include <set>
 
 #include "utils.hpp"
 
 using namespace mk::nettests;
 using namespace mk;
 
-#ifdef ENABLE_INTEGRATION_TESTS
-
 TEST_CASE("Synchronous http-header-field-manipulation test") {
     test::nettests::with_test<HttpHeaderFieldManipulationTest>(
           test::nettests::run_test);
 }
 
-#endif
-
 TEST_CASE("compare_headers_response works") {
-    SharedPtr<report::Entry> entry(new report::Entry);
-    (*entry)["tampering"] = report::Entry::object();
+    SharedPtr<nlohmann::json> entry(new nlohmann::json);
+    (*entry)["tampering"] = nlohmann::json::object();
 
     SharedPtr<http::Response> response{new http::Response};
 

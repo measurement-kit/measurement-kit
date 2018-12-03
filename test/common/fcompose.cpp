@@ -1,11 +1,16 @@
-// Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software under the BSD license. See AUTHORS
+// Part of Measurement Kit <https://measurement-kit.github.io/>.
+// Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
-#define CATCH_CONFIG_MAIN
-#include "private/ext/catch.hpp"
+#include "test/winsock.hpp"
 
-#include "private/common/fcompose.hpp"
+#include "include/private/catch.hpp"
+
+#include "src/libmeasurement_kit/common/fcompose.hpp"
+#include "src/libmeasurement_kit/common/reactor.hpp"
+#include "src/libmeasurement_kit/common/non_copyable.hpp"
+
+#include <iostream>
 
 #include <measurement_kit/common.hpp>
 

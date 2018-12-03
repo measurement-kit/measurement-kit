@@ -1,11 +1,12 @@
-// Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software under the BSD license. See AUTHORS
+// Part of Measurement Kit <https://measurement-kit.github.io/>.
+// Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
-#define CATCH_CONFIG_MAIN
-#include "private/ext/catch.hpp"
+#include "test/winsock.hpp"
 
-#include <measurement_kit/http.hpp>
+#include "include/private/catch.hpp"
+
+#include "src/libmeasurement_kit/http/http.hpp"
 
 using namespace mk;
 
@@ -32,11 +33,13 @@ TEST_CASE("Works as expected for more complex case") {
 TEST_CASE("Recognizes wrong ports") {
     SECTION("Negative port") {
         REQUIRE_THROWS_AS(
-            http::parse_url("https://www.kernel.org:-4/abc?foobar"), Error);
+            http::parse_url("https://www.kernel.org:-4/abc?foobar"),
+            Error);
     }
 
     SECTION("Too large port") {
         REQUIRE_THROWS_AS(
-            http::parse_url("https://www.kernel.org:65537/abc?foobar"), Error);
+            http::parse_url("https://www.kernel.org:65537/abc?foobar"),
+            Error);
     }
 }

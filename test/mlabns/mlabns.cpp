@@ -1,21 +1,21 @@
-// Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software under the BSD license. See AUTHORS
+// Part of Measurement Kit <https://measurement-kit.github.io/>.
+// Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
-#define CATCH_CONFIG_MAIN
-#include "private/ext/catch.hpp"
+#include "test/winsock.hpp"
 
-#include "private/mlabns/mlabns_impl.hpp"
+#include "include/private/catch.hpp"
+
+#include "src/libmeasurement_kit/mlabns/mlabns_impl.hpp"
 
 using namespace mk;
-
-#ifdef ENABLE_INTEGRATION_TESTS
 
 TEST_CASE("Query works as expected") {
     Settings settings;
     settings["mlabns/address_family"] = "ipv4";
     settings["mlabns/metro"] = "iad";
     settings["mlabns/policy"] = "random";
+    settings["net/ca_bundle_path"] = "cacert.pem";
     std::string tool = "neubot";
 
     SharedPtr<Reactor> reactor = Reactor::make();
@@ -29,13 +29,19 @@ TEST_CASE("Query works as expected") {
     });
 }
 
+// Honestly: not sure whether we really need this test. Anyway, since it was
+// failing for me on Vodafone (where the Vodafone station always replies to
+// DNS queries regardless of the hostname provided), fixed the test. For the
+// rationale of the low timeout see `test/ooni/templates.cpp`.
 TEST_CASE("Query can pass the settings to the dns level") {
     Settings settings;
     settings["mlabns/address_family"] = "ipv4";
     settings["mlabns/metro"] = "iad";
     settings["mlabns/policy"] = "random";
-    settings["dns/nameserver"] = "8.8.8.1";
+    settings["dns/nameserver"] = "8.8.8.8";
+    settings["dns/timeout"] = 0.0001;
     settings["dns/engine"] = "libevent";
+    settings["net/ca_bundle_path"] = "cacert.pem";
     std::string tool = "neubot";
 
     SharedPtr<Reactor> reactor = Reactor::make();
@@ -49,14 +55,13 @@ TEST_CASE("Query can pass the settings to the dns level") {
     });
 }
 
-#endif
-
 TEST_CASE("Make sure that an error is passed to callback with invalid "
           "address_family settings") {
     Settings settings;
     settings["mlabns/address_family"] = "ip4"; // Invalid
     settings["mlabns/metro"] = "iad";
     settings["mlabns/policy"] = "random";
+    settings["net/ca_bundle_path"] = "cacert.pem";
     std::string tool = "neubot";
     SharedPtr<Reactor> reactor = Reactor::make();
 
@@ -76,6 +81,7 @@ TEST_CASE("Make sure that an error is passed to callback with invalid metro "
     settings["mlabns/address_family"] = "ipv4";
     settings["mlabns/metro"] = "trno"; // Invalid
     settings["mlabns/policy"] = "random";
+    settings["net/ca_bundle_path"] = "cacert.pem";
     std::string tool = "neubot";
 
     SharedPtr<Reactor> reactor = Reactor::make();
@@ -95,6 +101,7 @@ TEST_CASE("Make sure that an error is passed to callback with invalid policy "
     settings["mlabns/address_family"] = "ipv4";
     settings["mlabns/metro"] = "iad";
     settings["mlabns/policy"] = "antani"; // Invalid
+    settings["net/ca_bundle_path"] = "cacert.pem";
     std::string tool = "neubot";
 
     SharedPtr<Reactor> reactor = Reactor::make();
@@ -114,6 +121,7 @@ TEST_CASE("Make sure that an error is passed to callback with invalid tool "
     settings["mlabns/address_family"] = "ipv4";
     settings["mlabns/metro"] = "iad";
     settings["mlabns/policy"] = "random";
+    settings["net/ca_bundle_path"] = "cacert.pem";
     std::string tool = "antani"; // Invalid
 
     SharedPtr<Reactor> reactor = Reactor::make();
@@ -129,7 +137,7 @@ TEST_CASE("Make sure that an error is passed to callback with invalid tool "
 
 static void
 get_debug_error(std::string, std::string, http::Headers,
-                Callback<Error, SharedPtr<http::Response>, Json> cb,
+                Callback<Error, SharedPtr<http::Response>, nlohmann::json> cb,
                 Settings, SharedPtr<Reactor>, SharedPtr<Logger>) {
     cb(MockedError(), SharedPtr<http::Response>::make(), {});
 }
@@ -140,6 +148,7 @@ TEST_CASE(
     settings["mlabns/address_family"] = "ipv4";
     settings["mlabns/metro"] = "iad";
     settings["mlabns/policy"] = "random";
+    settings["net/ca_bundle_path"] = "cacert.pem";
     std::string tool = "neubot";
 
     SharedPtr<Reactor> reactor = Reactor::make();
@@ -157,7 +166,7 @@ TEST_CASE(
 
 static void get_debug_invalid_incomplete_json(
       std::string, std::string, http::Headers,
-      Callback<Error, SharedPtr<http::Response>, Json> cb, Settings,
+      Callback<Error, SharedPtr<http::Response>, nlohmann::json> cb, Settings,
       SharedPtr<Reactor>, SharedPtr<Logger>) {
     SharedPtr<http::Response> response = SharedPtr<http::Response>::make();
     response->status_code = 200;
@@ -168,7 +177,7 @@ static void get_debug_invalid_incomplete_json(
                      "\"ip\": [\"194.116.85.211\"], \"fqdn\": "
                      "\"neubot.mlab.mlab1.trn01.measurement-lab.org\", "
                      "\"site\": \"trn01\"}";
-    cb(NoError(), response, Json::parse(response->body));
+    cb(NoError(), response, nlohmann::json::parse(response->body));
 }
 
 TEST_CASE("Make sure that an error is passed to callback if the response does "
@@ -177,6 +186,7 @@ TEST_CASE("Make sure that an error is passed to callback if the response does "
     settings["mlabns/address_family"] = "ipv4";
     settings["mlabns/metro"] = "iad";
     settings["mlabns/policy"] = "random";
+    settings["net/ca_bundle_path"] = "cacert.pem";
     std::string tool = "neubot";
 
     SharedPtr<Reactor> reactor = Reactor::make();
@@ -184,7 +194,7 @@ TEST_CASE("Make sure that an error is passed to callback if the response does "
         mlabns::query_impl<get_debug_invalid_incomplete_json>(
             tool,
             [=](Error error, mlabns::Reply) {
-                REQUIRE(error == JsonKeyError());
+                REQUIRE(error == JsonProcessingError());
                 reactor->stop();
             },
             settings, reactor, Logger::global());
@@ -193,7 +203,7 @@ TEST_CASE("Make sure that an error is passed to callback if the response does "
 
 static void get_debug_json_with_unexpected_type(
       std::string, std::string, http::Headers,
-      Callback<Error, SharedPtr<http::Response>, Json> cb, Settings,
+      Callback<Error, SharedPtr<http::Response>, nlohmann::json> cb, Settings,
       SharedPtr<Reactor>, SharedPtr<Logger>) {
     SharedPtr<http::Response> response = SharedPtr<http::Response>::make();
     response->status_code = 200;
@@ -213,6 +223,7 @@ TEST_CASE("Make sure that an error is passed to callback if the response "
     settings["mlabns/address_family"] = "ipv4";
     settings["mlabns/metro"] = "iad";
     settings["mlabns/policy"] = "random";
+    settings["net/ca_bundle_path"] = "cacert.pem";
     std::string tool = "neubot";
 
     SharedPtr<Reactor> reactor = Reactor::make();
@@ -220,7 +231,7 @@ TEST_CASE("Make sure that an error is passed to callback if the response "
         mlabns::query_impl<get_debug_json_with_unexpected_type>(
             tool,
             [=](Error error, mlabns::Reply) {
-                REQUIRE(error == JsonDomainError());
+                REQUIRE(error == JsonProcessingError());
                 reactor->stop();
             },
             settings, reactor, Logger::global());

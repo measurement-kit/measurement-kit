@@ -1,13 +1,14 @@
-// Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software under the BSD license. See AUTHORS
+// Part of Measurement Kit <https://measurement-kit.github.io/>.
+// Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
-#define CATCH_CONFIG_MAIN
-#include "private/ext/catch.hpp"
+#include "test/winsock.hpp"
 
-#include "private/net/evbuffer.hpp"
+#include "include/private/catch.hpp"
 
-#include <measurement_kit/net.hpp>
+#include "src/libmeasurement_kit/net/evbuffer.hpp"
+#include "src/libmeasurement_kit/net/error.hpp"
+#include "src/libmeasurement_kit/net/buffer.hpp"
 
 using namespace mk;
 using namespace mk::net;
@@ -281,7 +282,7 @@ TEST_CASE("Readn works correctly") {
 
 TEST_CASE("Readline works correctly") {
     Buffer buff;
-    ErrorOr<std::string> line("");
+    ErrorOr<std::string> line{NoError(), ""};
 
     SECTION("We can read LF terminated lines") {
         buff << "HTTP/1.1 200 Ok\n"
@@ -348,7 +349,7 @@ TEST_CASE("Readline works correctly") {
         line = buff.readline(3);
         REQUIRE(!line);
         REQUIRE(line.as_error() == EOLNotFoundError());
-        REQUIRE_THROWS_AS(*line, Error);
+        REQUIRE_THROWS_AS(*line, std::runtime_error);
     }
 
     SECTION("Line-too-long error is correctly reported") {
@@ -356,7 +357,7 @@ TEST_CASE("Readline works correctly") {
         line = buff.readline(3);
         REQUIRE(!line);
         REQUIRE(line.as_error() == LineTooLongError());
-        REQUIRE_THROWS_AS(*line, Error);
+        REQUIRE_THROWS_AS(*line, std::runtime_error);
     }
 }
 

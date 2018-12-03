@@ -1,32 +1,32 @@
-// Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software under the BSD license. See AUTHORS
+// Part of Measurement Kit <https://measurement-kit.github.io/>.
+// Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
-#include "private/nettests/runnable.hpp"
+#include "src/libmeasurement_kit/nettests/runnable.hpp"
 
-#include <measurement_kit/nettests.hpp>
-#include <measurement_kit/ndt.hpp>
-
-#include "private/ndt/utils.hpp"
+#include "src/libmeasurement_kit/ndt/utils.hpp"
+#include "src/libmeasurement_kit/ndt/run.hpp"
 
 namespace mk {
 namespace nettests {
 
-MultiNdtTest::MultiNdtTest() : BaseTest() {
-    runnable.reset(new MultiNdtRunnable);
-    runnable->options["save_real_probe_ip"] = true;
-    runnable->options["dns/engine"] = "system";
-    runnable->test_name = "multi_ndt";
-    runnable->test_version = "0.1.0";  /* Forked from `ndt` v0.0.4 */
+MultiNdtRunnable::MultiNdtRunnable() noexcept {
+    options["save_real_probe_ip"] = true;
+    options["dns/engine"] = "system";
+    test_name = "multi_ndt";
+    test_version = "0.1.0";  /* Forked from `ndt` v0.0.4 */
 }
 
-static void write_simple_stats(report::Entry &entry, SharedPtr<Logger> logger) {
-    report::Entry single = mk::ndt::utils::compute_simple_stats(entry["single_stream"], logger);
+static void write_simple_stats_throws(
+        nlohmann::json &entry, SharedPtr<Logger> logger) {
+    nlohmann::json single = mk::ndt::utils::compute_simple_stats_throws(
+        entry["single_stream"], logger);
     single["fastest_test"] = "single_stream";
-    report::Entry multi = mk::ndt::utils::compute_simple_stats(entry["multi_stream"], logger);
+    nlohmann::json multi = mk::ndt::utils::compute_simple_stats_throws(
+        entry["multi_stream"], logger);
     multi["fastest_test"] = "multi_stream";
 
-    report::Entry selected;
+    nlohmann::json selected;
 
     /*
      * Here we basically pick up the fastest of the two tests.
@@ -63,11 +63,11 @@ static void write_simple_stats(report::Entry &entry, SharedPtr<Logger> logger) {
 }
 
 void MultiNdtRunnable::main(std::string, Settings ndt_settings,
-                            Callback<SharedPtr<report::Entry>> cb) {
+                            Callback<SharedPtr<nlohmann::json>> cb) {
     // Note: `options` is the class attribute and `settings` is instead a
     // possibly modified copy of the `options` object
 
-    SharedPtr<report::Entry> ndt_entry(new report::Entry);
+    SharedPtr<nlohmann::json> ndt_entry(new nlohmann::json);
     (*ndt_entry)["failure"] = nullptr;
     // By default we only run download but let's allow clients to decide
     if (ndt_settings.count("single_test_suite") != 0) {
@@ -85,7 +85,7 @@ void MultiNdtRunnable::main(std::string, Settings ndt_settings,
             // FALLTHROUGH
         }
 
-        SharedPtr<report::Entry> neubot_entry(new report::Entry);
+        SharedPtr<nlohmann::json> neubot_entry(new nlohmann::json);
         (*neubot_entry)["failure"] = nullptr;
         Settings neubot_settings{ndt_settings.begin(), ndt_settings.end()};
         neubot_settings["test_suite"] = MK_NDT_DOWNLOAD_EXT;
@@ -93,35 +93,35 @@ void MultiNdtRunnable::main(std::string, Settings ndt_settings,
         logger->set_progress_offset(0.55);
         logger->set_progress_scale(0.35);
         logger->progress(0.0, "Starting multi-stream test");
-        ndt::run(neubot_entry, [=](Error neubot_error) {
+        ndt::run(neubot_entry, [=](Error neubot_error) mutable {
             logger->progress(1.0, "Test completed");
             if (neubot_error) {
                 (*neubot_entry)["failure"] = neubot_error.reason;
                 logger->warn("Test failed: %s", neubot_error.what());
                 // FALLTHROUGH
             }
-            SharedPtr<report::Entry> overall_entry(new report::Entry);
+            SharedPtr<nlohmann::json> overall_entry(new nlohmann::json);
             (*overall_entry)["failure"] = nullptr;
             (*overall_entry)["multi_stream"] = *neubot_entry;
             (*overall_entry)["single_stream"] = *ndt_entry;
             if (ndt_error or neubot_error) {
                 Error overall_error = SequentialOperationError();
-                overall_error.add_child_error(ndt_error);
-                overall_error.add_child_error(neubot_error);
+                overall_error.add_child_error(std::move(ndt_error));
+                overall_error.add_child_error(std::move(neubot_error));
                 (*overall_entry)["failure"] = overall_error.reason;
                 // FALLTHROUGH
             }
             try {
-                write_simple_stats(*overall_entry, logger);
+                write_simple_stats_throws(*overall_entry, logger);
             } catch (const std::exception &) {
-                /* Just in case */ ;
+                (*overall_entry)["failure"] = "compute_simple_stats_error";
             }
             try {
                 (*overall_entry)["advanced"] =
-                    mk::ndt::utils::compute_advanced_stats(
+                    mk::ndt::utils::compute_advanced_stats_throws(
                         (*overall_entry)["single_stream"], logger);
             } catch (const std::exception &) {
-                /* Just in case */ ;
+                (*overall_entry)["failure"] = "compute_advanced_stats_error";
             }
             cb(overall_entry);
         }, neubot_settings, reactor, logger);

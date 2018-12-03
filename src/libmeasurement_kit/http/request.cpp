@@ -1,9 +1,13 @@
-// Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software under the BSD license. See AUTHORS
+// Part of Measurement Kit <https://measurement-kit.github.io/>.
+// Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
-#include "private/http/request_impl.hpp"
-#include "private/common/utils.hpp"
+#include "src/libmeasurement_kit/http/request_impl.hpp"
+#include "src/libmeasurement_kit/common/utils.hpp"
+#include "src/libmeasurement_kit/net/error.hpp"
+
+#include <deque>
+#include <set>
 
 namespace mk {
 namespace http {
@@ -21,14 +25,14 @@ using namespace mk::net;
 
 /*static*/ ErrorOr<SharedPtr<Request>> Request::make(Settings settings, Headers headers,
                                                std::string body) {
-    SharedPtr<Request> request(new Request);
+    SharedPtr<Request> request{std::make_shared<Request>()};
     Error error = request->init(settings, headers, body);
     // Note: the following cannot be simplified using short circuit
     // evaluation because two different types are returned
     if (error) {
-        return error;
+        return {error, {}};
     }
-    return request;
+    return {NoError(), request};
 }
 
 Error Request::init(Settings settings, Headers hdrs, std::string bd) {
@@ -62,12 +66,12 @@ void Request::serialize(net::Buffer &buff, SharedPtr<Logger> logger) {
         buff << url.pathquery;
     }
     buff << " " << protocol << "\r\n";
-    for (auto kv : headers) {
-        buff << kv.first << ": " << kv.second << "\r\n";
+    for (auto h : headers) {
+        buff << h.key << ": " << h.value << "\r\n";
     }
     // if the host: header is passed explicitly,
     // don't construct it again here.
-    if (headers.find("host") == headers.end()) {
+    if (headers_find_first(headers, "host") == "") {
         buff << "Host: " << url.address;
         if ((url.schema == "http" and url.port != 80) or
             (url.schema == "https" and url.port != 443)) {
@@ -83,6 +87,7 @@ void Request::serialize(net::Buffer &buff, SharedPtr<Logger> logger) {
     for (auto s: mk::split(buff.peek(), "\r\n")) {
         logger->debug("> %s", s.c_str());
     }
+    logger->debug(">");
     if (body != "") {
         logger->debug2("%s", body.c_str());
         buff << body;
@@ -114,7 +119,7 @@ void request_maybe_send(ErrorOr<SharedPtr<Request>> request, SharedPtr<Transport
                         SharedPtr<Logger> logger,
                         Callback<Error, SharedPtr<Request>> callback) {
     if (!request) {
-        callback(request.as_error(), nullptr);
+        callback(request.as_error(), {});
         return;
     }
     Buffer buff;
@@ -124,76 +129,123 @@ void request_maybe_send(ErrorOr<SharedPtr<Request>> request, SharedPtr<Transport
     });
 }
 
+// ## request_recv_response()
+
+class RequestRecvResponse {
+  public:
+    SharedPtr<Buffer> buff;
+    Callback<Error, SharedPtr<Response>> cb;
+    SharedPtr<Logger> logger;
+    SharedPtr<ResponseParserNg> parser;
+    bool reached_end = false;
+    SharedPtr<Reactor> reactor;
+    SharedPtr<Response> response;
+    Settings settings;
+    SharedPtr<Transport> txp;
+    bool valid_response = false;
+
+    RequestRecvResponse(SharedPtr<Transport> txp,
+            Callback<Error, SharedPtr<Response>> cb, Settings settings,
+            SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) :
+        buff{std::make_shared<Buffer>()}, cb{std::move(cb)},
+        // Note: we cannot move logger because it must be shared by `ctx` and
+        // by the response parser, hence we make a copy of it.
+        logger{logger}, parser{std::make_shared<ResponseParserNg>(logger)},
+        reactor{std::move(reactor)}, response{std::make_shared<Response>()},
+        settings{std::move(settings)}, txp{std::move(txp)} {}
+};
+
+static void request_recv_response_start(SharedPtr<RequestRecvResponse>);
+static void request_recv_response_loop(SharedPtr<RequestRecvResponse>);
+
 void request_recv_response(SharedPtr<Transport> txp,
-                           Callback<Error, SharedPtr<Response>> cb, Settings settings,
-                           SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
-    SharedPtr<ResponseParserNg> parser{new ResponseParserNg{logger}};
-    SharedPtr<Response> response(new Response);
-    SharedPtr<bool> prevent_emit(new bool(false));
-    SharedPtr<bool> valid_response(new bool(false));
+        Callback<Error, SharedPtr<Response>> cb, Settings settings,
+        SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
+    SharedPtr<RequestRecvResponse> ctx{std::make_shared<RequestRecvResponse>(
+        std::move(txp), std::move(cb), std::move(settings), std::move(reactor),
+        std::move(logger)
+    )};
+    request_recv_response_start(std::move(ctx));
+}
 
-    // Note: any parser error at this point is an exception catched by the
-    // connection code and routed to the error handler function below
-    txp->on_data([=](Buffer data) { parser->feed(data); });
+static void request_recv_response_start(SharedPtr<RequestRecvResponse> ctx) {
 
-    parser->on_response([=](Response r) {
-        *response = r;
-        *valid_response = true;
-    });
-
-    ErrorOr<bool> ignore_body = settings.get("http/ignore_body", false);
+    ErrorOr<bool> ignore_body = ctx->settings.get_noexcept(
+            "http/ignore_body", false);
     if (!ignore_body) {
-        cb(ValueError(), response);
+        ctx->cb(ValueError(), ctx->response);
         return;
     }
     if (*ignore_body == false) {
-        parser->on_body([=](std::string s) {
-            response->body += s;
+        ctx->parser->on_body([ctx](std::string s) {
+            ctx->response->body += s;
         });
     }
 
-    // TODO: we should improve the parser such that the transport forwards the
-    // "error" event to it and then the parser does the right thing, so that the
-    // code becomes less "twisted" here.
-    //
-    // XXX actually trying to do that could make things worse as we have
-    // seen in #690; we should refactor this code with care.
-
-    parser->on_end([=]() {
-        if (*prevent_emit == true) {
-            return;
-        }
-        if (response->body.size() > 0) {
-            logger->debug2("%s", response->body.c_str());
-        }
-        txp->emit_error(NoError());
+    ctx->parser->on_response([ctx](Response r) {
+        *ctx->response = r;
+        ctx->valid_response = true;
     });
-    txp->on_error([=](Error err) {
-        logger->debug("http: received error %d on connection", err.code);
-        if (err == EofError() && *valid_response == true) {
-            // Calling parser->on_eof() could trigger parser->on_end() and
-            // we don't want this function to call ->emit_error()
-            *prevent_emit = true;
-            // Assume there was no error. The parser will tell us if that
-            // is true (it was in final state) or false.
-            err = NoError();
+
+    ctx->parser->on_end([ctx]() {
+        ctx->reached_end = true;
+        if (ctx->response->body.size() > 0) {
+            ctx->logger->debug2("%s", ctx->response->body.c_str());
+        }
+    });
+
+    ctx->logger->debug("http: started reading response");
+    request_recv_response_loop(std::move(ctx));
+}
+
+static void request_recv_response_loop(SharedPtr<RequestRecvResponse> ctx) {
+    net::read(ctx->txp, ctx->buff, [ctx](Error err) {
+        if (err == NoError() && ctx->buff->length() > 0) {
+            ctx->logger->debug("http: passing read data to parser");
             try {
-                logger->debug("Now passing EOF to parser");
-                parser->eof();
-            } catch (Error &second_error) {
-                logger->warn("Parsing error at EOF: %d", second_error.code);
+                ctx->parser->feed(*ctx->buff);
+            } catch (const Error &second_error) {
                 err = second_error;
                 // FALLTHRU
             }
         }
-        txp->on_error(nullptr);
-        txp->on_data(nullptr);
-        reactor->call_soon([=]() {
-            logger->debug2("http: end of closure");
+        if (err == NoError() && ctx->reached_end == false) {
+            ctx->logger->debug("http: continue reading for the response");
+            request_recv_response_loop(std::move(ctx));
+            return; // basically: continue reading
+        }
+        ctx->logger->debug("http: received error %d on connection", err.code);
+        if (err == EofError() && ctx->valid_response == true) {
+            // Assume there was no error. The parser will tell us if that
+            // is true (it was in final state) or false.
+            err = NoError();
+            try {
+                ctx->logger->debug("Now passing EOF to parser");
+                ctx->parser->eof();
+            } catch (const Error &second_error) {
+                ctx->logger->warn("Parsing error at EOF: %d", second_error.code);
+                err = second_error;
+                // FALLTHRU
+            }
+        }
+        ctx->reactor->call_soon([ctx, err]() {
+            ctx->logger->debug2("http: end of closure");
+            // Completely reset all fields of the context, moving out all that
+            // we don't need in this context so to avoid reference loops.
+            ctx->buff.reset();
+            auto cb = std::move(ctx->cb);
+            ctx->logger.reset();
+            ctx->parser.reset();
+            ctx->reactor.reset();
+            auto response = std::move(ctx->response);
+            ctx->settings = {};
+            ctx->txp.reset();
             cb(err, response);
         });
-    });
+    }, ctx->reactor);
 }
+
+// ## request_sendrecv()
 
 void request_sendrecv(SharedPtr<Transport> txp, Settings settings, Headers headers,
                       std::string body, Callback<Error, SharedPtr<Response>> callback,
@@ -209,7 +261,7 @@ void request_maybe_sendrecv(ErrorOr<SharedPtr<Request>> request, SharedPtr<Trans
     request_maybe_send(request, txp, logger,
                        [=](Error error, SharedPtr<Request> request) {
         if (error) {
-            SharedPtr<Response> response{new Response};
+            SharedPtr<Response> response{std::make_shared<Response>()};
             response->request = request;
             callback(error, response);
             return;
@@ -270,7 +322,7 @@ void request(Settings settings, Headers headers, std::string body,
         "http/max_redirects", 0
     );
     if (!max_redirects) {
-        callback(InvalidMaxRedirectsError(max_redirects.as_error()), nullptr);
+        callback(InvalidMaxRedirectsError(max_redirects.as_error()), {});
         return;
     }
     request_connect(
@@ -303,7 +355,8 @@ void request(Settings settings, Headers headers, std::string body,
                         if (response->status_code / 100 == 3 and
                             *max_redirects > 0) {
                             logger->debug("following redirect...");
-                            std::string loc = response->headers["Location"];
+                            std::string loc = headers_find_first(
+                                response->headers, "Location");
                             if (loc == "") {
                                 callback(EmptyLocationError(), response);
                                 return;
@@ -324,8 +377,73 @@ void request(Settings settings, Headers headers, std::string body,
                                 callback(TooManyRedirectsError(), response);
                                 return;
                             }
+                            // Basic attempt at honouring cookies when we
+                            // follow redirects. It does not really process
+                            // the cookie and does not check domain and/or
+                            // path, which makes us look a bit stupid.
+                            //
+                            // Step 1: build a set of cookies from the cookies
+                            // that were present in the response.
+                            std::set<std::string> cookies;
+                            for (auto &h : response->headers) {
+                                if (strcasecmp(h.key.c_str(), "Set-Cookie") != 0) {
+                                    continue;
+                                }
+                                std::string s;
+                                size_t idx = h.value.find(";");
+                                if (idx == 0) {
+                                    continue;  // Does not follow syntax
+                                }
+                                if (idx != std::string::npos) {
+                                    s = h.value.substr(0, idx - 1);
+                                } else {
+                                    s = h.value;
+                                }
+                                cookies.insert(std::move(s));
+                            }
+                            // Again cookies, step 2. Now we want to consult
+                            // the original request and insert into the set
+                            // also the cookies that were in there. Note that
+                            // one SHOULD NOT send multiple cookie headers
+                            // however the code doesn't assume that.
+                            for (auto &h : headers) {
+                                if (strcasecmp(h.key.c_str(), "Cookie") != 0) {
+                                    continue;
+                                }
+                                // So, RFC6265 sect. 4.2.1 provides this
+                                // syntax `cookie-pair *( ";" SP cookie-pair )`
+                                // and for this reason here I'm including a
+                                // space. However, a SP could also be something
+                                // different from a space. TODO(bassosimone):
+                                // we should improve this code part.
+                                auto d = mk::split<std::deque<std::string>>(
+                                    h.value, "; ");
+                                while (!d.empty()) {
+                                    std::string s = std::move(d.front());
+                                    d.pop_front();
+                                    cookies.insert(std::move(s));
+                                }
+                            }
+                            std::string cookiestring;
+                            if (!cookies.empty()) {
+                                std::deque<std::string> d{
+                                    cookies.begin(), cookies.end()};
+                                while (!d.empty()) {
+                                    if (!cookiestring.empty()) {
+                                      cookiestring += "; ";
+                                    }
+                                    cookiestring += d.front();
+                                    d.pop_front();
+                                }
+                            }
+                            // And again cookies, now at step 3. Here we want
+                            // to replace the original header in the vector.
+                            Headers new_headers = headers;
+                            if (!cookiestring.empty()) {
+                                headers_push_back(new_headers, "Cookie", cookiestring);
+                            }
                             reactor->call_soon([=]() {
-                                request(new_settings, headers, body, callback,
+                                request(new_settings, new_headers, body, callback,
                                     reactor, logger, response, num_redirs + 1);
                             });
                             return;
@@ -338,15 +456,10 @@ void request(Settings settings, Headers headers, std::string body,
         reactor, logger);
 }
 
-bool HeadersComparator::operator() (
-        const std::string &l, const std::string &r) const {
-    return strcasecmp(l.c_str(), r.c_str()) < 0;
-}
-
 void request_json_string(
       std::string method, std::string url, std::string data,
       http::Headers headers,
-      Callback<Error, SharedPtr<http::Response>, Json> cb,
+      Callback<Error, SharedPtr<http::Response>, nlohmann::json> cb,
       Settings settings, SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
     request_json_string_impl(method, url, data, headers, cb, settings, reactor,
                              logger);
@@ -354,16 +467,16 @@ void request_json_string(
 
 void request_json_no_body(
       std::string method, std::string url, http::Headers headers,
-      Callback<Error, SharedPtr<http::Response>, Json> cb,
+      Callback<Error, SharedPtr<http::Response>, nlohmann::json> cb,
       Settings settings, SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
     request_json_string(method, url, "", headers, cb, settings, reactor,
                         logger);
 }
 
 void request_json_object(
-      std::string method, std::string url, Json jdata,
+      std::string method, std::string url, nlohmann::json jdata,
       http::Headers headers,
-      Callback<Error, SharedPtr<http::Response>, Json> cb,
+      Callback<Error, SharedPtr<http::Response>, nlohmann::json> cb,
       Settings settings, SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
     request_json_string(method, url, jdata.dump(), headers, cb, settings,
                         reactor, logger);

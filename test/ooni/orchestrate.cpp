@@ -1,13 +1,14 @@
-// Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software under the BSD license. See AUTHORS
+// Part of Measurement Kit <https://measurement-kit.github.io/>.
+// Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
-#define CATCH_CONFIG_MAIN
-#include "private/ext/catch.hpp"
+#include "test/winsock.hpp"
 
-#include "private/common/utils.hpp"
-#include "private/common/worker.hpp"
-#include "private/ooni/orchestrate_impl.hpp"
+#include "include/private/catch.hpp"
+
+#include "src/libmeasurement_kit/common/utils.hpp"
+#include "src/libmeasurement_kit/common/worker.hpp"
+#include "src/libmeasurement_kit/ooni/orchestrate_impl.hpp"
 
 #include <future>
 
@@ -68,7 +69,7 @@ TEST_CASE("Auth::dump() works correctly") {
     SECTION("with existent file") {
         auth.username = auth.password = "xo";
         REQUIRE(auth.dump(fname) == NoError());
-        Json data = Json::parse(*slurp(fname));
+        nlohmann::json data = nlohmann::json::parse(*slurp(fname));
         REQUIRE(data["username"] == "xo");
         REQUIRE(data["password"] == "xo");
     }
@@ -80,9 +81,17 @@ template <typename F> std::string make_time_(F &&f) {
         throw std::runtime_error("std::time() failed");
     }
     std::tm ttm{};
+#ifdef _MSC_VER
+#pragma warning(disable:4996)
+    auto tp = gmtime(&t); // thread safe on Windows
+    assert(!!tp);
+    ttm = *tp;
+#pragma warning(default:4996)
+#else
     if (gmtime_r(&t, &ttm) == nullptr) {
         throw std::runtime_error("gmtime_r() failed");
     }
+#endif
     std::stringstream ss;
     ss << std::put_time(&ttm, "%Y-%m-%dT%H:%M:%SZ");
     return ss.str();
@@ -120,8 +129,10 @@ TEST_CASE("orchestrate::login() works correctly") {
 
     SECTION("When the username is missing") {
         Error err;
+        Settings settings;
+        settings["net/ca_bundle_path"] = "cacert.pem";
         reactor->run_with_initial_event([&]() {
-            login({}, testing_registry_url(), {}, reactor, Logger::global(),
+            login({}, testing_registry_url(), settings, reactor, Logger::global(),
                   [&](Error &&e, Auth &&) {
                       err = e;
                       reactor->stop();
@@ -134,8 +145,10 @@ TEST_CASE("orchestrate::login() works correctly") {
         Auth auth;
         auth.username = "antani";
         Error err;
+        Settings settings;
+        settings["net/ca_bundle_path"] = "cacert.pem";
         reactor->run_with_initial_event([&]() {
-            login(std::move(auth), testing_registry_url(), {}, reactor,
+            login(std::move(auth), testing_registry_url(), settings, reactor,
                   Logger::global(), [&](Error &&e, Auth &&) {
                       err = e;
                       reactor->stop();
@@ -149,13 +162,12 @@ TEST_CASE("orchestrate::login() works correctly") {
      */
 }
 
-#ifdef ENABLE_INTEGRATION_TESTS
-
 TEST_CASE("Orchestration works") {
     Client client;
     client.logger->increase_verbosity();
-    client.geoip_country_path = "GeoIP.dat";
-    client.geoip_asn_path = "GeoIPASNum.dat";
+    client.ca_bundle_path = "cacert.pem";
+    client.geoip_country_path = "country.mmdb";
+    client.geoip_asn_path = "asn.mmdb";
     client.network_type = "wifi";
     // client.device_token = "{TOKEN}";  /* Not needed on PC devices */
     client.registry_url = testing_registry_url();
@@ -211,5 +223,3 @@ TEST_CASE("Orchestration works") {
      */
     Worker::default_tasks_queue()->wait_empty_();
 }
-
-#endif

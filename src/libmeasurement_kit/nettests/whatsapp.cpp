@@ -1,23 +1,21 @@
-// Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software under the BSD license. See AUTHORS
+// Part of Measurement Kit <https://measurement-kit.github.io/>.
+// Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
-#include "private/nettests/runnable.hpp"
-#include <measurement_kit/nettests.hpp>
-#include <measurement_kit/ooni.hpp>
+#include "src/libmeasurement_kit/nettests/runnable.hpp"
+#include "src/libmeasurement_kit/ooni/nettests.hpp"
 
 namespace mk {
 namespace nettests {
 
-WhatsappTest::WhatsappTest() : BaseTest() {
-    runnable.reset(new WhatsappRunnable);
-    runnable->test_name = "whatsapp";
-    runnable->test_version = "0.6.1";
-    runnable->needs_input = false;
+WhatsappRunnable::WhatsappRunnable() noexcept {
+    test_name = "whatsapp";
+    test_version = "0.6.1";
+    needs_input = false;
 }
 
 void WhatsappRunnable::main(std::string /*input*/, Settings options,
-                            Callback<SharedPtr<report::Entry>> cb) {
+                            Callback<SharedPtr<nlohmann::json>> cb) {
     ooni::whatsapp(options, cb, reactor, logger);
 }
 

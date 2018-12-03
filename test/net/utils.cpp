@@ -1,13 +1,15 @@
-// Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software under the BSD license. See AUTHORS
+// Part of Measurement Kit <https://measurement-kit.github.io/>.
+// Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
+
+#include "test/winsock.hpp"
 
 #include <cerrno>
 
-#define CATCH_CONFIG_MAIN
-#include "private/ext/catch.hpp"
+#include "include/private/catch.hpp"
 
-#include "private/net/utils.hpp"
+#include "src/libmeasurement_kit/net/error.hpp"
+#include "src/libmeasurement_kit/net/utils.hpp"
 
 TEST_CASE("is_ipv4_addr works") {
     SECTION("on ipv4") {
@@ -235,67 +237,64 @@ TEST_CASE("map_errno() works as expected") {
         REQUIRE(mk::net::map_errno(0) == mk::NoError());
     }
 
+    // Not relevant on Windows where we only have WSAEWOULDBLOCK
+#ifndef _WIN32
     SECTION("Make sure that EAGAIN is correctly handled") {
-        REQUIRE(mk::net::map_errno(EAGAIN) ==
-                mk::net::OperationWouldBlockError());
+        auto e = mk::net::map_errno(EAGAIN);
+        REQUIRE((e == mk::net::NetworkError() and
+                e.reason == "operation_would_block"));
     }
+#endif
 
     SECTION("Make sure that mapped errors map to correct classes") {
-#define XX(_code_, _name_, _descr_)                                            \
+#ifdef _WIN32
+#define EPREFIX(x) WSAE##x
+#else
+#define EPREFIX(x) E##x
+#endif
+#define XX(_errno_name_, _ooni_name_)                                          \
     {                                                                          \
-        auto err_cond = std::make_error_condition(std::errc::_descr_);         \
-        int code = err_cond.value();                                           \
-        REQUIRE(mk::net::map_errno(code) == mk::net::_name_());                \
+        auto e = mk::net::map_errno(EPREFIX(_errno_name_));                    \
+        REQUIRE(e == mk::net::NetworkError());                                 \
+        REQUIRE(e.reason == #_ooni_name_);                                     \
     }
-        MK_NET_ERRORS_XX
+#ifndef _WIN32
+        MK_NET_ERRNO_UNIX_ONLY(XX)
+#endif
+        MK_NET_ERRNO(XX)
+#undef EPREFIX
 #undef XX
     }
 
     SECTION("Make sure some errors maps by passing the definition directly") {
-        REQUIRE(mk::net::map_errno(EWOULDBLOCK) ==
-                mk::net::OperationWouldBlockError());
-        REQUIRE(mk::net::map_errno(EINTR) == mk::net::InterruptedError());
-        REQUIRE(mk::net::map_errno(ENOBUFS)
-                == mk::net::NoBufferSpaceError());
+#ifdef _WIN32
+        auto e1 = mk::net::map_errno(WSAEWOULDBLOCK);
+        auto e2 = mk::net::map_errno(WSAEINTR);
+        auto e3 = mk::net::map_errno(WSAENOBUFS);
+#else
+        auto e1 = mk::net::map_errno(EWOULDBLOCK);
+        auto e2 = mk::net::map_errno(EINTR);
+        auto e3 = mk::net::map_errno(ENOBUFS);
+#endif
+        REQUIRE((e1 == mk::net::NetworkError() &&
+                e1.reason == "operation_would_block"));
+        REQUIRE((e2 == mk::net::NetworkError() &&
+                e2.reason == "interrupted"));
+        REQUIRE((e3 == mk::net::NetworkError() &&
+                e3.reason == "no_buffer_space"));
     }
 
     SECTION("Make sure that unmapped errors map to mk::GenericError") {
-        REQUIRE(mk::net::map_errno(ENOENT) == mk::GenericError());
+#ifdef _WIN32
+        auto e = mk::net::map_errno(ERROR_INVALID_HANDLE);
+#else
+        auto e = mk::net::map_errno(ENOENT);
+#endif
+        REQUIRE(e == mk::GenericError());
     }
 }
 
 TEST_CASE("make_sockaddr() works as expected") {
-    auto check_for_error = [](std::string address, std::string port) {
-        auto err = mk::net::make_sockaddr(address, port, nullptr, nullptr);
-        REQUIRE(err == mk::ValueError());
-    };
-
-    SECTION("With string port: we deal with invalid port") {
-        check_for_error("8.8.8.8", "antani");
-    }
-
-    SECTION("With string port: we deal with negative port") {
-        check_for_error("8.8.8.8", "-1");
-    }
-
-    SECTION("With string port: we deal with overflow") {
-        check_for_error("8.8.8.8", "65536");
-    }
-
-    SECTION("With string port: it works with a valid port") {
-        sockaddr_storage ss = {};
-        socklen_t sslen = 0;
-        auto err = mk::net::make_sockaddr("8.8.8.8", "22", &ss, &sslen);
-        REQUIRE(err == mk::NoError());
-        REQUIRE(sslen == sizeof(sockaddr_in));
-        sockaddr_in *sin4 = (sockaddr_in *)&ss;
-        REQUIRE(sin4->sin_family == AF_INET);
-        REQUIRE(sin4->sin_port == htons(22));
-        char x[INET_ADDRSTRLEN];
-        REQUIRE(inet_ntop(AF_INET, &sin4->sin_addr, x, sizeof(x)) != nullptr);
-        REQUIRE(std::string{"8.8.8.8"} == x);
-    }
-
     SECTION("With numeric port: it deals with invalid address") {
         auto err = mk::net::make_sockaddr("antani", 22, nullptr, nullptr);
         REQUIRE(err == mk::ValueError());

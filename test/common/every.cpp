@@ -1,12 +1,13 @@
-// Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software under the BSD license. See AUTHORS
+// Part of Measurement Kit <https://measurement-kit.github.io/>.
+// Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
-#define CATCH_CONFIG_MAIN
-#include "private/ext/catch.hpp"
+#include "test/winsock.hpp"
 
-#include "private/common/utils.hpp"
-#include "private/common/every.hpp"
+#include "include/private/catch.hpp"
+
+#include "src/libmeasurement_kit/common/utils.hpp"
+#include "src/libmeasurement_kit/common/every.hpp"
 
 #include <measurement_kit/common.hpp>
 
@@ -57,8 +58,8 @@ TEST_CASE("The every() template works") {
                       }
                       double cur = time_now();
                       double delta = cur - now;
-                      REQUIRE(delta > 0.8);
-                      REQUIRE(delta < 1.2);
+                      REQUIRE(delta > 0.7);
+                      REQUIRE(delta < 1.3);
                       now = cur;
                   });
         });

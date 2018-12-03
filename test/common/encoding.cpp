@@ -1,13 +1,22 @@
-// Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software under the BSD license. See AUTHORS
+// Part of Measurement Kit <https://measurement-kit.github.io/>.
+// Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
-#define CATCH_CONFIG_MAIN
-#include "private/ext/catch.hpp"
+#include "test/winsock.hpp"
 
-#include "private/common/encoding.hpp"
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
 
+#if !defined HAVE_CONFIG_H || (defined HAVE_RESOLV_H && defined HAVE_LIBRESOLV)
+
+#include "include/private/catch.hpp"
+
+#include "src/libmeasurement_kit/common/encoding.hpp"
+
+#ifndef _MSC_VER
 #include <resolv.h>
+#endif
 
 #include <event2/util.h>
 
@@ -72,6 +81,7 @@ TEST_CASE("base64_encode() works as expected") {
                 "YW55IGNhcm5hbCBwbGVhc3Vy");
     }
 
+#ifndef _MSC_VER
     SECTION("With random input") {
         for (int i = 0; i < 16; ++i) {
             uint16_t size = 0;
@@ -98,4 +108,7 @@ TEST_CASE("base64_encode() works as expected") {
             REQUIRE(result == expect);
         }
     }
+#endif
 }
+
+#endif

@@ -1,20 +1,26 @@
-// Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software under the BSD license. See AUTHORS
+// Part of Measurement Kit <https://measurement-kit.github.io/>.
+// Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
-#define CATCH_CONFIG_MAIN
-#include "private/ext/catch.hpp"
+#include "test/winsock.hpp"
 
-#include "private/dns/system_resolver.hpp"
+#include "include/private/catch.hpp"
+
+#include "src/libmeasurement_kit/dns/system_resolver.hpp"
 
 using namespace mk;
 using namespace mk::dns;
 
-#ifdef ENABLE_INTEGRATION_TESTS
-static const char *fail_inet_ntop(int, const void *, char *, socklen_t) {
+#ifdef __MINGW32__
+static const char *fail_inet_ntop(int, void *, char *, size_t)
+#elif defined _MSC_VER
+static const char *fail_inet_ntop(int, const void *, char *, size_t)
+#else
+static const char *fail_inet_ntop(int, const void *, char *, socklen_t)
+#endif
+{
     return nullptr;
 }
-#endif
 
 static int fail_getaddrinfo(const char *, const char *, const struct addrinfo *,
                             struct addrinfo **) {
@@ -43,15 +49,13 @@ TEST_CASE("the system resolver can handle a getaddrinfo error") {
         });
 }
 
-#ifdef ENABLE_INTEGRATION_TESTS
-
 TEST_CASE("the system resolver can handle a inet_ntop error") {
     run_system_resolver<getaddrinfo, fail_inet_ntop>(
-        "IN", "A", "neubot.org",
-        [](Error e, SharedPtr<Message>) { REQUIRE(e == InetNtopFailureError()); });
+            "IN", "A", "neubot.org", [](Error e, SharedPtr<Message>) {
+                REQUIRE(e == GenericError());
+                REQUIRE(e.reason == "generic_error: inet_ntop_failed");
+            });
 }
-
-#endif
 
 TEST_CASE("the system resolver can handle an unsupported class") {
     run_system_resolver("CS", "A", "neubot.org", [](Error e, SharedPtr<Message>) {
@@ -64,8 +68,6 @@ TEST_CASE("the system resolver can handle an unsupported query type") {
         REQUIRE(e == UnsupportedTypeError());
     });
 }
-
-#ifdef ENABLE_INTEGRATION_TESTS
 
 TEST_CASE("the system resolver returns an error with an invalid_site") {
     run_system_resolver(
@@ -83,6 +85,10 @@ TEST_CASE("the system resolver is able to resolve an ipv4 address") {
         });
 }
 
+// As mentioned in query.cpp tests, the CI infrastructure does not seem
+// to provide support for IPv6. It's TODO(bassosimone) to dive deeper into
+// this topic in the future but for now it's okay to disable it.
+#ifndef _WIN32
 TEST_CASE("the system resolver is able to resolve an ipv6 address") {
     run_system_resolver(
         "IN", "AAAA", "ooni.torproject.org", [](Error e, SharedPtr<Message> message) {
@@ -97,6 +103,7 @@ TEST_CASE("the system resolver is able to resolve an ipv6 address") {
             REQUIRE(found);
         });
 }
+#endif
 
 TEST_CASE("the system resolver can handle errors with a CNAME query") {
     run_system_resolver(
@@ -124,5 +131,3 @@ TEST_CASE("the system resolver is able to resolve the canonical name with "
             REQUIRE(message->answers[0].hostname == "ipv4.l.google.com");
         });
 }
-
-#endif

@@ -1,11 +1,12 @@
-// Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software under the BSD license. See AUTHORS
+// Part of Measurement Kit <https://measurement-kit.github.io/>.
+// Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
-#define CATCH_CONFIG_MAIN
-#include "private/ext/catch.hpp"
+#include "test/winsock.hpp"
 
-#include "private/net/libssl.hpp"
+#include "include/private/catch.hpp"
+
+#include "src/libmeasurement_kit/net/libssl.hpp"
 #include <future>
 
 using namespace mk::net::libssl;
@@ -33,20 +34,11 @@ static int ssl_ctx_load_verify_locations_fail(SSL_CTX *, const char *,
     return 0;
 }
 
-#if (defined LIBRESSL_VERSION_NUMBER && LIBRESSL_VERSION_NUMBER >= 0x2010400fL)
-static int ssl_ctx_load_verify_mem_fail(SSL_CTX *, void *, int) { return 0; }
-#endif
-
 TEST_CASE("Context::make() works") {
     SECTION("when the ca_bundle_path is empty") {
         auto maybe_ctx = Context::make("", Logger::global());
-#if (defined LIBRESSL_VERSION_NUMBER && LIBRESSL_VERSION_NUMBER >= 0x2010400fL)
-        REQUIRE(!!maybe_ctx);
-        REQUIRE(*maybe_ctx != nullptr);
-#else
         REQUIRE(!maybe_ctx);
         REQUIRE(maybe_ctx.as_error() == MissingCaBundlePathError());
-#endif
     }
 
     SECTION("when SSL_CTX_new() fails") {
@@ -62,20 +54,10 @@ TEST_CASE("Context::make() works") {
         REQUIRE(!maybe_ctx);
         REQUIRE(maybe_ctx.as_error() == SslCtxLoadVerifyLocationsError());
     }
-
-#if (defined LIBRESSL_VERSION_NUMBER && LIBRESSL_VERSION_NUMBER >= 0x2010400fL)
-    SECTION("when SSL_CTX_load_verify_mem() fails") {
-        auto maybe_ctx =
-              Context::make<SSL_CTX_new, SSL_CTX_load_verify_locations,
-                            ssl_ctx_load_verify_mem_fail>("", Logger::global());
-        REQUIRE(!maybe_ctx);
-        REQUIRE(maybe_ctx.as_error() == SslCtxLoadVerifyMemError());
-    }
-#endif
 }
 
 static ErrorOr<SharedPtr<Context>> context_make_fail(std::string, SharedPtr<Logger>) {
-    return MockedError();
+    return {MockedError(), {}};
 }
 
 TEST_CASE("Cache works as expected") {

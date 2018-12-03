@@ -1,17 +1,21 @@
-// Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software under the BSD license. See AUTHORS
+// Part of Measurement Kit <https://measurement-kit.github.io/>.
+// Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
-#include "private/ooni/constants.hpp"
-#include "private/ooni/utils.hpp"
-#include "private/common/fcompose.hpp"
-#include "private/common/utils.hpp"
-#include <measurement_kit/ooni.hpp>
+#include "src/libmeasurement_kit/ooni/constants.hpp"
+#include "src/libmeasurement_kit/ooni/nettests.hpp"
+#include "src/libmeasurement_kit/common/fcompose.hpp"
+#include "src/libmeasurement_kit/common/reactor.hpp"
+#include "src/libmeasurement_kit/common/utils.hpp"
+#include "src/libmeasurement_kit/ooni/templates.hpp"
+#include "src/libmeasurement_kit/ooni/error.hpp"
+
+#include <measurement_kit/vendor/mkmmdb.h>
 
 namespace mk {
 namespace ooni {
 
-using namespace mk::report;
+static const std::string FB_ASN = "AS32934";
 
 static const std::string FB_ASN = "AS32934";
 
@@ -26,18 +30,23 @@ static const std::map<std::string, std::string> &FB_SERVICE_HOSTNAMES = {
 
 static bool ip_in_fb_asn(Settings options, std::string ip) {
     std::string asn_p = options.get("geoip_asn_path", std::string{});
-    auto geoip = GeoipCache::thread_local_instance()->get(asn_p);
-    ErrorOr<std::string> asn = geoip->resolve_asn(ip);
-    if (!!asn && asn.as_value() != "AS0") {
-        return asn.as_value().c_str() == FB_ASN;
+    mkmmdb_uptr mmdb{mkmmdb_open_nonnull(asn_p.c_str())};
+    if (!mkmmdb_good(mmdb.get())) {
+        return false;
     }
-    return false;
+    int64_t n = mkmmdb_lookup_asn(mmdb.get(), ip.c_str());
+    if (n <= 0) {
+        return false;
+    }
+    std::string s = "AS";
+    s += std::to_string(n);
+    return s == FB_ASN;
 }
 
 static void
-dns_many(Error error, SharedPtr<Entry> entry, Settings options, SharedPtr<Reactor> reactor,
+dns_many(Error error, SharedPtr<nlohmann::json> entry, Settings options, SharedPtr<Reactor> reactor,
          SharedPtr<Logger> logger,
-         Callback<Error, SharedPtr<Entry>,
+         Callback<Error, SharedPtr<nlohmann::json>,
                   SharedPtr<std::map<std::string, std::vector<std::string>>>,
                   Settings, SharedPtr<Reactor>, SharedPtr<Logger>>
                cb) {
@@ -99,10 +108,10 @@ dns_many(Error error, SharedPtr<Entry> entry, Settings options, SharedPtr<Reacto
 }
 
 static void
-tcp_many(Error error, SharedPtr<Entry> entry,
+tcp_many(Error error, SharedPtr<nlohmann::json> entry,
          SharedPtr<std::map<std::string, std::vector<std::string>>> fb_service_ips,
          Settings options, SharedPtr<Reactor> reactor, SharedPtr<Logger> logger,
-         Callback<SharedPtr<Entry>> cb) {
+         Callback<SharedPtr<nlohmann::json>> cb) {
 
     if (error) {
         cb(entry);
@@ -127,7 +136,7 @@ tcp_many(Error error, SharedPtr<Entry> entry,
             bool this_ip_consistent) {
         return [=](Error err, SharedPtr<net::Transport> txp) {
             assert(!!txp);
-            Entry current_entry{
+            nlohmann::json current_entry{
                   {"ip", ip}, {"port", port}, {"status", nullptr}};
             if (!!err) {
                 logger->info("tcp failure to %s at %s:%d", service.c_str(),
@@ -225,10 +234,10 @@ tcp_many(Error error, SharedPtr<Entry> entry,
 
 }
 
-void facebook_messenger(Settings options, Callback<SharedPtr<report::Entry>> callback,
+void facebook_messenger(Settings options, Callback<SharedPtr<nlohmann::json>> callback,
                         SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
     logger->info("starting facebook_messenger");
-    SharedPtr<Entry> entry(new Entry);
+    SharedPtr<nlohmann::json> entry(new nlohmann::json);
     mk::fcompose(mk::fcompose_policy_async(), dns_many, tcp_many)(
           NoError(), entry, options, reactor, logger, callback);
 }

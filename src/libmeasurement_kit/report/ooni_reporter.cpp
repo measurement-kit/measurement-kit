@@ -1,9 +1,11 @@
-// Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software under the BSD license. See AUTHORS
+// Part of Measurement Kit <https://measurement-kit.github.io/>.
+// Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
-#include <measurement_kit/ooni.hpp>
-#include <measurement_kit/report.hpp>
+#include "src/libmeasurement_kit/ooni/error.hpp"
+#include "src/libmeasurement_kit/report/ooni_reporter.hpp"
+#include "src/libmeasurement_kit/report/error.hpp"
+#include "src/libmeasurement_kit/ooni/collector_client.hpp"
 
 namespace mk {
 namespace report {
@@ -49,7 +51,7 @@ Continuation<Error> OoniReporter::open(Report &report) {
     });
 }
 
-Continuation<Error> OoniReporter::write_entry(Entry entry) {
+Continuation<Error> OoniReporter::write_entry(nlohmann::json entry) {
 
     // Register action for when we will be asked to write the entry
     return do_write_entry_(entry, [=](Callback<Error> cb) {

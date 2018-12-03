@@ -1,8 +1,11 @@
-// Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software under the BSD license. See AUTHORS
+// Part of Measurement Kit <https://measurement-kit.github.io/>.
+// Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
-#include <measurement_kit/report.hpp>
+#include "src/libmeasurement_kit/report/error.hpp"
+#include "src/libmeasurement_kit/report/file_reporter.hpp"
+
+#include <iostream>
 
 namespace mk {
 namespace report {
@@ -41,7 +44,7 @@ Continuation<Error> FileReporter::open(Report &) {
     });
 }
 
-Continuation<Error> FileReporter::write_entry(Entry entry) {
+Continuation<Error> FileReporter::write_entry(nlohmann::json entry) {
     return do_write_entry_(entry, [=](Callback<Error> cb) {
         std::ostream &frf = (filename == "-") ? std::cout : file;
         frf << entry.dump() << std::endl;

@@ -1,21 +1,21 @@
-// Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software under the BSD license. See AUTHORS
+// Part of Measurement Kit <https://measurement-kit.github.io/>.
+// Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
-#include "private/ooni/constants.hpp"
-#include "private/ooni/whatsapp.hpp"
-#include "private/common/fcompose.hpp"
-#include "private/common/parallel.hpp"
-#include "private/common/utils.hpp"
-#include <cassert>
-#include <measurement_kit/net/utils.hpp>
-#include <measurement_kit/ooni.hpp>
-#include <measurement_kit/common/portable/sys/socket.h>
+#include "src/libmeasurement_kit/ooni/constants.hpp"
+#include "src/libmeasurement_kit/ooni/nettests.hpp"
+#include "src/libmeasurement_kit/ooni/whatsapp.hpp"
+#include "src/libmeasurement_kit/common/fcompose.hpp"
+#include "src/libmeasurement_kit/common/parallel.hpp"
+#include "src/libmeasurement_kit/common/utils.hpp"
+#include "src/libmeasurement_kit/ooni/templates.hpp"
+#include "src/libmeasurement_kit/net/utils.hpp"
+#include "src/libmeasurement_kit/ooni/error.hpp"
+
+#include <assert.h>
 
 namespace mk {
 namespace ooni {
-
-using namespace mk::report;
 
 typedef std::map<std::string, std::vector<std::string>> host_to_ips_t;
 
@@ -157,7 +157,7 @@ std::vector<uint8_t> ip_to_bytes(std::string ip) {
 ErrorOr<bool> same_pre(
         std::vector<uint8_t> ip1, std::vector<uint8_t> ip2, int pre_bits) {
     if (ip1.size() != ip2.size()) {
-        return GenericError();
+        return {GenericError(), {}};
     }
     // TODO: check pre_bits is sane
     // full prefix bytes
@@ -165,20 +165,20 @@ ErrorOr<bool> same_pre(
     for (; i < (pre_bits / 8); i++) {
         assert(i >= 0 && (size_t)i < ip1.size() && (size_t)i < ip2.size());
         if (ip1[i] != ip2[i]) {
-            return false;
+            return {NoError(), false};
         }
     }
 
     int rem_bits = pre_bits % 8;
     if (rem_bits == 0) {
-        return true;
+        return {NoError(), true};
     }
 
     assert(i >= 0 && (size_t)i < ip1.size() && (size_t)i < ip2.size());
     if ((ip1[i] >> (8 - rem_bits)) != (ip2[i] >> (8 - rem_bits))) {
-        return false;
+        return {NoError(), false};
     }
-    return true;
+    return {NoError(), true};
 }
 
 ErrorOr<bool> ip_in_net(std::string ip1, std::string ip_w_mask) {
@@ -200,18 +200,18 @@ bool ip_in_nets(std::string ip, std::vector<std::string> nets) {
     return false;
 }
 
-static void tcp_many(host_to_ips_t host_to_ips, SharedPtr<Entry> entry,
+static void tcp_many(host_to_ips_t host_to_ips, SharedPtr<nlohmann::json> entry,
         Settings options, SharedPtr<Reactor> reactor,
         SharedPtr<Logger> logger, Callback<Error> cb) {
     // a hostname is DNS inconsistent if ALL of its IPs are inconsistent.
-    (*entry)["whatsapp_endpoints_dns_inconsistent"] = Entry::array();
+    (*entry)["whatsapp_endpoints_dns_inconsistent"] = nlohmann::json::array();
     // on first TCP success of a consistent IP, set to "ok".
     (*entry)["whatsapp_endpoints_status"] = "blocked";
     // all hostnames start here;removed upon a TCP success to a consistent IP
     SharedPtr<std::set<std::string>> blocked_hostnames(
           new std::set<std::string>);
     // at the end, we copy these ^ hostnames into the report:
-    (*entry)["whatsapp_endpoints_blocked"] = Entry::array();
+    (*entry)["whatsapp_endpoints_blocked"] = nlohmann::json::array();
     size_t ips_count = 0;
     SharedPtr<size_t> ips_tested(new size_t(0));
     for (auto const& hostname_ipv : host_to_ips) {
@@ -222,7 +222,7 @@ static void tcp_many(host_to_ips_t host_to_ips, SharedPtr<Entry> entry,
     auto tcp_cb = [=](std::string hostname, std::string ip, int port,
                       bool this_ip_consistent) {
         return [=](Error connect_err, SharedPtr<net::Transport> txp) {
-            Entry result = {
+            nlohmann::json result = {
                     {"ip", ip}, {"port", port},
                     {"status", {{"success", nullptr}, {"failure", nullptr}}},
             };
@@ -296,7 +296,7 @@ static void tcp_many(host_to_ips_t host_to_ips, SharedPtr<Entry> entry,
     }
 }
 
-static void dns_many(std::vector<std::string> hostnames, SharedPtr<Entry> entry,
+static void dns_many(std::vector<std::string> hostnames, SharedPtr<nlohmann::json> entry,
         Settings options, SharedPtr<Reactor> reactor, SharedPtr<Logger> logger,
         Callback<Error, host_to_ips_t> cb) {
     int names_count = hostnames.size();
@@ -348,7 +348,7 @@ static void dns_many(std::vector<std::string> hostnames, SharedPtr<Entry> entry,
 }
 
 static void http_many(const std::vector<std::string> urls,
-        std::string resource_name, SharedPtr<Entry> entry, Settings options,
+        std::string resource_name, SharedPtr<nlohmann::json> entry, Settings options,
         SharedPtr<Reactor> reactor, SharedPtr<Logger> logger,
         Callback<Error> cb) {
     // resource_name is "registration_server" or "whatsapp_web"
@@ -387,7 +387,7 @@ static void http_many(const std::vector<std::string> urls,
     }
 }
 
-void whatsapp(Settings options, Callback<SharedPtr<report::Entry>> callback,
+void whatsapp(Settings options, Callback<SharedPtr<nlohmann::json>> callback,
         SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
     std::vector<std::string> WHATSAPP_REG_URLS = {
             "https://v.whatsapp.net/v2/register"};
@@ -411,7 +411,7 @@ void whatsapp(Settings options, Callback<SharedPtr<report::Entry>> callback,
     }
 
     logger->info("starting whatsapp test");
-    SharedPtr<Entry> entry(new Entry);
+    SharedPtr<nlohmann::json> entry(new nlohmann::json);
 
     mk::fcompose(mk::fcompose_policy_async(),
             [=](Callback<> cb) {

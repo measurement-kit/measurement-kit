@@ -4,31 +4,29 @@
 #ifndef SRC_LIBMEASUREMENT_KIT_OONI_TEMPLATES_IMPL_HPP
 #define SRC_LIBMEASUREMENT_KIT_OONI_TEMPLATES_IMPL_HPP
 
-#include <measurement_kit/ooni.hpp>
-
 #include <event2/dns.h>
 
-#include "private/net/emitter.hpp"
-#include "private/ooni/utils.hpp"
+#include "src/libmeasurement_kit/ooni/error.hpp"
+#include "src/libmeasurement_kit/http/http.hpp"
+#include "src/libmeasurement_kit/net/emitter.hpp"
+#include "src/libmeasurement_kit/ooni/utils.hpp"
 
 namespace mk {
 namespace ooni {
 namespace templates {
 
-using namespace mk::report;
-
 // Mockable implementation of OONI's http_request() template where we can
 // override the underlying function we use in regress tests.
 template <decltype(http::request) mocked_http_request>
-void http_request_impl(SharedPtr<Entry> entry, Settings settings,
+void http_request_impl(SharedPtr<nlohmann::json> entry, Settings settings,
                        http::Headers headers, std::string body,
                        Callback<Error, SharedPtr<http::Response>> cb,
                        SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
 
-    (*entry)["agent"] = "agent";
     (*entry)["socksproxy"] = nullptr;
 
     // Include the name of the agent, like ooni-probe does
+    (*entry)["agent"] = "agent";
     ErrorOr<int> max_redirects = settings.get_noexcept("http/max_redirects", 0);
     if (!!max_redirects && *max_redirects > 0) {
         (*entry)["agent"] = "redirect";
@@ -54,10 +52,12 @@ void http_request_impl(SharedPtr<Entry> entry, Settings settings,
         settings, headers, body,
         [=](Error error, SharedPtr<http::Response> response) {
 
-            auto dump = [&](SharedPtr<http::Response> response) {
-                Entry rr;
+            auto dump = [&](SharedPtr<http::Response> response, bool first) {
+                nlohmann::json rr;
 
-                if (!!error) {
+                // We only set the error for the first response. This fixes
+                // the bug documented in issue #1549.
+                if (!!error && first) {
                     rr["failure"] = error.reason;
                 } else {
                     rr["failure"] = nullptr;
@@ -90,9 +90,9 @@ void http_request_impl(SharedPtr<Entry> entry, Settings settings,
                         * Note: `probe_ip` comes from an external service, hence
                         * we MUST call `represent_string` _after_ `redact()`.
                         */
-                        for (auto pair : response->headers) {
-                            rr["response"]["headers"][pair.first] =
-                                represent_string(redact(pair.second));
+                        for (auto h : response->headers) {
+                            rr["response"]["headers"][h.key] =
+                                represent_string(redact(h.value));
                         }
                         rr["response"]["body"] =
                             represent_string(redact(response->body));
@@ -105,9 +105,9 @@ void http_request_impl(SharedPtr<Entry> entry, Settings settings,
                     }
                     auto request = response->request;
                     // Note: we checked above that we can deref `request`
-                    for (auto pair : request->headers) {
-                        rr["request"]["headers"][pair.first] =
-                            represent_string(redact(pair.second));
+                    for (auto h : request->headers) {
+                        rr["request"]["headers"][h.key] =
+                            represent_string(redact(h.value));
                     }
                     rr["request"]["body"] =
                         represent_string(redact(request->body));
@@ -125,11 +125,13 @@ void http_request_impl(SharedPtr<Entry> entry, Settings settings,
             };
 
             if (!!response) {
+                bool first = true;
                 for (SharedPtr<http::Response> x = response; !!x; x = x->previous) {
-                    (*entry)["requests"].push_back(dump(x));
+                    (*entry)["requests"].push_back(dump(x, first));
+                    first = false;
                 }
             } else {
-                (*entry)["requests"].push_back(dump(response));
+                (*entry)["requests"].push_back(dump(response, true));
             }
             cb(error, response);
         },

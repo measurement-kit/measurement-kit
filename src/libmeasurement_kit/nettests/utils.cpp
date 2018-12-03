@@ -1,11 +1,26 @@
-// Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software under the BSD license. See AUTHORS
+// Part of Measurement Kit <https://measurement-kit.github.io/>.
+// Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
-#include "private/nettests/utils_impl.hpp"
+#include "src/libmeasurement_kit/nettests/utils_impl.hpp"
 
 namespace mk {
 namespace nettests {
+
+SharedPtr<std::istream> open_file_(const std::string &path) {
+    return SharedPtr<std::istream>{new std::ifstream{path}};
+}
+
+bool readline_(std::istream &input, std::string &line) {
+    return static_cast<bool>(std::getline(input, line));
+}
+
+void randomize_input_(std::deque<std::string> &inputs) {
+    // See http://en.cppreference.com/w/cpp/algorithm/shuffle
+    std::random_device rd;
+    std::mt19937 g(rd());
+    std::shuffle(inputs.begin(), inputs.end(), g);
+}
 
 Error process_input_filepaths(std::deque<std::string> &input,
     const bool &needs_input, const std::list<std::string> &input_filepaths,

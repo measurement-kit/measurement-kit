@@ -1,9 +1,10 @@
-// Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software under the BSD license. See AUTHORS
+// Part of Measurement Kit <https://measurement-kit.github.io/>.
+// Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
-#include "../cmdline.hpp"
-#include <measurement_kit/common/json.hpp>
+#include "src/measurement_kit/cmdline.hpp"
+
+#include <measurement_kit/common/nlohmann/json.hpp>
 #include <measurement_kit/ndt.hpp>
 
 namespace multi_ndt {
@@ -40,7 +41,7 @@ int main(std::list<Callback<BaseTest &>> &initializers, int argc, char **argv) {
 
     ndt_init(initializers, test.on_entry([](std::string s) {
         // Note: `on_entry()` filters all exceptions on our behalf
-        Json doc = Json::parse(s);
+        nlohmann::json doc = nlohmann::json::parse(s);
         auto simple = doc["test_keys"]["simple"];
         printf("\nTest summary\n");
         printf("------------\n");

@@ -1,12 +1,13 @@
-// Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software under the BSD license. See AUTHORS
+// Part of Measurement Kit <https://measurement-kit.github.io/>.
+// Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
-#define CATCH_CONFIG_MAIN
-#include "private/ext/catch.hpp"
+#include "test/winsock.hpp"
 
-#include "private/ndt/test_meta_impl.hpp"
-#include "private/net/emitter.hpp"
+#include "include/private/catch.hpp"
+
+#include "src/libmeasurement_kit/ndt/test_meta_impl.hpp"
+#include "src/libmeasurement_kit/net/emitter.hpp"
 
 using namespace mk;
 using namespace mk::ndt;
@@ -52,12 +53,12 @@ TEST_CASE("run() deals with unexpected message on second read") {
         ctx, [](Error err) { REQUIRE(err == NotTestStartError()); });
 }
 
-static ErrorOr<Buffer> fail(std::string) { return MockedError(); }
+static ErrorOr<Buffer> fail(std::string) { return {MockedError(), {}}; }
 
 static ErrorOr<Buffer> success(std::string s) {
     Buffer buff;
     buff.write(s);
-    return buff;
+    return {NoError(), buff};
 }
 
 static void test_start(SharedPtr<Context>, Callback<Error, uint8_t, std::string> cb,

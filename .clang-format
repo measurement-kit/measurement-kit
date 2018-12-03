@@ -3,4 +3,5 @@ BasedOnStyle: LLVM
 IndentWidth: 4
 AlignAfterOpenBracket: DontAlign
 ContinuationIndentWidth: 8
+ColumnLimit: 0
 ---

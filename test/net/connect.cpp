@@ -1,12 +1,14 @@
-// Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software under the BSD license. See AUTHORS
+// Part of Measurement Kit <https://measurement-kit.github.io/>.
+// Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
-#define CATCH_CONFIG_MAIN
-#include "private/ext/catch.hpp"
+#include "test/winsock.hpp"
 
-#include "private/net/connect_impl.hpp"
-#include "private/net/emitter.hpp"
+#include "include/private/catch.hpp"
+
+#include "src/libmeasurement_kit/net/connect_impl.hpp"
+#include "src/libmeasurement_kit/net/error.hpp"
+#include "src/libmeasurement_kit/net/emitter.hpp"
 
 #include <event2/bufferevent.h>
 
@@ -26,7 +28,7 @@ struct bufferevent;
 
 */
 
-static Error fail(std::string, std::string, sockaddr_storage *, socklen_t *) {
+static Error fail(std::string, uint16_t, sockaddr_storage *, socklen_t *) {
     return ValueError();
 }
 
@@ -47,7 +49,7 @@ static bufferevent *fail(event_base *, evutil_socket_t, int) { return nullptr; }
 TEST_CASE("connect_base deals with bufferevent_socket_new error") {
     bool ok = false;
     try {
-        connect_base<make_sockaddr_proxy, fail>("130.192.16.172", 80, 3.14,
+        connect_base<make_sockaddr, fail>("130.192.16.172", 80, 3.14,
                 Reactor::global(), Logger::global(), nullptr);
     } catch (GenericError &) {
         ok = true;
@@ -60,7 +62,7 @@ static int fail(bufferevent *, const timeval *, const timeval *) { return -1; }
 TEST_CASE("connect_base deals with bufferevent_set_timeouts error") {
     bool ok = false;
     try {
-        connect_base<make_sockaddr_proxy, ::bufferevent_socket_new,
+        connect_base<make_sockaddr, ::bufferevent_socket_new,
                      fail>("130.192.16.172", 80, 3.14, Reactor::global(),
                            Logger::global(), nullptr);
     } catch (GenericError &) {
@@ -84,7 +86,7 @@ TEST_CASE("connect_base deals with bufferevent_socket_connect error") {
     // Note: connectivity not required to run this test
     SharedPtr<Reactor> reactor = Reactor::make();
     reactor->run_with_initial_event([=]() {
-        connect_base<make_sockaddr_proxy, ::bufferevent_socket_new,
+        connect_base<make_sockaddr, ::bufferevent_socket_new,
                      bufferevent_set_timeouts, Fail::fail>(
             "130.192.16.172", 80, 3.14, reactor, Logger::global(),
             [=](Error e, bufferevent *b, double) {
@@ -138,8 +140,6 @@ TEST_CASE("net::connect_many() correctly handles net::connect() failure") {
                  |___/
 */
 
-#ifdef ENABLE_INTEGRATION_TESTS
-
 TEST_CASE("connect_base works with ipv4") {
     SharedPtr<Reactor> reactor = Reactor::make();
     reactor->run_with_initial_event([=]() {
@@ -154,7 +154,8 @@ TEST_CASE("connect_base works with ipv4") {
 }
 
 static bool check_error(Error err) {
-    return err == ConnectionRefusedError() or err == TimeoutError();
+    return (err == NetworkError() and err.reason == "connection_refused") or
+           err == TimeoutError();
 }
 
 TEST_CASE("connect_base works with ipv4 and closed port") {
@@ -431,5 +432,3 @@ TEST_CASE("net::connect() works in case of error") {
                 reactor);
     });
 }
-
-#endif

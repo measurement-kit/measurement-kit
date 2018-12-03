@@ -1,8 +1,10 @@
-// Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software under the BSD license. See AUTHORS
+// Part of Measurement Kit <https://measurement-kit.github.io/>.
+// Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
-#include "private/ndt/messages_impl.hpp"
+#include "src/libmeasurement_kit/ndt/messages_impl.hpp"
+
+#include <sstream>
 
 namespace mk {
 namespace ndt {
@@ -14,7 +16,7 @@ void read_ll(SharedPtr<Context> ctx,
     read_ll_impl(ctx, callback, reactor);
 }
 
-void read_json(SharedPtr<Context> ctx, Callback<Error, uint8_t, Json> callback,
+void read_json(SharedPtr<Context> ctx, Callback<Error, uint8_t, nlohmann::json> callback,
                SharedPtr<Reactor> reactor) {
     read_json_impl(ctx, callback, reactor);
 }
@@ -25,39 +27,57 @@ void read_msg(SharedPtr<Context> ctx, Callback<Error, uint8_t, std::string> cb,
 }
 
 ErrorOr<Buffer> format_msg_extended_login(unsigned char tests) {
-    return format_any(MSG_EXTENDED_LOGIN, Json{
+    return format_any(MSG_EXTENDED_LOGIN, nlohmann::json{
                           {"msg", MSG_NDT_VERSION},
-                          {"tests", lexical_cast<std::string>((int)tests)},
+                          {"tests", std::to_string((int)tests)},
                       });
 }
 
 ErrorOr<Buffer> format_test_msg(std::string s) {
-    return format_any(TEST_MSG, Json{
+    return format_any(TEST_MSG, nlohmann::json{
                           {"msg", s},
                       });
 }
 
 ErrorOr<Buffer> format_msg_waiting() {
-    return format_any(MSG_WAITING, Json{
+    return format_any(MSG_WAITING, nlohmann::json{
                           {"msg", ""},
                       });
 }
 
 void write(SharedPtr<Context> ctx, Buffer buff, Callback<Error> cb) {
-    std::string s = buff.peek();
-    ctx->logger->debug("> [%zu]: (%d) %s", s.length(), s.c_str()[0],
-                       s.substr(3).c_str());
+    // Need to use string stream because the original printf() is not
+    // guaranteed to work on old versions of Windows and with Mingw we
+    // link against MSVCRT.DLL (Visual Studio 6.0; 1998). Thus we may
+    // run on systems whose printf() doesn't understand `%zu`.
+    //
+    // TODO(bassosimone): find a better fix. Most likely that would be
+    // to use C++ style logging for the logger.
+    if (ctx->logger->get_verbosity() >= MK_LOG_DEBUG) {
+        std::string s = buff.peek();
+        std::stringstream ss;
+        ss << ">[" << s.length() << "]: (" << s.c_str()[0] << ") "
+           << s.substr(3).c_str();
+        // It sucks that we format the message twice but this is only
+        // for debugging, so it actually doesn't matter.
+        ctx->logger->debug("%s", ss.str().c_str());
+    }
     net::write(ctx->txp, buff, cb);
 }
 
 void write_noasync(SharedPtr<Context> ctx, Buffer buff) {
-    std::string s = buff.peek();
-    ctx->logger->debug("> [%zu]: (%d) %s", s.length(), s.c_str()[0],
-                       s.substr(3).c_str());
+    // See above. TODO(bassosimone): find a better fix.
+    if (ctx->logger->get_verbosity() >= MK_LOG_DEBUG) {
+        std::string s = buff.peek();
+        std::stringstream ss;
+        ss << ">[" << s.length() << "]: (" << s.c_str()[0] << ") "
+           << s.substr(3).c_str();
+        ctx->logger->debug("%s", ss.str().c_str());
+    }
     ctx->txp->write(buff);
 }
 
-Error add_to_report(SharedPtr<Entry> entry, std::string key, std::string item) {
+Error add_to_report(SharedPtr<nlohmann::json> entry, std::string key, std::string item) {
     std::list<std::string> list = split(item, ":");
     if (list.size() != 2) {
         return GenericError(); /* XXX use more specific error */

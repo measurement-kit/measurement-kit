@@ -1,20 +1,21 @@
-// Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software under the BSD license. See AUTHORS
+// Part of Measurement Kit <https://measurement-kit.github.io/>.
+// Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
-#include "private/common/utils.hpp"
-#include "private/ooni/constants.hpp"
-#include "private/ooni/http_header_field_manipulation.hpp"
-#include "private/ooni/utils.hpp"
-#include <measurement_kit/ooni.hpp>
+#include "src/libmeasurement_kit/common/reactor.hpp"
+#include "src/libmeasurement_kit/common/utils.hpp"
+#include "src/libmeasurement_kit/ooni/constants.hpp"
+#include "src/libmeasurement_kit/ooni/http_header_field_manipulation.hpp"
+#include "src/libmeasurement_kit/ooni/nettests.hpp"
+#include "src/libmeasurement_kit/ooni/utils.hpp"
+#include "src/libmeasurement_kit/ooni/templates.hpp"
+#include "src/libmeasurement_kit/ooni/error.hpp"
 
 namespace mk {
 namespace ooni {
 
-using namespace mk::report;
-
 void compare_headers_response(http::Headers headers,
-                             SharedPtr<http::Response> response, SharedPtr<report::Entry> entry,
+                             SharedPtr<http::Response> response, SharedPtr<nlohmann::json> entry,
                              SharedPtr<Logger> logger) {
     if (response->body.empty()) {
         logger->warn("empty response body");
@@ -23,10 +24,10 @@ void compare_headers_response(http::Headers headers,
         return;
     }
 
-    Json resp;
+    nlohmann::json resp;
     try {
-        resp = Json::parse(response->body);
-    } catch (const std::invalid_argument &) {
+        resp = nlohmann::json::parse(response->body);
+    } catch (const std::exception &) {
         logger->warn("response body not valid JSON");
         (*entry)["tampering"]["total"] = true;
         (*entry)["tampering"]["request_line_capitalization"] = true;
@@ -45,11 +46,11 @@ void compare_headers_response(http::Headers headers,
 
     // ooni-probe behavior to report header keys in the request or response
     // but not both. (case-sensitive, and ignoring values)
-    Json resp_headers = resp["headers_dict"];
+    nlohmann::json resp_headers = resp["headers_dict"];
     std::set<std::string> req_keys, resp_keys, diff;
     for (auto it = headers.begin(); it != headers.end(); ++it) {
-        req_keys.insert(it->first);
-        logger->debug("ins %s in req_keys", it->first.c_str());
+        req_keys.insert(it->key);
+        logger->debug("ins %s in req_keys", it->key.c_str());
     }
     for (auto it = resp_headers.begin(); it != resp_headers.end(); ++it) {
         resp_keys.insert(it.key());
@@ -67,10 +68,10 @@ void compare_headers_response(http::Headers headers,
 }
 
 void http_header_field_manipulation(std::string /*input*/, Settings options,
-                                    Callback<SharedPtr<report::Entry>> callback,
+                                    Callback<SharedPtr<nlohmann::json>> callback,
                                     SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
-    SharedPtr<Entry> entry(new Entry);
-    (*entry)["tampering"] = Entry::object();
+    SharedPtr<nlohmann::json> entry(new nlohmann::json);
+    (*entry)["tampering"] = nlohmann::json::object();
     (*entry)["tampering"]["total"] = nullptr;
     (*entry)["tampering"]["request_line_capitalization"] = nullptr;
     (*entry)["tampering"]["header_name_diff"] = nullptr;

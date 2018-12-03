@@ -1,13 +1,14 @@
-// Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software under the BSD license. See AUTHORS
+// Part of Measurement Kit <https://measurement-kit.github.io/>.
+// Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
-#define CATCH_CONFIG_MAIN
-#include "private/ext/catch.hpp"
+#include "test/winsock.hpp"
 
-#include "private/common/utils.hpp"
+#include "include/private/catch.hpp"
 
-#include <measurement_kit/report.hpp>
+#include "src/libmeasurement_kit/common/utils.hpp"
+
+#include "src/libmeasurement_kit/report/file_reporter.hpp"
 
 using namespace mk::report;
 using namespace mk;
@@ -43,7 +44,7 @@ TEST_CASE(
         std::string filename("example_test_report.njson");
         report.add_reporter(FileReporter::make(filename));
 
-        mk::report::Entry entry;
+        nlohmann::json entry;
         entry["input"] = input;
         entry["antani"] = "fuffa";
         report.fill_entry(entry);
@@ -56,7 +57,7 @@ TEST_CASE(
 
                     std::ifstream infile(filename);
                     for (std::string line; getline(infile, line);) {
-                        Json entry = Json::parse(line.c_str());
+                        nlohmann::json entry = nlohmann::json::parse(line.c_str());
                         REQUIRE(entry["test_name"].get<std::string>() ==
                                 report.test_name);
                         REQUIRE(entry["test_version"].get<std::string>() ==

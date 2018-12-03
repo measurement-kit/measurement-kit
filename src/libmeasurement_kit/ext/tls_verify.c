@@ -1,7 +1,7 @@
 /* $OpenBSD: tls_verify.c,v 1.20 2018/02/05 00:52:24 jsing Exp $ */
 /*
- * Part of measurement-kit <https://measurement-kit.github.io/>.
- * Measurement-kit is free software under the BSD license. See AUTHORS
+ * Part of Measurement Kit <https://measurement-kit.github.io/>.
+ * Measurement Kit is free software under the BSD license. See AUTHORS
  * and LICENSE for more information on the copying conditions.
  * =====================================================================
  * Based on LibreSSL's tls_verify.c with small local modifications.
@@ -21,16 +21,17 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <measurement_kit/common/portable/sys/socket.h>
-
-#include <measurement_kit/common/portable/arpa/inet.h>
-#include <measurement_kit/common/portable/netinet/in.h>
+#include <measurement_kit/common/aaa_base.h>
 
 #include <string.h>
 
 #include <openssl/x509v3.h>
 
-#include "private/ext/tls_internal.h"
+#include "src/libmeasurement_kit/ext/tls_internal.h"
+
+#if defined _WIN32 && !defined __MINGW32__
+#define strcasecmp _stricmp
+#endif
 
 static int
 tls_match_name(const char *cert_name, const char *name)

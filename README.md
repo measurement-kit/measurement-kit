@@ -1,115 +1,45 @@
-# MeasurementKit
+# Measurement Kit
 
 > Portable C++14 network measurement library
 
-[![Android](https://img.shields.io/bintray/v/measurement-kit/android/android-libs.svg)](https://bintray.com/measurement-kit/android/android-libs/_latestVersion) [![GitHub license](https://img.shields.io/badge/License-BSD%202--Clause-orange.svg)](https://raw.githubusercontent.com/measurement-kit/measurement-kit/master/LICENSE) [![Github Releases](https://img.shields.io/github/release/measurement-kit/measurement-kit.svg)](https://github.com/measurement-kit/measurement-kit/releases) [![Github Issues](https://img.shields.io/github/issues/measurement-kit/measurement-kit.svg)](https://github.com/measurement-kit/measurement-kit/issues)
+[![GitHub license](https://img.shields.io/badge/License-BSD%202--Clause-orange.svg)](https://raw.githubusercontent.com/measurement-kit/measurement-kit/master/LICENSE) [![Github Releases](https://img.shields.io/github/release/measurement-kit/measurement-kit.svg)](https://github.com/measurement-kit/measurement-kit/releases) [![Github Issues](https://img.shields.io/github/issues/measurement-kit/measurement-kit.svg)](https://github.com/measurement-kit/measurement-kit/issues)
 
 - - -
 
-| branch | travis-ci | coveralls |
-|--------|-----------|-----------|
-| master | [![Travis Build Status](https://img.shields.io/travis/measurement-kit/measurement-kit/master.svg)](https://travis-ci.org/measurement-kit/measurement-kit) | [![Coverage Status](https://img.shields.io/coveralls/measurement-kit/measurement-kit/master.svg)](https://coveralls.io/github/measurement-kit/measurement-kit?branch=master) |
-| stable | [![Travis Build Status](https://img.shields.io/travis/measurement-kit/measurement-kit/stable.svg)](https://travis-ci.org/measurement-kit/measurement-kit?branch=stable) | [![Coverage Status](https://img.shields.io/coveralls/measurement-kit/measurement-kit/stable.svg)](https://coveralls.io/github/measurement-kit/measurement-kit?branch=stable) |
+| branch | Unix      | coverage  | Windows  |
+|--------|-----------|-----------|----------|
+| master | [![Build Status](https://img.shields.io/travis/measurement-kit/measurement-kit/master.svg?label=travis)](https://travis-ci.org/measurement-kit/measurement-kit) | [![codecov](https://codecov.io/gh/measurement-kit/measurement-kit/branch/master/graph/badge.svg)](https://codecov.io/gh/measurement-kit/measurement-kit) | [![Build status](https://img.shields.io/appveyor/ci/bassosimone/measurement-kit/master.svg?label=appveyor)](https://ci.appveyor.com/project/bassosimone/measurement-kit/branch/master) |
+| stable | [![Travis Build Status](https://img.shields.io/travis/measurement-kit/measurement-kit/stable.svg)](https://travis-ci.org/measurement-kit/measurement-kit?branch=stable) | [![Coverage Status](https://img.shields.io/coveralls/measurement-kit/measurement-kit/stable.svg)](https://coveralls.io/github/measurement-kit/measurement-kit?branch=stable) | [![Build status](https://ci.appveyor.com/api/projects/status/bvse3kgbp8dpk9ii/branch/stable?svg=true)](https://ci.appveyor.com/project/bassosimone/measurement-kit/branch/stable) |
 
-MeasurementKit is a library that implements open network measurement methodologies
-(performance, censorship, etc.) and targets mobile platforms (Android and iOS).
+Measurement Kit is a library that implements open network measurement
+methodologies (performance, censorship, etc.) for Android, iOS, Windows,
+macOS, and Linux systems.
 
-It is meant to be embedded by third party applications with specific network measurement
-needs and/or to be used by researchers as a basis to implement novel tools.
+It is meant to be embedded by third party applications with specific network
+measurement needs and/or to be used by researchers as a basis to implement
+novel tools.
 
-Currently it implements the following high-level tests:
+Please, refer to the [include/measurement_kit](include/measurement_kit)
+folder documentation for an up-to-date list of available tests.
 
-- [OONI](https://ooni.torproject.org/)'s [Web Connectivity](https://github.com/TheTorProject/ooni-spec/blob/master/test-specs/ts-017-web-connectivity.md) test
+## API and examples
 
-- the [network diagnostic tool](https://github.com/ndt-project/ndt/wiki/NDTTestMethodology) network performance test
+Measurement Kit exposes a simple C-like API that is described in detail
+in the [include/measurement_kit](include/measurement_kit) folder
+documentation. You can find examples of usage of such API into the
+[example](example) folder.
 
-- [OONI](https://ooni.torproject.org/)'s [DNS Injection](https://github.com/TheTorProject/ooni-spec/blob/master/test-specs/ts-012-dns-injection.md) test
+## Generic Unix instructions
 
-- [OONI](https://ooni.torproject.org/)'s [HTTP Invalid Request Line](https://github.com/TheTorProject/ooni-spec/blob/master/test-specs/ts-007-http-invalid-request-line.md) test
+You need to have the autotools, a C++14 capable C++ compiler, a C++14
+capable C++ library, a C11 capable C compiler, and all the dependencies
+installed. For current information, we encourage you to read the very simple
+build script that we use on Travis CI to setup a Unix environment, from
+which you can gather up-to-date information regarding required packages on
+a Debian like system. To this end, please refer to the content of the
+[.ci/common](.ci/common) folder.
 
-- [OONI](https://ooni.torproject.org/)'s [TCP Connect](https://github.com/TheTorProject/ooni-spec/blob/master/test-specs/ts-008-tcpconnect.md) test
-
-- [OONI](https://ooni.torproject.org/)'s [Meek Fronted Requests](https://github.com/TheTorProject/ooni-spec/blob/master/test-specs/ts-014-meek-fronted-requests.md) test
-
-- [OONI](https://ooni.torproject.org/)'s [HTTP Header Field Manipulation](https://github.com/TheTorProject/ooni-spec/blob/master/test-specs/ts-006-header-field-manipulation.md) test
-
-- [OONI](https://ooni.torproject.org/)'s [Facebook Messenger](https://github.com/TheTorProject/ooni-spec/blob/master/test-specs/ts-019-facebook-messenger.md) test
-
-- Neubot's [MPEG DASH test](https://github.com/neubot/neubot/tree/master/mod_dash)
-
-- [OONI](https://ooni.torproject.org/)'s [Telegram](https://github.com/TheTorProject/ooni-spec/blob/master/test-specs/ts-020-telegram.md) test
-
-- [OONI](https://ooni.torproject.org/)'s [Captiveportal](https://github.com/TheTorProject/ooni-spec/blob/master/test-specs/ts-010-captive-portal.md) test
-
-- [OONI](https://ooni.torproject.org/)'s [Whatsapp](https://github.com/TheTorProject/ooni-spec/blob/master/test-specs/ts-018-whatsapp.md) test
-
-It contains building-block functionalities useful to implement your own
-tests. More in detail it currently implements:
-
-- [TCP connection](https://github.com/measurement-kit/measurement-kit/blob/master/include/measurement_kit/net/transport.hpp) (with which you can create a TCP connection towards and
-  endpoint, receive and send data)
-
-- [DNS client](https://github.com/measurement-kit/measurement-kit/blob/master/include/measurement_kit/dns/dns.hpp) (with which you can resolve and reverse-resolve A and AAAA
-  records using arbitrary name servers)
-
-- [HTTP client](https://github.com/measurement-kit/measurement-kit/blob/master/include/measurement_kit/http/http.hpp) (with which you can send HTTP/1.1 requests and receive
-  and parse the corresponding responses)
-
-- [traceroute for Android](https://github.com/measurement-kit/measurement-kit/blob/master/include/measurement_kit/traceroute/android.hpp) (with which you can send individual traceroute
-  probes with a specified payload and TTL)
-
-- [mlab-ns client](https://github.com/measurement-kit/measurement-kit/blob/master/include/measurement_kit/mlabns/mlabns.hpp) (with which you can interact with Measurement Lab backend to know the server with which to run tests)
-
-- the functionality to communicate with the [OONI collector](https://github.com/TheTorProject/ooni-backend)
-
-- the functionality to communicate with the [OONI bouncer](https://github.com/TheTorProject/ooni-backend)
-
-In the short term we plan to add to MeasurementKit:
-
-- more OONI tests
-
-Other functionalities that we would like to add are building-blocks functionalities
-such as [uTP](https://github.com/bittorrent/libutp), and traceroute for iOS.
-
-The following index illustrates the content of the remainder of this file:
-
-- [How to clone the repository](#how-to-clone-the-repository)
-- [How to test a specific branch](#how-to-test-a-specific-branch)
-- [How to build MeasurementKit](#how-to-build-measurementkit)
-  - [How to build MeasurementKit on a Unix-like system](#how-to-build-measurementkit-on-a-unix-like-system)
-  - [How to test MeasurementKit on a Unix-like system](#how-to-test-measurementkit-on-a-unix-like-system)
-  - [How to build MeasurementKit on Android](#how-to-build-measurementkit-on-android)
-  - [How to build MeasurementKit on iOS](#how-to-build-measurementkit-on-ios)
-  - [How to add MeasurementKit to an Xcode project](#how-to-add-measurementkit-to-an-xcode-project)
-- [How to use MeasurementKit](#how-to-use-measurementkit)
-
-
-## How to clone the repository
-
-To clone MeasurementKit repository, do:
-
-    git clone https://github.com/measurement-kit/measurement-kit
-
-## How to test a specific branch
-
-If you need to checkout a specific branch (say `feature/foo`) for testing
-it, clone the repository and then type:
-
-```
-git fetch origin
-git checkout feature/foo
-```
-
-Then proceed with the instruction to build and test MeasurementKit.
-
-For more detailed instructions see [contributing instructions](
-CONTRIBUTING.md).
-
-## How to build MeasurementKit
-
-### How to build MeasurementKit on a Unix-like system
-
-Very briefly, to build from the git repository do:
+With all the dependencies statisfied, build with:
 
 ```
 ./autogen.sh
@@ -119,54 +49,52 @@ sudo make install    # optional, if you want to install to `/usr/local`
 sudo /sbin/ldconfig  # required only on Linux if you install
 ```
 
-See [the Unix tutorial](doc/tutorial/unix.md) for more details.
+The configure script will also provide advice if a dependency is missing. Also,
+`./configure --help` can be useful.
 
+## Homebrew instructions
 
-### How to test MeasurementKit on a Unix-like system
+Please check the [measurement-kit/homebrew-measurement-kit](
+https://github.com/measurement-kit/homebrew-measurement-kit) tap
+for Homebrew.
 
-Once you have built MeasurementKit, run tests like:
+## Mingw-w64 instructions
 
-```
-make check
-```
+For information on how to compile Measurement Kit using the [Mingw-w64](
+https://mingw-w64.org/doku.php) compiler distribution for Windows, please refer
+to the [measurement-kit/script-build-unix](
+https://github.com/measurement-kit/script-build-unix) repository.
 
-### How to build MeasurementKit on Android
+To better understand how to compile using Mingw-w64, it is also useful to
+look into how we build Measurement Kit on AppVeyor. To this end, we encourage
+you check the [.ci/appveyor](.ci/appveyor) folder.
 
-We have [a specific repository](https://github.com/measurement-kit/android-libs)
-for compiling MeasurementKit for Android. You may also want to read the
-[documentation explaining how to cross compile MK dependencies for Android](
-doc/build/android.md).
+## Android instructions
 
-### How to build MeasurementKit on iOS
+For cross-compiling Measurement Kit for Android, please refer to the
+[measurement-kit/script-build-unix](
+https://github.com/measurement-kit/script-build-unix) repository. For
+integrating Measurement Kit cross-compiled for Android with Java classes
+that you can use from Android, please see [measurement-kit/android-libs](
+https://github.com/measurement-kit/android-libs). For how to use Measurement
+Kit in an Android project, please see [measurement-kit/android-example](
+https://github.com/measurement-kit/android-example).
 
-Having Xcode command line tools installed, run:
+## iOS instructions
 
-```
-./build/ios/library
-```
+For cross-compiling Measurement Kit for iOS, please refer to the
+[measurement-kit/script-build-unix](
+https://github.com/measurement-kit/script-build-unix) repository. For
+integrating Measurement Kit cross-compiled for iOS into a framework
+that you can use from iOS, please see [measurement-kit/ios-libs](
+https://github.com/measurement-kit/ios-libs). For how to use Measurement
+Kit in an iOS project, please see [measurement-kit/ios-example](
+https://github.com/measurement-kit/ios-example).
 
-See the [iOS tutorial](doc/tutorial/ios.md) for more info.
+## How to develop for Measurement Kit
 
-### How to add MeasurementKit to an Xcode project.
+To clone Measurement Kit repository, do:
 
-Make sure your [Podfile](https://guides.cocoapods.org/syntax/podfile.html)
-looks like this:
+    git clone --recursive https://github.com/measurement-kit/measurement-kit
 
-```ruby
-target 'YourTargetNameHere' do
-    pod 'measurement_kit',
-      :git => 'https://github.com/measurement-kit/measurement-kit.git',
-      :branch => 'stable'
-end
-```
-
-Run `pod install` (or `pod update`) and remember to open the
-`.xcworkspace` rather than the `.xcodeproj`. See the [iOS tutorial](
-doc/tutorial/ios.md) for more info.
-
-## How to use MeasurementKit
-
-You probably want to start using the [nettests API](doc/api/nettests.md)
-that is the high level API for running tests. To this end, see also
-the [nettests API examples](example/nettests) and the [Unix
-tutorial](doc/tutorial/unix.md).
+See [CONTRIBUTING.md](CONTRIBUTING.md) for more information.

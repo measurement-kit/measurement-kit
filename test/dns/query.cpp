@@ -1,15 +1,16 @@
-// Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software under the BSD license. See AUTHORS
+// Part of Measurement Kit <https://measurement-kit.github.io/>.
+// Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
-#define CATCH_CONFIG_MAIN
-#include "private/ext/catch.hpp"
+#include "test/winsock.hpp"
 
-#include "private/libevent/dns.hpp"
+#include "include/private/catch.hpp"
+
+#include "src/libmeasurement_kit/dns/resolve_hostname.hpp"
+#include "src/libmeasurement_kit/dns/libevent_query.hpp"
 
 using namespace mk;
 using namespace mk::dns;
-using namespace mk::libevent; // TODO: should split the tests
 
 // Now testing query()
 static evdns_request *null_resolver(evdns_base *, const char *, int,
@@ -28,7 +29,14 @@ static evdns_request *null_resolver_reverse(evdns_base *,
 }
 static int null_inet_pton(int, const char *, void *) { return 0; }
 
-static const char *null_inet_ntop(int, const void *, char *, socklen_t) {
+#ifdef __MINGW32__
+static const char *null_inet_ntop(int, void *, char *, size_t)
+#elif defined _MSC_VER
+static const char *null_inet_ntop(int, const void *, char *, size_t)
+#else
+static const char *null_inet_ntop(int, const void *, char *, socklen_t)
+#endif
+{
     return nullptr;
 }
 
@@ -142,21 +150,21 @@ TEST_CASE("throw error with ntop conversion error") {
 }
 
 TEST_CASE("dns::query deals with failing evdns_base_resolve_ipv4") {
-    query<::evdns_base_free, null_resolver>(
+    libevent_query<::evdns_base_free, null_resolver>(
         "IN", "A", "www.google.com",
         [](Error e, SharedPtr<Message>) { REQUIRE(e == ResolverError()); }, {},
         Reactor::global(), Logger::global());
 }
 
 TEST_CASE("dns::query deals with failing evdns_base_resolve_ipv6") {
-    query<::evdns_base_free, ::evdns_base_resolve_ipv4, null_resolver>(
+    libevent_query<::evdns_base_free, ::evdns_base_resolve_ipv4, null_resolver>(
         "IN", "AAAA", "github.com",
         [](Error e, SharedPtr<Message>) { REQUIRE(e == ResolverError()); }, {},
         Reactor::global(), Logger::global());
 }
 
 TEST_CASE("dns::query deals with failing evdns_base_resolve_reverse") {
-    query<::evdns_base_free, ::evdns_base_resolve_ipv4,
+    libevent_query<::evdns_base_free, ::evdns_base_resolve_ipv4,
                 ::evdns_base_resolve_ipv6, null_resolver_reverse>(
         "IN", "REVERSE_A", "8.8.8.8",
         [](Error e, SharedPtr<Message>) { REQUIRE(e == ResolverError()); }, {},
@@ -164,7 +172,7 @@ TEST_CASE("dns::query deals with failing evdns_base_resolve_reverse") {
 }
 
 TEST_CASE("dns::query deals with failing evdns_base_resolve_reverse_ipv6") {
-    query<::evdns_base_free, ::evdns_base_resolve_ipv4,
+    libevent_query<::evdns_base_free, ::evdns_base_resolve_ipv4,
                 ::evdns_base_resolve_ipv6, ::evdns_base_resolve_reverse,
                 null_resolver_reverse>(
         "IN", "REVERSE_AAAA", "::1",
@@ -174,7 +182,7 @@ TEST_CASE("dns::query deals with failing evdns_base_resolve_reverse_ipv6") {
 }
 
 TEST_CASE("dns::query deals with inet_pton returning 0") {
-    query<::evdns_base_free, ::evdns_base_resolve_ipv4,
+    libevent_query<::evdns_base_free, ::evdns_base_resolve_ipv4,
                 ::evdns_base_resolve_ipv6, ::evdns_base_resolve_reverse,
                 ::evdns_base_resolve_reverse_ipv6, null_inet_pton>(
         "IN", "REVERSE_A", "8.8.8.8",
@@ -182,7 +190,7 @@ TEST_CASE("dns::query deals with inet_pton returning 0") {
         [](Error e, SharedPtr<Message>) { REQUIRE(e == InvalidIPv4AddressError()); }, {},
         Reactor::global(), Logger::global());
 
-    query<::evdns_base_free, ::evdns_base_resolve_ipv4,
+    libevent_query<::evdns_base_free, ::evdns_base_resolve_ipv4,
                 ::evdns_base_resolve_ipv6, ::evdns_base_resolve_reverse,
                 ::evdns_base_resolve_reverse_ipv6, null_inet_pton>(
         "IN", "REVERSE_AAAA", "::1",
@@ -209,8 +217,6 @@ TEST_CASE("dns::query deals with invalid PTR name") {
           [](Error e, SharedPtr<Message>) { REQUIRE(e == InvalidNameForPTRError()); },
           {{"dns/engine", "libevent"}});
 }
-
-#ifdef ENABLE_INTEGRATION_TESTS
 
 // Test resolve_hostname
 
@@ -242,16 +248,25 @@ TEST_CASE("resolve_hostname works with IPv6 address") {
 
 TEST_CASE("resolve_hostname works with domain") {
     SharedPtr<Reactor> reactor = Reactor::make();
+    SharedPtr<Logger> logger = Logger::make();
+    logger->set_verbosity(MK_LOG_WARNING);
     reactor->run_with_initial_event([=]() {
         resolve_hostname("google.com", [=](ResolveHostnameResult r) {
             REQUIRE(not r.inet_pton_ipv4);
             REQUIRE(not r.inet_pton_ipv6);
             REQUIRE(not r.ipv4_err);
+#ifdef _WIN32
+            // At least one IPv4 address (it seems that IPv6 is not
+            // enabled on AppVeyor AFAICT and FWIW I also have disabled
+            // IPv6 on my Windows development machine).
+            REQUIRE(r.addresses.size() >= 1);
+#else
             REQUIRE(not r.ipv6_err);
             // At least one IPv4 and one IPv6 addresses
             REQUIRE(r.addresses.size() > 1);
+#endif
             reactor->stop();
-        }, {}, reactor);
+        }, {}, reactor, logger);
     });
 }
 
@@ -368,5 +383,3 @@ TEST_CASE("The libevent resolver works as expected") {
               }, {{"dns/engine", "libevent"}}, reactor);
     });
 }
-
-#endif

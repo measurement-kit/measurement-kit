@@ -1,11 +1,12 @@
-// Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software under the BSD license. See AUTHORS
+// Part of Measurement Kit <https://measurement-kit.github.io/>.
+// Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
-#define CATCH_CONFIG_MAIN
-#include "private/ext/catch.hpp"
+#include "test/winsock.hpp"
 
-#include <measurement_kit/ooni/nettests.hpp>
+#include "include/private/catch.hpp"
+
+#include "src/libmeasurement_kit/ooni/nettests.hpp"
 
 using namespace mk;
 
@@ -16,7 +17,7 @@ TEST_CASE("Web connectivity works as expected") {
         auto reactor = Reactor::make();
         bool okay = false;
         ooni::web_connectivity("http://mail.voila.fr", Settings{},
-                [&](SharedPtr<report::Entry> entry) {
+                [&](SharedPtr<nlohmann::json> entry) {
                     okay = ((*entry)["failure"] == nullptr);
                     reactor->stop();
                 },
@@ -29,7 +30,7 @@ TEST_CASE("Web connectivity works as expected") {
         auto reactor = Reactor::make();
         bool okay = false;
         ooni::web_connectivity("http://www.aseansec.org", Settings{},
-                [&](SharedPtr<report::Entry> entry) {
+                [&](SharedPtr<nlohmann::json> entry) {
                     okay = ((*entry)["failure"] == nullptr);
                     reactor->stop();
                 },

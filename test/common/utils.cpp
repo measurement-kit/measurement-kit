@@ -1,11 +1,12 @@
-// Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software under the BSD license. See AUTHORS
+// Part of Measurement Kit <https://measurement-kit.github.io/>.
+// Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
-#define CATCH_CONFIG_MAIN
-#include "private/ext/catch.hpp"
+#include "test/winsock.hpp"
 
-#include "private/common/utils.hpp"
+#include "include/private/catch.hpp"
+
+#include "src/libmeasurement_kit/common/utils.hpp"
 
 TEST_CASE("We are NOT using the default random seed") {
     // Note: the default random generator shall be seeded using 1 unless
@@ -14,7 +15,8 @@ TEST_CASE("We are NOT using the default random seed") {
 }
 
 TEST_CASE("random_within_charset() works with zero length string") {
-    REQUIRE_THROWS_AS(mk::random_within_charset("", 16), mk::ValueError);
+    REQUIRE_THROWS_AS(mk::random_within_charset("", 16),
+                      std::runtime_error);
 }
 
 TEST_CASE("random_within_charset() uses all the available charset") {
@@ -81,7 +83,7 @@ TEST_CASE("random_tld() does what it should") {
 
 TEST_CASE("split(std::string s) works properly in the common case") {
     REQUIRE((mk::split(" 34    43  17 11 ") == std::list<std::string>{
-                {"", "34", "43", "17", "11"}
+                {"34", "43", "17", "11"}
             }));
 }
 
@@ -395,8 +397,8 @@ TEST_CASE("random_choice isn't obviously wrong") {
 }
 
 TEST_CASE("randomly_capitalize isn't obviously wrong") {
-    auto lower_string = "abcdefghij";
-    auto upper_string = "ABCDEFGHIJ";
+    auto lower_string = "abcdefghijklmnopqrstuvz";
+    auto upper_string = "ABCDEFGHIJKLMNOPQRSTUVZ";
     auto rc_lower_string = mk::randomly_capitalize(lower_string);
     REQUIRE(rc_lower_string != lower_string);
     auto rc_upper_string = mk::randomly_capitalize(upper_string);

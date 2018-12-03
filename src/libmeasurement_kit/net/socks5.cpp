@@ -1,11 +1,12 @@
-// Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software under the BSD license. See AUTHORS
+// Part of Measurement Kit <https://measurement-kit.github.io/>.
+// Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
-#include "private/net/socks5.hpp"
-#include "private/net/connect_impl.hpp"
+#include "src/libmeasurement_kit/net/socks5.hpp"
+#include "src/libmeasurement_kit/net/connect_impl.hpp"
 
-#include "private/libevent/connection.hpp"
+#include "src/libmeasurement_kit/net/libevent_emitter.hpp"
+#include "src/libmeasurement_kit/common/lexical_cast.hpp"
 
 namespace mk {
 namespace net {
@@ -31,17 +32,17 @@ Buffer socks5_format_auth_request(SharedPtr<Logger> logger) {
 ErrorOr<bool> socks5_parse_auth_response(Buffer &buffer, SharedPtr<Logger> logger) {
     auto readbuf = buffer.readn(2);
     if (readbuf == "") {
-        return false; // Try again after next recv()
+        return {NoError(), false}; // Try again after next recv()
     }
     logger->debug("socks5: << version=%d", readbuf[0]);
     logger->debug("socks5: << preferred_auth=%d", readbuf[1]);
     if (readbuf[0] != 5) {
-        return BadSocksVersionError();
+        return {BadSocksVersionError(), {}};
     }
     if (readbuf[1] != 0) {
-        return NoAvailableSocksAuthenticationError();
+        return {NoAvailableSocksAuthenticationError(), {}};
     }
-    return true;
+    return {NoError(), true};
 }
 
 ErrorOr<Buffer> socks5_format_connect_request(Settings settings, SharedPtr<Logger> logger) {
@@ -60,9 +61,9 @@ ErrorOr<Buffer> socks5_format_connect_request(Settings settings, SharedPtr<Logge
     auto address = settings["net/address"];
 
     if (address.length() > 255) {
-        return SocksAddressTooLongError();
+        return {SocksAddressTooLongError(), {}};
     }
-    out.write_uint8(address.length());            // Len
+    out.write_uint8((uint8_t)address.length());   // Len
     out.write(address.c_str(), address.length()); // String
 
     logger->debug("socks5: >> domain len=%d", (uint8_t)address.length());
@@ -70,18 +71,18 @@ ErrorOr<Buffer> socks5_format_connect_request(Settings settings, SharedPtr<Logge
 
     int portnum = settings["net/port"].as<int>();
     if (portnum < 0 || portnum > 65535) {
-        return SocksInvalidPortError();
+        return {SocksInvalidPortError(), {}};
     }
     out.write_uint16(portnum); // Port
 
     logger->debug("socks5: >> port=%d", portnum);
 
-    return out;
+    return {NoError(), out};
 }
 
 ErrorOr<bool> socks5_parse_connect_response(Buffer &buffer, SharedPtr<Logger> logger) {
     if (buffer.length() < 5) {
-        return false; // Try again after next recv()
+        return {NoError(), false}; // Try again after next recv()
     }
 
     auto peekbuf = buffer.peek(5);
@@ -92,13 +93,13 @@ ErrorOr<bool> socks5_parse_connect_response(Buffer &buffer, SharedPtr<Logger> lo
     logger->debug("socks5: << atype=%d", peekbuf[3]);
 
     if (peekbuf[0] != 5) {
-        return BadSocksVersionError();
+        return {BadSocksVersionError(), {}};
     }
     if (peekbuf[1] != 0) {
-        return SocksError(); // TODO: also return the actual error
+        return {SocksError(), {}}; // TODO: return actual error
     }
     if (peekbuf[2] != 0) {
-        return BadSocksReservedFieldError();
+        return {BadSocksReservedFieldError(), {}};
     }
 
     auto atype = peekbuf[3]; // Atype
@@ -111,15 +112,15 @@ ErrorOr<bool> socks5_parse_connect_response(Buffer &buffer, SharedPtr<Logger> lo
     } else if (atype == 4) {
         total += 16; // IPv6 addr size
     } else {
-        return BadSocksAtypeValueError();
+        return {BadSocksAtypeValueError(), {}};
     }
     total += 2; // Port size
     if (buffer.length() < total) {
-        return false; // Try again after next recv()
+        return {NoError(), false}; // Try again after next recv()
     }
 
     buffer.discard(total);
-    return true;
+    return {NoError(), true};
 }
 
 void socks5_connect(std::string address, int port, Settings settings,
@@ -144,7 +145,7 @@ void socks5_connect(std::string address, int port, Settings settings,
                         0.0, r, reactor, logger));
                     return;
                 }
-                SharedPtr<Transport> txp = libevent::Connection::make(
+                SharedPtr<Transport> txp = net::LibeventEmitter::make(
                         r->connected_bev, reactor, logger);
                 SharedPtr<Transport> socks5 = make_txp<Socks5>(
                         0.0, r, txp, settings, reactor, logger);

@@ -1,24 +1,20 @@
-// Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software under the BSD license. See AUTHORS
+// Part of Measurement Kit <https://measurement-kit.github.io/>.
+// Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
-#ifdef HAVE_CONFIG_H
-#include "config.h" // For MK_CA_BUNDLE
-#endif
-#ifndef MK_CA_BUNDLE
-#error "MK_CA_BUNDLE is not set."
-#endif
+#include "src/libmeasurement_kit/ext/tls_internal.h"
 
-#include "private/net/connect_impl.hpp"
-#include "private/net/emitter.hpp"
-#include "private/net/socks5.hpp"
-#include "private/net/utils.hpp"
+#include "src/libmeasurement_kit/net/connect_impl.hpp"
+#include "src/libmeasurement_kit/net/emitter.hpp"
+#include "src/libmeasurement_kit/net/socks5.hpp"
+#include "src/libmeasurement_kit/net/utils.hpp"
 
-#include "private/libevent/connection.hpp"
-#include "private/net/libssl.hpp"
+#include "src/libmeasurement_kit/net/libevent_emitter.hpp"
+#include "src/libmeasurement_kit/net/libssl.hpp"
 
-#include <measurement_kit/dns.hpp>
-#include <measurement_kit/net.hpp>
+#include "src/libmeasurement_kit/dns/resolve_hostname.hpp"
+#include "src/libmeasurement_kit/dns/query.hpp"
+#include "src/libmeasurement_kit/net/connect.hpp"
 
 #include <event2/bufferevent_ssl.h>
 
@@ -43,8 +39,13 @@ void mk_bufferevent_on_event(bufferevent *bev, short what, void *ptr) {
          * which is reasonable because currently we only use this function
          * as callback for either socket or SSL connect.
          */
-        if (errno != 0) {
-            err = mk::net::map_errno(errno);
+#ifdef _WIN32
+        auto ecode = WSAGetLastError();
+#else
+        auto ecode = errno;
+#endif
+        if (ecode != 0) {
+            err = mk::net::map_errno(ecode);
         } else {
             long ssl_err = bufferevent_get_openssl_error(bev);
             std::string s = ERR_error_string(ssl_err, nullptr);
@@ -57,8 +58,6 @@ void mk_bufferevent_on_event(bufferevent *bev, short what, void *ptr) {
 
 namespace mk {
 namespace net {
-
-using namespace mk::libevent;
 
 void connect_first_of(SharedPtr<ConnectResult> result, int port,
                       ConnectFirstOfCb cb, Settings settings,
@@ -120,7 +119,7 @@ void connect_logic(std::string hostname, int port,
                                      // Otherwise, report them all
                                      Error connect_error = ConnectFailedError();
                                      for (auto se: e) {
-                                         connect_error.add_child_error(se);
+                                         connect_error.add_child_error(std::move(se));
                                      }
                                      cb(connect_error, result);
                                      return;
@@ -129,7 +128,7 @@ void connect_logic(std::string hostname, int port,
                                     bufferevent_getfd(result->connected_bev)
                                  );
                                  for (auto se: e) {
-                                    nagle_error.add_child_error(se);
+                                    nagle_error.add_child_error(std::move(se));
                                  }
                                  cb(nagle_error, result);
                              },
@@ -213,10 +212,13 @@ void connect(std::string address, int port,
                 return;
             }
             if (settings.find("net/ssl") != settings.end()) {
-                std::string cbp = MK_CA_BUNDLE;
-                if (settings.find("net/ca_bundle_path") != settings.end()) {
-                    cbp = settings.at("net/ca_bundle_path");
+                std::string cbp;
+                if (settings.find("net/ca_bundle_path") == settings.end()) {
+                    callback(MissingCaBundlePathError(), make_txp<Emitter>(
+                          timeout, r, reactor, logger));
+                    return;
                 }
+                cbp = settings.at("net/ca_bundle_path");
                 ErrorOr<SSL *> cssl = libssl::Cache<>::thread_local_instance()
                     ->get_client_ssl(cbp, address, logger);
                 if (!cssl) {
@@ -258,29 +260,13 @@ void connect(std::string address, int port,
                                     return;
                                 }
                                 if (*allow_dirty_shutdown == true) {
-                                    /*
-                                     * This useful libevent function is only
-                                     * available since libevent 2.1.0:
-                                     */
-#ifdef HAVE_BUFFEREVENT_OPENSSL_SET_ALLOW_DIRTY_SHUTDOWN
                                     bufferevent_openssl_set_allow_dirty_shutdown(
                                         bev, 1);
                                     logger->info("Allowing dirty SSL shutdown");
-#else
-                                    logger->warn("Cannot tell libevent to "
-                                                 "allow SSL dirty shutdowns "
-                                                 "as requested by the "
-                                                 "programmer: as a result"
-                                                 "some SSL connections may "
-                                                 "interrupt abruptly with an "
-                                                 "error. This happens because "
-                                                 "you are not using version "
-                                                 "2.1.x of libevent.");
-#endif
                                 }
                                 assert(err == NoError());
                                 callback(err, make_txp(
-                                    libevent::Connection::make(
+                                    net::LibeventEmitter::make(
                                         bev, reactor, logger),
                                             timeout, r));
                             },
@@ -288,7 +274,7 @@ void connect(std::string address, int port,
                 return;
             }
             assert(err == NoError());
-            callback(err, make_txp(libevent::Connection::make(
+            callback(err, make_txp(net::LibeventEmitter::make(
                 r->connected_bev, reactor, logger),
                     timeout, r));
         },

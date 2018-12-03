@@ -1,14 +1,14 @@
-// Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software under the BSD license. See AUTHORS
+// Part of Measurement Kit <https://measurement-kit.github.io/>.
+// Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
-#include "private/ndt/test_c2s_impl.hpp"
+#include "src/libmeasurement_kit/ndt/test_c2s_impl.hpp"
 
 namespace mk {
 namespace ndt {
 namespace test_c2s {
 
-void coroutine(SharedPtr<Entry> e, std::string address, int port, double runtime,
+void coroutine(SharedPtr<nlohmann::json> e, std::string address, int port, double runtime,
                Callback<Error, Continuation<Error>> cb, double timeout,
                Settings settings, SharedPtr<Reactor> reactor,
                SharedPtr<Logger> logger) {

@@ -1,27 +1,20 @@
-language: cpp
-
-script:
-    - ./build/ci/travis
-
+language: c++
+services:
+  - docker
+sudo: required
 matrix:
   include:
-
-    - sudo: required
-      env: DOCKER_SPEC=valgrind-clang pkg_make_flags="V=0 -j3"
-           CXXFLAGS="-Werror" CFLAGS="-Werror"
-      services:
-        - docker
-
-    # Note: with CFLAGS="-Werror" ./configure fails for this job (see #1318)
-    - sudo: required
-      env: DOCKER_SPEC=valgrind-gcc pkg_make_flags="V=0 -j3"
-           CXXFLAGS="-Werror"
-      services:
-        - docker
-
-    # Note: with CFLAGS="-Werror" ./configure fails for this job (see #1318)
-    - sudo: required
-      env: DOCKER_SPEC=coveralls pkg_make_flags="V=0 -j3"
-           CXXFLAGS="-Werror"
-      services:
-        - docker
+    - env: BUILD_TYPE="asan"
+    - env: BUILD_TYPE="clang"
+    - env: BUILD_TYPE="coverage"
+    # Basically on Linux lsan is enabled by default when using asan [1]. So
+    # disable it such that we have five parallel builds (i.e. we finish in
+    # less time, because travis runs five parallel builds by default).
+    #
+    # [1] https://github.com/google/sanitizers/wiki/AddressSanitizerLeakSanitizer
+    #
+    #- env: BUILD_TYPE="lsan"
+    - env: BUILD_TYPE="ubsan"
+    - env: BUILD_TYPE="vanilla"
+script:
+  - ./.ci/common/script/travis $BUILD_TYPE

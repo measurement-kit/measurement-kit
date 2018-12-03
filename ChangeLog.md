@@ -1,113 +1,110 @@
-# MeasurementKit 0.8.4 [2018-10-10]
+Since v0.9.0-alpha.10, the ChangeLog is not used anymore. Please see
+https://github.com/measurement-kit/measurement-kit/releases.
 
-- Make sure the entry contains the report ID
+# MeasurementKit 0.9.0-alpha.9 [2018-08-15]
 
-- Backport 00a6c46 from the master branch
+- logger: fix progress when no handler is set
 
-- Update all easily updatable dependencies
+- regress: do not use the TRN M-Lab POD that is currently have
+  issues and instead use the IAD POD
 
-# MeasurementKit 0.8.3 [2018-04-23]
+- api: clearly mark nettest.hpp as experimental
 
-- Remove iPhoneSimulator/i386
-- Backport #1605 to stable branch
+# MeasurementKit 0.9.0-alpha.8 [2018-08-11]
 
-# MeasurementKit 0.8.2 [2018-04-12]
+- ffi: allow for future different kind of tasks by making it clear that we
+  are currently running nettest tasks
 
-- Backport country flag into stable branch (#1548)
-- Backport zesty EOL changes to stable branch (#1565)
-- fix(`measurement_kit`): better check for optreset (#1559)
-- Fix test checking for user IP scrubbing (#1585)
-- build: sync built archs with master (#1586)
-- Update dependencies (#1587)
+- ffi: remove `mk_task_start_ex()` that was optional complexity
 
-# MeasurementKit 0.8.1 [2017-12-12]
+- ffi: attempt to repair build with the MSVC compiler
 
-- #1510: backport: IM test logic fixing (#1498)
-- #1491: backport: fix(`getaddrinfo_async.hpp`)'s compiler warning (#1481)
+# MeasurementKit 0.9.0-alpha.7 [2018-08-11]
 
-# MeasurementKit 0.8.0 [2017-11-14]
+- Move some useful C++ classes into the ffi.h header.
 
-- fix(dash): enforce random UUID (#1487)
-- `base_test`: break circular ref, fix node bindings (#1484)
+# MeasurementKit 0.9.0-alpha.6 [2018-08-05]
 
-# MeasurementKit 0.8.0-beta.1 [2017-11-10]
+- Fix nit in nettest.hpp preventing SWIG generated code
+  from compiling hence preventing an Android build.
 
-- small fixes spotted during #1370 (#1477)
-- worker: use parallelism 1 in default queue (#1475)
+# MeasurementKit 0.9.0-alpha.5 [2018-08-02]
 
-# MeasurementKit 0.8.0-beta [2017-11-10]
+- Restructure nettest.hpp to be more easily useable from iOS and
+  possibly also from Android. Specifically, it turns out that
+  having a different class (with different virtual methods) for
+  each nettest is painful in that you need to duplicate code
+  for handling common events. There are workarounds, but it is
+  quite clear that the cleanest approach is probably to have
+  a single class for running all tests. Subclass once and then
+  use in different contexts. Especially because, apart from
+  performance and websites events, all other events are always
+  emitted by all classes. Plus, it's also easier.
 
-- fix(`tcp_connect` template): never pass null transport to callback (#1372)
-- Repair failing regress tests (#1382)
-- fix(cmake): define project name (#1383)
-- refactor(master): partly revert moving headers around (#1380)
-- refactor(common): clarify: poll{in,out} _once_ (#1381)
-- fix(`collector_client`): recognize build number (#1388)
-- fix(logger): force ofile flush for each entry (#1394)
-- fix(README.md): mention make install and ldconfig (#1403)
-- Fix for systems that don't support `thread_local` (#1404)
-- Update dependencies for v0.8.0 (#1408)
-- travis: improve build flags (#1409)
-- fix(cli): flush stdout more consistently (#1438)
-- version: expose version numbers (#1443)
-- Add `test_squid_cache_manager` test to http invalid request line probes (#1433)
-- Modularise cmake (#1386)
-- Refactor libevent reactor (1/2) (#1446)
-- OONI whatsapp tests plus @bassosimone changes (#1375)
-- reactor: correctly deal with exception in child thread (#1445)
-- nettests: prepare for API v1.0.0 (#1450)
-- nettests: start deprecating some APIs  (#1451)
-- fix(dash): work correctly with HTTP middleboxes (#1322)
-- fix(cmd/whatsapp.cpp) compiler warning (#1455)
-- feature(`raw_ptr`): smart pointer for raw C pointers (#1456)
-- fix(runnable): don't pretty print entry (#1457)
-- net: allow to override transport's bufferevent (#1458)
-- refactor(`connect_base`): change arguments order
-- feature(nettests): allow arbitrary annotations (#1459)
-- feature: implement `find_location` as a free function (#1460)
-- Measure data usage (#1463)
-- Rename `raw_ptr` as `unique_ptr` (#1471)
+# MeasurementKit 0.9.0-alpha.4 [2018-08-02]
 
-# MeasurementKit 0.7.11 [2017-10-31]
+- Be less strict with respect to option types because the old API is
+  internally using strings to represent options, hence it does not
+  matter the option type when we set the option's value, rather what
+  rules is whether the option can be converted to the correct type
+  when Measurement Kit is running. Fixes the old API on iOS.
 
-- fix(`nettests/base_test.cpp`): unbreak nodejs bindings
+# MeasurementKit 0.9.0-alpha.3 [2018-08-01]
 
-# MeasurementKit 0.7.10 [2017-10-25]
+- Use new collector implementation (#1639)
 
-- Exclude version.h.in from common.hpp includes
+- Autogenerate C++11 API for using FFI API. This C++11 API is meant to
+  be also processed by SWIG. It looks much more complete than the previous
+  API meant for SWIG consumption, now removed (#1645)
 
-# MeasurementKit 0.7.9 [2017-10-25]
+# MeasurementKit 0.9.0-alpha.2 [2018-05-30]
 
-- Fix version in generated source tarball
-- autogen.sh: don't install version.in
-- more accurate comments in version.h.in
+- We have rewritten the existing API (nettests.hpp) in terms of the new
+  FFI-friendly API (ffi.h), see #1630
 
-# MeasurementKit 0.7.8 [2017-10-25]
+- We have fixed a bug that prevented paths with spaces and more in
+  general strings with spaces to be used, see #1631
 
-- version: expose version numbers
+- We have started using Google's sanitizers in CI builds, to make sure
+  our code is more robuts with respect to a range of programming errors
+  (e.g. memory errors, concurrency issues), see #1626
 
-# MeasurementKit 0.7.7 [2017-10-24]
+- We have finalized documentation of the ffi.h API, see #1627
 
-- fix(cli): flush stdout more consistently (#1438)
+- We have fixed all the places where MK was not compiling with MSVC, see #1624
 
-# MeasurementKit 0.7.6 [2017-10-05]
+- We have improved reliability on Windows, and implemented other minor fixes
 
-- Fix for systems that don't support `thread_local` (#1402)
+# MeasurementKit 0.9.0-alpha.1 [2018-05-04]
 
-# MeasurementKit 0.7.5 [2017-09-27]
+- Since this release, you cannot use anymore the podfile included in this
+  repository and you should use instead the podfile available at
+  [measurement-kit/ios-libs](https://github.com/measurement-kit/ios-libs).
 
-- fix(logger): force ofile flush for each entry (#1394)
+- Since this release, you cannot anymore (cross-)build dependencies or MK on
+  the fly from this repository. Use [measurement-kit/script-build-unix](
+  https://github.com/measurement-kit/script-build-unix) instead.
 
-# MeasurementKit 0.7.4 [2017-09-25]
+- Documentation has been updated, old documentation removed.
 
-- fix(`collector_client`): recognize build number (#1388)
-- Repair failing regress tests (#1382)
+- We have update the build scripts to build with mingw-w64 with C++11
+  support from macOS when this toolchain is available.
 
-# MeasurementKit 0.7.3 [2017-09-21]
+# MeasurementKit 0.9.0-alpha [2018-04-25]
 
-- fix(`tcp_connect1` template): never pass null transport to callback (#1372)
+- Make Measurement Kit work on Windows64 with Msys2
+- Roll out a simpler API (see `ffi.h`)
+- Start simplifying the cross build system
+- Improve CMake build system and start using it in Travis
+- Add simple Windows AppVeyory build using Msys2
+- Make most header private, since now we have `ffi.h`
+- IM tests logic fixing (#1498)
+- http: include request on connection error (#1605)
+- Update to libressl v2.6.4
+- Update to GeoIP v1.6.12
+- More fixes and smaller enhancements
 
-# MeasurementKit 0.8.0-alpha [2017-09-19]
+# Measurement Kit 0.8.0-alpha [2017-09-19]
 
 - various small cleanups (#1286)
 - cleanup(worker): rewrite with less abstraction (#1287)
@@ -860,7 +857,7 @@ To speed up cross compiling, this release would also be the first release to con
 
 # MeasurementKit 0.1.1 [2016-01-13]
 - allow to specify report file path for OONI tests
-- add missing documentation 
+- add missing documentation
 - add Vagrantfile
 - mv ooni::NetTest ooni::NetTest to avoid confusion with common::NetTest
 - misc fixes

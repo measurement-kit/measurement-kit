@@ -1,9 +1,10 @@
-// Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software under the BSD license. See AUTHORS
+// Part of Measurement Kit <https://measurement-kit.github.io/>.
+// Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
-#include "private/ext/http_parser.h"
-#include "private/net/utils.hpp"
+#include "src/libmeasurement_kit/ext/http_parser.h"
+#include "src/libmeasurement_kit/net/error.hpp"
+#include "src/libmeasurement_kit/net/utils.hpp"
 
 #include <cassert>
 #include <cstring>
@@ -12,8 +13,6 @@
 #include <system_error>
 
 #include <event2/util.h>
-
-#include <measurement_kit/net.hpp>
 
 namespace mk {
 namespace net {
@@ -74,14 +73,14 @@ static ErrorOr<Endpoint> parse_endpoint_internal(std::string s) {
      * passed to the CONNECT header, which is in the format we want.
      */
     if (http_parser_parse_url(s.data(), s.size(), 1, &parser) != 0) {
-        return ValueError();
+        return {ValueError(), {}};
     }
     assert(parser.field_set == ((1 << UF_HOST) | (1 << UF_PORT)));
     Endpoint epnt = {};
     epnt.hostname = s.substr(parser.field_data[UF_HOST].off,
                              parser.field_data[UF_HOST].len);
     epnt.port = parser.port;
-    return epnt;
+    return {NoError(), epnt};
 }
 
 static std::string serialize_address_port(std::string a, uint16_t p) {
@@ -110,7 +109,7 @@ ErrorOr<Endpoint> parse_endpoint(std::string s, uint16_t default_port) {
 
 ErrorOr<Endpoint>
 endpoint_from_sockaddr_storage(sockaddr_storage *ss) noexcept {
-    // Code adapted from private/dns/getaddrinfo_async.hpp
+    // Code adapted from src/libmeasurement_kit/dns/getaddrinfo_async.hpp
     char abuf[128];
     void *aptr = nullptr;
     Endpoint epnt;
@@ -121,13 +120,13 @@ endpoint_from_sockaddr_storage(sockaddr_storage *ss) noexcept {
         aptr = &((sockaddr_in6 *)ss)->sin6_addr;
         epnt.port = ntohs(((sockaddr_in6 *)ss)->sin6_port);
     } else {
-        return ValueError("invalid_family");
+        return {ValueError("invalid_family"), {}};
     }
     if (inet_ntop(ss->ss_family, aptr, abuf, sizeof(abuf)) == nullptr) {
-        return GenericError("inet_ntop_failure");
+        return {GenericError("inet_ntop_failure"), {}};
     }
     epnt.hostname = abuf;
-    return epnt;
+    return {NoError(), epnt};
 }
 
 std::string serialize_endpoint(Endpoint epnt) {
@@ -302,6 +301,7 @@ Error disable_nagle(socket_t sockfd) {
 }
 
 Error map_errno(int error_code) {
+    // Intercept the case where there's no error and handle it.
     if (error_code == 0) {
         return NoError();
     }
@@ -312,41 +312,24 @@ Error map_errno(int error_code) {
      *
      * (Yes, EWOULDBLOCK is a BSD-ism, but I like it more.)
      */
+#if (defined EAGAIN && defined EWOULDBLOCK)
     if (error_code == EAGAIN) {
         error_code = EWOULDBLOCK;
         // FALLTHROUGH
     }
-#define XX(_code_, _name_, _descr_)                                            \
-    if (std::make_error_condition(std::errc::_descr_).value() == error_code) { \
-        return _name_();                                                       \
+#endif
+    // Simplification: since MK v0.9.0 we use a single class to
+    // represent multiple possible network errors.
+    std::string reason;
+    if (!net_error_to_ooni_error(error_code, &reason)) {
+        return GenericError();
     }
-    MK_NET_ERRORS_XX
-#undef XX
-    return GenericError();
+    static auto code = NetworkError{}.code;
+    return Error{code, std::move(reason)};
 }
 
-Error make_sockaddr(std::string s, std::string p, sockaddr_storage *ss,
-                    socklen_t *solen) noexcept {
-    auto maybe_pn = lexical_cast_noexcept<long long>(p);
-    if (!maybe_pn) {
-        return maybe_pn.as_error();
-    }
-    /*
-     * I initially thought that lexical_cast would have been able to detect
-     * overflow caused by negative numbers being feed to it when requested to
-     * parse a positive only integer. It seems it's not always like this.
-     *
-     * See <https://travis-ci.org/measurement-kit/measurement-kit/jobs/194992117#L2007>
-     */
-    if (*maybe_pn < 0 || *maybe_pn > 65535) {
-        return ValueError();
-    }
-    // Static cast good because above we make sure it is feasible
-    return make_sockaddr(s, static_cast<uint16_t>(*maybe_pn), ss, solen);
-}
-
-Error make_sockaddr(std::string s, uint16_t p, sockaddr_storage *ss,
-                    socklen_t *solen) noexcept {
+Error make_sockaddr(std::string s, uint16_t p,
+        sockaddr_storage *ss, socklen_t *solen) noexcept {
     Error err = make_sockaddr_ipv4(s, p, ss, solen);
     if (err != NoError()) {
         err = make_sockaddr_ipv6(s, p, ss, solen);

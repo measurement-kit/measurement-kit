@@ -1,21 +1,14 @@
-// Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software under the BSD license. See AUTHORS
+// Part of Measurement Kit <https://measurement-kit.github.io/>.
+// Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
-#define CATCH_CONFIG_MAIN
-#include "private/ext/catch.hpp"
+#include "test/winsock.hpp"
 
-#include "private/ooni/bouncer_impl.hpp"
+#include "include/private/catch.hpp"
+
+#include "src/libmeasurement_kit/ooni/bouncer_impl.hpp"
 
 using namespace mk;
-
-static Error do_out_of_range(const std::string &, Callback<Json &> &&) {
-    return JsonKeyError();
-}
-
-static Error do_domain_error(const std::string &, Callback<Json &> &&) {
-    return JsonDomainError();
-}
 
 TEST_CASE("BouncerReply::create() works") {
 
@@ -23,51 +16,35 @@ TEST_CASE("BouncerReply::create() works") {
         auto maybe_reply = ooni::BouncerReply::create(
             R"({"error": "collector-not-found"})", Logger::global());
         REQUIRE(!maybe_reply);
-        REQUIRE(maybe_reply.as_error() ==
-                ooni::BouncerCollectorNotFoundError());
+        REQUIRE(maybe_reply.as_error() == JsonProcessingError());
     }
 
     SECTION("When the response is invalid") {
         auto maybe_reply = ooni::BouncerReply::create(
             R"({"error": "invalid-request"})", Logger::global());
         REQUIRE(!maybe_reply);
-        REQUIRE(maybe_reply.as_error() == ooni::BouncerInvalidRequestError());
+        REQUIRE(maybe_reply.as_error() == JsonProcessingError());
     }
 
     SECTION("When the error is something else") {
         auto maybe_reply = ooni::BouncerReply::create(
             R"({"error": "xx"})", Logger::global());
         REQUIRE(!maybe_reply);
-        REQUIRE(maybe_reply.as_error() == ooni::BouncerGenericError());
+        REQUIRE(maybe_reply.as_error() == JsonProcessingError());
     }
 
     SECTION("When the net-tests section is missing") {
         auto maybe_reply = ooni::BouncerReply::create(
             R"({})", Logger::global());
         REQUIRE(!maybe_reply);
-        REQUIRE(maybe_reply.as_error() ==
-                ooni::BouncerTestHelperNotFoundError());
+        REQUIRE(maybe_reply.as_error() == JsonProcessingError());
     }
 
     SECTION("When the parser throws invalid_argument") {
         auto maybe_reply = ooni::BouncerReply::create(
             R"({)", Logger::global());
         REQUIRE(!maybe_reply);
-        REQUIRE(maybe_reply.as_error() == JsonParseError());
-    }
-
-    SECTION("When the parser throws out_of_range") {
-        auto maybe_reply = ooni::bouncer::create_impl<do_out_of_range>(
-            R"({})", Logger::global());
-        REQUIRE(!maybe_reply);
-        REQUIRE(maybe_reply.as_error() == JsonKeyError());
-    }
-
-    SECTION("When the parser throws domain_error") {
-        auto maybe_reply = ooni::bouncer::create_impl<do_domain_error>(
-            R"({})", Logger::global());
-        REQUIRE(!maybe_reply);
-        REQUIRE(maybe_reply.as_error() == JsonDomainError());
+        REQUIRE(maybe_reply.as_error() == JsonProcessingError());
     }
 }
 
@@ -127,6 +104,8 @@ TEST_CASE("post_net_tests() works") {
 
     SECTION("On network error") {
         SharedPtr<Reactor> reactor = Reactor::make();
+        Settings settings;
+        settings["net/ca_bundle_path"] = "cacert.pem";
         reactor->run_with_initial_event([=]() {
             // Mocked http request that returns an invalid-request
             ooni::bouncer::post_net_tests_impl<request_error>(
@@ -136,28 +115,30 @@ TEST_CASE("post_net_tests() works") {
                     REQUIRE(e == MockedError());
                     reactor->stop();
                 },
-                {}, reactor, Logger::global());
+                settings, reactor, Logger::global());
         });
     }
 
-#ifdef ENABLE_INTEGRATION_TESTS
-
     SECTION("When the collector is not found") {
         SharedPtr<Reactor> reactor = Reactor::make();
+        Settings settings;
+        settings["net/ca_bundle_path"] = "cacert.pem";
         reactor->run_with_initial_event([=]() {
             ooni::bouncer::post_net_tests(
                 ooni::bouncer::production_bouncer_url(), "antani", "0.0.1",
                 {"antani"},
                 [=](Error e, SharedPtr<ooni::BouncerReply>) {
-                    REQUIRE(e == ooni::BouncerCollectorNotFoundError());
+                    REQUIRE(e == JsonProcessingError());
                     reactor->stop();
                 },
-                {}, reactor, Logger::global());
+                settings, reactor, Logger::global());
         });
     }
 
     SECTION("When the input is correct") {
         SharedPtr<Reactor> reactor = Reactor::make();
+        Settings settings;
+        settings["net/ca_bundle_path"] = "cacert.pem";
         reactor->run_with_initial_event([=]() {
             ooni::bouncer::post_net_tests(
                 ooni::bouncer::production_bouncer_url(), "web-connectivity",
@@ -189,8 +170,7 @@ TEST_CASE("post_net_tests() works") {
                                 "web-connectivity", "cloudfront"));
                     reactor->stop();
                 },
-                {}, reactor, Logger::global());
+                settings, reactor, Logger::global());
         });
     }
-#endif
 }

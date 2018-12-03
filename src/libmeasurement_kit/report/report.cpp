@@ -1,26 +1,26 @@
-// Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software under the BSD license. See AUTHORS
+// Part of Measurement Kit <https://measurement-kit.github.io/>.
+// Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
-#include "private/common/fmap.hpp"
-#include "private/common/parallel.hpp"
+#include "src/libmeasurement_kit/common/fmap.hpp"
+#include "src/libmeasurement_kit/common/parallel.hpp"
 
-#include "private/common/utils.hpp"
+#include "src/libmeasurement_kit/common/utils.hpp"
 
-#include <measurement_kit/report.hpp>
+#include "src/libmeasurement_kit/report/base_reporter.hpp"
+#include "src/libmeasurement_kit/report/error.hpp"
+#include "src/libmeasurement_kit/report/report.hpp"
 
 namespace mk {
 namespace report {
 
-Report::Report() {
-    memset(&test_start_time, 0, sizeof (test_start_time));
-}
+Report::Report() {}
 
 void Report::add_reporter(SharedPtr<BaseReporter> reporter) {
     reporters_.push_back(reporter);
 }
 
-void Report::fill_entry(Entry &entry) const {
+void Report::fill_entry(nlohmann::json &entry) const {
     entry["test_name"] = test_name;
     entry["test_version"] = test_version;
     entry["test_start_time"] = *mk::timestamp(&test_start_time);
@@ -40,8 +40,8 @@ void Report::fill_entry(Entry &entry) const {
     entry["report_id"] = report_id;
 }
 
-Entry Report::get_dummy_entry() const {
-    Entry entry;
+nlohmann::json Report::get_dummy_entry() const {
+    nlohmann::json entry;
     fill_entry(entry);
     return entry;
 }
@@ -54,7 +54,7 @@ void Report::open(Callback<Error> callback) {
     }), callback);
 }
 
-void Report::write_entry(Entry entry, Callback<Error> callback,
+void Report::write_entry(nlohmann::json entry, Callback<Error> callback,
                          SharedPtr<Logger>) {
     mk::parallel(FMAP(reporters_, [=](SharedPtr<BaseReporter> r) {
         return r->write_entry(entry);

@@ -1,5 +1,5 @@
-// Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software under the BSD license. See AUTHORS
+// Part of Measurement Kit <https://measurement-kit.github.io/>.
+// Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 #ifndef MEASUREMENT_KIT_COMMON_ERROR_HPP
 #define MEASUREMENT_KIT_COMMON_ERROR_HPP
@@ -45,13 +45,12 @@ namespace mk {
 /// as part of measurement-kit v0.8.0 as part of a refactoring of common.
 class Error : public std::exception {
   public:
-
     /// \brief The default constructor initializes the error code to zero.
     Error() : Error(0, "") {}
 
     /// \brief The constructor with error initializes the error code to the
     /// specified error code.
-    Error(int e) : Error(e, "") {}
+    explicit Error(int e) : Error(e, "") {}
 
     /// \brief The constructor with error and reason string initializes both.
     Error(int e, std::string r) : code{e}, reason{r} {
@@ -87,8 +86,8 @@ class Error : public std::exception {
     const char *what() const noexcept override { return reason.c_str(); }
 
     /// `add_child_error` allows you tou append additional child errors.
-    void add_child_error(const Error &err) {
-        child_errors.push_back(err);
+    void add_child_error(Error &&err) {
+        child_errors.push_back(std::move(err));
     }
 
     /// `child_errors` contains all the child errors.
@@ -134,17 +133,9 @@ MK_DEFINE_ERR(3, ValueError, "value_error")
 /// sure that the returned error was actually correctly mocked.
 MK_DEFINE_ERR(4, MockedError, "mocked_error")
 
-/// `JsonParseError` indicates that we could not parse a JSON.
-MK_DEFINE_ERR(5, JsonParseError, "json_parse_error")
-
-/// `JsonKeyError` indicates that a specific key does not exists in a JSON.
-MK_DEFINE_ERR(6, JsonKeyError, "json_key_error")
-
-/// \brief `JsonDomainError` indicates that we are using a JSON of
-/// a specific type assuming that it is of another type. For example, the
-/// JSON may be `null` and we may be trying to using it like a map from
-/// string to string, which obviously is not possible.
-MK_DEFINE_ERR(7, JsonDomainError, "json_domain_error")
+//MK_DEFINE_ERR(5, JsonParseError, "json_parse_error")
+//MK_DEFINE_ERR(6, JsonKeyError, "json_key_error")
+//MK_DEFINE_ERR(7, JsonDomainError, "json_domain_error")
 
 /// `FileEofError` indicates that we hit premature EOF when reading a file.
 MK_DEFINE_ERR(8, FileEofError, "file_eof_error")

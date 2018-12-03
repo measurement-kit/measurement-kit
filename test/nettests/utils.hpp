@@ -1,14 +1,16 @@
-// Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software under the BSD license. See AUTHORS
+// Part of Measurement Kit <https://measurement-kit.github.io/>.
+// Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 #ifndef TEST_NETTESTS_UTILS_HPP
 #define TEST_NETTESTS_UTILS_HPP
 
-#include "private/nettests/runnable.hpp"
-#include "private/common/worker.hpp"
+#include "src/libmeasurement_kit/nettests/runnable.hpp"
+#include "src/libmeasurement_kit/common/worker.hpp"
+#include "src/libmeasurement_kit/ooni/collector_client.hpp"
+#include "src/libmeasurement_kit/ooni/bouncer.hpp"
 
 #include <measurement_kit/nettests.hpp>
-#include <measurement_kit/ooni.hpp>
+#include "src/libmeasurement_kit/ooni/error.hpp"
 
 #include <chrono>
 #include <thread>
@@ -24,15 +26,16 @@ static inline void run_test(mk::nettests::BaseTest &test) {
 
 template <typename T> void with_test(with_test_cb &&lambda) {
     lambda(
-          T{}.set_option("geoip_country_path", "GeoIP.dat")
-                .set_option("geoip_asn_path", "GeoIPASNum.dat")
+          T{}.set_option("geoip_country_path", "country.mmdb")
+                .add_annotation("continuous_integration", "true")
+                .set_option("geoip_asn_path", "asn.mmdb")
+                .set_option("net/ca_bundle_path", "cacert.pem")
                 .set_verbosity(MK_LOG_INFO)
-                /*
-                 * FIXME: the testing bouncer is not working. So use the testing
-                 * collector with the production bouncer.
-                 */
+                // Using the new collector for testing purposes.
+                // TODO(bassosimone): switch to production collector when
+                // the new implementation is confirmed to be okay.
                 .set_option("collector_base_url",
-                             mk::ooni::collector::testing_collector_url())
+                            "https://collector-sandbox.ooni.io")
                 .set_option("bouncer_base_url",
                              mk::ooni::bouncer::production_bouncer_url()));
     /*
@@ -55,9 +58,10 @@ template <typename T> void with_test(std::string s, with_test_cb &&lambda) {
 static inline void
 with_runnable(std::function<void(mk::nettests::Runnable &)> lambda) {
     mk::nettests::Runnable test;
-    // FIXME: see above comment regarding collector and bouncer
-    test.options["collector_base_url"] =
-          mk::ooni::collector::testing_collector_url();
+    test.annotations["continuous_integration"] = "true";
+    test.options["net/ca_bundle_path"] = "cacert.pem";
+    // TODO(bassosimone): see above comment regarding collector and bouncer
+    test.options["collector_base_url"] = "https://collector-sandbox.ooni.io";
     test.options["bouncer_base_url"] =
           mk::ooni::bouncer::production_bouncer_url();
     /*

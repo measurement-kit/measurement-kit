@@ -1,14 +1,17 @@
-// Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software under the BSD license. See AUTHORS
+// Part of Measurement Kit <https://measurement-kit.github.io/>.
+// Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #include "../measurement_kit/cmdline.hpp"
-#include "private/common/utils.hpp"
+#include "src/libmeasurement_kit/common/utils.hpp"
 
 #include <cstdio>
 #include <cstring>
+#include <iostream>
 
 static const struct {
     const char *mod_name;
@@ -33,6 +36,7 @@ static OptionSpec kv_specs[] = {
     {'v', "verbose", false, nullptr, "Increase verbosity"},
     {256, "help", false, nullptr, "Display this help and exit"},
     {257, "version", false, nullptr, "Display version number and exit"},
+    {258, "no-bouncer", false, nullptr, "Disable the bouncer"},
     {0, nullptr, 0, 0, nullptr}
 };
 
@@ -47,6 +51,19 @@ static int usage(int retval, FILE *fp) {
 }
 
 int main(int argc, char **argv) {
+#ifdef _WIN32
+    // TODO(bassosimone): perhaps reuse test/winsock.hpp here and maybe
+    // make that an exposed extern-C API for maximum reuse?
+    {
+        WORD requested = MAKEWORD(2, 2);
+        WSADATA data;
+        if (::WSAStartup(requested, &data) != 0) {
+            std::clog << "fatal: WSAStartup() failed" << std::endl;
+            exit(EXIT_FAILURE);
+        }
+    }
+#endif
+
     std::list<Callback<BaseTest &>> initializers;
     std::vector<option> long_options = as_long_options(kv_specs);
     std::string stropt = as_getopt_string(kv_specs);
@@ -130,6 +147,10 @@ int main(int argc, char **argv) {
             printf("libevent version: %s\n", mk_libevent_version());
             printf("OpenSSL version: %s\n", mk_openssl_version());
             return 0;
+        case 258:
+            initializers.push_back(
+                [](BaseTest &test) { test.set_option("no_bouncer", 1); });
+            break;
         default:
             return usage(1, stderr);
         }
@@ -153,8 +174,11 @@ int main(int argc, char **argv) {
      *
      * Non portable. Assume it's either GNU or BSD. We can do better in
      * configure checking for the proper way to reset options.
+     *
+     * With Mingw-w64, getopt() honours optreset. With Windows we do
+     * compile the BSD version of getopt(), which has optreset.
      */
-#if HAVE_DECL_OPTRESET
+#if HAVE_DECL_OPTRESET || defined __MINGW32__ || defined _MSC_VER
     optreset = 1, optind = 1;
 #elif defined __GLIBC__
     optind = 0;

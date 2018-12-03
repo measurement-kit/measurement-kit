@@ -1,13 +1,13 @@
-// Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software under the BSD license. See AUTHORS
+// Part of Measurement Kit <https://measurement-kit.github.io/>.
+// Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
-#define CATCH_CONFIG_MAIN
-#include "private/ext/catch.hpp"
+#include "test/winsock.hpp"
 
-#include "private/http/request_impl.hpp"
+#include "include/private/catch.hpp"
 
-#include <measurement_kit/ext.hpp>
+#include "src/libmeasurement_kit/http/request_impl.hpp"
+#include "src/libmeasurement_kit/net/error.hpp"
 
 #include <openssl/md5.h>
 
@@ -15,12 +15,11 @@ using namespace mk;
 using namespace mk::net;
 using namespace mk::http;
 
-#ifdef ENABLE_INTEGRATION_TESTS
-
 // Either tor was running and hence everything should be OK, or tor was
 // not running and hence connect() to socks port must have failed.
 static inline bool check_error_after_tor(Error e) {
-    return e == NoError() or e == ConnectionRefusedError();
+    return e == NoError() or (e == NetworkError() and
+        e.reason == "connection_refused");
 }
 
 /*
@@ -39,8 +38,6 @@ static std::string md5(std::string s) {
     }
     return retval;
 }
-
-#endif
 
 /*
       _
@@ -114,8 +111,6 @@ TEST_CASE("HTTP Request class works as expected with explicit path") {
 |_|\___/ \__, |_|\___|
          |___/
 */
-
-#ifdef ENABLE_INTEGRATION_TESTS
 
 TEST_CASE("http::request works as expected") {
     SharedPtr<Reactor> reactor = Reactor::make();
@@ -248,8 +243,6 @@ TEST_CASE("http::request_recv_response() behaves correctly when EOF "
     REQUIRE(called == 1);
 }
 
-#endif // ENABLE_INTEGRATION_TESTS
-
 TEST_CASE("http::request_recv_response() deals with immediate EOF") {
     SharedPtr<Reactor> reactor = Reactor::make();
     reactor->run_with_initial_event([=]() {
@@ -359,8 +352,6 @@ TEST_CASE("http::request() callback is called if input URL parsing fails") {
     });
     REQUIRE(called);
 }
-
-#ifdef ENABLE_INTEGRATION_TESTS
 
 TEST_CASE("http::request_connect_impl() works for normal connections") {
     SharedPtr<Reactor> reactor = Reactor::make();
@@ -511,7 +502,7 @@ TEST_CASE("http::request() works as expected using httpo URLs") {
                 REQUIRE(check_error_after_tor(error));
                 if (!error) {
                     REQUIRE(response->status_code == 200);
-                    Json body = Json::parse(response->body);
+                    nlohmann::json body = nlohmann::json::parse(response->body);
                     auto check = [](std::string s) {
                         REQUIRE(s.substr(0, 8) == "httpo://");
                         REQUIRE(s.size() >= 6);
@@ -559,6 +550,7 @@ TEST_CASE("http::request() correctly follows redirects") {
             {
                 {"http/url", "http://fsrn.org"},
                 {"http/max_redirects", 32},
+                {"net/ca_bundle_path", "cacert.pem"},
             },
             {
                 {"Accept", "*/*"},
@@ -585,6 +577,7 @@ TEST_CASE("Headers are preserved across redirects") {
             {
                 {"http/url", "http://httpbin.org/absolute-redirect/3"},
                 {"http/max_redirects", 4},
+                {"net/ca_bundle_path", "cacert.pem"},
             },
             {
                 {"Spam", "Ham"}, {"Accept", "*/*"},
@@ -597,7 +590,7 @@ TEST_CASE("Headers are preserved across redirects") {
                 REQUIRE(response->previous->status_code == 302);
                 REQUIRE(response->previous->request->url.path ==
                         "/absolute-redirect/1");
-                auto body = Json::parse(response->body);
+                auto body = nlohmann::json::parse(response->body);
                 REQUIRE(body["headers"]["Spam"] == "Ham");
                 reactor->stop();
             },
@@ -618,6 +611,7 @@ TEST_CASE("We correctly deal with end-of-response signalled by EOF") {
             {
                 {"http/url", "http://hushmail.com"},
                 {"http/max_redirects", 4},
+                {"net/ca_bundle_path", "cacert.pem"},
             },
             {
                 {"Accept", "*/*"},
@@ -650,6 +644,7 @@ TEST_CASE("We correctly deal with schema-less redirect") {
                 {"http/url",
                 "https://httpbin.org/redirect-to?url=%2F%2Fhttpbin.org%2Fheaders"},
                 {"http/max_redirects", 4},
+                {"net/ca_bundle_path", "cacert.pem"},
             },
             {
                 {"Accept", "*/*"},
@@ -669,8 +664,6 @@ TEST_CASE("We correctly deal with schema-less redirect") {
             reactor);
     });
 }
-
-#endif // ENABLE_INTEGRATION_TESTS
 
 TEST_CASE("http::request_connect_impl fails without an url") {
     SharedPtr<Reactor> reactor = Reactor::make();
@@ -694,8 +687,6 @@ TEST_CASE("http::request_connect_impl fails with an uncorrect url") {
     });
 }
 
-#ifdef ENABLE_INTEGRATION_TESTS
-
 TEST_CASE("http::request_send fails without url in settings") {
     SharedPtr<Reactor> reactor = Reactor::make();
     reactor->run_with_initial_event([=]() {
@@ -713,8 +704,6 @@ TEST_CASE("http::request_send fails without url in settings") {
             }, reactor);
     });
 }
-
-#endif
 
 TEST_CASE("http::request() fails if fails request_send()") {
     SharedPtr<Reactor> reactor = Reactor::make();
@@ -825,7 +814,7 @@ TEST_CASE("request_json_string() works as expected") {
         reactor->run_with_initial_event([=]() {
             request_json_string_impl<fail_request>(
               "GET", "http://www.google.com", "", {},
-              [=](Error error, SharedPtr<Response>, Json) {
+              [=](Error error, SharedPtr<Response>, nlohmann::json) {
                   REQUIRE(error == MockedError());
                     reactor->stop();
               },
@@ -837,7 +826,7 @@ TEST_CASE("request_json_string() works as expected") {
         reactor->run_with_initial_event([=]() {
             request_json_string_impl<non_200_response>(
               "GET", "http://www.google.com", "", {},
-              [=](Error error, SharedPtr<Response> resp, Json) {
+              [=](Error error, SharedPtr<Response> resp, nlohmann::json) {
                   REQUIRE(error == NoError());
                   REQUIRE(resp->status_code != 200);
                   reactor->stop();
@@ -850,8 +839,8 @@ TEST_CASE("request_json_string() works as expected") {
         reactor->run_with_initial_event([=]() {
             request_json_string_impl<fail_parsing>(
               "GET", "http://www.google.com", "{}", {},
-              [=](Error error, SharedPtr<Response>, Json) {
-                  REQUIRE(error == JsonParseError());
+              [=](Error error, SharedPtr<Response>, nlohmann::json) {
+                  REQUIRE(error == JsonProcessingError());
               },
               {}, reactor, Logger::global());
         });

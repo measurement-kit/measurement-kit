@@ -1,9 +1,0 @@
-pkg_name=Catch
-pkg_repository=https://github.com/philsquared/Catch.git
-pkg_branch_or_tag=v1.12.2
-pkg_steps=install
-
-pkg_install() {
-    echo "Installing $pkg_name header $pkg_branch_or_tag in MK sources"
-    cp single_include/catch.hpp ../../../include/private/ext
-}

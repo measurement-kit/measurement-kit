@@ -1,6 +1,7 @@
 // Public domain 2017, Simone Basso <bassosimone@gmail.com.
 
 #include <measurement_kit/common.hpp>
+#include <measurement_kit/common/nlohmann/json.hpp>
 #include <measurement_kit/nettests.hpp> // Import mk::nettests
 
 #include <stdio.h>
@@ -106,12 +107,12 @@ int main(void) {
             // Lambda called when events occur. Here we process only download
             // speed updates emitted during the multi-ndt test.
             //
-            // In case `Json::parse()` throws an exception, no
+            // In case `nlohmann::json::parse()` throws an exception, no
             // worries because MK suppress exceptions in the on_event lambda.
             //
             // See the above four points to keep in mind.
             .on_event([&](const char *s) {
-                mk::Json doc = mk::Json::parse(s);
+                nlohmann::json doc = nlohmann::json::parse(s);
                 if (doc["type"] != "download-speed") {
                     return;
                 }
@@ -131,7 +132,7 @@ int main(void) {
             // See the above four points to keep in mind.
             .on_entry([&](std::string s) {
                 schedule([s]() {
-                    mk::Json doc = mk::Json::parse(s);
+                    nlohmann::json doc = nlohmann::json::parse(s);
                     auto simple = doc["test_keys"]["simple"];
                     printf("\nTest summary\n");
                     printf("------------\n");
@@ -159,8 +160,8 @@ int main(void) {
             // Tell MK where to find files useful to identify the country code
             // and the ISP autonomous system number. You should probably have
             // them installed under /usr/local/ in a reall program.
-            .set_option("geoip_country_path", "GeoIP.dat")
-            .set_option("geoip_asn_path", "GeoIPASNum.dat")
+            .set_option("geoip_country_path", "country.mmdb")
+            .set_option("geoip_asn_path", "asn.mmdb")
 
             // Will become the default in MK v0.5.0. Better to use this flag
             // to avoid the need to discover the DNS server on mobile.

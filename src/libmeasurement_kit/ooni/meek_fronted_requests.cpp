@@ -1,20 +1,20 @@
-// Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software under the BSD license. See AUTHORS
+// Part of Measurement Kit <https://measurement-kit.github.io/>.
+// Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
-#include "private/common/utils.hpp"
-#include "private/ooni/constants.hpp"
-#include <measurement_kit/ooni.hpp>
+#include "src/libmeasurement_kit/common/utils.hpp"
+#include "src/libmeasurement_kit/ooni/constants.hpp"
+#include "src/libmeasurement_kit/ooni/nettests.hpp"
+#include "src/libmeasurement_kit/ooni/templates.hpp"
+#include "src/libmeasurement_kit/ooni/error.hpp"
 
 namespace mk {
 namespace ooni {
 
-using namespace mk::report;
-
 void meek_fronted_requests(std::string input, Settings options,
-                   Callback<SharedPtr<report::Entry>> callback,
+                   Callback<SharedPtr<nlohmann::json>> callback,
                    SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
-    SharedPtr<Entry> entry(new Entry);
+    SharedPtr<nlohmann::json> entry(new nlohmann::json);
 
     std::string expected_body, outer_host, inner_host;
 

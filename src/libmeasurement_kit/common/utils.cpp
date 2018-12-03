@@ -1,9 +1,9 @@
-// Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software under the BSD license. See AUTHORS
+// Part of Measurement Kit <https://measurement-kit.github.io/>.
+// Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
-#include "private/common/mock.hpp"
-#include "private/common/utils.hpp"
+#include "src/libmeasurement_kit/common/mock.hpp"
+#include "src/libmeasurement_kit/common/utils.hpp"
 #include <cctype>
 #include <cmath>
 #include <cstdio>
@@ -13,7 +13,6 @@
 #include <measurement_kit/common.hpp>
 #include <openssl/sha.h>
 #include <random>
-#include <regex>
 
 struct timeval;
 
@@ -40,15 +39,21 @@ timeval *timeval_init(timeval *tv, double delta) {
     if (delta < 0) {
         return nullptr;
     }
+    // Note: on Windows `struct timeval` fields are `long`
+#ifndef _WIN32
     tv->tv_sec = (time_t)floor(delta);
     tv->tv_usec = (suseconds_t)((delta - floor(delta)) * 1000000);
+#else
+    tv->tv_sec = (long)floor(delta);
+    tv->tv_usec = (long)((delta - floor(delta)) * 1000000);
+#endif
     return tv;
 }
 
 std::string random_within_charset(const std::string charset, size_t length) {
     // See <http://stackoverflow.com/questions/440133/>
     if (charset.size() < 1) {
-        throw ValueError();
+        throw std::runtime_error("random_within_charset_with_empty_charset");
     }
     auto randchar = [&charset]() {
         int rand = 0;
@@ -131,10 +136,10 @@ std::string sha256_of(std::string input) {
 ErrorOr<std::string> slurp(std::string path) {
     ErrorOr<std::vector<char>> v = slurpv<char>(path);
     if (!v) {
-        return v.as_error();
+        return {v.as_error(), std::string{}};
     }
     std::string s{v->begin(), v->end()};  /* Note that here we make a copy */
-    return s;
+    return {NoError(), std::move(s)};
 }
 
 bool startswith(std::string s, std::string p) {

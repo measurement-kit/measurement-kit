@@ -1,3 +1,0 @@
-pkg_name=libressl
-pkg_repository=https://github.com/libressl-portable/portable.git
-pkg_branch_or_tag=v2.7.4

@@ -1,9 +1,10 @@
-// Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software under the BSD license. See AUTHORS
+// Part of Measurement Kit <https://measurement-kit.github.io/>.
+// Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
-#define CATCH_CONFIG_MAIN
-#include "private/ext/catch.hpp"
+#include "test/winsock.hpp"
+
+#include "include/private/catch.hpp"
 
 #include <measurement_kit/common.hpp>
 
@@ -48,7 +49,7 @@ TEST_CASE("SharedPtr raises an exception when the pointee is nullptr") {
 }
 
 TEST_CASE("We can safely assign to SharedPtr an empty shared_ptr") {
-    SharedPtr<Foo> necchi = std::shared_ptr<Foo>{};
+    SharedPtr<Foo> necchi{std::shared_ptr<Foo>{}};
     double k;
     REQUIRE_THROWS(k = necchi->elem);
     REQUIRE_THROWS(*necchi);
@@ -56,7 +57,7 @@ TEST_CASE("We can safely assign to SharedPtr an empty shared_ptr") {
 }
 
 TEST_CASE("We can assign to SharedPtr the result of make_shared") {
-    SharedPtr<Foo> necchi = std::make_shared<Foo>(6.28);
+    SharedPtr<Foo> necchi{std::make_shared<Foo>(6.28)};
     REQUIRE(necchi->elem == 6.28);
     auto foo = *necchi;
     REQUIRE(foo.elem == 6.28);
@@ -64,7 +65,7 @@ TEST_CASE("We can assign to SharedPtr the result of make_shared") {
 
 TEST_CASE("The smart pointer works as expected") {
     auto pnecchi = new Foo(6.28);
-    SharedPtr<Foo> necchi(pnecchi);
+    SharedPtr<Foo> necchi{std::shared_ptr<Foo>{pnecchi}};
     REQUIRE(necchi->elem == 6.28);
     REQUIRE((*necchi).elem == 6.28);
     REQUIRE(necchi.get() == pnecchi);
@@ -95,7 +96,7 @@ TEST_CASE("as() works as expected") {
     }
 
     SECTION("When upcast is possible and target pointer is not null") {
-        SharedPtr<FooBar> bar{new FooBar};
+        SharedPtr<FooBar> bar{std::make_shared<FooBar>()};
         REQUIRE(!!bar);
         SharedPtr<Foo> foo = bar.as<Foo>();
         REQUIRE(!!foo);
@@ -109,7 +110,7 @@ TEST_CASE("as() works as expected") {
     }
 
     SECTION("When downcast is possible and target pointer is not null") {
-        SharedPtr<Foo> foo{new FooBar};
+        SharedPtr<Foo> foo{std::make_shared<FooBar>()};
         REQUIRE(!!foo);
         SharedPtr<FooBar> bar = foo.as<FooBar>();
         REQUIRE(!!bar);
@@ -123,7 +124,7 @@ TEST_CASE("as() works as expected") {
     }
 
     SECTION("When cast is not possible and target pointer is not null") {
-        SharedPtr<Foo> foo{new FooBar};
+        SharedPtr<Foo> foo{std::make_shared<FooBar>()};
         REQUIRE(!!foo);
         SharedPtr<JarJar> jar = foo.as<JarJar>();
         REQUIRE(!jar);
@@ -132,10 +133,10 @@ TEST_CASE("as() works as expected") {
     SECTION("The deleter cannot be preserved") {
         auto count = 0;
         {
-            SharedPtr<Foo> foo{new FooBar, [&](Foo *p) {
+            SharedPtr<Foo> foo{std::shared_ptr<FooBar>{new FooBar, [&](Foo *p) {
                 count += 1;
                 delete p;
-            }};
+            }}};
             REQUIRE(!!foo);
             SharedPtr<FooBar> bar = foo.as<FooBar>();
             REQUIRE(!!bar);
@@ -146,7 +147,7 @@ TEST_CASE("as() works as expected") {
     SECTION("The usage count is consistent") {
         SharedPtr<FooBar> bar;
         {
-            SharedPtr<Foo> foo{new FooBar};
+            SharedPtr<Foo> foo{std::make_shared<FooBar>()};
             REQUIRE(!!foo);
             bar = foo.as<FooBar>();
             REQUIRE(!!bar);

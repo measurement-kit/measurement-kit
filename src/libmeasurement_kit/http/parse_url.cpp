@@ -1,10 +1,12 @@
-// Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software under the BSD license. See AUTHORS
+// Part of Measurement Kit <https://measurement-kit.github.io/>.
+// Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
-#include "private/ext/http_parser.h"
+#include "src/libmeasurement_kit/http/http.hpp"
 
-#include <measurement_kit/http.hpp>
+#include <ctype.h>
+
+#include "src/libmeasurement_kit/ext/http_parser.h"
 
 namespace mk {
 namespace http {
@@ -24,6 +26,15 @@ Url parse_url(std::string url) {
     }
     retval.schema = url.substr(url_parser.field_data[UF_SCHEMA].off,
                                url_parser.field_data[UF_SCHEMA].len);
+    // "URL schema should be case-insensitive" #1652
+    for (size_t i = 0; i < retval.schema.size(); ++i) {
+        char ch = retval.schema[i];
+        // The following is just a precaution to avoid passing an invalid
+        // value to tolower(). The parser should make that impossible. Thus
+        // if the assumption is invalid, die miserably in flames.
+        if (ch < 0 || ch > 127) abort();
+        retval.schema[i] = tolower(ch);
+    }
     retval.address = url.substr(url_parser.field_data[UF_HOST].off,
                                 url_parser.field_data[UF_HOST].len);
     if ((url_parser.field_set & (1 << UF_PORT)) != 0) {
@@ -50,9 +61,9 @@ Url parse_url(std::string url) {
 
 ErrorOr<Url> parse_url_noexcept(std::string url) {
     try {
-        return parse_url(url);
+        return {NoError(), parse_url(url)};
     } catch (Error &error) {
-        return error;
+        return {error, {}};
     }
 }
 

@@ -1,22 +1,26 @@
-// Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software under the BSD license. See AUTHORS
+// Part of Measurement Kit <https://measurement-kit.github.io/>.
+// Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
+
+#include <measurement_kit/common/aaa_base.h>
+#include <measurement_kit/common/error.hpp>
+#include <measurement_kit/common/callback.hpp>
+#include <measurement_kit/common/logger.hpp>
+#include <measurement_kit/common/shared_ptr.hpp>
+
+#include <assert.h>
+#include <stdarg.h>
+#include <stdio.h>
 
 #include <cstdint>
 #include <fstream>
 #include <list>
-#include <measurement_kit/common/aaa_base.hpp>
-#include <measurement_kit/common/callback.hpp>
-#include "private/common/delegate.hpp"
-#include "private/common/locked.hpp"
-#include <measurement_kit/common/json.hpp>
-#include <measurement_kit/common/logger.hpp>
-#include <measurement_kit/common/non_copyable.hpp>
-#include <measurement_kit/common/non_movable.hpp>
-#include <measurement_kit/common/shared_ptr.hpp>
 #include <mutex>
-#include <stdarg.h>
-#include <stdio.h>
+
+#include "src/libmeasurement_kit/common/delegate.hpp"
+#include "src/libmeasurement_kit/common/locked.hpp"
+#include "src/libmeasurement_kit/common/non_copyable.hpp"
+#include "src/libmeasurement_kit/common/non_movable.hpp"
 
 namespace mk {
 
@@ -26,9 +30,9 @@ class DefaultLogger : public Logger, public NonCopyable, public NonMovable {
         consumer_ = [](uint32_t level, const char *s) {
             std::string message;
             if ((level & MK_LOG_EVENT) != 0) {
-                Error err = json_process(
-                    s, [&](auto j) { message = j.dump(4); });
-                if (err) {
+                try {
+                    message = nlohmann::json::parse(s).dump(4);
+                } catch (const std::exception &) {
                     fprintf(
                         stderr, "warning: logger cannot parse json message\n");
                     return;
@@ -125,6 +129,8 @@ class DefaultLogger : public Logger, public NonCopyable, public NonMovable {
 
     void log(uint32_t level, const char *fmt, ...) override { XX(this, level); }
 
+    void err(const char *fmt, ...) override { XX(this, MK_LOG_ERR); }
+
     void warn(const char *fmt, ...) override { XX(this, MK_LOG_WARNING); }
 
     void info(const char *fmt, ...) override { XX(this, MK_LOG_INFO); }
@@ -165,6 +171,12 @@ class DefaultLogger : public Logger, public NonCopyable, public NonMovable {
         event_handler_ = std::move(f);
     }
 
+    void on_event_ex(const std::string &event,
+            Callback<nlohmann::json &&> &&cb) override {
+        std::unique_lock<std::recursive_mutex> _{mutex_};
+        handlers_[event] = std::move(cb);
+    }
+
     void on_progress(Callback<double, const char *> &&fn) override {
         std::unique_lock<std::recursive_mutex> _{mutex_};
         progress_handler_ = fn;
@@ -178,26 +190,64 @@ class DefaultLogger : public Logger, public NonCopyable, public NonMovable {
 
     void progress(double prog, const char *s) override {
         std::unique_lock<std::recursive_mutex> _{mutex_};
+        prog = prog * progress_scale_ + progress_offset_;
         if (progress_handler_) {
-            prog = prog * progress_scale_ + progress_offset_;
             try {
                 progress_handler_(prog, s);
             } catch (const std::exception &) {
                 /* Suppress */;
             }
         }
+        assert(!!s);
+        // Note that the mutex is recursive
+        // TODO(bassosimone): improve the API to allow emitting more context
+        emit_event_ex("status.progress", {
+            {"percentage", prog},
+            {"message", s},
+        });
+    }
+
+    void emit_event_ex(
+            std::string key, nlohmann::json &&value) override {
+        nlohmann::json event{
+            {"key", key},
+            {"value", std::move(value)}
+        };
+        if (handlers_.count(key) <= 0) {
+            // Even if the event has not registered handler, we pass them up
+            // one layer to validate the event structure. However, we can't
+            // really assert() here, because there are several places inside
+            // MK where we do not set handlers for extended events.
+            key = "__disabled";
+            if (handlers_.count(key) <= 0) {
+                return;
+            }
+        }
+        std::unique_lock<std::recursive_mutex> _{mutex_};
+        // TODO(bassosimone): other logging functions filter all the
+        // exceptions. We cannot change this behavior until that is part
+        // of our public API. But here we deliberately choose not to do
+        // any exception handling. The callee must behave.
+        handlers_.at(key)(std::move(event));
     }
 
     void progress_relative(double prog, const char *s) override {
         std::unique_lock<std::recursive_mutex> _{mutex_};
+        progress_relative_ += prog * progress_scale_;
         if (progress_handler_) {
-            progress_relative_ += prog * progress_scale_;
             try {
                 progress_handler_(progress_offset_ + progress_relative_, s);
             } catch (const std::exception &) {
                 /* Suppress */;
             }
         }
+        assert(!!s);
+        // Note that the mutex is recursive
+        // TODO(bassosimone): improve the API to allow emitting more context
+        emit_event_ex("status.progress", {
+            {"percentage", progress_offset_ + progress_relative_},
+            {"message", s},
+        });
     }
 
     void set_progress_offset(double offset) override {
@@ -229,6 +279,7 @@ class DefaultLogger : public Logger, public NonCopyable, public NonMovable {
     SharedPtr<std::ofstream> ofile_;
     std::list<Delegate<>> eof_handlers_;
     Delegate<const char *> event_handler_;
+    std::map<std::string, Delegate<nlohmann::json &&>> handlers_;
     Delegate<double, const char *> progress_handler_;
     double progress_offset_ = 0.0;
     double progress_scale_ = 1.0;
@@ -236,7 +287,7 @@ class DefaultLogger : public Logger, public NonCopyable, public NonMovable {
 };
 
 /*static*/ SharedPtr<Logger> Logger::make() {
-    return std::dynamic_pointer_cast<Logger>(std::make_shared<DefaultLogger>());
+    return SharedPtr<Logger>{std::make_shared<DefaultLogger>()};
 }
 
 /*static*/ SharedPtr<Logger> Logger::global() {
@@ -249,6 +300,8 @@ class DefaultLogger : public Logger, public NonCopyable, public NonMovable {
 Logger::~Logger() {}
 
 void log(uint32_t level, const char *fmt, ...) { XX(Logger::global(), level); }
+
+void err(const char *fmt, ...) { XX(Logger::global(), MK_LOG_ERR); }
 
 void warn(const char *fmt, ...) { XX(Logger::global(), MK_LOG_WARNING); }
 

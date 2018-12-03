@@ -1,17 +1,17 @@
-// Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software under the BSD license. See AUTHORS
+// Part of Measurement Kit <https://measurement-kit.github.io/>.
+// Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
-#include "private/ooni/constants.hpp"
-#include "private/ooni/utils.hpp"
-#include "private/common/locked.hpp"
-#include "private/common/parallel.hpp"
-#include "private/common/utils.hpp"
+#include "src/libmeasurement_kit/ooni/constants.hpp"
+#include "src/libmeasurement_kit/ooni/nettests.hpp"
+#include "src/libmeasurement_kit/ooni/templates.hpp"
+#include "src/libmeasurement_kit/ooni/utils.hpp"
+#include "src/libmeasurement_kit/common/locked.hpp"
+#include "src/libmeasurement_kit/common/parallel.hpp"
+#include "src/libmeasurement_kit/common/utils.hpp"
 
 namespace mk {
 namespace ooni {
-
-using namespace mk::report;
 
 typedef std::map<std::string, std::string> input_t; // Syntactic sugar
 
@@ -87,14 +87,14 @@ static const std::vector<input_t> &gen_http_inputs() {
     return is;
 }
 
-static void http_many(SharedPtr<Entry> entry, Callback<Error> all_done_cb,
+static void http_many(SharedPtr<nlohmann::json> entry, Callback<Error> all_done_cb,
         Settings options, SharedPtr<Reactor> reactor,
         SharedPtr<Logger> logger) {
 
     auto http_cb = [=](const input_t &input, Callback<Error> done_cb) {
         return [=](Error err, SharedPtr<http::Response> response) {
             // result: true means unfiltered
-            Entry result = {{"URL", input.at("url")},
+            nlohmann::json result = {{"URL", input.at("url")},
                     {"http_status_number",
                             nullptr}, // expected status code, if there is one
                     {"http_status_summary",
@@ -163,7 +163,7 @@ static void http_many(SharedPtr<Entry> entry, Callback<Error> all_done_cb,
     mk::parallel(continuations, all_done_cb, 3);
 }
 
-static void dns_msft_ncsi(SharedPtr<Entry> entry, Callback<Error> done_cb,
+static void dns_msft_ncsi(SharedPtr<nlohmann::json> entry, Callback<Error> done_cb,
         Settings options, SharedPtr<Reactor> reactor,
         SharedPtr<Logger> logger) {
     std::string hostname = "dns.msftncsi.com";
@@ -200,12 +200,12 @@ static void dns_msft_ncsi(SharedPtr<Entry> entry, Callback<Error> done_cb,
 
 // DNS A lookups against some random hostnames unlikely to point at anything.
 static void dns_random_hostnames(size_t count, size_t length,
-        SharedPtr<Entry> entry, Callback<Error> done_cb, Settings options,
+        SharedPtr<nlohmann::json> entry, Callback<Error> done_cb, Settings options,
         SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
     // if any random domains resolve, change to false
     // (true means unfiltered)
     (*entry)["vendor_dns_tests"]["google_dns_cp"]["result"] = true;
-    (*entry)["vendor_dns_tests"]["google_dns_cp"]["addresses"] = Entry::array();
+    (*entry)["vendor_dns_tests"]["google_dns_cp"]["addresses"] = nlohmann::json::array();
     SharedPtr<size_t> names_tested(new size_t(0));
 
     auto dns_cb = [=](std::string hostname) {
@@ -269,9 +269,9 @@ static void dns_random_hostnames(size_t count, size_t length,
 }
 
 void captiveportal(std::string /*input*/, Settings options,
-        Callback<SharedPtr<Entry>> callback, SharedPtr<Reactor> reactor,
+        Callback<SharedPtr<nlohmann::json>> callback, SharedPtr<Reactor> reactor,
         SharedPtr<Logger> logger) {
-    SharedPtr<Entry> entry(new Entry);
+    SharedPtr<nlohmann::json> entry(new nlohmann::json);
     logger->info("starting http_many");
     http_many(entry,
             [=](Error err) {

@@ -1,26 +1,23 @@
-// Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software under the BSD license. See AUTHORS
+// Part of Measurement Kit <https://measurement-kit.github.io/>.
+// Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
-#include "private/nettests/runnable.hpp"
+#include "src/libmeasurement_kit/nettests/runnable.hpp"
 
-#include <measurement_kit/nettests.hpp>
-#include <measurement_kit/ndt.hpp>
-
-#include "private/ndt/utils.hpp"
+#include "src/libmeasurement_kit/ndt/utils.hpp"
+#include "src/libmeasurement_kit/ndt/run.hpp"
 
 namespace mk {
 namespace nettests {
 
-NdtTest::NdtTest() : BaseTest() {
-    runnable.reset(new NdtRunnable);
-    runnable->test_name = "ndt";
-    runnable->test_version = "0.1.0";
+NdtRunnable::NdtRunnable() noexcept {
+    test_name = "ndt";
+    test_version = "0.1.0";
 }
 
 void NdtRunnable::main(std::string, Settings settings,
-                       Callback<SharedPtr<report::Entry>> cb) {
-    SharedPtr<report::Entry> entry(new report::Entry);
+                       Callback<SharedPtr<nlohmann::json>> cb) {
+    SharedPtr<nlohmann::json> entry(new nlohmann::json);
     (*entry)["failure"] = nullptr;
     // Note: `options` is the class attribute and `settings` is instead a
     // possibly modified copy of the `options` object
@@ -29,14 +26,16 @@ void NdtRunnable::main(std::string, Settings settings,
             (*entry)["failure"] = error.reason;
         }
         try {
-            (*entry)["simple"] = mk::ndt::utils::compute_simple_stats(*entry, logger);
+            (*entry)["simple"] = mk::ndt::utils::compute_simple_stats_throws(
+                *entry, logger);
         } catch (const std::exception &) {
-            /* Just in case */ ;
+            (*entry)["failure"] = "compute_simple_stats_error";
         }
         try {
-            (*entry)["advanced"] = mk::ndt::utils::compute_advanced_stats(*entry, logger);
+            (*entry)["advanced"] =
+                mk::ndt::utils::compute_advanced_stats_throws(*entry, logger);
         } catch (const std::exception &) {
-            /* Just in case */ ;
+            (*entry)["failure"] = "compute_advanced_stats_error";
         }
         cb(entry);
     }, settings, reactor, logger);

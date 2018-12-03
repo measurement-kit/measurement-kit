@@ -1,10 +1,10 @@
-// Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software under the BSD license. See AUTHORS
+// Part of Measurement Kit <https://measurement-kit.github.io/>.
+// Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
-#include "private/common/utils.hpp"
-
-#include <measurement_kit/report.hpp>
+#include "src/libmeasurement_kit/common/utils.hpp"
+#include "src/libmeasurement_kit/report/base_reporter.hpp"
+#include "src/libmeasurement_kit/report/error.hpp"
 
 namespace mk {
 namespace report {
@@ -35,7 +35,7 @@ Continuation<Error> BaseReporter::do_open_(Continuation<Error> cc) {
 }
 
 Continuation<Error>
-BaseReporter::do_write_entry_(Entry entry, Continuation<Error> cc) {
+BaseReporter::do_write_entry_(nlohmann::json entry, Continuation<Error> cc) {
     return [=](Callback<Error> cb) {
         if (!openned_) {
             cb(ReportNotOpenError());

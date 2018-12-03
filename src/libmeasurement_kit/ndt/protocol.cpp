@@ -1,12 +1,17 @@
-// Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software under the BSD license. See AUTHORS
+// Part of Measurement Kit <https://measurement-kit.github.io/>.
+// Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
-#include "private/ndt/protocol_impl.hpp"
+#include "src/libmeasurement_kit/ndt/protocol_impl.hpp"
 
 namespace mk {
 namespace ndt {
 namespace protocol {
+
+// XXX see protocol_impl.hpp
+void call_soon_wrapper(Callback<> &&cb, SharedPtr<Reactor> reactor) {
+    reactor->call_soon(std::move(cb));
+}
 
 void connect(SharedPtr<Context> ctx, Callback<Error> callback) {
     connect_impl(ctx, callback);

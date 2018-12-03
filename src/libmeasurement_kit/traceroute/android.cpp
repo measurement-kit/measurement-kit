@@ -1,6 +1,6 @@
 /*-
- * Part of measurement-kit <https://measurement-kit.github.io/>.
- * Measurement-kit is free software under the BSD license. See AUTHORS
+ * Part of Measurement Kit <https://measurement-kit.github.io/>.
+ * Measurement Kit is free software under the BSD license. See AUTHORS
  * and LICENSE for more information on the copying conditions.
  * =========================================================================
  * Based on Portolan code contributed by its authors.
@@ -35,16 +35,16 @@
 /// Android implementation of prober
 
 // This is meant to run on Android but can run on all Linux systems
-#if (!defined __linux__ || !defined ENABLE_TRACEROUTE)
+#if (!defined __linux__)
 void mk_traceroute_android_unused();
 void mk_traceroute_android_unused() {}
 #else
 
-#include "private/net/utils.hpp"
-#include "private/common/utils.hpp"
-
-#include <measurement_kit/net.hpp>
-#include <measurement_kit/traceroute.hpp>
+#include "src/libmeasurement_kit/traceroute/android.hpp"
+#include "src/libmeasurement_kit/traceroute/error.hpp"
+#include "src/libmeasurement_kit/net/utils.hpp"
+#include "src/libmeasurement_kit/common/utils.hpp"
+#include "src/libmeasurement_kit/net/error.hpp"
 
 #include <linux/errqueue.h>
 #include <sys/uio.h>

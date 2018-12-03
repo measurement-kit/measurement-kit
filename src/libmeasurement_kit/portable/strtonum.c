@@ -20,7 +20,7 @@
 #include <errno.h>
 #include <limits.h>
 
-#include <measurement_kit/common/portable/stdlib.h>
+#include <measurement_kit/common/aaa_base.h>
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"

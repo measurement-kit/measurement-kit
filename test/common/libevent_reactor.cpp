@@ -1,12 +1,13 @@
-// Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software under the BSD license. See AUTHORS
+// Part of Measurement Kit <https://measurement-kit.github.io/>.
+// Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
-#define CATCH_CONFIG_MAIN
-#include "private/ext/catch.hpp"
+#include "test/winsock.hpp"
 
-#include "private/common/libevent_reactor.hpp"
-#include "private/common/utils.hpp"
+#include "include/private/catch.hpp"
+
+#include "src/libmeasurement_kit/common/libevent_reactor.hpp"
+#include "src/libmeasurement_kit/common/utils.hpp"
 #include <measurement_kit/common.hpp>
 
 using namespace mk;
@@ -14,12 +15,23 @@ using namespace mk;
 extern "C" {
 
 static int evthread_use_pthreads_fail() { return -1; }
+
+#ifndef _WIN32
 static int sigaction_fail(int, const struct sigaction *, struct sigaction *) {
     return -1;
 }
+#endif
 
 } // extern "C"
 
+#ifdef _WIN32
+TEST_CASE("libevent_init_once") {
+    SECTION("We deal with evthread_use_pthreads() failure") {
+        REQUIRE_THROWS((LibeventReactor<>::libevent_init_once<
+                evthread_use_pthreads_fail>()));
+    }
+}
+#else
 TEST_CASE("libevent_init_once") {
     SECTION("We deal with evthread_use_pthreads() failure") {
         REQUIRE_THROWS((LibeventReactor<>::libevent_init_once<
@@ -32,16 +44,23 @@ TEST_CASE("libevent_init_once") {
                         sigaction_fail>()));
     }
 }
+#endif
 
 extern "C" {
 
-static event_base *event_base_new_fail() { return nullptr; }
+#ifndef _MSC_VER
+#define STATIC static
+#else
+#define STATIC /* Nothing */
+#endif
 
-static int event_base_dispatch_fail(event_base *) { return -1; }
+STATIC event_base *event_base_new_fail() { return nullptr; }
 
-static int event_base_dispatch_no_events(event_base *) { return 1; }
+STATIC int event_base_dispatch_fail(event_base *) { return -1; }
 
-static int event_base_loopbreak_fail(event_base *) { return -1; }
+STATIC int event_base_dispatch_no_events(event_base *) { return 1; }
+
+STATIC int event_base_loopbreak_fail(event_base *) { return -1; }
 
 } // extern "C"
 
@@ -75,7 +94,7 @@ TEST_CASE("Reactor: basic functionality") {
 
 extern "C" {
 
-static int event_base_once_fail(event_base *, evutil_socket_t, short,
+STATIC int event_base_once_fail(event_base *, evutil_socket_t, short,
         event_callback_fn, void *, const timeval *) {
     return -1;
 }

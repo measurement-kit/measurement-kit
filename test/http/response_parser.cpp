@@ -1,11 +1,12 @@
-// Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software under the BSD license. See AUTHORS
+// Part of Measurement Kit <https://measurement-kit.github.io/>.
+// Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
-#define CATCH_CONFIG_MAIN
-#include "private/ext/catch.hpp"
+#include "test/winsock.hpp"
 
-#include "private/http/response_parser.hpp"
+#include "include/private/catch.hpp"
+
+#include "src/libmeasurement_kit/http/response_parser.hpp"
 
 using namespace mk;
 using namespace mk::net;
@@ -66,9 +67,9 @@ TEST_CASE("ResponseParserNg works as expected") {
             REQUIRE(r.status_code == 200);
             REQUIRE(r.reason == "Ok");
             REQUIRE(r.headers.size() == 3);
-            REQUIRE(r.headers.at("Content-Type") == "text/plain");
-            REQUIRE(r.headers.at("Content-Length") == "7");
-            REQUIRE(r.headers.at("Server") == "Antani/1.0.0.0");
+            REQUIRE(headers_find_first(r.headers, "Content-Type") == "text/plain");
+            REQUIRE(headers_find_first(r.headers, "Content-Length") == "7");
+            REQUIRE(headers_find_first(r.headers, "Server") == "Antani/1.0.0.0");
         });
 
         body = "";
@@ -100,9 +101,9 @@ TEST_CASE("ResponseParserNg works as expected") {
             REQUIRE(r.status_code == 202);
             REQUIRE(r.reason == "Accepted");
             REQUIRE(r.headers.size() == 3);
-            REQUIRE(r.headers.at("Content-Type") == "text/html");
-            REQUIRE(r.headers.at("Transfer-Encoding") == "chunked");
-            REQUIRE(r.headers.at("Server") == "Antani/2.0.0.0");
+            REQUIRE(headers_find_first(r.headers, "Content-Type") == "text/html");
+            REQUIRE(headers_find_first(r.headers, "Transfer-Encoding") == "chunked");
+            REQUIRE(headers_find_first(r.headers, "Server") == "Antani/2.0.0.0");
         });
 
         body = "";
@@ -140,9 +141,9 @@ TEST_CASE("ResponseParserNg stops after first message") {
         REQUIRE(r.status_code == 200);
         REQUIRE(r.reason == "Ok");
         REQUIRE(r.headers.size() == 3);
-        REQUIRE(r.headers.at("Content-Type") == "text/plain");
-        REQUIRE(r.headers.at("Content-Length") == "7");
-        REQUIRE(r.headers.at("Server") == "Antani/1.0.0.0");
+        REQUIRE(headers_find_first(r.headers, "Content-Type") == "text/plain");
+        REQUIRE(headers_find_first(r.headers, "Content-Length") == "7");
+        REQUIRE(headers_find_first(r.headers, "Server") == "Antani/1.0.0.0");
     });
 
     body = "";

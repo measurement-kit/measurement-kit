@@ -1,29 +1,28 @@
-// Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software under the BSD license. See AUTHORS
+// Part of Measurement Kit <https://measurement-kit.github.io/>.
+// Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
-#include "private/common/utils.hpp"
-#include "private/nettests/runnable.hpp"
-#include <measurement_kit/nettests.hpp>
-#include <measurement_kit/ooni.hpp>
+#include "src/libmeasurement_kit/common/utils.hpp"
+#include "src/libmeasurement_kit/nettests/runnable.hpp"
+#include "src/libmeasurement_kit/ooni/nettests.hpp"
+#include "src/libmeasurement_kit/http/http.hpp"
 
 namespace mk {
 namespace nettests {
 
-WebConnectivityTest::WebConnectivityTest() : BaseTest() {
-    runnable.reset(new WebConnectivityRunnable);
-    runnable->test_name = "web_connectivity";
-    runnable->test_version = "0.0.1";
-    runnable->needs_input = true;
-    runnable->test_helpers_data = {{"web-connectivity", "backend"}};
+WebConnectivityRunnable::WebConnectivityRunnable() noexcept {
+    test_name = "web_connectivity";
+    test_version = "0.0.1";
+    needs_input = true;
+    test_helpers_data = {{"web-connectivity", "backend"}};
 }
 
 void WebConnectivityRunnable::main(std::string input, Settings options,
-                                   Callback<SharedPtr<report::Entry>> cb) {
+                                   Callback<SharedPtr<nlohmann::json>> cb) {
     ooni::web_connectivity(input, options, cb, reactor, logger);
 }
 
-void WebConnectivityRunnable::fixup_entry(report::Entry &entry) {
+void WebConnectivityRunnable::fixup_entry(nlohmann::json &entry) {
     try {
         auto backend = entry["test_helpers"]["backend"].get<std::string>();
         if (mk::startswith(backend, "https://")) {
@@ -42,6 +41,32 @@ void WebConnectivityRunnable::fixup_entry(report::Entry &entry) {
     } catch (const std::exception &exc) {
         logger->warn("Cannot fixup entry: %s", exc.what());
     }
+}
+
+std::deque<std::string>
+WebConnectivityRunnable::fixup_inputs(std::deque<std::string> &&il) {
+    std::deque<std::string> rv;
+    while (!il.empty()) {
+        std::string s;
+        std::swap(s, il.front());
+        il.pop_front();
+        ErrorOr<http::Url> maybe_url = http::parse_url_noexcept(s);
+        if (maybe_url.as_error() != NoError()) {
+            // Incorrect URL. WebConnectivity will complain for us later.
+            rv.push_back(std::move(s));
+            continue;
+        }
+        if (maybe_url->schema == "https" && maybe_url->port == 443) {
+            // "Test both http and https versions of a website" #1560
+            http::Url httpURL = *maybe_url;
+            httpURL.schema = "http";
+            httpURL.port = 80;
+            rv.push_back(httpURL.str());
+            // FALLTHROUGH
+        }
+        rv.push_back(maybe_url->str());
+    }
+    return rv;
 }
 
 } // namespace nettests

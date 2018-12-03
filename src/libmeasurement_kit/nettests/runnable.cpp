@@ -1,18 +1,23 @@
-// Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software under the BSD license. See AUTHORS
+// Part of Measurement Kit <https://measurement-kit.github.io/>.
+// Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
-#include "private/common/fmap.hpp"
-#include "private/common/parallel.hpp"
-#include "private/common/range.hpp"
-#include "private/nettests/runnable.hpp"
+#include "src/libmeasurement_kit/common/fmap.hpp"
+#include "src/libmeasurement_kit/common/parallel.hpp"
+#include "src/libmeasurement_kit/common/range.hpp"
+#include "src/libmeasurement_kit/nettests/runnable.hpp"
 
-#include "private/common/utils.hpp"
-#include "private/ooni/utils.hpp"
-#include "private/nettests/utils.hpp"
+#include "src/libmeasurement_kit/common/utils.hpp"
+#include "src/libmeasurement_kit/ooni/bouncer.hpp"
+#include "src/libmeasurement_kit/ooni/utils.hpp"
+#include "src/libmeasurement_kit/nettests/utils.hpp"
+#include "src/libmeasurement_kit/ext/sole.hpp"
 
-#include <measurement_kit/nettests.hpp>
-#include <measurement_kit/ext/sole.hpp>
+#include "src/libmeasurement_kit/report/file_reporter.hpp"
+#include "src/libmeasurement_kit/report/ooni_reporter.hpp"
+
+#include <measurement_kit/vendor/mkiplookup.h>
+#include <measurement_kit/vendor/mkmmdb.h>
 
 namespace mk {
 namespace nettests {
@@ -32,10 +37,17 @@ Runnable::~Runnable() {
 
 void Runnable::setup(std::string) {}
 void Runnable::teardown(std::string) {}
-void Runnable::main(std::string, Settings, Callback<SharedPtr<report::Entry>> cb) {
-    reactor->call_soon([=]() { cb(SharedPtr<report::Entry>{new report::Entry}); });
+void Runnable::main(std::string, Settings, Callback<SharedPtr<nlohmann::json>> cb) {
+    // Deferring calling `cb` a little bit to better emulate real tests
+    // workflow because no test actually completes "immediately".
+    reactor->call_later(0.74,
+        [=]() { cb(SharedPtr<nlohmann::json>{new nlohmann::json}); });
 }
-void Runnable::fixup_entry(report::Entry &) {}
+void Runnable::fixup_entry(nlohmann::json &) {}
+
+std::deque<std::string> Runnable::fixup_inputs(std::deque<std::string> &&il) {
+  return il;
+}
 
 void Runnable::run_next_measurement(size_t thread_id, Callback<Error> cb,
                                     size_t num_entries,
@@ -65,6 +77,7 @@ void Runnable::run_next_measurement(size_t thread_id, Callback<Error> cb,
     } else if (num_entries > 0) {
         prog = *current_entry / (double)num_entries;
     }
+    auto saved_current_entry = *current_entry; // used for emitting events
     *current_entry += 1;
     if (next_input != "") {
         std::string description;
@@ -83,8 +96,13 @@ void Runnable::run_next_measurement(size_t thread_id, Callback<Error> cb,
     setup(next_input);
 
     logger->debug("net_test: running with input %s", next_input.c_str());
-    main(next_input, options, [=](SharedPtr<report::Entry> test_keys) {
-        report::Entry entry;
+    logger->emit_event_ex("status.measurement_start", nlohmann::json::object({
+        {"idx", saved_current_entry},
+        {"input", next_input},
+    }));
+
+    main(next_input, options, [=](SharedPtr<nlohmann::json> test_keys) {
+        nlohmann::json entry;
         entry["input"] = next_input;
         // Make sure the input is `null` rather than empty string
         if (entry["input"] == "") {
@@ -98,13 +116,13 @@ void Runnable::run_next_measurement(size_t thread_id, Callback<Error> cb,
         entry["id"] = mk::sole::uuid4().str();
 
         // Until we have support for passing options, leave it empty
-        entry["options"] = Entry::array();
+        entry["options"] = nlohmann::json::array();
 
         // Until we have support for it, just put `null`
         entry["probe_city"] = nullptr;
 
         // Add test helpers
-        entry["test_helpers"] = Entry::object();
+        entry["test_helpers"] = nlohmann::json::object();
         for (auto &name : test_helpers_option_names()) {
             if (options.count(name) != 0) {
                 entry["test_helpers"][name] = options[name];
@@ -112,7 +130,7 @@ void Runnable::run_next_measurement(size_t thread_id, Callback<Error> cb,
         }
 
         // Add empty input hashes
-        entry["input_hashes"] = Entry::array();
+        entry["input_hashes"] = nlohmann::json::array();
 
         logger->debug("net_test: tearing down");
         teardown(next_input);
@@ -131,16 +149,33 @@ void Runnable::run_next_measurement(size_t thread_id, Callback<Error> cb,
                 /* FALLTHROUGH */
             }
         }
+        // TODO(bassosimone): make sure that this entry contains the report ID
+        // which probably is currently not the case.
+        logger->emit_event_ex("measurement", nlohmann::json::object({
+            {"idx", saved_current_entry},
+            {"json_str", entry.dump()},
+        }));
         report.write_entry(entry, [=](Error error) {
             if (error) {
                 logger->warn("cannot write entry");
+                logger->emit_event_ex("failure.measurement_submission", {
+                    {"idx", saved_current_entry},
+                    {"json_str", entry.dump()},
+                    {"failure", error.reason},
+                });
                 if (not options.get("ignore_write_entry_error", true)) {
                     cb(error);
                     return;
                 }
             } else {
                 logger->debug("net_test: written entry");
+                logger->emit_event_ex("status.measurement_submission", {
+                    {"idx", saved_current_entry}
+                });
             }
+            logger->emit_event_ex("status.measurement_done", {
+                {"idx", saved_current_entry}
+            });
             reactor->call_soon([=]() {
                 run_next_measurement(thread_id, cb, num_entries, current_entry);
             });
@@ -149,95 +184,134 @@ void Runnable::run_next_measurement(size_t thread_id, Callback<Error> cb,
 }
 
 void Runnable::geoip_lookup(Callback<> cb) {
-
     // This is to ensure that when calling multiple times geoip_lookup we
     // always reset the probe_ip, probe_asn and probe_cc values.
     probe_ip = "127.0.0.1";
     probe_asn = "AS0";
     probe_cc = "ZZ";
+    probe_network_name = "";
 
-    auto save_ip = options.get("save_real_probe_ip", false);
-    auto save_asn = options.get("save_real_probe_asn", true);
-    auto save_cc = options.get("save_real_probe_cc", true);
+    bool save_ip = options.get("save_real_probe_ip", false);
+    bool save_asn = options.get("save_real_probe_asn", true);
+    bool save_cc = options.get("save_real_probe_cc", true);
+    bool save_network_name = options.get("save_real_probe_network_name", true);
 
-    // This code block allows the caller to override probe variables
-    if (save_ip and options.find("probe_ip") != options.end()) {
-        probe_ip = options.at("probe_ip");
-        save_ip = false; // We already have it, don't look it up and save it
+    std::string real_probe_ip = "127.0.0.1";
+    {
+        double timeout = options.get("net/timeout", 10.0);
+        std::string ca = options.get("net/ca_bundle_path", std::string{});
+        mkiplookup_request_uptr req{mkiplookup_request_new_nonnull()};
+        mkiplookup_request_set_timeout(req.get(), (int64_t)timeout);
+        mkiplookup_request_set_ca_bundle_path(req.get(), ca.c_str());
+        mkiplookup_response_uptr res{
+                mkiplookup_request_perform_nonnull(req.get())};
+        std::string logs = mkiplookup_response_moveout_logs(res);
+        if (!mkiplookup_response_good(res.get())) {
+            logger->emit_event_ex("failure.ip_lookup", {
+                {"failure", "generic_error"},
+            });
+            logger->warn("=== BEGIN IP_LOOKUP LOGS ===");
+            logger->warn("%s", logs.c_str());
+            logger->warn("=== END IP_LOOKUP LOGS ===");
+            annotations["failure_ip_lookup"] = "true";
+        } else {
+            real_probe_ip = mkiplookup_response_get_probe_ip(res.get());
+            logger->debug("=== BEGIN IP_LOOKUP LOGS ===");
+            logger->debug("%s", logs.c_str());
+            logger->debug("=== END IP_LOOKUP LOGS ===");
+        }
     }
-    if (save_asn and options.find("probe_asn") != options.end()) {
-        probe_asn = options.at("probe_asn");
-        save_asn = false; // Ditto
+
+    std::string real_probe_cc = "ZZ";
+    {
+        std::string path = options.get("geoip_country_path", std::string{});
+        mkmmdb_uptr mmdb{mkmmdb_open_nonnull(path.c_str())};
+        std::string cc = mkmmdb_lookup_cc(mmdb.get(), real_probe_ip.c_str());
+        if (cc.empty()) {
+            logger->emit_event_ex("failure.cc_lookup", {
+                {"failure", "generic_error"},
+            });
+            logger->warn("=== BEGIN CC_LOOKUP LOGS ===");
+            logger->warn("%s", mkmmdb_get_last_lookup_logs(mmdb.get()));
+            logger->warn("=== END CC_LOOKUP LOGS ===");
+            annotations["failure_cc_lookup"] = "true";
+        } else {
+            std::swap(cc, real_probe_cc);
+        }
     }
-    if (save_cc and options.find("probe_cc") != options.end()) {
-        probe_cc = options.at("probe_cc");
-        save_cc = false; // Ditto
+
+    std::string real_probe_asn = "AS0";
+    {
+        std::string path = options.get("geoip_asn_path", std::string{});
+        mkmmdb_uptr mmdb{mkmmdb_open_nonnull(path.c_str())};
+        int64_t n = mkmmdb_lookup_asn(mmdb.get(), real_probe_ip.c_str());
+        if (n <= 0) {
+            logger->emit_event_ex("failure.asn_lookup", {
+                {"failure", "generic_error"},
+            });
+            logger->warn("=== BEGIN ASN_LOOKUP LOGS ===");
+            logger->warn("%s", mkmmdb_get_last_lookup_logs(mmdb.get()));
+            logger->warn("=== END ASN_LOOKUP LOGS ===");
+            annotations["failure_asn_lookup"] = "true";
+        } else {
+            real_probe_asn = "AS";
+            real_probe_asn += std::to_string(n);
+        }
     }
 
-    // No need to perform further lookups if we don't need to save anything
-    if (not save_ip and not save_asn and not save_cc) {
-        logger->warn("Not knowing user_ip means we cannot attempt to scrub it "
-                     "from the report");
-        cb();
-        return;
+    std::string real_probe_network_name;
+    {
+        std::string path = options.get("geoip_asn_path", std::string{});
+        mkmmdb_uptr mmdb{mkmmdb_open_nonnull(path.c_str())};
+        std::string nn = mkmmdb_lookup_org(mmdb.get(), real_probe_ip.c_str());
+        if (nn.empty()) {
+            logger->emit_event_ex("failure.network_name_lookup", {
+                {"failure", "generic_error"},
+            });
+            logger->warn("=== BEGIN NETWORK_NAME_LOOKUP LOGS ===");
+            logger->warn("%s", mkmmdb_get_last_lookup_logs(mmdb.get()));
+            logger->warn("=== END NETWORK_NAME_LOOKUP LOGS ===");
+            annotations["failure_network_name_lookup"] = "true";
+        } else {
+            std::swap(nn, real_probe_network_name);
+        }
     }
 
-    ip_lookup(
-        [=](Error err, std::string ip) {
-            if (err) {
-                logger->warn("ip_lookup() failed: error code: %d", err.code);
-                logger->warn("Not knowing user_ip means we cannot attempt "
-                             "to scrub it from the report");
-                cb();
-                return;
-            }
-            logger->info("Your public IP address: %s", ip.c_str());
-            if (save_ip) {
-                logger->debug("saving user's real ip on user's request");
-                probe_ip = ip;
-            }
-            /*
-             * XXX Passing down the stack the real probe IP to allow
-             * specific tests to scrub entries.
-             *
-             * See also measurement-kit/measurement-kit#1110.
-             */
-            options["real_probe_ip_"] = ip;
+    if (save_ip) {
+        logger->info("Your public IP address: %s", real_probe_ip.c_str());
+        logger->debug("saving user's real ip on user's request");
+        probe_ip = real_probe_ip;
+    }
+    if (save_cc) {
+        logger->info("Your country: %s", real_probe_cc.c_str());
+        probe_cc = real_probe_cc;
+    }
+    if (save_asn) {
+        logger->info("Your ISP identifier: %s", real_probe_asn.c_str());
+        probe_asn = real_probe_asn;
+    }
+    if (save_network_name) {
+        logger->info("Your ISP name: %s", real_probe_network_name.c_str());
+        probe_network_name = real_probe_network_name;
+    }
 
-            auto country_path = options.get("geoip_country_path",
-                                            std::string{});
-            if (save_cc and country_path != "") {
-                try {
-                    probe_cc = *GeoipCache::thread_local_instance()
-                       ->resolve_country_code(country_path, ip, logger);
-                } catch (const Error &err) {
-                    logger->warn("cannot lookup country code: %s", err.what());
-                }
-                if (probe_cc != "ZZ") {
-                    logger->info("Your country: %s", probe_cc.c_str());
-                }
-            } else if (country_path == "") {
-                logger->warn("geoip_country_path is not set");
-            }
+    // Note: using real_probe_xxx variables because the result of this phase
+    // SHOULD be independent of the configured privacy settings.
+    logger->emit_event_ex("status.geoip_lookup", {
+        {"probe_asn", real_probe_asn},
+        {"probe_cc", real_probe_cc},
+        {"probe_ip", real_probe_ip},
+        {"probe_network_name", real_probe_network_name},
+    });
 
-            auto asn_path = options.get("geoip_asn_path", std::string{});
-            if (save_asn and asn_path != "") {
-                try {
-                    probe_asn = *GeoipCache::thread_local_instance()
-                        ->resolve_asn(asn_path, ip, logger);
-                } catch (const Error &err) {
-                    logger->warn("cannot lookup asn: %s", err.what());
-                }
-                if (probe_asn != "AS0") {
-                    logger->info("Your ISP identifier: %s", probe_asn.c_str());
-                }
-            } else if (asn_path == "") {
-                logger->warn("geoip_asn_path is not set");
-            }
-
-            cb();
-        },
-        options, reactor, logger);
+    /*
+     * XXX Passing down the stack the real probe IP to allow
+     * specific tests to scrub entries.
+     *
+     * See also measurement-kit/measurement-kit#1110.
+     */
+    options["real_probe_ip_"] = real_probe_ip;
+    cb();
 }
 
 void Runnable::open_report(Callback<Error> callback) {
@@ -275,7 +349,7 @@ std::string Runnable::generate_output_filepath() {
         filename.clear();
 
         char timestamp[100];
-        strftime(timestamp, sizeof(timestamp), "%FT%H%M%SZ", &test_start_time);
+        strftime(timestamp, sizeof(timestamp), "%Y-%m-%dT%H%M%SZ", &test_start_time);
         filename << "report-" << test_name << "-";
         filename << timestamp << "-" << idx << ".njson";
 
@@ -292,8 +366,17 @@ std::string Runnable::generate_output_filepath() {
 }
 
 void Runnable::query_bouncer(Callback<Error> cb) {
-    if (!use_bouncer) {
-        logger->info("skipping bouncer");
+    ErrorOr<bool> disable_bouncer = options.get_noexcept(
+            "no_bouncer", false);
+    if (disable_bouncer.as_error() != NoError()) {
+        logger->warn("Invalid 'no_bouncer' option");
+        cb(disable_bouncer.as_error());
+        return;
+    }
+    // Note: `use_bouncer` is set for tasks that must not use the bouncer while
+    // the setting is to allow users to bypass the bouncer.
+    if (!use_bouncer || disable_bouncer.as_value() == true) {
+        logger->info("Skipping bouncer");
         cb(NoError());
         return;
     }
@@ -387,6 +470,7 @@ void Runnable::begin(Callback<Error> cb) {
                             cb(error);
                             return;
                         }
+                        inputs = fixup_inputs(std::move(inputs));
                         size_t num_entries = inputs.size();
 
                         // Run `parallelism` measurements in parallel

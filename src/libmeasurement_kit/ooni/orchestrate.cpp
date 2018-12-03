@@ -1,11 +1,10 @@
-// Part of measurement-kit <https://measurement-kit.github.io/>.
-// Measurement-kit is free software under the BSD license. See AUTHORS
+// Part of Measurement Kit <https://measurement-kit.github.io/>.
+// Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
-#include <measurement_kit/ooni.hpp>
-
-#include "private/ooni/orchestrate_impl.hpp"
-#include "private/common/worker.hpp"
+#include "src/libmeasurement_kit/ooni/orchestrate.hpp"
+#include "src/libmeasurement_kit/ooni/orchestrate_impl.hpp"
+#include "src/libmeasurement_kit/common/worker.hpp"
 
 namespace mk {
 namespace ooni {
@@ -46,13 +45,17 @@ Error Auth::load(const std::string &filepath) noexcept {
 }
 
 Error Auth::loads(const std::string &s) noexcept {
-    return json_process(s, [&](auto json) {
+    try {
+        nlohmann::json json = nlohmann::json::parse(s);
         auth_token = json.at("auth_token");
         expiry_time = json.at("expiry_time");
         logged_in = json.at("logged_in");
         username = json.at("username");
         password = json.at("password");
-    });
+    } catch (const std::exception &) {
+        return JsonProcessingError();
+    }
+    return NoError();
 }
 
 Error Auth::dump(const std::string &filepath) noexcept {
@@ -60,7 +63,7 @@ Error Auth::dump(const std::string &filepath) noexcept {
 }
 
 std::string Auth::dumps() noexcept {
-    auto json = Json{{"auth_token", auth_token},
+    auto json = nlohmann::json{{"auth_token", auth_token},
                                {"expiry_time", expiry_time},
                                {"logged_in", logged_in},
                                {"username", username},
@@ -90,18 +93,25 @@ bool Auth::is_valid(SharedPtr<Logger> logger) const noexcept {
         logger->warn("orchestrator: std::mktime() failed");
         return false;
     }
-    logger->debug("orchestrator: expiry_time_s: %llu",
-                  (unsigned long long)expiry_time_s);
+    // Using std::to_string() to workaround the issue with old C runtime
+    // libraries possible on Windows; see ndt/messages.cpp
+    logger->debug("orchestrator: expiry_time_s: %s",
+                  std::to_string(expiry_time_s).c_str());
 
     auto now_localtime = std::time(nullptr);
     if (now_localtime == (time_t)-1) {
         logger->warn("orchestrator: std::time() failed");
         return false;
     }
-    logger->debug("orchestrator: now_localtime: %llu",
-                  (unsigned long long)now_localtime);
+    // See above
+    logger->debug("orchestrator: now_localtime: %s",
+                  std::to_string(now_localtime).c_str());
     tm now_temp{};
+#ifdef _MSC_VER
+    if (gmtime_s(&now_temp, &now_localtime) != 0) {
+#else
     if (gmtime_r(&now_localtime, &now_temp) == nullptr) {
+#endif
         logger->warn("orchestrator: std::gmtime_r() failed");
         return false;
     }
@@ -110,8 +120,9 @@ bool Auth::is_valid(SharedPtr<Logger> logger) const noexcept {
         logger->warn("orchestrator: std::mktime() failed");
         return false;
     }
-    logger->debug("orchestrator: now_utc: %llu",
-                  (unsigned long long)now_utc);
+    // See above
+    logger->debug("orchestrator: now_utc: %s",
+                  std::to_string(now_utc).c_str());
 
     auto diff = difftime(expiry_time_s, now_utc);
     if (diff < 0) {
@@ -125,8 +136,8 @@ bool Auth::is_valid(SharedPtr<Logger> logger) const noexcept {
  * Registry database
  */
 
-Json ClientMetadata::as_json() const {
-    Json j;
+nlohmann::json ClientMetadata::as_json() const {
+    nlohmann::json j;
     // Keep the following sorted to ease comparison with class definition
     if (!available_bandwidth.empty()) {
         j["available_bandwidth"] = available_bandwidth;
@@ -143,6 +154,9 @@ Json ClientMetadata::as_json() const {
     j["platform"] = platform;
     j["probe_asn"] = probe_asn;
     j["probe_cc"] = probe_cc;
+    if (!probe_timezone.empty()) {
+        j["probe_timezone"] = probe_timezone;
+    }
     if (!probe_family.empty()) {
         j["probe_family"] = probe_family;
     }
