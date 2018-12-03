@@ -134,10 +134,6 @@ void telegram(Settings options, Callback<SharedPtr<nlohmann::json>> callback,
     (*entry)["telegram_tcp_blocking"] = true;
     (*entry)["telegram_http_blocking"] = true;
 
-    // if any endpoints are (TCP or HTTP) reachable, switch this to false
-    (*entry)["telegram_tcp_blocking"] = true;
-    (*entry)["telegram_http_blocking"] = true;
-
     mk::fcompose(mk::fcompose_policy_async(),
         [=](Callback<> cb) {
             http_many(TELEGRAM_WEB_URLS, "web", entry, options, reactor, logger,

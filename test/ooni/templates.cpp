@@ -10,12 +10,8 @@
 #include "src/libmeasurement_kit/ooni/templates.hpp"
 #include "src/libmeasurement_kit/ooni/templates_impl.hpp"
 
-#include "src/libmeasurement_kit/ooni/templates_impl.hpp"
-
 using namespace mk;
 using namespace mk::ooni;
-
-#ifdef ENABLE_INTEGRATION_TESTS
 
 TEST_CASE("dns query template works as expected") {
     SharedPtr<Reactor> reactor = Reactor::make();

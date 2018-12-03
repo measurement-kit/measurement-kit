@@ -17,8 +17,6 @@ namespace ooni {
 
 static const std::string FB_ASN = "AS32934";
 
-static const std::string FB_ASN = "AS32934";
-
 static const std::map<std::string, std::string> &FB_SERVICE_HOSTNAMES = {
       {"stun", "stun.fbsbx.com"},
       {"b_api", "b-api.facebook.com"},
