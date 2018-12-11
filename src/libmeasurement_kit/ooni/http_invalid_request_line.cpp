@@ -13,6 +13,10 @@ namespace ooni {
 
 static const int timeout = 5;
 
+// If you add other checks that run send_receive_invalid_request_line, remember
+// to increase this value by 1!
+static const int total_tests = 5;
+
 static void send_receive_invalid_request_line(net::Endpoint endpoint,
                                               std::string request_line,
                                               Callback<SharedPtr<nlohmann::json>> cb,
@@ -92,7 +96,7 @@ void http_invalid_request_line(Settings options,
         (*entry)["received"].push_back((*inner)["received"]);
         (*entry)["sent"].push_back((*inner)["sent"]);
         (*entry)["failure_list"].push_back((*inner)["failure"]);
-        if (*tests_run == 4) {
+        if (*tests_run == total_tests) {
             for (auto &x : (*entry)["failure_list"]) {
                 if (x != nullptr) {
                     (*entry)["failure"]
