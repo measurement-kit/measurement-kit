@@ -188,7 +188,7 @@ def main():
                Attribute("std::string", "geoip_country_path"),
                Attribute("bool", "ignore_bouncer_error", "true"),
                Attribute("bool", "ignore_open_report_error", "true"),
-               Attribute("double", "max_runtime", "-1.0"),
+               Attribute("int64_t", "max_runtime", "-1"),
                Attribute("std::string", "net/ca_bundle_path"),
                Attribute("double", "net/timeout", "10.0"),
                Attribute("bool", "no_bouncer", "false"),
