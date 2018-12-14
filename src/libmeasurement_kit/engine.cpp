@@ -800,11 +800,11 @@ static void task_run(TaskImpl *pimpl, nlohmann::json &settings) {
                     }
                     if (key == "max_runtime") {
                         found = true;
-                        if (!value.is_number_float()) {
+                        if (!value.is_number_integer()) {
                             std::stringstream ss;
                             ss << "Found " << key << " option which has the "
                                << "wrong type (fyi: it should be a "
-                               << "number_float)";
+                               << "number_integer)";
                             emit_settings_warning(pimpl, ss.str().data());
                             // FALLTHROUGH
                         }
@@ -858,55 +858,7 @@ static void task_run(TaskImpl *pimpl, nlohmann::json &settings) {
                         }
                         break;
                     }
-                    if (key == "no_asn_lookup") {
-                        found = true;
-                        if (!value.is_boolean()) {
-                            std::stringstream ss;
-                            ss << "Found " << key << " option which has the "
-                               << "wrong type (fyi: it should be a "
-                               << "boolean)";
-                            emit_settings_warning(pimpl, ss.str().data());
-                            // FALLTHROUGH
-                        }
-                        break;
-                    }
-                    if (key == "no_cc_lookup") {
-                        found = true;
-                        if (!value.is_boolean()) {
-                            std::stringstream ss;
-                            ss << "Found " << key << " option which has the "
-                               << "wrong type (fyi: it should be a "
-                               << "boolean)";
-                            emit_settings_warning(pimpl, ss.str().data());
-                            // FALLTHROUGH
-                        }
-                        break;
-                    }
-                    if (key == "no_ip_lookup") {
-                        found = true;
-                        if (!value.is_boolean()) {
-                            std::stringstream ss;
-                            ss << "Found " << key << " option which has the "
-                               << "wrong type (fyi: it should be a "
-                               << "boolean)";
-                            emit_settings_warning(pimpl, ss.str().data());
-                            // FALLTHROUGH
-                        }
-                        break;
-                    }
                     if (key == "no_file_report") {
-                        found = true;
-                        if (!value.is_boolean()) {
-                            std::stringstream ss;
-                            ss << "Found " << key << " option which has the "
-                               << "wrong type (fyi: it should be a "
-                               << "boolean)";
-                            emit_settings_warning(pimpl, ss.str().data());
-                            // FALLTHROUGH
-                        }
-                        break;
-                    }
-                    if (key == "no_resolver_lookup") {
                         found = true;
                         if (!value.is_boolean()) {
                             std::stringstream ss;
