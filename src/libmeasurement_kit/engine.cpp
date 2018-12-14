@@ -702,6 +702,18 @@ static void task_run(TaskImpl *pimpl, nlohmann::json &settings) {
             {
                 bool found = false;
                 do {
+                    if (key == "all_endpoints") {
+                        found = true;
+                        if (!value.is_boolean()) {
+                            std::stringstream ss;
+                            ss << "Found " << key << " option which has the "
+                               << "wrong type (fyi: it should be a "
+                               << "boolean)";
+                            emit_settings_warning(pimpl, ss.str().data());
+                            // FALLTHROUGH
+                        }
+                        break;
+                    }
                     if (key == "bouncer_base_url") {
                         found = true;
                         if (!value.is_string()) {
@@ -918,6 +930,18 @@ static void task_run(TaskImpl *pimpl, nlohmann::json &settings) {
                         }
                         break;
                     }
+                    if (key == "port") {
+                        found = true;
+                        if (!value.is_number_integer()) {
+                            std::stringstream ss;
+                            ss << "Found " << key << " option which has the "
+                               << "wrong type (fyi: it should be a "
+                               << "number_integer)";
+                            emit_settings_warning(pimpl, ss.str().data());
+                            // FALLTHROUGH
+                        }
+                        break;
+                    }
                     if (key == "randomize_input") {
                         found = true;
                         if (!value.is_boolean()) {
@@ -985,6 +1009,18 @@ static void task_run(TaskImpl *pimpl, nlohmann::json &settings) {
                             ss << "Found " << key << " option which has the "
                                << "wrong type (fyi: it should be a "
                                << "boolean)";
+                            emit_settings_warning(pimpl, ss.str().data());
+                            // FALLTHROUGH
+                        }
+                        break;
+                    }
+                    if (key == "server") {
+                        found = true;
+                        if (!value.is_string()) {
+                            std::stringstream ss;
+                            ss << "Found " << key << " option which has the "
+                               << "wrong type (fyi: it should be a "
+                               << "string)";
                             emit_settings_warning(pimpl, ss.str().data());
                             // FALLTHROUGH
                         }

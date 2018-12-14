@@ -156,6 +156,7 @@ The nettest task settings object is a JSON like:
   "log_level": "INFO",
   "name": "WebConnectivity",
   "options": {
+    "all_endpoints": false,
     "bouncer_base_url": "",
     "collector_base_url": "",
     "dns/nameserver": "",
@@ -174,11 +175,13 @@ The nettest task settings object is a JSON like:
     "no_ip_lookup": false,
     "no_file_report": false,
     "no_resolver_lookup": false,
+    "port": 1234,
     "randomize_input": true,
     "save_real_probe_asn": true,
     "save_real_probe_cc": true,
     "save_real_probe_ip": false,
     "save_real_resolver_ip": true,
+    "server": "neubot.mlab.mlab1.trn01.measurement-lab.org",
     "software_name": "measurement_kit",
     "software_version": "<current-mk-version>"
   },
@@ -253,6 +256,10 @@ strictly and only accept options with the correct type.
 
 These are the available options:
 
+- `"all_endpoints"`: (boolean) whether to check just a few or all the
+  available endpoints in tests that work with specific endpoints, such
+  as, the "WhatsApp" test;
+
 - `"bouncer_base_url"`: (string) base URL of OONI bouncer, by default set to
   the empty string. If empty, the OONI bouncer will be used;
 
@@ -320,6 +327,9 @@ These are the available options:
 - `"no_resolver_lookup"`: (boolean) whether to lookup the IP address of the
   resolver used. By default set to `false`, meaning that we'll try;
 
+- `"port"`: (int) allows to override the port for tests that connect to a
+  specific port, such as NDT and DASH;
+
 - `"randomize_input"`: (boolean) whether to randomize input. By default set to
   `true`, meaning that we'll randomize input;
 
@@ -334,6 +344,9 @@ These are the available options:
 
 - `"save_real_resolver_ip"`: (boolean) whether to save the resolver IP. By default
   set to `true`, meaning that we'll save it;
+
+- `"server"`: (server) allows to override the server hostname for tests that
+  connect to a specific port, such as NDT and DASH;
 
 - `"software_name"`: (string) name of the app. By default set to
   `"measurement_kit"`;
