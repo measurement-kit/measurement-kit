@@ -373,6 +373,11 @@ static void control_request(http::Headers headers_to_pass_along,
     request["http_request"] = url;
     // XXX in OONI headers are like `key: [value,...]` whereas in MK
     // they are like `key: value`. Adapt to OONI format.
+    //
+    // BTW this is an interesting data point because it tells us that
+    // in some bits of the OONI data format we represented headers using
+    // correct format (i.e. a list) wheareas in other places we did it
+    // wrong (i.e. we used a map from string to string).
     nlohmann::json true_headers;
     for (auto h: headers_to_pass_along) {
         true_headers[h.key].push_back(h.value);
@@ -389,7 +394,7 @@ static void control_request(http::Headers headers_to_pass_along,
     }
 
     logger->info("Using backend %s", settings["backend"].c_str());
-    logger->debug2("Body %s", body.c_str());
+    logger->debug2("Body %s", body.c_str());  // safe because serialised JSON
 
     mk::dump_settings(settings, "web_connectivity", logger);
 
