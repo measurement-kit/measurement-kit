@@ -180,7 +180,8 @@ def main():
 
                 Setting("std::string", "output_filepath")]
 
-    options = [Attribute("std::string", "bouncer_base_url", json.dumps("https://bouncer.ooni.io")),
+    options = [Attribute("bool", "all_endpoints", ""),
+               Attribute("std::string", "bouncer_base_url", json.dumps("https://bouncer.ooni.io")),
                Attribute("std::string", "collector_base_url"),
                Attribute("std::string", "dns/nameserver"),
                Attribute("std::string", "dns/engine", json.dumps("system")),
@@ -194,12 +195,14 @@ def main():
                Attribute("bool", "no_bouncer", "false"),
                Attribute("bool", "no_collector", "false"),
                Attribute("bool", "no_file_report", "false"),
+               Attribute("int64_t", "port", "0"),
                Attribute("bool", "randomize_input", "true"),
                Attribute("bool", "save_real_probe_asn", "true"),
                Attribute("bool", "save_real_probe_cc", "true"),
                Attribute("bool", "save_real_probe_ip", "false"),
                Attribute("bool", "save_real_probe_network_name", "false"),
                Attribute("bool", "save_real_resolver_ip", "true"),
+               Attribute("std::string", "server", ""),
                Attribute("std::string", "software_name"),
                Attribute("std::string", "software_version")]
 
