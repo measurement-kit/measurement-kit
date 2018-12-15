@@ -3,6 +3,7 @@
 // and LICENSE for more information on the copying conditions.
 
 #include "src/libmeasurement_kit/http/request_impl.hpp"
+#include "src/libmeasurement_kit/common/encoding.hpp"
 #include "src/libmeasurement_kit/common/utils.hpp"
 #include "src/libmeasurement_kit/net/error.hpp"
 
@@ -89,7 +90,7 @@ void Request::serialize(net::Buffer &buff, SharedPtr<Logger> logger) {
     }
     logger->debug(">");
     if (body != "") {
-        logger->debug2("%s", body.c_str());
+        logger->debug2("%s", base64_encode_if_needed(body).c_str());
         buff << body;
     }
 }
@@ -190,7 +191,8 @@ static void request_recv_response_start(SharedPtr<RequestRecvResponse> ctx) {
     ctx->parser->on_end([ctx]() {
         ctx->reached_end = true;
         if (ctx->response->body.size() > 0) {
-            ctx->logger->debug2("%s", ctx->response->body.c_str());
+            ctx->logger->debug2("%s", base64_encode_if_needed(
+                  ctx->response->body).c_str());
         }
     });
 
