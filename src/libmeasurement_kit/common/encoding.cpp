@@ -23,4 +23,11 @@ std::string base64_encode(std::string str) {
   return mkdata_moveout_base64(d);
 }
 
+std::string base64_encode_if_needed(std::string str) {
+  if (utf8_parse(str) != NoError()) {
+    return base64_encode(std::move(str));
+  }
+  return str;
+}
+
 } // namespace mk

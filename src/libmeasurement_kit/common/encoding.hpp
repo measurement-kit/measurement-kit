@@ -13,5 +13,7 @@ Error utf8_parse(const std::string &str);
 
 std::string base64_encode(std::string str);
 
+std::string base64_encode_if_needed(std::string str);
+
 } // namespace mk
 #endif
