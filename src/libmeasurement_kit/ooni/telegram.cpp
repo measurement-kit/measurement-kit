@@ -69,6 +69,9 @@ static void http_many(const std::vector<std::string> urls, std::string type,
         // if any titles are not "Telegram Web", switch this to blocked
         (*entry)["telegram_web_status"] = "ok";
         (*entry)["telegram_web_failure"] = nullptr;
+        options["http/method"] = "GET";
+    } else {
+        options["http/method"] = "POST";
     }
     auto http_cb = [=](std::string url, Callback<Error> done_cb) {
         return [=](Error err, SharedPtr<http::Response> response) {
@@ -93,7 +96,6 @@ static void http_many(const std::vector<std::string> urls, std::string type,
             done_cb(err);
         };
     };
-
     std::vector<Continuation<Error>> continuations;
     for (auto url : urls) {
         options["http/url"] = url;
@@ -111,6 +113,7 @@ void telegram(Settings options, Callback<SharedPtr<nlohmann::json>> callback,
     SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
     std::vector<std::string> TELEGRAM_WEB_URLS = {
         "http://web.telegram.org/", "https://web.telegram.org/"};
+
     // should probably just make these std::pair<std::string,int>,
     // but I'm not sure if this will be better later when I get
     // rid of the duplication between this and the http ones
