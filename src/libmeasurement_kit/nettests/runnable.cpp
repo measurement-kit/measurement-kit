@@ -45,10 +45,6 @@ void Runnable::main(std::string, Settings, Callback<SharedPtr<nlohmann::json>> c
 }
 void Runnable::fixup_entry(nlohmann::json &) {}
 
-std::deque<std::string> Runnable::fixup_inputs(std::deque<std::string> &&il) {
-  return il;
-}
-
 void Runnable::run_next_measurement(size_t thread_id, Callback<Error> cb,
                                     size_t num_entries,
                                     SharedPtr<size_t> current_entry) {
@@ -470,7 +466,6 @@ void Runnable::begin(Callback<Error> cb) {
                             cb(error);
                             return;
                         }
-                        inputs = fixup_inputs(std::move(inputs));
                         size_t num_entries = inputs.size();
 
                         // Run `parallelism` measurements in parallel
