@@ -17,6 +17,11 @@ namespace ooni {
 static void tcp_many(const std::vector<std::string> ip_ports, SharedPtr<nlohmann::json> entry,
         Settings options, SharedPtr<Reactor> reactor, SharedPtr<Logger> logger,
         Callback<Error> all_done_cb) {
+    // "If all the connections to ports 80 and 443 to Telegram's access
+    // point IPs fail we consider Telegram to be blocked". So says the
+    // OONI spec for Telegram. Therefore, we start with a failure condition
+    // and we set a nonfailure condition if any request succeeds.
+    (*entry)["telegram_tcp_blocking"] = true;
     auto connected_cb = [=](std::string ip, int port, Callback<Error> done_cb) {
         return [=](Error connect_error, SharedPtr<net::Transport> txp) {
             nlohmann::json result = {
@@ -32,6 +37,7 @@ static void tcp_many(const std::vector<std::string> ip_ports, SharedPtr<nlohmann
                 logger->info("telegram: success TCP connecting to %s:%d",
                     ip.c_str(), port);
                 result["status"]["success"] = true;
+                // As mentioned above, one success implies not blocked
                 (*entry)["telegram_tcp_blocking"] = false;
             }
             (*entry)["tcp_connect"].push_back(result);
@@ -39,7 +45,6 @@ static void tcp_many(const std::vector<std::string> ip_ports, SharedPtr<nlohmann
             done_cb(connect_error);
         };
     };
-
     std::vector<Continuation<Error>> continuations;
     for (auto ip_port : ip_ports) {
         std::list<std::string> ip_port_l = split(ip_port, ":");
@@ -51,7 +56,6 @@ static void tcp_many(const std::vector<std::string> ip_ports, SharedPtr<nlohmann
         }
         std::string ip = ip_port_l.front();
         int port = std::stoi(ip_port_l.back());
-
         options["host"] = ip;
         options["port"] = port;
         continuations.push_back([=](Callback<Error> done_cb) {
@@ -134,7 +138,6 @@ void telegram(Settings options, Callback<SharedPtr<nlohmann::json>> callback,
     SharedPtr<nlohmann::json> entry(new nlohmann::json);
 
     // if any endpoints are (TCP or HTTP) reachable, switch this to false
-    (*entry)["telegram_tcp_blocking"] = true;
     (*entry)["telegram_http_blocking"] = true;
 
     mk::fcompose(mk::fcompose_policy_async(),
