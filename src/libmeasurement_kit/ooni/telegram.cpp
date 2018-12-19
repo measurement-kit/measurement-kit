@@ -75,6 +75,16 @@ static void http_many(const std::vector<std::string> urls, std::string type,
         (*entry)["telegram_web_failure"] = nullptr;
         options["http/method"] = "GET";
     } else {
+        // The OONI specification for telegram says that if any request doesn't
+        // receive back a response then "it" is considered blocked. Unclear to
+        // me what's "it" in that context. Until this is clarified, I'm going to
+        // keep the code as Joe coded it (i.e. all endpoints must fail for the
+        // service to be considered blocked) as I believe this is what Arturo
+        // most likely had in mind when he wrote the specification. Also, my
+        // understanding of the original Python implementation is that this is
+        // consistent with how Joe implemented it in MK.
+        //    -Simone (2018-12-19)
+        (*entry)["telegram_http_blocking"] = true;
         options["http/method"] = "POST";
     }
     auto http_cb = [=](std::string url, Callback<Error> done_cb) {
@@ -85,6 +95,8 @@ static void http_many(const std::vector<std::string> urls, std::string type,
                 if (type == "web") {
                     (*entry)["telegram_web_status"] = "blocked";
                     (*entry)["telegram_web_failure"] = err.reason;
+                } else if (type != "endpoints") {
+                    abort();  // Guard against unexpected values
                 }
             } else {
                 logger->info(
@@ -137,9 +149,6 @@ void telegram(Settings options, Callback<SharedPtr<nlohmann::json>> callback,
     logger->info("starting telegram test");
     SharedPtr<nlohmann::json> entry(new nlohmann::json);
 
-    // if any endpoints are (TCP or HTTP) reachable, switch this to false
-    (*entry)["telegram_http_blocking"] = true;
-
     mk::fcompose(mk::fcompose_policy_async(),
         [=](Callback<> cb) {
             http_many(TELEGRAM_WEB_URLS, "web", entry, options, reactor, logger,
@@ -165,9 +174,9 @@ void telegram(Settings options, Callback<SharedPtr<nlohmann::json>> callback,
                     cb();
                 });
         })([=]() {
-        logger->info("calling final callback");
-        callback(entry);
-    });
+            logger->info("calling final callback");
+            callback(entry);
+        });
 }
 
 } // namespace ooni
