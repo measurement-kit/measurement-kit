@@ -56,7 +56,6 @@ class Runnable : public NonCopyable, public NonMovable {
     virtual void teardown(std::string);
     virtual void main(std::string, Settings, Callback<SharedPtr<nlohmann::json>>);
     virtual void fixup_entry(nlohmann::json &);
-    virtual std::deque<std::string> fixup_inputs(std::deque<std::string> &&);
 
     // Functions that derived classes should access
     std::list<std::string> test_helpers_option_names();
@@ -103,7 +102,6 @@ class WebConnectivityRunnable : public Runnable {
     void main(
             std::string, Settings, Callback<SharedPtr<nlohmann::json>>) override;
     void fixup_entry(nlohmann::json &) override;
-    std::deque<std::string> fixup_inputs(std::deque<std::string> &&) override;
 };
 
 } // namespace nettests
