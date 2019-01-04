@@ -5,7 +5,7 @@
 #define SRC_LIBMEASUREMENT_KIT_OONI_ORCHESTRATE_IMPL_HPP
 
 #include <measurement_kit/common/nlohmann/json.hpp>
-#include <measurement_kit/vendor/mkgeoip.h>
+#include <measurement_kit/internal/vendor/mkgeoip.h>
 
 #include "src/libmeasurement_kit/common/fcompose.hpp"
 #include "src/libmeasurement_kit/common/mock.hpp"
