@@ -169,12 +169,19 @@ The nettest task settings object is a JSON like:
     "ignore_bouncer_error": true,
     "ignore_open_report_error": true,
     "max_runtime": -1,
+    "mlabns/address_family": "ipv4",
+    "mlabns/base_url": "https://mlab-ns.appspot.com",
+    "mlabns/country": "IT",
+    "mlabns/metro": "trn",
+    "mlabns/policy": "random",
     "net/ca_bundle_path": "",
     "net/timeout": 10.0,
     "no_bouncer": false,
     "no_collector": false,
     "no_file_report": false,
     "port": 1234,
+    "probe_asn": "AS30722",
+    "probe_cc": "IT",
     "randomize_input": true,
     "save_real_probe_asn": true,
     "save_real_probe_cc": true,
@@ -291,6 +298,29 @@ These are the available options:
 - `"max_runtime"`: (integer) number of seconds after which the test will
   be stopped. Works _only_ for tests taking input. By default set to `-1`
   so that there is no maximum runtime for tests with input;
+
+- `"mlabns/address_family"`: (string) set to `"ipv4"` or `"ipv6"` to force
+   M-Lab NS to only return IPv4 or IPv6 addresses (you don't normally
+   need to set this option and it only has effect for NDT and DASH anyway);
+
+- `"mlabns/base_url"`: (string) base URL of the M-Lab NS service (you don't
+  normally need to set this option and it only has effect for NDT and
+  DASH anyway);
+
+- `"mlabns/country"`: (string) tells M-Lab NS the country in which you are
+  rather than letting it guess for you, so that it returns results that
+  are meaningful within that country (again, normally you don't need this
+  option, and it only impacts on DASH and NDT);
+
+- `"mlabns/metro"`: (string) this restricts the results returned by M-Lab
+  NS to a specific metro area; for example, setting this to `"ord"` will
+  only returns M-Lab servers in the Chicago area (again, you normally don't
+  need this option, and it only impacts on DASH and NDT);
+
+- `"mlabns/policy"`: (string) overrides the default M-Lab NS policy; for
+  example, setting this to `"random"` will return a random server (as stated
+  above, you normally don't need this variable, and it only impacts on
+  the NDT and DASH tests);
 
 - `"net/ca_bundle_path"`: (string) path to the CA bundle path to be used
   to validate SSL certificates. Required on mobile;
