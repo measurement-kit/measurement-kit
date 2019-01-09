@@ -337,6 +337,16 @@ These are the available options:
 - `"no_file_report"`: (boolean) whether to write a report (i.e. measurement
   result) file on disk. By default set to `false`, meaning that we'll try;
 
+- `"probe_asn"`: (string) sets the `probe_asn` to be included into the
+  report, thus skipping the ASN resolution;
+
+- `"probe_cc"`: (string) like `probe_asn` but for country code;
+
+- `"probe_ip"`: (string) like `probe_asn` but for IP address;
+
+- `"probe_network_name"`: (string) like `probe_asn` but for the
+  name associated to the ASN;
+
 - `"port"`: (int) allows to override the port for tests that connect to a
   specific port, such as NDT and DASH;
 
