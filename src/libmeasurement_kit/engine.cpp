@@ -822,6 +822,66 @@ static void task_run(TaskImpl *pimpl, nlohmann::json &settings) {
                         }
                         break;
                     }
+                    if (key == "mlabns/address_family") {
+                        found = true;
+                        if (!value.is_string()) {
+                            std::stringstream ss;
+                            ss << "Found " << key << " option which has the "
+                               << "wrong type (fyi: it should be a "
+                               << "string)";
+                            emit_settings_warning(pimpl, ss.str().data());
+                            // FALLTHROUGH
+                        }
+                        break;
+                    }
+                    if (key == "mlabns/base_url") {
+                        found = true;
+                        if (!value.is_string()) {
+                            std::stringstream ss;
+                            ss << "Found " << key << " option which has the "
+                               << "wrong type (fyi: it should be a "
+                               << "string)";
+                            emit_settings_warning(pimpl, ss.str().data());
+                            // FALLTHROUGH
+                        }
+                        break;
+                    }
+                    if (key == "mlabns/country") {
+                        found = true;
+                        if (!value.is_string()) {
+                            std::stringstream ss;
+                            ss << "Found " << key << " option which has the "
+                               << "wrong type (fyi: it should be a "
+                               << "string)";
+                            emit_settings_warning(pimpl, ss.str().data());
+                            // FALLTHROUGH
+                        }
+                        break;
+                    }
+                    if (key == "mlabns/metro") {
+                        found = true;
+                        if (!value.is_string()) {
+                            std::stringstream ss;
+                            ss << "Found " << key << " option which has the "
+                               << "wrong type (fyi: it should be a "
+                               << "string)";
+                            emit_settings_warning(pimpl, ss.str().data());
+                            // FALLTHROUGH
+                        }
+                        break;
+                    }
+                    if (key == "mlabns/policy") {
+                        found = true;
+                        if (!value.is_string()) {
+                            std::stringstream ss;
+                            ss << "Found " << key << " option which has the "
+                               << "wrong type (fyi: it should be a "
+                               << "string)";
+                            emit_settings_warning(pimpl, ss.str().data());
+                            // FALLTHROUGH
+                        }
+                        break;
+                    }
                     if (key == "net/ca_bundle_path") {
                         found = true;
                         if (!value.is_string()) {
@@ -889,6 +949,54 @@ static void task_run(TaskImpl *pimpl, nlohmann::json &settings) {
                             ss << "Found " << key << " option which has the "
                                << "wrong type (fyi: it should be a "
                                << "number_integer)";
+                            emit_settings_warning(pimpl, ss.str().data());
+                            // FALLTHROUGH
+                        }
+                        break;
+                    }
+                    if (key == "probe_ip") {
+                        found = true;
+                        if (!value.is_string()) {
+                            std::stringstream ss;
+                            ss << "Found " << key << " option which has the "
+                               << "wrong type (fyi: it should be a "
+                               << "string)";
+                            emit_settings_warning(pimpl, ss.str().data());
+                            // FALLTHROUGH
+                        }
+                        break;
+                    }
+                    if (key == "probe_asn") {
+                        found = true;
+                        if (!value.is_string()) {
+                            std::stringstream ss;
+                            ss << "Found " << key << " option which has the "
+                               << "wrong type (fyi: it should be a "
+                               << "string)";
+                            emit_settings_warning(pimpl, ss.str().data());
+                            // FALLTHROUGH
+                        }
+                        break;
+                    }
+                    if (key == "probe_cc") {
+                        found = true;
+                        if (!value.is_string()) {
+                            std::stringstream ss;
+                            ss << "Found " << key << " option which has the "
+                               << "wrong type (fyi: it should be a "
+                               << "string)";
+                            emit_settings_warning(pimpl, ss.str().data());
+                            // FALLTHROUGH
+                        }
+                        break;
+                    }
+                    if (key == "probe_network_name") {
+                        found = true;
+                        if (!value.is_string()) {
+                            std::stringstream ss;
+                            ss << "Found " << key << " option which has the "
+                               << "wrong type (fyi: it should be a "
+                               << "string)";
                             emit_settings_warning(pimpl, ss.str().data());
                             // FALLTHROUGH
                         }
