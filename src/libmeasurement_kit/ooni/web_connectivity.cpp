@@ -12,7 +12,7 @@
 #include <cctype>
 #include <set>
 
-#include <measurement_kit/vendor/mkmmdb.h>
+#include <measurement_kit/internal/vendor/mkmmdb.h>
 
 #define BODY_PROPORTION_FACTOR 0.7
 

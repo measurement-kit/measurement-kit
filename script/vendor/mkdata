@@ -2,7 +2,7 @@
 set -ex
 version=v0.2.2
 name=mkdata
-destdir=include/measurement_kit/vendor
+destdir=include/measurement_kit/internal/vendor
 install -d $destdir
 url=https://raw.githubusercontent.com/measurement-kit/$name/$version/$name.h
 (

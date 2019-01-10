@@ -10,7 +10,7 @@
 #include "src/libmeasurement_kit/ooni/templates.hpp"
 #include "src/libmeasurement_kit/ooni/error.hpp"
 
-#include <measurement_kit/vendor/mkmmdb.h>
+#include <measurement_kit/internal/vendor/mkmmdb.h>
 
 namespace mk {
 namespace ooni {

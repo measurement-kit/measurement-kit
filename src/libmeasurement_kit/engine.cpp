@@ -638,7 +638,7 @@ static void remove_unknown_settings_and_warn(
     expected.insert("name");
     expected.insert("options");
     expected.insert("output_filepath");
-    for (auto it : nlohmann::json::iterator_wrapper(settings)) {
+    for (auto it : settings.items()) {
         const auto &key = it.key();
         if (expected.count(key) <= 0) {
             std::stringstream ss;
@@ -690,7 +690,7 @@ static void task_run(TaskImpl *pimpl, nlohmann::json &settings) {
     // extract and process `options`
     if (settings.count("options") != 0) {
         auto &options = settings.at("options");
-        for (auto it : nlohmann::json::iterator_wrapper(options)) {
+        for (auto it : options.items()) {
             const auto &key = it.key();
             auto &value = it.value();
             // TODO(bassosimone): currently we do not perform strict validation
@@ -822,6 +822,66 @@ static void task_run(TaskImpl *pimpl, nlohmann::json &settings) {
                         }
                         break;
                     }
+                    if (key == "mlabns/address_family") {
+                        found = true;
+                        if (!value.is_string()) {
+                            std::stringstream ss;
+                            ss << "Found " << key << " option which has the "
+                               << "wrong type (fyi: it should be a "
+                               << "string)";
+                            emit_settings_warning(pimpl, ss.str().data());
+                            // FALLTHROUGH
+                        }
+                        break;
+                    }
+                    if (key == "mlabns/base_url") {
+                        found = true;
+                        if (!value.is_string()) {
+                            std::stringstream ss;
+                            ss << "Found " << key << " option which has the "
+                               << "wrong type (fyi: it should be a "
+                               << "string)";
+                            emit_settings_warning(pimpl, ss.str().data());
+                            // FALLTHROUGH
+                        }
+                        break;
+                    }
+                    if (key == "mlabns/country") {
+                        found = true;
+                        if (!value.is_string()) {
+                            std::stringstream ss;
+                            ss << "Found " << key << " option which has the "
+                               << "wrong type (fyi: it should be a "
+                               << "string)";
+                            emit_settings_warning(pimpl, ss.str().data());
+                            // FALLTHROUGH
+                        }
+                        break;
+                    }
+                    if (key == "mlabns/metro") {
+                        found = true;
+                        if (!value.is_string()) {
+                            std::stringstream ss;
+                            ss << "Found " << key << " option which has the "
+                               << "wrong type (fyi: it should be a "
+                               << "string)";
+                            emit_settings_warning(pimpl, ss.str().data());
+                            // FALLTHROUGH
+                        }
+                        break;
+                    }
+                    if (key == "mlabns/policy") {
+                        found = true;
+                        if (!value.is_string()) {
+                            std::stringstream ss;
+                            ss << "Found " << key << " option which has the "
+                               << "wrong type (fyi: it should be a "
+                               << "string)";
+                            emit_settings_warning(pimpl, ss.str().data());
+                            // FALLTHROUGH
+                        }
+                        break;
+                    }
                     if (key == "net/ca_bundle_path") {
                         found = true;
                         if (!value.is_string()) {
@@ -889,6 +949,54 @@ static void task_run(TaskImpl *pimpl, nlohmann::json &settings) {
                             ss << "Found " << key << " option which has the "
                                << "wrong type (fyi: it should be a "
                                << "number_integer)";
+                            emit_settings_warning(pimpl, ss.str().data());
+                            // FALLTHROUGH
+                        }
+                        break;
+                    }
+                    if (key == "probe_ip") {
+                        found = true;
+                        if (!value.is_string()) {
+                            std::stringstream ss;
+                            ss << "Found " << key << " option which has the "
+                               << "wrong type (fyi: it should be a "
+                               << "string)";
+                            emit_settings_warning(pimpl, ss.str().data());
+                            // FALLTHROUGH
+                        }
+                        break;
+                    }
+                    if (key == "probe_asn") {
+                        found = true;
+                        if (!value.is_string()) {
+                            std::stringstream ss;
+                            ss << "Found " << key << " option which has the "
+                               << "wrong type (fyi: it should be a "
+                               << "string)";
+                            emit_settings_warning(pimpl, ss.str().data());
+                            // FALLTHROUGH
+                        }
+                        break;
+                    }
+                    if (key == "probe_cc") {
+                        found = true;
+                        if (!value.is_string()) {
+                            std::stringstream ss;
+                            ss << "Found " << key << " option which has the "
+                               << "wrong type (fyi: it should be a "
+                               << "string)";
+                            emit_settings_warning(pimpl, ss.str().data());
+                            // FALLTHROUGH
+                        }
+                        break;
+                    }
+                    if (key == "probe_network_name") {
+                        found = true;
+                        if (!value.is_string()) {
+                            std::stringstream ss;
+                            ss << "Found " << key << " option which has the "
+                               << "wrong type (fyi: it should be a "
+                               << "string)";
                             emit_settings_warning(pimpl, ss.str().data());
                             // FALLTHROUGH
                         }
@@ -1048,7 +1156,7 @@ static void task_run(TaskImpl *pimpl, nlohmann::json &settings) {
     // extract and process `annotations`
     if (settings.count("annotations") != 0) {
         auto &annotations = settings.at("annotations");
-        for (auto it : nlohmann::json::iterator_wrapper(annotations)) {
+        for (auto it : annotations.items()) {
             const auto &key = it.key();
             auto &value = it.value();
             // TODO(bassosimone): make sure that we preserve the _type_ of
