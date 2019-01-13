@@ -48,25 +48,6 @@ namespace engine {
 //
 // Comes first because it needs more careful handling.
 
-class Semaphore {
-  public:
-    Semaphore() = default;
-
-    void acquire() { mutex_.lock(); }
-
-    void release() { mutex_.unlock(); }
-
-    Semaphore(const Semaphore &) = delete;
-    Semaphore &operator=(const Semaphore &) = delete;
-    Semaphore(Semaphore &&) = delete;
-    Semaphore &operator=(Semaphore &&) = delete;
-
-    ~Semaphore() = default;
-
-  private:
-    std::mutex mutex_;
-};
-
 class TaskImpl {
   public:
     std::condition_variable cond;
@@ -101,18 +82,17 @@ Task::Task(nlohmann::json &&settings) {
     pimpl_->thread = std::thread([this, &barrier, settings = std::move(settings)]() mutable {
         pimpl_->running = true;
         barrier.set_value();
-        static Semaphore semaphore;
         {
             nlohmann::json event;
             event["key"] = "status.queued";
             event["value"] = nlohmann::json::object();
             emit(pimpl_.get(), std::move(event));
         }
-        semaphore.acquire(); // prevent concurrent tasks
+        static std::mutex semaphore;
+        std::unique_lock<std::mutex> _{semaphore};  // prevent concurrent tasks
         task_run(pimpl_.get(), settings);
         pimpl_->running = false;
         pimpl_->cond.notify_all(); // tell the readers we're done
-        semaphore.release();       // allow another task to run
     });
     started.wait(); // guarantee Task() completes when the thread is running
 }
