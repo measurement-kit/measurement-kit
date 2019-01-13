@@ -59,18 +59,20 @@ class TaskImpl {
     std::thread thread;
 };
 
-static void task_run(TaskImpl *pimpl, nlohmann::json &settings);
+static void task_run(Task *task, TaskImpl *pimpl, nlohmann::json &settings);
 static nlohmann::json possibly_validate_event(nlohmann::json &&);
 
-static void emit(TaskImpl *pimpl, nlohmann::json &&event) {
+void Task::emit(nlohmann::json event) {
     // Perform validation of the event (debug mode only)
     event = possibly_validate_event(std::move(event));
     // Actually emit the event.
     {
-        std::unique_lock<std::mutex> _{pimpl->mutex};
-        pimpl->deque.push_back(std::move(event));
+        std::unique_lock<std::mutex> _{pimpl_->mutex};
+        pimpl_->deque.push_back(std::move(event));
     }
-    pimpl->cond.notify_all(); // more efficient if unlocked
+    // More efficient if unlocked. Note that we assume that the user
+    // could use more than a single thread to drain the queue.
+    pimpl_->cond.notify_all();
 }
 
 Task::Task(nlohmann::json &&settings) {
@@ -86,11 +88,11 @@ Task::Task(nlohmann::json &&settings) {
             nlohmann::json event;
             event["key"] = "status.queued";
             event["value"] = nlohmann::json::object();
-            emit(pimpl_.get(), std::move(event));
+            emit(std::move(event));
         }
         static std::mutex semaphore;
         std::unique_lock<std::mutex> _{semaphore};  // prevent concurrent tasks
-        task_run(pimpl_.get(), settings);
+        task_run(this, pimpl_.get(), settings);
         pimpl_->running = false;
         pimpl_->cond.notify_all(); // tell the readers we're done
     });
@@ -514,17 +516,17 @@ static std::unique_ptr<nettests::Runnable> make_runnable(const std::string &s) {
     return runnable;
 }
 
-static void emit_settings_failure(TaskImpl *pimpl, const char *reason) {
-    emit(pimpl, make_log_event(MK_LOG_ERR, reason));
-    emit(pimpl, make_failure_event(ValueError()));
+static void emit_settings_failure(Task *task, const char *reason) {
+    task->emit(make_log_event(MK_LOG_ERR, reason));
+    task->emit(make_failure_event(ValueError()));
 }
 
-static void emit_settings_warning(TaskImpl *pimpl, const char *reason) {
-    emit(pimpl, make_log_event(MK_LOG_WARNING, reason));
+static void emit_settings_warning(Task *task, const char *reason) {
+    task->emit(make_log_event(MK_LOG_WARNING, reason));
 }
 
 static bool validate_known_settings_shallow(
-        TaskImpl *pimpl, const nlohmann::json &settings) {
+        Task *task, const nlohmann::json &settings) {
     auto rv = true;
 
     // This function does not short circuit failure so that we warn the user
@@ -535,7 +537,7 @@ static bool validate_known_settings_shallow(
         std::stringstream ss;
         ss << "missing required setting 'name' (fyi: "
            << "name should be a string)";
-        emit_settings_warning(pimpl, ss.str().data());
+        emit_settings_warning(task, ss.str().data());
         rv = false;
     }
 
@@ -544,7 +546,7 @@ static bool validate_known_settings_shallow(
         std::stringstream ss;
         ss << "found setting 'annotations' with invalid type (fyi: "
            << "annotations should be a object)";
-        emit_settings_warning(pimpl, ss.str().data());
+        emit_settings_warning(task, ss.str().data());
         rv = false;
     }
     // Make sure that disabled_events has the correct type
@@ -552,7 +554,7 @@ static bool validate_known_settings_shallow(
         std::stringstream ss;
         ss << "found setting 'disabled_events' with invalid type (fyi: "
            << "disabled_events should be a array)";
-        emit_settings_warning(pimpl, ss.str().data());
+        emit_settings_warning(task, ss.str().data());
         rv = false;
     }
     // Make sure that inputs has the correct type
@@ -560,7 +562,7 @@ static bool validate_known_settings_shallow(
         std::stringstream ss;
         ss << "found setting 'inputs' with invalid type (fyi: "
            << "inputs should be a array)";
-        emit_settings_warning(pimpl, ss.str().data());
+        emit_settings_warning(task, ss.str().data());
         rv = false;
     }
     // Make sure that input_filepaths has the correct type
@@ -568,7 +570,7 @@ static bool validate_known_settings_shallow(
         std::stringstream ss;
         ss << "found setting 'input_filepaths' with invalid type (fyi: "
            << "input_filepaths should be a array)";
-        emit_settings_warning(pimpl, ss.str().data());
+        emit_settings_warning(task, ss.str().data());
         rv = false;
     }
     // Make sure that log_filepath has the correct type
@@ -576,7 +578,7 @@ static bool validate_known_settings_shallow(
         std::stringstream ss;
         ss << "found setting 'log_filepath' with invalid type (fyi: "
            << "log_filepath should be a string)";
-        emit_settings_warning(pimpl, ss.str().data());
+        emit_settings_warning(task, ss.str().data());
         rv = false;
     }
     // Make sure that log_level has the correct type
@@ -584,7 +586,7 @@ static bool validate_known_settings_shallow(
         std::stringstream ss;
         ss << "found setting 'log_level' with invalid type (fyi: "
            << "log_level should be a string)";
-        emit_settings_warning(pimpl, ss.str().data());
+        emit_settings_warning(task, ss.str().data());
         rv = false;
     }
     // Make sure that name has the correct type
@@ -592,7 +594,7 @@ static bool validate_known_settings_shallow(
         std::stringstream ss;
         ss << "found setting 'name' with invalid type (fyi: "
            << "name should be a string)";
-        emit_settings_warning(pimpl, ss.str().data());
+        emit_settings_warning(task, ss.str().data());
         rv = false;
     }
     // Make sure that options has the correct type
@@ -600,7 +602,7 @@ static bool validate_known_settings_shallow(
         std::stringstream ss;
         ss << "found setting 'options' with invalid type (fyi: "
            << "options should be a object)";
-        emit_settings_warning(pimpl, ss.str().data());
+        emit_settings_warning(task, ss.str().data());
         rv = false;
     }
     // Make sure that output_filepath has the correct type
@@ -608,7 +610,7 @@ static bool validate_known_settings_shallow(
         std::stringstream ss;
         ss << "found setting 'output_filepath' with invalid type (fyi: "
            << "output_filepath should be a string)";
-        emit_settings_warning(pimpl, ss.str().data());
+        emit_settings_warning(task, ss.str().data());
         rv = false;
     }
 
@@ -617,7 +619,7 @@ static bool validate_known_settings_shallow(
 
 // TODO(bassosimone): decide whether this should instead stop processing.
 static void remove_unknown_settings_and_warn(
-        TaskImpl *pimpl, nlohmann::json &settings) {
+        Task *task, nlohmann::json &settings) {
     std::set<std::string> expected;
     std::set<std::string> unexpected;
     expected.insert("annotations");
@@ -636,7 +638,7 @@ static void remove_unknown_settings_and_warn(
             ss << "found unknown setting key " << key << " which will be "
                << "removed from the settings JSON.";
             unexpected.insert(key);
-            emit_settings_warning(pimpl, ss.str().data());
+            emit_settings_warning(task, ss.str().data());
         }
     }
     for (auto &s : unexpected) {
@@ -646,7 +648,7 @@ static void remove_unknown_settings_and_warn(
 
 // # Run task
 
-static void task_run(TaskImpl *pimpl, nlohmann::json &settings) {
+static void task_run(Task *task, TaskImpl *pimpl, nlohmann::json &settings) {
 
     // make sure that `settings` is an object
     if (!settings.is_object()) {
@@ -654,18 +656,18 @@ static void task_run(TaskImpl *pimpl, nlohmann::json &settings) {
         ss << "invalid `settings` type: the `settings` JSON that you pass me "
             << "should be a JSON object (i.e. '{\"type\": \"Ndt\"}') but "
             << "instead you passed me this: '" << settings.dump() << "'";
-        emit_settings_failure(pimpl, ss.str().data());
+        emit_settings_failure(task, ss.str().data());
         return;
     }
 
     // Make sure that the toplevel settings are okay, remove unknown ones, so
     // there cannot be code below attempting to access settings that are not
     // specified also inside of the <engine.h> header file.
-    if (!validate_known_settings_shallow(pimpl, settings)) {
-        emit_settings_failure(pimpl, "failed to validate settings");
+    if (!validate_known_settings_shallow(task, settings)) {
+        emit_settings_failure(task, "failed to validate settings");
         return;
     }
-    remove_unknown_settings_and_warn(pimpl, settings);
+    remove_unknown_settings_and_warn(task, settings);
 
     // extract and process `name`
     auto runnable = make_runnable(settings.at("name").get<std::string>());
@@ -673,7 +675,7 @@ static void task_run(TaskImpl *pimpl, nlohmann::json &settings) {
         std::stringstream ss;
         ss << "unknown task name '" << settings.at("name").get<std::string>()
             << "' (fyi: known tasks are: " << known_tasks() << ")";
-        emit_settings_failure(pimpl, ss.str().data());
+        emit_settings_failure(task, ss.str().data());
         return;
     }
     runnable->reactor = pimpl->reactor; // default is nullptr, we must set it
@@ -700,7 +702,7 @@ static void task_run(TaskImpl *pimpl, nlohmann::json &settings) {
                             ss << "Found " << key << " option which has the "
                                << "wrong type (fyi: it should be a "
                                << "boolean)";
-                            emit_settings_warning(pimpl, ss.str().data());
+                            emit_settings_warning(task, ss.str().data());
                             // FALLTHROUGH
                         }
                         break;
@@ -712,7 +714,7 @@ static void task_run(TaskImpl *pimpl, nlohmann::json &settings) {
                             ss << "Found " << key << " option which has the "
                                << "wrong type (fyi: it should be a "
                                << "string)";
-                            emit_settings_warning(pimpl, ss.str().data());
+                            emit_settings_warning(task, ss.str().data());
                             // FALLTHROUGH
                         }
                         break;
@@ -724,7 +726,7 @@ static void task_run(TaskImpl *pimpl, nlohmann::json &settings) {
                             ss << "Found " << key << " option which has the "
                                << "wrong type (fyi: it should be a "
                                << "string)";
-                            emit_settings_warning(pimpl, ss.str().data());
+                            emit_settings_warning(task, ss.str().data());
                             // FALLTHROUGH
                         }
                         break;
@@ -736,7 +738,7 @@ static void task_run(TaskImpl *pimpl, nlohmann::json &settings) {
                             ss << "Found " << key << " option which has the "
                                << "wrong type (fyi: it should be a "
                                << "string)";
-                            emit_settings_warning(pimpl, ss.str().data());
+                            emit_settings_warning(task, ss.str().data());
                             // FALLTHROUGH
                         }
                         break;
@@ -748,7 +750,7 @@ static void task_run(TaskImpl *pimpl, nlohmann::json &settings) {
                             ss << "Found " << key << " option which has the "
                                << "wrong type (fyi: it should be a "
                                << "string)";
-                            emit_settings_warning(pimpl, ss.str().data());
+                            emit_settings_warning(task, ss.str().data());
                             // FALLTHROUGH
                         }
                         break;
@@ -760,7 +762,7 @@ static void task_run(TaskImpl *pimpl, nlohmann::json &settings) {
                             ss << "Found " << key << " option which has the "
                                << "wrong type (fyi: it should be a "
                                << "string)";
-                            emit_settings_warning(pimpl, ss.str().data());
+                            emit_settings_warning(task, ss.str().data());
                             // FALLTHROUGH
                         }
                         break;
@@ -772,7 +774,7 @@ static void task_run(TaskImpl *pimpl, nlohmann::json &settings) {
                             ss << "Found " << key << " option which has the "
                                << "wrong type (fyi: it should be a "
                                << "string)";
-                            emit_settings_warning(pimpl, ss.str().data());
+                            emit_settings_warning(task, ss.str().data());
                             // FALLTHROUGH
                         }
                         break;
@@ -784,7 +786,7 @@ static void task_run(TaskImpl *pimpl, nlohmann::json &settings) {
                             ss << "Found " << key << " option which has the "
                                << "wrong type (fyi: it should be a "
                                << "boolean)";
-                            emit_settings_warning(pimpl, ss.str().data());
+                            emit_settings_warning(task, ss.str().data());
                             // FALLTHROUGH
                         }
                         break;
@@ -796,7 +798,7 @@ static void task_run(TaskImpl *pimpl, nlohmann::json &settings) {
                             ss << "Found " << key << " option which has the "
                                << "wrong type (fyi: it should be a "
                                << "boolean)";
-                            emit_settings_warning(pimpl, ss.str().data());
+                            emit_settings_warning(task, ss.str().data());
                             // FALLTHROUGH
                         }
                         break;
@@ -808,7 +810,7 @@ static void task_run(TaskImpl *pimpl, nlohmann::json &settings) {
                             ss << "Found " << key << " option which has the "
                                << "wrong type (fyi: it should be a "
                                << "number_integer)";
-                            emit_settings_warning(pimpl, ss.str().data());
+                            emit_settings_warning(task, ss.str().data());
                             // FALLTHROUGH
                         }
                         break;
@@ -820,7 +822,7 @@ static void task_run(TaskImpl *pimpl, nlohmann::json &settings) {
                             ss << "Found " << key << " option which has the "
                                << "wrong type (fyi: it should be a "
                                << "string)";
-                            emit_settings_warning(pimpl, ss.str().data());
+                            emit_settings_warning(task, ss.str().data());
                             // FALLTHROUGH
                         }
                         break;
@@ -832,7 +834,7 @@ static void task_run(TaskImpl *pimpl, nlohmann::json &settings) {
                             ss << "Found " << key << " option which has the "
                                << "wrong type (fyi: it should be a "
                                << "string)";
-                            emit_settings_warning(pimpl, ss.str().data());
+                            emit_settings_warning(task, ss.str().data());
                             // FALLTHROUGH
                         }
                         break;
@@ -844,7 +846,7 @@ static void task_run(TaskImpl *pimpl, nlohmann::json &settings) {
                             ss << "Found " << key << " option which has the "
                                << "wrong type (fyi: it should be a "
                                << "string)";
-                            emit_settings_warning(pimpl, ss.str().data());
+                            emit_settings_warning(task, ss.str().data());
                             // FALLTHROUGH
                         }
                         break;
@@ -856,7 +858,7 @@ static void task_run(TaskImpl *pimpl, nlohmann::json &settings) {
                             ss << "Found " << key << " option which has the "
                                << "wrong type (fyi: it should be a "
                                << "string)";
-                            emit_settings_warning(pimpl, ss.str().data());
+                            emit_settings_warning(task, ss.str().data());
                             // FALLTHROUGH
                         }
                         break;
@@ -868,7 +870,7 @@ static void task_run(TaskImpl *pimpl, nlohmann::json &settings) {
                             ss << "Found " << key << " option which has the "
                                << "wrong type (fyi: it should be a "
                                << "string)";
-                            emit_settings_warning(pimpl, ss.str().data());
+                            emit_settings_warning(task, ss.str().data());
                             // FALLTHROUGH
                         }
                         break;
@@ -880,7 +882,7 @@ static void task_run(TaskImpl *pimpl, nlohmann::json &settings) {
                             ss << "Found " << key << " option which has the "
                                << "wrong type (fyi: it should be a "
                                << "string)";
-                            emit_settings_warning(pimpl, ss.str().data());
+                            emit_settings_warning(task, ss.str().data());
                             // FALLTHROUGH
                         }
                         break;
@@ -892,7 +894,7 @@ static void task_run(TaskImpl *pimpl, nlohmann::json &settings) {
                             ss << "Found " << key << " option which has the "
                                << "wrong type (fyi: it should be a "
                                << "number_float)";
-                            emit_settings_warning(pimpl, ss.str().data());
+                            emit_settings_warning(task, ss.str().data());
                             // FALLTHROUGH
                         }
                         break;
@@ -904,7 +906,7 @@ static void task_run(TaskImpl *pimpl, nlohmann::json &settings) {
                             ss << "Found " << key << " option which has the "
                                << "wrong type (fyi: it should be a "
                                << "boolean)";
-                            emit_settings_warning(pimpl, ss.str().data());
+                            emit_settings_warning(task, ss.str().data());
                             // FALLTHROUGH
                         }
                         break;
@@ -916,7 +918,7 @@ static void task_run(TaskImpl *pimpl, nlohmann::json &settings) {
                             ss << "Found " << key << " option which has the "
                                << "wrong type (fyi: it should be a "
                                << "boolean)";
-                            emit_settings_warning(pimpl, ss.str().data());
+                            emit_settings_warning(task, ss.str().data());
                             // FALLTHROUGH
                         }
                         break;
@@ -928,7 +930,7 @@ static void task_run(TaskImpl *pimpl, nlohmann::json &settings) {
                             ss << "Found " << key << " option which has the "
                                << "wrong type (fyi: it should be a "
                                << "boolean)";
-                            emit_settings_warning(pimpl, ss.str().data());
+                            emit_settings_warning(task, ss.str().data());
                             // FALLTHROUGH
                         }
                         break;
@@ -940,7 +942,7 @@ static void task_run(TaskImpl *pimpl, nlohmann::json &settings) {
                             ss << "Found " << key << " option which has the "
                                << "wrong type (fyi: it should be a "
                                << "number_integer)";
-                            emit_settings_warning(pimpl, ss.str().data());
+                            emit_settings_warning(task, ss.str().data());
                             // FALLTHROUGH
                         }
                         break;
@@ -952,7 +954,7 @@ static void task_run(TaskImpl *pimpl, nlohmann::json &settings) {
                             ss << "Found " << key << " option which has the "
                                << "wrong type (fyi: it should be a "
                                << "string)";
-                            emit_settings_warning(pimpl, ss.str().data());
+                            emit_settings_warning(task, ss.str().data());
                             // FALLTHROUGH
                         }
                         break;
@@ -964,7 +966,7 @@ static void task_run(TaskImpl *pimpl, nlohmann::json &settings) {
                             ss << "Found " << key << " option which has the "
                                << "wrong type (fyi: it should be a "
                                << "string)";
-                            emit_settings_warning(pimpl, ss.str().data());
+                            emit_settings_warning(task, ss.str().data());
                             // FALLTHROUGH
                         }
                         break;
@@ -976,7 +978,7 @@ static void task_run(TaskImpl *pimpl, nlohmann::json &settings) {
                             ss << "Found " << key << " option which has the "
                                << "wrong type (fyi: it should be a "
                                << "string)";
-                            emit_settings_warning(pimpl, ss.str().data());
+                            emit_settings_warning(task, ss.str().data());
                             // FALLTHROUGH
                         }
                         break;
@@ -988,7 +990,7 @@ static void task_run(TaskImpl *pimpl, nlohmann::json &settings) {
                             ss << "Found " << key << " option which has the "
                                << "wrong type (fyi: it should be a "
                                << "string)";
-                            emit_settings_warning(pimpl, ss.str().data());
+                            emit_settings_warning(task, ss.str().data());
                             // FALLTHROUGH
                         }
                         break;
@@ -1000,7 +1002,7 @@ static void task_run(TaskImpl *pimpl, nlohmann::json &settings) {
                             ss << "Found " << key << " option which has the "
                                << "wrong type (fyi: it should be a "
                                << "boolean)";
-                            emit_settings_warning(pimpl, ss.str().data());
+                            emit_settings_warning(task, ss.str().data());
                             // FALLTHROUGH
                         }
                         break;
@@ -1012,7 +1014,7 @@ static void task_run(TaskImpl *pimpl, nlohmann::json &settings) {
                             ss << "Found " << key << " option which has the "
                                << "wrong type (fyi: it should be a "
                                << "boolean)";
-                            emit_settings_warning(pimpl, ss.str().data());
+                            emit_settings_warning(task, ss.str().data());
                             // FALLTHROUGH
                         }
                         break;
@@ -1024,7 +1026,7 @@ static void task_run(TaskImpl *pimpl, nlohmann::json &settings) {
                             ss << "Found " << key << " option which has the "
                                << "wrong type (fyi: it should be a "
                                << "boolean)";
-                            emit_settings_warning(pimpl, ss.str().data());
+                            emit_settings_warning(task, ss.str().data());
                             // FALLTHROUGH
                         }
                         break;
@@ -1036,7 +1038,7 @@ static void task_run(TaskImpl *pimpl, nlohmann::json &settings) {
                             ss << "Found " << key << " option which has the "
                                << "wrong type (fyi: it should be a "
                                << "boolean)";
-                            emit_settings_warning(pimpl, ss.str().data());
+                            emit_settings_warning(task, ss.str().data());
                             // FALLTHROUGH
                         }
                         break;
@@ -1048,7 +1050,7 @@ static void task_run(TaskImpl *pimpl, nlohmann::json &settings) {
                             ss << "Found " << key << " option which has the "
                                << "wrong type (fyi: it should be a "
                                << "boolean)";
-                            emit_settings_warning(pimpl, ss.str().data());
+                            emit_settings_warning(task, ss.str().data());
                             // FALLTHROUGH
                         }
                         break;
@@ -1060,7 +1062,7 @@ static void task_run(TaskImpl *pimpl, nlohmann::json &settings) {
                             ss << "Found " << key << " option which has the "
                                << "wrong type (fyi: it should be a "
                                << "boolean)";
-                            emit_settings_warning(pimpl, ss.str().data());
+                            emit_settings_warning(task, ss.str().data());
                             // FALLTHROUGH
                         }
                         break;
@@ -1072,7 +1074,7 @@ static void task_run(TaskImpl *pimpl, nlohmann::json &settings) {
                             ss << "Found " << key << " option which has the "
                                << "wrong type (fyi: it should be a "
                                << "string)";
-                            emit_settings_warning(pimpl, ss.str().data());
+                            emit_settings_warning(task, ss.str().data());
                             // FALLTHROUGH
                         }
                         break;
@@ -1084,7 +1086,7 @@ static void task_run(TaskImpl *pimpl, nlohmann::json &settings) {
                             ss << "Found " << key << " option which has the "
                                << "wrong type (fyi: it should be a "
                                << "string)";
-                            emit_settings_warning(pimpl, ss.str().data());
+                            emit_settings_warning(task, ss.str().data());
                             // FALLTHROUGH
                         }
                         break;
@@ -1096,7 +1098,7 @@ static void task_run(TaskImpl *pimpl, nlohmann::json &settings) {
                             ss << "Found " << key << " option which has the "
                                << "wrong type (fyi: it should be a "
                                << "string)";
-                            emit_settings_warning(pimpl, ss.str().data());
+                            emit_settings_warning(task, ss.str().data());
                             // FALLTHROUGH
                         }
                         break;
@@ -1106,7 +1108,7 @@ static void task_run(TaskImpl *pimpl, nlohmann::json &settings) {
                     std::stringstream ss;
                     ss << "Found " << key << " option which is not mapped "
                        << "as a valid option. We will continue processing";
-                    emit_settings_warning(pimpl, ss.str().data());
+                    emit_settings_warning(task, ss.str().data());
                 }
             }
             // The following block of code is the old code used for options
@@ -1138,7 +1140,7 @@ static void task_run(TaskImpl *pimpl, nlohmann::json &settings) {
                 std::stringstream ss;
                 ss << "Found option '" << key << "' to have an invalid type"
                     << " (fyi: valid types are: int, double, string)";
-                emit_settings_failure(pimpl, ss.str().data());
+                emit_settings_failure(task, ss.str().data());
                 return;
             }
         }
@@ -1168,7 +1170,7 @@ static void task_run(TaskImpl *pimpl, nlohmann::json &settings) {
                 std::stringstream ss;
                 ss << "Found annotation '" << key << "' to have an invalid type"
                     << " (fyi: valid types are: int, double, string)";
-                emit_settings_failure(pimpl, ss.str().data());
+                emit_settings_failure(task, ss.str().data());
                 return;
             }
         }
@@ -1183,7 +1185,7 @@ static void task_run(TaskImpl *pimpl, nlohmann::json &settings) {
                 std::stringstream ss;
                 ss << "Found input '" << value << "' to have an invalid type"
                     << " (fyi: values inside 'inputs' must be strings)";
-                emit_settings_failure(pimpl, ss.str().data());
+                emit_settings_failure(task, ss.str().data());
                 return;
             }
         }
@@ -1199,7 +1201,7 @@ static void task_run(TaskImpl *pimpl, nlohmann::json &settings) {
                 ss << "Found input_filepath '" << value << "' to have an "
                    << "invalid type (fyi: values inside 'input_filepaths' "
                    << "must be strings)";
-                emit_settings_failure(pimpl, ss.str().data());
+                emit_settings_failure(task, ss.str().data());
                 return;
             }
         }
@@ -1231,7 +1233,7 @@ static void task_run(TaskImpl *pimpl, nlohmann::json &settings) {
                 ss << "Unknown log_level level '" << log_level_string << "' "
                     << "(fyi: known log_level levels are: " <<
                     known_log_level_levels() << ")";
-                emit_settings_failure(pimpl, ss.str().data());
+                emit_settings_failure(task, ss.str().data());
                 return;
             }
             log_level = std::get<0>(log_level_tuple);
@@ -1248,7 +1250,7 @@ static void task_run(TaskImpl *pimpl, nlohmann::json &settings) {
                 ss << "Found invalid entry inside of disabled_events that "
                   << "has value equal to <" << entry.dump() << "> (fyi: all "
                   << "the entries in disabled_events must be strings)";
-                emit_settings_failure(pimpl, ss.str().data());
+                emit_settings_failure(task, ss.str().data());
                 return;
             }
             std::string s = entry.get<std::string>();
@@ -1258,7 +1260,7 @@ static void task_run(TaskImpl *pimpl, nlohmann::json &settings) {
                    << "name '" << s << "' (fyi: all valid events are: "
                    << known_events().dump() << "). Measurement Kit is going "
                    << "to ignore this invalid event and continue";
-                emit_settings_warning(pimpl, ss.str().data());
+                emit_settings_warning(task, ss.str().data());
                 continue;
             }
             enabled_events.erase(s);
@@ -1267,11 +1269,11 @@ static void task_run(TaskImpl *pimpl, nlohmann::json &settings) {
 
     // see whether 'log' is enabled
     if (enabled_events.count("log") != 0) {
-        runnable->logger->on_log([pimpl](uint32_t log_level, const char *line) {
+        runnable->logger->on_log([task](uint32_t log_level, const char *line) {
             if ((log_level & ~MK_LOG_VERBOSITY_MASK) != 0) {
                 return; // mask out non-logging events
             }
-            emit(pimpl, make_log_event(log_level, line));
+            task->emit(make_log_event(log_level, line));
         });
         enabled_events.erase("log"); // we have consumed this event key
     } else {
@@ -1280,8 +1282,8 @@ static void task_run(TaskImpl *pimpl, nlohmann::json &settings) {
 
     // intercept and route all the other (i.e. non "log") events
     for (auto &event : enabled_events) {
-        runnable->logger->on_event_ex(event, [pimpl](nlohmann::json &&event) {
-            emit(pimpl, std::move(event));
+        runnable->logger->on_event_ex(event, [task](nlohmann::json &&event) {
+            task->emit(std::move(event));
         });
     }
     // route also disabled events so that we get to validate them when we are

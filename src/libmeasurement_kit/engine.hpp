@@ -37,21 +37,25 @@ class TaskImpl;
 /// wait for the Task to complete before destroying all the resources.
 class Task {
   public:
-    /// Task() creates and starts a Task configured according to settings.
+    /// Task creates and starts a Task configured according to settings.
     explicit Task(nlohmann::json &&settings);
 
-    /// wait_for_next_event() blocks until the next event occurs. When the
+    /// wait_for_next_event blocks until the next event occurs. When the
     /// task is terminated, it returns the "task_terminated" dummy event.
     nlohmann::json wait_for_next_event();
 
-    /// is_done() returns true when the task has finished running and there
-    /// are no unread events in wait_for_next_event()'s queue.
+    /// emit emits a specific event by appending it to the queue that
+    /// is drained by user code via wait_for_next_event.
+    void emit(nlohmann::json event);
+
+    /// is_done returns true when the task has finished running and there
+    /// are no unread events in wait_for_next_event's queue.
     bool is_done() const;
 
-    /// interrupt() forces the Task to stop running ASAP.
+    /// interrupt forces the Task to stop running ASAP.
     void interrupt();
 
-    /// ~Task() waits for the task to finish and deallocates resources.
+    /// ~Task waits for the task to finish and deallocates resources.
     ~Task();
 
     // Implementation note: this class is _explicitly_ non copyable and non
