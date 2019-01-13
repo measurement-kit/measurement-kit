@@ -94,7 +94,7 @@ Task::Task(nlohmann::json &&settings) {
         pimpl_->running = false;
         pimpl_->cond.notify_all(); // tell the readers we're done
     });
-    started.wait(); // guarantee Task() completes when the thread is running
+    started.wait(); // guarantee the thread is running when Task() returns
 }
 
 bool Task::is_done() const {
@@ -117,7 +117,8 @@ nlohmann::json Task::wait_for_next_event() {
     pimpl_->cond.wait(lock, [this]() { //
         return !pimpl_->running || !pimpl_->deque.empty();
     });
-    // must be first so we drain the queue before emitting the final null
+    // must be first so we drain the queue before emitting the final
+    // "task_terminated" event.
     if (!pimpl_->deque.empty()) {
         auto rv = std::move(pimpl_->deque.front());
         pimpl_->deque.pop_front();
@@ -125,8 +126,9 @@ nlohmann::json Task::wait_for_next_event() {
     }
     assert(!pimpl_->running);
     // Rationale: we used to return `null` when done. But then I figured that
-    // this could break people code. So, to ease integrator's life, we now
-    // return a dummy event structured exactly like other events.
+    // this could break people code, because they need to write conditional
+    // coding for handling both an ordinary event and `null`. So, to ease the
+    // integrator's life, we now return a dummy, well formed event.
     return possibly_validate_event(nlohmann::json{
         {"key", "task_terminated"},
         {"value", nlohmann::json::object()},

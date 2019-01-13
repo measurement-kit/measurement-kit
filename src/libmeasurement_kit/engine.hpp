@@ -16,7 +16,7 @@ class TaskImpl;
 
 /// Task is a task that Measurement Kit can run. You create a task with Task()
 /// by passing it the desired settings as a nlohmann::json. The minimal settings
-/// JSON must include the task name (see MK_ENUM_TASK for all names).
+/// JSON must include the "name" key indicating the task name.
 ///
 /// Creating a Task also creates the thread that will run it. Altough you can
 /// construct more than one Task at a time, Measurement Kit will make sure that
@@ -37,8 +37,7 @@ class TaskImpl;
 /// wait for the Task to complete before destroying all the resources.
 class Task {
   public:
-    /// Task() creates and starts a Task configured according settings. See
-    /// the MK_ENUM_SETTINGS macro for more information.
+    /// Task() creates and starts a Task configured according to settings.
     explicit Task(nlohmann::json &&settings);
 
     /// wait_for_next_event() blocks until the next event occurs. When the
