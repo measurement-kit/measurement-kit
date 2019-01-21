@@ -9,6 +9,8 @@
 #include <measurement_kit/common/nlohmann/json.hpp>
 #include <measurement_kit/ffi.h>
 
+//#include <iostream>  // to debug
+
 // TODO(bassosimone): compare options here with with_runnable ones
 // TODO(bassosimone): see if we can get rid of with_runnable()
 
@@ -16,8 +18,11 @@
 // emitted by the test, thus allowing to perform some basic checks. You can
 // set specific options using the |options| argument.
 static uint64_t
-with_hirl_do_ex(const nlohmann::json &options,
-        std::function<bool(const nlohmann::json &)> &&f) noexcept {
+with_hirl_do_ex(nlohmann::json options,
+                std::function<bool(const nlohmann::json &)> &&f) noexcept {
+    if (options.count("net/ca_bundle_path") <= 0) {
+      options["net/ca_bundle_path"] = "cacert.pem";
+    }
     nlohmann::json settings{
             {"name", "HttpInvalidRequestLine"},
             {"options", options},
@@ -95,8 +100,8 @@ TEST_CASE("Make sure that 'status.end' event is okay") {
 
 TEST_CASE("Ensure we do not save too much information by default") {
     with_hirl_do_ex({
-                            {"geoip_country_path", "GeoIP.dat"},
-                            {"geoip_asn_path", "GeoIPASNum.dat"},
+                            {"geoip_country_path", "country.mmdb"},
+                            {"geoip_asn_path", "asn.mmdb"},
                     },
             [](const nlohmann::json &doc) noexcept {
                 if (doc.at("key") != "measurement") {
@@ -113,8 +118,8 @@ TEST_CASE("Ensure we do not save too much information by default") {
 
 TEST_CASE("Ensure we can save IP address if we want") {
     with_hirl_do_ex({
-                            {"geoip_country_path", "GeoIP.dat"},
-                            {"geoip_asn_path", "GeoIPASNum.dat"},
+                            {"geoip_country_path", "country.mmdb"},
+                            {"geoip_asn_path", "asn.mmdb"},
                             {"save_real_probe_ip", true},
                     },
             [](const nlohmann::json &doc) noexcept {
@@ -132,8 +137,8 @@ TEST_CASE("Ensure we can save IP address if we want") {
 
 TEST_CASE("Ensure we can avoid saving CC and ASN if we want") {
     with_hirl_do_ex({
-                            {"geoip_country_path", "GeoIP.dat"},
-                            {"geoip_asn_path", "GeoIPASNum.dat"},
+                            {"geoip_country_path", "country.mmdb"},
+                            {"geoip_asn_path", "asn.mmdb"},
                             {"save_real_probe_asn", false},
                             {"save_real_probe_cc", false},
                     },
@@ -158,6 +163,7 @@ randomize_input_test_helper(bool randomize_input, const nlohmann::json &inputs,
             {"name", "TcpConnect"},
             {"inputs", inputs},
             {"options", {
+                                {"net/ca_bundle_path", "cacert.pem"},
                                 // During #1297, I have experienced a lot
                                 // of confusion because this test wasn't
                                 // working correctly, but only under Valgrind,
@@ -176,10 +182,8 @@ randomize_input_test_helper(bool randomize_input, const nlohmann::json &inputs,
         mk_unique_event event{mk_task_wait_for_next_event(task.get())};
         REQUIRE(!!event);
         auto s = mk_event_serialize(event.get());
-        /*
-        std::clog << "randomize_input_test_helper: "
-                  << s << std::endl;  // to debug
-        */
+        // Uncomment to debug
+        //std::clog << "randomize_input_test_helper: " << s << std::endl;
         REQUIRE(!!s);
         auto doc = nlohmann::json::parse(s);
         if (doc.at("key") != "status.measurement_start") {
