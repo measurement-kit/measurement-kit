@@ -606,8 +606,6 @@ TEST_CASE("We correctly deal with end-of-response signalled by EOF") {
      * See measurement-kit/ooniprobe-ios#79.
      */
     SharedPtr<Reactor> reactor = Reactor::make();
-    SharedPtr<Logger> logger = Logger::make();
-    logger->set_verbosity(MK_LOG_DEBUG2);
     reactor->run_with_initial_event([=]() {
         request(
             {
@@ -630,7 +628,7 @@ TEST_CASE("We correctly deal with end-of-response signalled by EOF") {
                 REQUIRE(response->previous->request->url.schema == "http");
                 reactor->stop();
             },
-            reactor, logger);
+            reactor);
     });
 }
 
