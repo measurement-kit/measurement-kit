@@ -31,7 +31,7 @@ mk_event_t *mk_event_create_(const nlohmann::json &json) noexcept {
         }
         ev = failure.dump();
     }
-    return new mk_event_t{std::move(ev)};
+    return new mk_event_t{ev};
 }
 
 const char *mk_event_serialize(mk_event_t *event) noexcept {
