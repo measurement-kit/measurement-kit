@@ -32,15 +32,10 @@ class Runnable : public NonCopyable, public NonMovable {
     std::list<std::string> input_filepaths;
     std::deque<std::string> inputs;
     std::string output_filepath;
-    Delegate<std::string> entry_cb;
-    Delegate<> begin_cb;
-    std::list<Delegate<>> end_cbs;
-    std::list<Delegate<>> destroy_cbs;
     bool needs_input = false;
     bool use_bouncer = true;
     std::map<std::string, std::string> test_helpers_data;
     std::map<std::string, std::string> annotations;
-    Delegate<DataUsage> data_usage_cb;
 
     std::string test_name = "ooni_test";
     std::string test_version = "0.0.1";

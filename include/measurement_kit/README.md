@@ -813,7 +813,7 @@ function taskThread(settings) {
     emitEvent("status.end", {
       downloaded_kb: countDownloadedKb(),
       uploaded_kb: countUploadedKb(),
-      failure: (error) ? error.AsString() : null
+      failure: error.AsString()
     })
   }
 
