@@ -14,11 +14,24 @@
 
 #include <measurement_kit/common/nlohmann/json.hpp>
 
+#include "src/libmeasurement_kit/common/encoding.hpp"
 #include "src/libmeasurement_kit/engine.hpp"
 #include "src/libmeasurement_kit/ffi.hpp"
 
 mk_event_t *mk_event_create_(const nlohmann::json &json) noexcept {
-    return new mk_event_t{json.dump().data()};
+    std::string ev;
+    try {
+        ev = json.dump();
+    } catch (const std::exception &exc) {
+        nlohmann::json failure;
+        failure["key"] = "bug.json_dump";
+        failure["value"]["failure"] = mk::base64_encode_if_needed(exc.what());
+        if (json.count("key") > 0) {
+            failure["value"]["orig_key"] = json.at("key");
+        }
+        ev = failure.dump();
+    }
+    return new mk_event_t{std::move(ev)};
 }
 
 const char *mk_event_serialize(mk_event_t *event) noexcept {
