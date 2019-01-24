@@ -24,9 +24,19 @@ const uint8_t binary_input[] = {
 };
 // clang-format on
 
-TEST_CASE("mk_event_create_() deals with invalid JSON") {
+TEST_CASE("mk_event_create_() deals with invalid JSON value") {
   nlohmann::json json;
   json["string"] = std::string{(char *)binary_input, sizeof(binary_input)};
+  // Before #1728 was fixed, the following statement was crashing
+  mk_unique_event ev{mk_event_create_(json)};
+  REQUIRE(ev != nullptr);
+  REQUIRE(mk_event_serialize(ev.get()) != nullptr);
+}
+
+TEST_CASE("mk_event_create_() deals with invalid JSON event key") {
+  nlohmann::json json;
+  json["key"] = std::string{(char *)binary_input, sizeof(binary_input)};
+  json["value"]["failure"] = "foobar";
   // Before #1728 was fixed, the following statement was crashing
   mk_unique_event ev{mk_event_create_(json)};
   REQUIRE(ev != nullptr);

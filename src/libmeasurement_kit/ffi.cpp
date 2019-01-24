@@ -27,7 +27,7 @@ mk_event_t *mk_event_create_(const nlohmann::json &json) noexcept {
         failure["key"] = "bug.json_dump";
         failure["value"]["failure"] = mk::base64_encode_if_needed(exc.what());
         if (json.count("key") > 0) {
-            failure["value"]["orig_key"] = json.at("key");
+            failure["value"]["orig_key"] = mk::base64_encode_if_needed(json.at("key"));
         }
         ev = failure.dump();
     }
