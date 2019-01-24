@@ -42,6 +42,7 @@
 /maxmind-geoip.*.dat*
 /measurement_kit
 /test-driver
+/test/main
 /tmp
 /tor-bridges.tor-bridges-ip-port.csv
 /venv
