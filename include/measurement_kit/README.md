@@ -409,7 +409,8 @@ specified, all the keys introduced below where added in MK v0.9.0.
 ```
 
 Where `<orig_key>` is the key that failure and `<failure_string>` is an
-error providing some additional information.
+error providing some additional information. Note that both fields MAY
+be base64 encoded if they're not JSON serialisable.
 
 - `"failure.asn_lookup"`: (object) There was a failure attempting to lookup the
   user autonomous system number. The JSON returned by this event is like:
