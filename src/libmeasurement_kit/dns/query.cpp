@@ -69,7 +69,10 @@ void resolve_hostname(std::string hostname, Callback<ResolveHostnameResult> cb,
                    if (!err) {
                        result->ipv4_reply = *resp;
                        for (dns::Answer answer : resp->answers) {
-                           result->addresses.push_back(answer.ipv4);
+                           // Don't connect using pure CNAME answers.
+                           if (answer.ipv4 != "") {
+                              result->addresses.push_back(answer.ipv4);
+                           }
                        }
                    }
                    logger->debug("resolve_hostname: ipv6...");
@@ -81,7 +84,10 @@ void resolve_hostname(std::string hostname, Callback<ResolveHostnameResult> cb,
                            if (!err) {
                                result->ipv6_reply = *resp;
                                for (dns::Answer answer : resp->answers) {
-                                   result->addresses.push_back(answer.ipv6);
+                                   // Don't connect using pure CNAME answers.
+                                   if (answer.ipv6 != "") {
+                                       result->addresses.push_back(answer.ipv6);
+                                   }
                                }
                            }
                            cb(*result);

@@ -218,7 +218,8 @@ static nlohmann::json make_failure_event(const Error &error) {
 }
 
 static bool is_event_key_valid(const std::string &str) {
-    return (str == "failure.asn_lookup") ||
+    return (str == "bug.json_dump") ||
+        (str == "failure.asn_lookup") ||
         (str == "failure.cc_lookup") ||
         (str == "failure.ip_lookup") ||
         (str == "failure.measurement") ||
@@ -257,6 +258,13 @@ static nlohmann::json possibly_validate_event(nlohmann::json &&event) {
     do {
         // Note: in the following we check the fields of events. As such, all
         // the events with no fields of course do not appear in here.
+        if (event.at("key") == "bug.json_dump") {
+            assert(event.at("value").count("failure") == 1);
+            assert(event.at("value").at("failure").is_string());
+            assert(event.at("value").count("orig_key") == 1);
+            assert(event.at("value").at("orig_key").is_string());
+            break;
+        }
         if (event.at("key") == "failure.asn_lookup") {
             assert(event.at("value").count("failure") == 1);
             assert(event.at("value").at("failure").is_string());
@@ -408,6 +416,7 @@ static nlohmann::json possibly_validate_event(nlohmann::json &&event) {
 
 static nlohmann::json known_events() {
     nlohmann::json json;
+    json.push_back("bug.json_dump");
     json.push_back("failure.asn_lookup");
     json.push_back("failure.cc_lookup");
     json.push_back("failure.ip_lookup");

@@ -12,7 +12,6 @@
 /fcompose
 /fmap
 /freverse
-/json
 /libevent_reactor
 /locked
 /logger
