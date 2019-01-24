@@ -393,6 +393,25 @@ is a string. Below we describe all the possible event keys, along with the
 an arbitrary number of times during the lifecycle of a task. Unless otherwise
 specified, all the keys introduced below where added in MK v0.9.0.
 
+- `"bug.json_dump"`: (object) There was a failure in serialising an event
+  to JSON and we let you know about this Measurement Kit bug. Please, open an
+  issue on GitHub if you notice this kind of bug. This event has been added
+  in MK v0.9.2. The JSON returned by this event is like:
+
+```JSON
+{
+  "key": "bug.json_dump",
+  "value": {
+    "failure": "<failure_string>",
+    "orig_key": "<orig_key>",
+  }
+}
+```
+
+Where `<orig_key>` is the key that failure and `<failure_string>` is an
+error providing some additional information. Note that both fields MAY
+be base64 encoded if they're not JSON serialisable.
+
 - `"failure.asn_lookup"`: (object) There was a failure attempting to lookup the
   user autonomous system number. The JSON returned by this event is like:
 

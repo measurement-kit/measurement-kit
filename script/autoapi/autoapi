@@ -67,7 +67,11 @@ class Nettest(object):
 def main():
     """ Main function """
 
-    events = [Event("failure.asn_lookup",
+    events = [Event("bug.json_dump",
+                    Attribute("std::string", "failure"),
+                    Attribute("std::string", "orig_key")),
+
+              Event("failure.asn_lookup",
                     Attribute("std::string", "failure")),
 
               Event("failure.cc_lookup",
