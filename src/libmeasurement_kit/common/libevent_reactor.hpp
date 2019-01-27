@@ -115,7 +115,7 @@ class LibeventReactor : public Reactor, public NonCopyable, public NonMovable {
                 of now, mostly used to perform DNS queries with getaddrinfo(),
                 which is blocking. If there are threads running, treat them
                 like pending events, even though they are not managed by
-                libevent, and continue running the loop. To avoid spawning
+                libevent, and continue running the loop. To avoid spinning
                 and to be sure we're ready to deal /pronto/ with any upcoming
                 libevent event, schedule a call for the near future so to
                 keep the libevent loop active, and ready to react.
