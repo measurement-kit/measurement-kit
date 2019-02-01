@@ -15,7 +15,7 @@
 #include <measurement_kit/common/nlohmann/json.hpp>
 
 #include "src/libmeasurement_kit/common/encoding.hpp"
-#include "src/libmeasurement_kit/engine.hpp"
+#include "src/libmeasurement_kit/engine/engine.hpp"
 #include "src/libmeasurement_kit/ffi.hpp"
 
 mk_event_t *mk_event_create_(const nlohmann::json &json) noexcept {
