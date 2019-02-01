@@ -1,12 +1,20 @@
 // Part of Measurement Kit <https://measurement-kit.github.io/>.
 // Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
-#ifndef SRC_LIBMEASUREMENT_KIT_ENGINE_ENGINE_HPP
-#define SRC_LIBMEASUREMENT_KIT_ENGINE_ENGINE_HPP
+#ifndef SRC_LIBMEASUREMENT_KIT_ENGINE_TASK_HPP
+#define SRC_LIBMEASUREMENT_KIT_ENGINE_TASK_HPP
 
+#include <atomic>
+#include <condition_variable>
+#include <deque>
 #include <memory>
+#include <mutex>
+#include <thread>
 
 #include <measurement_kit/common/nlohmann/json.hpp>
+#include <measurement_kit/common/shared_ptr.hpp>
+
+#include "src/libmeasurement_kit/common/reactor.hpp"
 
 namespace mk {
 namespace engine {
@@ -67,6 +75,19 @@ class Task {
 
   private:
     std::unique_ptr<TaskImpl> pimpl_;
+};
+
+// TODO(bassosimone): we can probably remove the pimpl pattern
+
+class TaskImpl {
+  public:
+    std::condition_variable cond;
+    std::deque<nlohmann::json> deque;
+    std::atomic_bool interrupted{false};
+    std::mutex mutex;
+    SharedPtr<Reactor> reactor = Reactor::make();
+    std::atomic_bool running{false};
+    std::thread thread;
 };
 
 } // namespace engine
