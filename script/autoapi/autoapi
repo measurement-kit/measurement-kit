@@ -247,7 +247,7 @@ def main():
         render = tpl.render(events=events, log_levels=log_levels,
                             settings=settings, options=options,
                             nettests=nettests)
-        with open("./src/libmeasurement_kit/engine.cpp", "w") as destfp:
+        with open("./src/libmeasurement_kit/engine/autoapi.cpp", "w") as destfp:
             destfp.write(render)
 
     for arg in sys.argv[1:]:
