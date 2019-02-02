@@ -93,7 +93,7 @@ void dns_query(SharedPtr<nlohmann::json> entry, dns::QueryType query_type,
                    cb(error, message);
                    logger->debug("dns_test: callback called");
                },
-               options, reactor);
+               options, reactor, logger);
 }
 
 void http_request(SharedPtr<nlohmann::json> entry, Settings settings, http::Headers headers,
