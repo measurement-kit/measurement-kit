@@ -87,7 +87,6 @@ class TaskImpl {
     std::mutex mutex;
     SharedPtr<Reactor> reactor = Reactor::make();
     std::atomic_bool running{false};
-    std::thread thread;
 };
 
 } // namespace engine

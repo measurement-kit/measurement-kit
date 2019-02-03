@@ -16,17 +16,15 @@
 #include <type_traits>
 #include <utility>
 
+#include <measurement_kit/common/logger.hpp>
 #include <measurement_kit/common/nlohmann/json.hpp>
 #include <measurement_kit/common/shared_ptr.hpp>
 
+#include "src/libmeasurement_kit/common/worker.hpp"
 #include "src/libmeasurement_kit/engine/autoapi.hpp"
 
 namespace mk {
 namespace engine {
-
-// # Multi-thread stuff
-//
-// Comes first because it needs more careful handling.
 
 void Task::emit(nlohmann::json event) {
     // Perform validation of the event (debug mode only)
@@ -43,26 +41,19 @@ void Task::emit(nlohmann::json event) {
 
 Task::Task(nlohmann::json &&settings) {
     pimpl_ = std::make_unique<TaskImpl>();
-    // The purpose of `barrier` is to wait in the constructor until the
-    // thread for running the test is up and running.
-    std::promise<void> barrier;
-    std::future<void> started = barrier.get_future();
-    pimpl_->thread = std::thread([this, &barrier, settings = std::move(settings)]() mutable {
-        pimpl_->running = true;
-        barrier.set_value();
-        {
-            nlohmann::json event;
-            event["key"] = "status.queued";
-            event["value"] = nlohmann::json::object();
-            emit(std::move(event));
-        }
-        static std::mutex semaphore;
-        std::unique_lock<std::mutex> _{semaphore};  // prevent concurrent tasks
-        task_run_legacy(this, pimpl_.get(), settings);
-        pimpl_->running = false;
-        pimpl_->cond.notify_all(); // tell the readers we're done
-    });
-    started.wait(); // guarantee the thread is running when Task() returns
+    {
+        nlohmann::json event;
+        event["key"] = "status.queued";
+        event["value"] = nlohmann::json::object();
+        emit(std::move(event));
+    }
+    pimpl_->running = true;
+    Worker::default_tasks_queue()->call_in_thread(
+            Logger::make(), [this, settings = std::move(settings)]() mutable {
+                task_run_legacy(this, pimpl_.get(), settings);
+                pimpl_->running = false;
+                pimpl_->cond.notify_all(); // tell the readers we're done
+            });
 }
 
 bool Task::is_done() const {
@@ -103,11 +94,7 @@ nlohmann::json Task::wait_for_next_event() {
     });
 }
 
-Task::~Task() {
-    if (pimpl_->thread.joinable()) {
-        pimpl_->thread.join();
-    }
-}
+Task::~Task() {}
 
 } // namespace engine
 } // namespace mk
