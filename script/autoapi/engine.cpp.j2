@@ -189,7 +189,7 @@ static void remove_unknown_settings_and_warn(
 
 // # Run task
 
-void task_run_legacy(Task *task, TaskImpl *pimpl, nlohmann::json &settings) {
+void task_run_legacy(Task *task, TaskImpl *pimpl, nlohmann::json settings) {
 
     // make sure that `settings` is an object
     if (!settings.is_object()) {

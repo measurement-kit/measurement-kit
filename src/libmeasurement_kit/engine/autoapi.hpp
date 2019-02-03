@@ -15,7 +15,7 @@ namespace mk {
 namespace engine {
 
 // task_run_legacy is the code that is invoked for legacy tasks.
-void task_run_legacy(Task *task, TaskImpl *pimpl, nlohmann::json &settings);
+void task_run_legacy(Task *task, TaskImpl *pimpl, nlohmann::json settings);
 
 // possibly_validate_event validates an event. Validation is only
 // peformed when running in debug mode. If this code sees an invalid

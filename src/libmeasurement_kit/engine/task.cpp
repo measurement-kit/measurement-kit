@@ -50,7 +50,7 @@ Task::Task(nlohmann::json &&settings) {
     pimpl_->running = true;
     Worker::default_tasks_queue()->call_in_thread(
             Logger::make(), [this, settings = std::move(settings)]() mutable {
-                task_run_legacy(this, pimpl_.get(), settings);
+                task_run_legacy(this, pimpl_.get(), std::move(settings));
                 pimpl_->running = false;
                 pimpl_->cond.notify_all(); // tell the readers we're done
             });
