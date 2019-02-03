@@ -94,7 +94,21 @@ nlohmann::json Task::wait_for_next_event() {
     });
 }
 
-Task::~Task() {}
+Task::~Task() {
+    // We're about to destroy a possibly running task. The memory is used
+    // by a background thread. So we MUST synchronize with the thread itself
+    // before proceeding on destroying the memory.
+    //
+    // 1. make sure we tell the test to stop as soon as possible.
+    //
+    // 2. drain the events queue to avoid keeping around unused memory.
+    //
+    // 3. continue draining until we know it's over.
+    interrupt();
+    while (!is_done()) {
+      (void)wait_for_next_event();
+    }
+}
 
 } // namespace engine
 } // namespace mk
