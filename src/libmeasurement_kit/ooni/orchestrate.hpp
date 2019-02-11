@@ -54,7 +54,7 @@ class Auth {
 
 class ClientMetadata {
   public:
-    SharedPtr<Logger> logger = Logger::global();
+    SharedPtr<Logger> logger;
     Settings settings = {};
     std::string available_bandwidth;
     std::string device_token;

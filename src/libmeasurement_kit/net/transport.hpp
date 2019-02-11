@@ -140,10 +140,10 @@ class Transport : public TransportEmitter,
 void write(SharedPtr<Transport> txp, Buffer buf, Callback<Error> cb);
 
 void readn(SharedPtr<Transport> txp, SharedPtr<Buffer> buff, size_t n, Callback<Error> cb,
-           SharedPtr<Reactor> reactor = Reactor::global());
+           SharedPtr<Reactor> reactor);
 
 void read(SharedPtr<Transport> t, SharedPtr<Buffer> buff, Callback<Error> callback,
-          SharedPtr<Reactor> reactor = Reactor::global());
+          SharedPtr<Reactor> reactor);
 
 } // namespace net
 } // namespace mk

@@ -143,7 +143,7 @@ static void compare_dns_queries(SharedPtr<nlohmann::json> entry,
                                 std::vector<std::string> experiment_addresses,
                                 nlohmann::json control, Settings options) {
 
-    SharedPtr<Logger> logger = Logger::global();
+    SharedPtr<Logger> logger = Logger::make();
     // When the controls fails in the same way as the experiment we consider the
     // DNS queries to be consistent.
     // XXX ensure the failure messages are aligned between ooniprobe and MK

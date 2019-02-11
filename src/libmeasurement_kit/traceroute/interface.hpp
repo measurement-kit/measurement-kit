@@ -126,7 +126,7 @@ template <class Impl> class Prober : public ProberInterface {
     /// \param port The port to bind
     /// \param evbase Event base to use (optional)
     /// \throws Exception on error
-    Prober(bool use_ipv4, int port, SharedPtr<Reactor> reactor = Reactor::global()) {
+    Prober(bool use_ipv4, int port, SharedPtr<Reactor> reactor) {
         impl_.reset(new Impl(use_ipv4, port, reactor));
     }
 

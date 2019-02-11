@@ -170,7 +170,6 @@ void AndroidProber::send_probe(std::string addr, int port, int ttl,
 
     if (sendto(sockfd_, payload.data(), payload.length(), 0, (sockaddr *)&ss,
                sslen) != (ssize_t)payload.length()) {
-        mk::warn("sendto() failed: errno %d", errno);
         error_cb_(SendtoError());
         return;
     }
@@ -261,7 +260,6 @@ ProbeResult AndroidProber::on_socket_readable() {
         }
         if (cmsg->cmsg_type != expected_type_recverr &&
             cmsg->cmsg_type != expected_type_ttl) {
-            mk::warn("Received unexpected cmsg_type: %d", cmsg->cmsg_type);
             continue;
         }
         if (cmsg->cmsg_type == expected_type_ttl) {
@@ -276,7 +274,6 @@ ProbeResult AndroidProber::on_socket_readable() {
 
         socket_error = (sock_extended_err *)CMSG_DATA(cmsg);
         if (socket_error->ee_origin != expected_origin) {
-            mk::warn("Received unexpected ee_type: %d", cmsg->cmsg_type);
             continue;
         }
         r.icmp_type = socket_error->ee_type;

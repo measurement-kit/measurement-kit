@@ -120,9 +120,9 @@ struct Context {
     std::list<std::string> granted_suite;
     size_t granted_suite_count = 0;
     size_t current_test_count = 0;
-    SharedPtr<Logger> logger = Logger::global();
+    SharedPtr<Logger> logger;
     int port = NDT_PORT;
-    SharedPtr<Reactor> reactor = Reactor::global();
+    SharedPtr<Reactor> reactor;
     Settings settings;
     // We always set these two tests because they are the bare minimum
     // required to talk to a NDT server. Other sets could be added as flags
@@ -145,11 +145,11 @@ struct Context {
 namespace messages {
 
 void read_ll(SharedPtr<Context> ctx, Callback<Error, uint8_t, std::string> callback,
-             SharedPtr<Reactor> reactor = Reactor::global());
+             SharedPtr<Reactor> reactor);
 void read_json(SharedPtr<Context> ctx, Callback<Error, uint8_t, nlohmann::json> callback,
-               SharedPtr<Reactor> reactor = Reactor::global());
+               SharedPtr<Reactor> reactor);
 void read_msg(SharedPtr<Context> ctx, Callback<Error, uint8_t, std::string> callback,
-              SharedPtr<Reactor> reactor = Reactor::global());
+              SharedPtr<Reactor> reactor);
 
 ErrorOr<Buffer> format_msg_extended_login(unsigned char tests);
 ErrorOr<Buffer> format_test_msg(std::string s);
@@ -198,9 +198,9 @@ void disconnect_and_callback(SharedPtr<Context> ctx, Error err);
 namespace test_c2s {
 
 void coroutine(SharedPtr<nlohmann::json>, std::string address, int port, double runtime,
-               Callback<Error, Continuation<Error>> cb, double timeout = 10.0,
-               Settings settings = {}, SharedPtr<Reactor> reactor = Reactor::global(),
-               SharedPtr<Logger> logger = Logger::global());
+               Callback<Error, Continuation<Error>> cb, double timeout,
+               Settings settings, SharedPtr<Reactor> reactor,
+               SharedPtr<Logger> logger);
 
 void run(SharedPtr<Context> ctx, Callback<Error> callback);
 
@@ -250,9 +250,9 @@ struct Params {
 
 void coroutine(SharedPtr<nlohmann::json> report_entry, std::string address, Params params,
                Callback<Error, Continuation<Error, double>> cb,
-               double timeout = 10.0, Settings settings = {},
-               SharedPtr<Reactor> reactor = Reactor::global(),
-               SharedPtr<Logger> logger = Logger::global());
+               double timeout, Settings settings,
+               SharedPtr<Reactor> reactor,
+               SharedPtr<Logger> logger);
 
 void finalizing_test(SharedPtr<Context> ctx, SharedPtr<nlohmann::json> cur_entry,
                      Callback<Error> callback);

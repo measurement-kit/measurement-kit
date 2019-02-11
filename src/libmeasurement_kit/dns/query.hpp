@@ -55,9 +55,9 @@ void query(
         QueryType dns_type,
         std::string name,
         Callback<Error, SharedPtr<Message>> func,
-        Settings settings = {},
-        SharedPtr<Reactor> reactor = Reactor::global(),
-        SharedPtr<Logger> logger = Logger::global()
+        Settings settings,
+        SharedPtr<Reactor> reactor,
+        SharedPtr<Logger> logger
 );
 
 } // namespace dns

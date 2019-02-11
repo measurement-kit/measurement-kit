@@ -25,9 +25,9 @@ class ResolveHostnameResult {
 
 void resolve_hostname(std::string hostname,
         Callback<ResolveHostnameResult> cb,
-        Settings settings = {},
-        SharedPtr<Reactor> reactor = Reactor::global(),
-        SharedPtr<Logger> logger = Logger::global());
+        Settings settings,
+        SharedPtr<Reactor> reactor,
+        SharedPtr<Logger> logger);
 
 } // namespace dns
 } // namespace mk

@@ -17,9 +17,9 @@ namespace ooni {
 
 template <MK_MOCK_AS(dns::query, dns_query)>
 void resolver_lookup_impl(Callback<Error, std::string> callback,
-                          Settings settings = {},
-                          SharedPtr<Reactor> reactor = Reactor::global(),
-                          SharedPtr<Logger> logger = Logger::global()) {
+                          Settings settings,
+                          SharedPtr<Reactor> reactor,
+                          SharedPtr<Logger> logger) {
   dns_query("IN", "A", "whoami.akamai.net",
       [=](Error error, SharedPtr<dns::Message> message) {
         if (!error) {

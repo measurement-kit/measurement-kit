@@ -34,8 +34,8 @@ using namespace mk::net;
 */
 
 void post(SharedPtr<Transport> transport, std::string url_extra, std::string body,
-          Callback<Error, nlohmann::json> callback, Settings conf = {},
-          SharedPtr<Reactor> = Reactor::global(), SharedPtr<Logger> = Logger::global());
+          Callback<Error, nlohmann::json> callback, Settings conf,
+          SharedPtr<Reactor>, SharedPtr<Logger>);
 
 template <MK_MOCK_AS(http::request_sendrecv, http_request_sendrecv)>
 void post_impl(SharedPtr<Transport> transport, std::string append_to_url,
