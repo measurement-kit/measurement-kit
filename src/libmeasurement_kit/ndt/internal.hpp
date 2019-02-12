@@ -120,9 +120,9 @@ struct Context {
     std::list<std::string> granted_suite;
     size_t granted_suite_count = 0;
     size_t current_test_count = 0;
-    SharedPtr<Logger> logger;
+    SharedPtr<Logger> logger = Logger::make();
     int port = NDT_PORT;
-    SharedPtr<Reactor> reactor;
+    SharedPtr<Reactor> reactor = Reactor::make();
     Settings settings;
     // We always set these two tests because they are the bare minimum
     // required to talk to a NDT server. Other sets could be added as flags
