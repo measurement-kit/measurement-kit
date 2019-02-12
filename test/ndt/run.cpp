@@ -90,7 +90,7 @@ TEST_CASE("We deal with recv-results-and-logout error") {
                                   success, success, failure, die,
                                   protocol::disconnect_and_callback>(
         entry, "127.0.0.1", 3001, [](Error err) { REQUIRE(err == MockedError()); }, {},
-        Reactor::global(), Logger::global());
+        Reactor::make(), Logger::make());
 }
 
 TEST_CASE("run() deals with invalid port error") {
@@ -98,7 +98,7 @@ TEST_CASE("run() deals with invalid port error") {
     run(entry, [](Error err) { REQUIRE(err == InvalidPortError()); },
         {
             {"port", "xo"},
-        });
+        }, Reactor::make(), Logger::make());
 }
 
 static void fail(std::string, Callback<Error, mlabns::Reply> cb, Settings,
@@ -110,7 +110,7 @@ TEST_CASE("run() deals with mlab-ns query error") {
     SharedPtr<nlohmann::json> entry{new nlohmann::json};
     run_impl<run_with_specific_server, fail>(
         entry, [](Error err) { REQUIRE(err == MlabnsQueryError()); }, {},
-        Reactor::global(), Logger::global());
+        Reactor::make(), Logger::make());
 }
 
 /*
@@ -131,6 +131,6 @@ TEST_CASE("NDT test run() should work") {
         ndt::run(entry, [=](Error err) {
             REQUIRE(!err);
             reactor->stop();
-        }, settings, reactor);
+        }, settings, reactor, Logger::make());
     });
 }

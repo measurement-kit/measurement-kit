@@ -72,7 +72,7 @@ BASE_FREE(evdns_set_options_randomize)
 
 TEST_CASE("throw error while fails evdns_base_new") {
     REQUIRE_THROWS_AS(
-        create_evdns_base<null_evdns_base_new>({}, Reactor::global()),
+        create_evdns_base<null_evdns_base_new>({}, Reactor::make()),
         std::bad_alloc);
 }
 
@@ -80,7 +80,7 @@ TEST_CASE("throw error on literal port") {
     // NB: dns/port=128000 just overflows uint16
     REQUIRE_THROWS_AS(
         (create_evdns_base(
-            {{"dns/nameserver", "8.8.8.8"}, {"dns/port", "domain"}}, Reactor::global())),
+            {{"dns/nameserver", "8.8.8.8"}, {"dns/port", "domain"}}, Reactor::make())),
         std::runtime_error);
 }
 
@@ -88,7 +88,7 @@ TEST_CASE("throw error while fails evdns_base_nameserver_sockaddr_add") {
     REQUIRE_THROWS_AS(
         (create_evdns_base<::evdns_base_new, null_evdns_base_nameserver_sockaddr_add,
                            base_free_evdns_base_nameserver_sockaddr_add>(
-            {{"dns/nameserver", "nexa"}}, Reactor::global())),
+            {{"dns/nameserver", "nexa"}}, Reactor::make())),
         std::runtime_error);
     REQUIRE(base_free_evdns_base_nameserver_sockaddr_add_flag);
 }
@@ -96,7 +96,7 @@ TEST_CASE("throw error while fails evdns_base_nameserver_sockaddr_add") {
 TEST_CASE("throw error while fails evdns_base_nameserver_sockaddr_add and base_new") {
     REQUIRE_THROWS_AS((create_evdns_base<null_evdns_base_new,
                                          null_evdns_base_nameserver_sockaddr_add>(
-                          {{"dns/nameserver", "nexa"}}, Reactor::global())),
+                          {{"dns/nameserver", "nexa"}}, Reactor::make())),
                       std::bad_alloc);
 }
 
@@ -104,7 +104,7 @@ TEST_CASE("throw error while fails evdns_set_options for attempts") {
     REQUIRE_THROWS_AS(
         (create_evdns_base<::evdns_base_new, ::evdns_base_nameserver_sockaddr_add,
                            base_free_evdns_set_options_attempts>(
-            {{"dns/attempts", "nexa"}}, Reactor::global())),
+            {{"dns/attempts", "nexa"}}, Reactor::make())),
         std::runtime_error);
     REQUIRE(base_free_evdns_set_options_attempts_flag);
 }
@@ -113,7 +113,7 @@ TEST_CASE("throw error while fails evdns_set_options for timeout") {
     REQUIRE_THROWS_AS(
         (create_evdns_base<::evdns_base_new, ::evdns_base_nameserver_sockaddr_add,
                            base_free_evdns_set_options_timeout>(
-            {{"dns/attempts", "nexa"}}, Reactor::global())),
+            {{"dns/attempts", "nexa"}}, Reactor::make())),
         std::runtime_error);
     REQUIRE(base_free_evdns_set_options_timeout_flag);
 }
@@ -122,7 +122,7 @@ TEST_CASE("throw error while fails evdns_set_options for negative attempts") {
     REQUIRE_THROWS_AS(
         (create_evdns_base<::evdns_base_new, ::evdns_base_nameserver_sockaddr_add,
                            base_free_evdns_set_options_attempts_negative>(
-            {{"dns/attempts", -1}}, Reactor::global())),
+            {{"dns/attempts", -1}}, Reactor::make())),
         std::runtime_error);
     REQUIRE(base_free_evdns_set_options_attempts_negative_flag);
 }
@@ -132,96 +132,117 @@ TEST_CASE("throw error while fails evdns_set_options for randomize-case") {
         (create_evdns_base<::evdns_base_new, ::evdns_base_nameserver_sockaddr_add,
                            base_free_evdns_set_options_randomize,
                            null_evdns_base_set_option_randomize>(
-            {{"dns/randomize_case", ""}}, Reactor::global())),
+            {{"dns/randomize_case", ""}}, Reactor::make())),
         std::runtime_error);
     REQUIRE(base_free_evdns_set_options_randomize_flag);
 }
 
 TEST_CASE("throw error with too many addresses") {
+    SharedPtr<Logger> logger = Logger::make();
     REQUIRE_THROWS_AS(build_answers_evdns(DNS_ERR_NONE, DNS_IPv4_A,
-                                          (INT_MAX / 4) + 2, 20, nullptr),
+                                          (INT_MAX / 4) + 2, 20, nullptr,
+                                          logger),
                       std::runtime_error);
 }
 
 TEST_CASE("throw error with ntop conversion error") {
+    SharedPtr<Logger> logger = Logger::make();
     REQUIRE_THROWS_AS(build_answers_evdns<null_inet_ntop>(
-                          DNS_ERR_NONE, DNS_IPv4_A, 1, 20, nullptr),
+                          DNS_ERR_NONE, DNS_IPv4_A, 1, 20, nullptr, logger),
                       std::runtime_error);
 }
 
 TEST_CASE("dns::query deals with failing evdns_base_resolve_ipv4") {
+    SharedPtr<Reactor> reactor = Reactor::make();
+    SharedPtr<Logger> logger = Logger::make();
     libevent_query<::evdns_base_free, null_resolver>(
         "IN", "A", "www.google.com",
         [](Error e, SharedPtr<Message>) { REQUIRE(e == ResolverError()); }, {},
-        Reactor::global(), Logger::global());
+        reactor, logger);
 }
 
 TEST_CASE("dns::query deals with failing evdns_base_resolve_ipv6") {
+    SharedPtr<Reactor> reactor = Reactor::make();
+    SharedPtr<Logger> logger = Logger::make();
     libevent_query<::evdns_base_free, ::evdns_base_resolve_ipv4, null_resolver>(
         "IN", "AAAA", "github.com",
         [](Error e, SharedPtr<Message>) { REQUIRE(e == ResolverError()); }, {},
-        Reactor::global(), Logger::global());
+        reactor, logger);
 }
 
 TEST_CASE("dns::query deals with failing evdns_base_resolve_reverse") {
+    SharedPtr<Reactor> reactor = Reactor::make();
+    SharedPtr<Logger> logger = Logger::make();
     libevent_query<::evdns_base_free, ::evdns_base_resolve_ipv4,
                 ::evdns_base_resolve_ipv6, null_resolver_reverse>(
         "IN", "REVERSE_A", "8.8.8.8",
         [](Error e, SharedPtr<Message>) { REQUIRE(e == ResolverError()); }, {},
-        Reactor::global(), Logger::global());
+        reactor, logger);
 }
 
 TEST_CASE("dns::query deals with failing evdns_base_resolve_reverse_ipv6") {
+    SharedPtr<Reactor> reactor = Reactor::make();
+    SharedPtr<Logger> logger = Logger::make();
     libevent_query<::evdns_base_free, ::evdns_base_resolve_ipv4,
                 ::evdns_base_resolve_ipv6, ::evdns_base_resolve_reverse,
                 null_resolver_reverse>(
         "IN", "REVERSE_AAAA", "::1",
 
         [](Error e, SharedPtr<Message>) { REQUIRE(e == ResolverError()); }, {},
-        Reactor::global(), Logger::global());
+        reactor, logger);
 }
 
 TEST_CASE("dns::query deals with inet_pton returning 0") {
+    SharedPtr<Reactor> reactor = Reactor::make();
+    SharedPtr<Logger> logger = Logger::make();
+
     libevent_query<::evdns_base_free, ::evdns_base_resolve_ipv4,
                 ::evdns_base_resolve_ipv6, ::evdns_base_resolve_reverse,
                 ::evdns_base_resolve_reverse_ipv6, null_inet_pton>(
         "IN", "REVERSE_A", "8.8.8.8",
 
         [](Error e, SharedPtr<Message>) { REQUIRE(e == InvalidIPv4AddressError()); }, {},
-        Reactor::global(), Logger::global());
+        reactor, logger);
 
     libevent_query<::evdns_base_free, ::evdns_base_resolve_ipv4,
                 ::evdns_base_resolve_ipv6, ::evdns_base_resolve_reverse,
                 ::evdns_base_resolve_reverse_ipv6, null_inet_pton>(
         "IN", "REVERSE_AAAA", "::1",
         [](Error e, SharedPtr<Message>) { REQUIRE(e == InvalidIPv6AddressError()); }, {},
-        Reactor::global(), Logger::global());
+        reactor, logger);
 }
 
 TEST_CASE("dns::query raises if the query is unsupported") {
+    SharedPtr<Reactor> reactor = Reactor::make();
+    SharedPtr<Logger> logger = Logger::make();
     query("IN", "MX", "www.neubot.org",
           [](Error e, SharedPtr<Message>) { REQUIRE(e == UnsupportedTypeError()); },
-          {{"dns/engine", "libevent"}});
+          {{"dns/engine", "libevent"}}, reactor, logger);
 }
 
 TEST_CASE("dns::query raises if the class is unsupported") {
+    SharedPtr<Reactor> reactor = Reactor::make();
+    SharedPtr<Logger> logger = Logger::make();
     query("CS", "A", "www.neubot.org",
           [](Error e, SharedPtr<Message>) { REQUIRE(e == UnsupportedClassError()); },
-          {{"dns/engine", "libevent"}});
+          {{"dns/engine", "libevent"}}, reactor, logger);
 }
 
 TEST_CASE("dns::query deals with invalid PTR name") {
+    SharedPtr<Reactor> reactor = Reactor::make();
+    SharedPtr<Logger> logger = Logger::make();
     // This should be enough to see the failure, more tests for the
     // parser for PTR addresses are in test/common/utils.cpp
     query("IN", "PTR", "xx",
           [](Error e, SharedPtr<Message>) { REQUIRE(e == InvalidNameForPTRError()); },
-          {{"dns/engine", "libevent"}});
+          {{"dns/engine", "libevent"}}, reactor, logger);
 }
 
 // Test resolve_hostname
 
 TEST_CASE("resolve_hostname works with IPv4 address") {
     SharedPtr<Reactor> reactor = Reactor::make();
+    SharedPtr<Logger> logger = Logger::make();
     reactor->run_with_initial_event([=]() {
         std::string hostname = "130.192.16.172";
         resolve_hostname(hostname, [=](ResolveHostnameResult r) {
@@ -229,12 +250,13 @@ TEST_CASE("resolve_hostname works with IPv4 address") {
             REQUIRE(r.addresses.size() == 1);
             REQUIRE(r.addresses[0] == hostname);
             reactor->stop();
-        }, {}, reactor);
+        }, {}, reactor, logger);
     });
 }
 
 TEST_CASE("resolve_hostname works with IPv6 address") {
     SharedPtr<Reactor> reactor = Reactor::make();
+    SharedPtr<Logger> logger = Logger::make();
     reactor->run_with_initial_event([=]() {
         std::string hostname = "2a00:1450:400d:807::200e";
         resolve_hostname(hostname, [=](ResolveHostnameResult r) {
@@ -242,7 +264,7 @@ TEST_CASE("resolve_hostname works with IPv6 address") {
             REQUIRE(r.addresses.size() == 1);
             REQUIRE(r.addresses[0] == hostname);
             reactor->stop();
-        }, {}, reactor);
+        }, {}, reactor, logger);
     });
 }
 
@@ -272,6 +294,7 @@ TEST_CASE("resolve_hostname works with domain") {
 
 TEST_CASE("stress resolve_hostname with invalid address and domain") {
     SharedPtr<Reactor> reactor = Reactor::make();
+    SharedPtr<Logger> logger = Logger::make();
     reactor->run_with_initial_event([=]() {
         // Pass input that is neither invalid IPvX nor valid domain
         resolve_hostname("192.1688.antani", [=](ResolveHostnameResult r) {
@@ -281,7 +304,7 @@ TEST_CASE("stress resolve_hostname with invalid address and domain") {
             REQUIRE(r.ipv6_err);
             REQUIRE(r.addresses.size() == 0);
             reactor->stop();
-        }, {}, reactor);
+        }, {}, reactor, logger);
     });
 }
 
@@ -299,6 +322,7 @@ TEST_CASE("The libevent resolver works as expected") {
     //
 
     SharedPtr<Reactor> reactor = Reactor::make();
+    SharedPtr<Logger> logger = Logger::make();
     reactor->run_with_initial_event([=]() {
         query("IN", "A", "www.neubot.org", [=](Error e, SharedPtr<Message> message) {
             REQUIRE(!e);
@@ -308,7 +332,7 @@ TEST_CASE("The libevent resolver works as expected") {
             REQUIRE(message->rtt > 0.0);
             REQUIRE(message->answers[0].ttl > 0);
             reactor->stop();
-        }, {{"dns/engine", "libevent"}}, reactor);
+        }, {{"dns/engine", "libevent"}}, reactor, logger);
     });
 
     reactor->run_with_initial_event([=]() {
@@ -321,7 +345,7 @@ TEST_CASE("The libevent resolver works as expected") {
                 REQUIRE(message->rtt > 0.0);
                 REQUIRE(message->answers[0].ttl > 0);
                 reactor->stop();
-            }, {{"dns/engine", "libevent"}}, reactor);
+            }, {{"dns/engine", "libevent"}}, reactor, logger);
     });
 
     reactor->run_with_initial_event([=]() {
@@ -334,7 +358,7 @@ TEST_CASE("The libevent resolver works as expected") {
             REQUIRE(message->rtt > 0.0);
             REQUIRE(message->answers[0].ttl > 0);
             reactor->stop();
-        }, {{"dns/engine", "libevent"}}, reactor);
+        }, {{"dns/engine", "libevent"}}, reactor, logger);
     });
 
     reactor->run_with_initial_event([=]() {
@@ -353,7 +377,7 @@ TEST_CASE("The libevent resolver works as expected") {
                   }
                   REQUIRE(found);
                   reactor->stop();
-              }, {{"dns/engine", "libevent"}}, reactor);
+              }, {{"dns/engine", "libevent"}}, reactor, logger);
     });
 
     reactor->run_with_initial_event([=]() {
@@ -366,7 +390,7 @@ TEST_CASE("The libevent resolver works as expected") {
                   REQUIRE(message->rtt > 0.0);
                   REQUIRE(message->answers[0].ttl > 0);
                   reactor->stop();
-              }, {{"dns/engine", "libevent"}}, reactor);
+              }, {{"dns/engine", "libevent"}}, reactor, logger);
     });
 
     reactor->run_with_initial_event([=]() {
@@ -380,6 +404,6 @@ TEST_CASE("The libevent resolver works as expected") {
                   REQUIRE(message->rtt > 0.0);
                   REQUIRE(message->answers[0].ttl > 0);
                   reactor->stop();
-              }, {{"dns/engine", "libevent"}}, reactor);
+              }, {{"dns/engine", "libevent"}}, reactor, logger);
     });
 }

@@ -213,7 +213,7 @@ TEST_CASE("connect_first_of works with empty vector") {
                              REQUIRE(bev == nullptr);
                              reactor->stop();
                          },
-                         {{"net/timeout", 3.14}}, reactor);
+                         {{"net/timeout", 3.14}}, reactor, Logger::make());
     });
 }
 
@@ -235,7 +235,7 @@ TEST_CASE("connect_first_of works when all connect fail") {
                 REQUIRE(bev == nullptr);
                 reactor->stop();
             },
-            {{"net/timeout", 0.00001}}, reactor);
+            {{"net/timeout", 0.00001}}, reactor, Logger::make());
     });
 }
 
@@ -258,7 +258,7 @@ TEST_CASE("connect_first_of works when a connect succeeds") {
                 ::bufferevent_free(bev);
                 reactor->stop();
             },
-            {{"net/timeout", 3.14}}, reactor);
+            {{"net/timeout", 3.14}}, reactor, Logger::make());
     });
 }
 
@@ -270,7 +270,7 @@ TEST_CASE("connect() works with valid IPv4") {
             REQUIRE(r->connected_bev != nullptr);
             ::bufferevent_free(r->connected_bev);
             reactor->stop();
-        }, {}, reactor);
+        }, {}, reactor, Logger::make());
     });
 }
 
@@ -281,7 +281,7 @@ TEST_CASE("connect() fails when port is closed or filtered") {
             REQUIRE(e);
             REQUIRE(r->connected_bev == nullptr);
             reactor->stop();
-        }, {{"net/timeout", 1.0}}, reactor);
+        }, {{"net/timeout", 1.0}}, reactor, Logger::make());
     });
 }
 
@@ -298,7 +298,7 @@ TEST_CASE("connect() fails when setting an invalid dns") {
                        {"dns/timeout", 0.001},
                        {"dns/engine", "libevent"},
                        {"dns/attempts", 1}},
-                      reactor);
+                      reactor, Logger::make());
     });
 }
 
@@ -318,7 +318,7 @@ TEST_CASE("net::connect_many() works as expected") {
                                  }
                              });
                          }
-                     }, {}, reactor);
+                     }, {}, reactor, Logger::make());
     });
 }
 
@@ -336,7 +336,7 @@ TEST_CASE("net::connect() works with a custom reactor") {
                     txp->close([&]() { reactor->stop(); });
                     ok = true;
                 },
-                {}, reactor, Logger::global());
+                {}, reactor, Logger::make());
     });
     REQUIRE(ok);
 }
@@ -351,7 +351,7 @@ TEST_CASE("net::connect() can connect to open port") {
             REQUIRE(!resolve_result.inet_pton_ipv6);
             REQUIRE(resolve_result.addresses.size() > 0);
             txp->close([=]() { reactor->stop(); });
-        }, {}, reactor);
+        }, {}, reactor, Logger::make());
     });
 }
 
@@ -369,7 +369,7 @@ TEST_CASE("net::connect() can connect to ssl port") {
                 },
                 {{"net/ssl", true},
                  {"net/ca_bundle_path", "test/fixtures/saved_ca_bundle.pem"}},
-                reactor);
+                reactor, Logger::make());
     });
 }
 
@@ -383,7 +383,7 @@ TEST_CASE("net::connect() ssl fails when presented an expired certificate") {
                 },
                 {{"net/ssl", true},
                  {"net/ca_bundle_path", "test/fixtures/saved_ca_bundle.pem"}},
-                reactor);
+                reactor, Logger::make());
     });
 }
 
@@ -398,7 +398,7 @@ TEST_CASE("net::connect() ssl fails when presented a certificate with the "
                 },
                 {{"net/ssl", true},
                  {"net/ca_bundle_path", "test/fixtures/saved_ca_bundle.pem"}},
-                reactor);
+                reactor, Logger::make());
     });
 }
 
@@ -412,7 +412,7 @@ TEST_CASE("net::connect() ssl works when using SNI") {
                 },
                 {{"net/ssl", true},
                  {"net/ca_bundle_path", "test/fixtures/saved_ca_bundle.pem"}},
-                reactor);
+                reactor, Logger::make());
     });
 }
 
@@ -429,6 +429,6 @@ TEST_CASE("net::connect() works in case of error") {
                     reactor->stop();
                 },
                 {{"net/timeout", 5.0}},
-                reactor);
+                reactor, Logger::make());
     });
 }

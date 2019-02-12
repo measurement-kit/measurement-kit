@@ -496,6 +496,6 @@ TEST_CASE("The collector client works as expected") {
                                  [=](Error err) {
                                      REQUIRE(err == NoError());
                                      reactor->stop();
-                                 }, settings, reactor);
+                                 }, settings, reactor, Logger::make());
     });
 }
