@@ -160,7 +160,7 @@ TEST_CASE(
                                             },
                                             settings,
                                             reactor,
-                                            Logger::global());
+                                            Logger::make());
     });
 }
 
@@ -197,7 +197,7 @@ TEST_CASE("Make sure that an error is passed to callback if the response does "
                 REQUIRE(error == JsonProcessingError());
                 reactor->stop();
             },
-            settings, reactor, Logger::global());
+            settings, reactor, Logger::make());
     });
 }
 
@@ -234,6 +234,6 @@ TEST_CASE("Make sure that an error is passed to callback if the response "
                 REQUIRE(error == JsonProcessingError());
                 reactor->stop();
             },
-            settings, reactor, Logger::global());
+            settings, reactor, Logger::make());
     });
 }

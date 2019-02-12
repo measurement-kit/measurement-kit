@@ -179,13 +179,13 @@ TEST_CASE("The write_entry() method works correctly") {
                                 REQUIRE(err.child_errors.size() == 1);
                                 REQUIRE(err.child_errors[0] ==
                                         ReportAlreadyClosedError());
-                            }, Logger::global());
+                            }, Logger::make());
                         });
-                    }, Logger::global());
-                }, Logger::global());
-            }, Logger::global());
+                    }, Logger::make());
+                }, Logger::make());
+            }, Logger::make());
         });
-    }, Logger::global());
+    }, Logger::make());
 }
 
 TEST_CASE("We can retry a partially successful write_entry()") {
@@ -213,8 +213,8 @@ TEST_CASE("We can retry a partially successful write_entry()") {
                 REQUIRE(err.child_errors[0].child_errors[0] ==
                         DuplicateEntrySubmitError());
                 REQUIRE(err.child_errors[1] == NoError());
-            }, Logger::global());
-        }, Logger::global());
+            }, Logger::make());
+        }, Logger::make());
     });
     REQUIRE(counted_reporter->write_count == 1);
     REQUIRE(failing_reporter->write_count == 2);

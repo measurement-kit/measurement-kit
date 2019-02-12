@@ -386,7 +386,7 @@ TEST_CASE("http::request_send() works as expected") {
                                  {"http/method", "GET"},
                                  {"http/url", "http://www.google.com/"},
                              },
-                             {}, "", Logger::global(),
+                             {}, "", Logger::make(),
                              [=](Error error, SharedPtr<Request> request) {
                                  REQUIRE((request->method == "GET"));
                                  REQUIRE((request->url.schema == "http"));
@@ -419,7 +419,7 @@ TEST_CASE("http::request_recv_response() works as expected") {
                         {"http/method", "GET"},
                         {"http/url", "http://www.google.com/"},
                     },
-                    {}, "", Logger::global(),
+                    {}, "", Logger::make(),
                     [=](Error error, SharedPtr<Request>) {
                         REQUIRE(!error);
                         request_recv_response(
@@ -704,7 +704,7 @@ TEST_CASE("http::request_send fails without url in settings") {
             [=](Error error, SharedPtr<Transport> transport) {
                 REQUIRE(!error);
                 request_send(transport, {{"http/method", "GET"}}, {}, "",
-                             Logger::global(),
+                             Logger::make(),
                              [=](Error error, SharedPtr<Request> request) {
                                  REQUIRE(!request);
                                  REQUIRE(error == MissingUrlError());
@@ -788,16 +788,16 @@ TEST_CASE("http::redirect() works as expected") {
 
 static void fail_request(Settings, Headers, std::string,
                          Callback<Error, SharedPtr<Response>> cb,
-                         SharedPtr<Reactor> = Reactor::global(),
-                         SharedPtr<Logger> = Logger::global(),
+                         SharedPtr<Reactor> = Reactor::make(),
+                         SharedPtr<Logger> = Logger::make(),
                          SharedPtr<Response> = nullptr, int = 0) {
     cb(MockedError(), SharedPtr<Response>::make());
 }
 
 static void non_200_response(Settings, Headers, std::string,
                              Callback<Error, SharedPtr<Response>> cb,
-                             SharedPtr<Reactor> = Reactor::global(),
-                             SharedPtr<Logger> = Logger::global(),
+                             SharedPtr<Reactor> = Reactor::make(),
+                             SharedPtr<Logger> = Logger::make(),
                              SharedPtr<Response> = nullptr, int = 0) {
     SharedPtr<Response> response = SharedPtr<Response>::make();
     response->status_code = 500;
@@ -807,8 +807,8 @@ static void non_200_response(Settings, Headers, std::string,
 
 static void fail_parsing(Settings, Headers, std::string,
                          Callback<Error, SharedPtr<Response>> cb,
-                         SharedPtr<Reactor> = Reactor::global(),
-                         SharedPtr<Logger> = Logger::global(),
+                         SharedPtr<Reactor> = Reactor::make(),
+                         SharedPtr<Logger> = Logger::make(),
                          SharedPtr<Response> = nullptr, int = 0) {
     SharedPtr<Response> response = SharedPtr<Response>::make();
     response->status_code = 200;
@@ -827,7 +827,7 @@ TEST_CASE("request_json_string() works as expected") {
                   REQUIRE(error == MockedError());
                     reactor->stop();
               },
-              {}, reactor, Logger::global());
+              {}, reactor, Logger::make());
         });
     }
 
@@ -840,7 +840,7 @@ TEST_CASE("request_json_string() works as expected") {
                   REQUIRE(resp->status_code != 200);
                   reactor->stop();
               },
-              {}, reactor, Logger::global());
+              {}, reactor, Logger::make());
         });
     }
 
@@ -851,7 +851,7 @@ TEST_CASE("request_json_string() works as expected") {
               [=](Error error, SharedPtr<Response>, nlohmann::json) {
                   REQUIRE(error == JsonProcessingError());
               },
-              {}, reactor, Logger::global());
+              {}, reactor, Logger::make());
         });
     }
 }

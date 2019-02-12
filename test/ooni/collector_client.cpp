@@ -52,7 +52,7 @@ class MockConnection : public Emitter, public NonCopyable, public NonMovable {
     Callback<> close_cb;
     SharedPtr<Transport> self;
 
-    MockConnection(SharedPtr<Reactor> reactor) : Emitter(reactor, Logger::global()) {}
+    MockConnection(SharedPtr<Reactor> reactor) : Emitter(reactor, Logger::make()) {}
 };
 
 void MockConnection::close(Callback<> cb) {
@@ -81,7 +81,7 @@ TEST_CASE("collector:post deals with missing URL") {
                              REQUIRE(err == MissingCollectorBaseUrlError());
                              reactor->stop();
                          },
-                         {}, reactor, Logger::global());
+                         {}, reactor, Logger::make());
     });
 }
 
@@ -103,7 +103,7 @@ TEST_CASE("collector::post deals with network error") {
                                    REQUIRE(r == nullptr);
                                    reactor->stop();
                                },
-                               SETTINGS, reactor, Logger::global());
+                               SETTINGS, reactor, Logger::make());
     });
 }
 
@@ -125,7 +125,7 @@ TEST_CASE("collector::post deals with unexpected response") {
             REQUIRE(r == nullptr);
             reactor->stop();
         },
-        SETTINGS, reactor, Logger::global());
+        SETTINGS, reactor, Logger::make());
     });
 }
 
@@ -146,7 +146,7 @@ TEST_CASE("collector::post deals with empty response") {
                                     REQUIRE(r == nullptr);
                                     reactor->stop();
                                 },
-                                SETTINGS, reactor, Logger::global());
+                                SETTINGS, reactor, Logger::make());
     });
 }
 
@@ -169,7 +169,7 @@ TEST_CASE("collector::post deals with invalid json") {
                                            reactor->stop();
                                        },
                                        SETTINGS, reactor,
-                                       Logger::global());
+                                       Logger::make());
     });
 }
 
@@ -181,7 +181,7 @@ TEST_CASE("collector::connect deals with missing URL") {
                                 REQUIRE(err == MissingCollectorBaseUrlError());
                                 reactor->stop();
                             },
-                            reactor, Logger::global());
+                            reactor, Logger::make());
     });
 }
 
@@ -250,7 +250,7 @@ TEST_CASE("collector::create_report deals with entry with missing key") {
             REQUIRE(s == "");
             reactor->stop();
         },
-        {}, reactor, Logger::global());
+        {}, reactor, Logger::make());
     });
 }
 
@@ -264,7 +264,7 @@ TEST_CASE("collector::create_report deals with entry with invalid value") {
             REQUIRE(s == "");
             reactor->stop();
         },
-        {}, reactor, Logger::global());
+        {}, reactor, Logger::make());
     });
 }
 
@@ -278,7 +278,7 @@ TEST_CASE("collector::create_report deals with POST error") {
                                             reactor->stop();
                                         },
                                         {}, reactor,
-                                        Logger::global());
+                                        Logger::make());
     });
 }
 
@@ -298,7 +298,7 @@ TEST_CASE("collector::create_report deals with wrong JSON type") {
             REQUIRE(s == "");
             reactor->stop();
         },
-        {}, reactor, Logger::global());
+        {}, reactor, Logger::make());
     });
 }
 
@@ -319,7 +319,7 @@ TEST_CASE("collector::create_report deals with missing report_id") {
             REQUIRE(s == "");
             reactor->stop();
         },
-        {}, reactor, Logger::global());
+        {}, reactor, Logger::make());
     });
 }
 
@@ -333,13 +333,13 @@ TEST_CASE("collector::update_report deals with entry with missing key") {
             REQUIRE(err == MissingMandatoryKeyError());
             reactor->stop();
         },
-        {}, reactor, Logger::global());
+        {}, reactor, Logger::make());
     });
 }
 
 TEST_CASE("collector::get_next_entry() works correctly at EOF") {
     SharedPtr<std::istream> input(new std::istringstream(""));
-    ErrorOr<nlohmann::json> entry = collector::get_next_entry(input, Logger::global());
+    ErrorOr<nlohmann::json> entry = collector::get_next_entry(input, Logger::make());
     REQUIRE(!entry);
     REQUIRE(entry.as_error() == FileEofError());
 }
@@ -347,21 +347,21 @@ TEST_CASE("collector::get_next_entry() works correctly at EOF") {
 TEST_CASE("collector::get_next_entry() works correctly on I/O error") {
     SharedPtr<std::istream> input(new std::istringstream(""));
     input->setstate(input->badbit);
-    ErrorOr<nlohmann::json> entry = collector::get_next_entry(input, Logger::global());
+    ErrorOr<nlohmann::json> entry = collector::get_next_entry(input, Logger::make());
     REQUIRE(!entry);
     REQUIRE(entry.as_error() == FileIoError());
 }
 
 TEST_CASE("collector::get_next_entry() works correctly on invalid JSON") {
     SharedPtr<std::istream> input(new std::istringstream("{\n"));
-    ErrorOr<nlohmann::json> entry = collector::get_next_entry(input, Logger::global());
+    ErrorOr<nlohmann::json> entry = collector::get_next_entry(input, Logger::make());
     REQUIRE(!entry);
     REQUIRE(entry.as_error() == JsonProcessingError());
 }
 
 TEST_CASE("collector::get_next_entry() works correctly on incomplete line") {
     SharedPtr<std::istream> input(new std::istringstream("{}"));
-    ErrorOr<nlohmann::json> entry = collector::get_next_entry(input, Logger::global());
+    ErrorOr<nlohmann::json> entry = collector::get_next_entry(input, Logger::make());
     REQUIRE(!entry);
     REQUIRE(entry.as_error() == FileEofError());
 }
@@ -380,7 +380,7 @@ TEST_CASE("update_and_fetch_next() deals with update_report error") {
                 REQUIRE(err == MockedError());
                 reactor->stop();
             },
-            {}, reactor, Logger::global());
+            {}, reactor, Logger::make());
     });
 }
 
@@ -402,7 +402,7 @@ TEST_CASE("update_and_fetch_next() deals with get_next_entry error") {
                 REQUIRE(err == MockedError());
                 reactor->stop();
             },
-            {}, reactor, Logger::global());
+            {}, reactor, Logger::make());
     });
 }
 
@@ -415,7 +415,7 @@ TEST_CASE("submit_report() deals with invalid file") {
                 REQUIRE(err == CannotOpenReportError());
                 reactor->stop();
             },
-            {}, reactor, Logger::global());
+            {}, reactor, Logger::make());
     });
 }
 
@@ -428,7 +428,7 @@ TEST_CASE("submit_report() deals with get_next_entry error") {
                                                 reactor->stop();
                                             },
                                             {}, reactor,
-                                            Logger::global());
+                                            Logger::make());
     });
 }
 
@@ -450,7 +450,7 @@ TEST_CASE("submit_report() deals with collector_connect error") {
                 REQUIRE(err == MockedError());
                 reactor->stop();
             },
-            {}, reactor, Logger::global());
+            {}, reactor, Logger::make());
     });
 }
 
@@ -473,7 +473,7 @@ TEST_CASE("submit_report() deals with collector_create_report error") {
                 REQUIRE(err == MockedError());
                 reactor->stop();
             },
-            {}, reactor, Logger::global());
+            {}, reactor, Logger::make());
     });
 }
 

@@ -13,14 +13,14 @@ using namespace mk::net;
 
 TEST_CASE("The record-received-data feature works") {
     SECTION("By default recording is disabled") {
-        Emitter emitter(Reactor::global(), Logger::global());
+        Emitter emitter(Reactor::make(), Logger::make());
         Transport &transport = emitter;
         transport.emit_data(Buffer("foobar"));
         REQUIRE(transport.received_data().length() == 0);
     }
 
     SECTION("Recording works correctly when enabled") {
-        Emitter emitter(Reactor::global(), Logger::global());
+        Emitter emitter(Reactor::make(), Logger::make());
         Transport &transport = emitter;
         transport.record_received_data();
         transport.emit_data(Buffer("foobar"));
@@ -28,7 +28,7 @@ TEST_CASE("The record-received-data feature works") {
     }
 
     SECTION("Recording can also be disabled") {
-        Emitter emitter(Reactor::global(), Logger::global());
+        Emitter emitter(Reactor::make(), Logger::make());
         Transport &transport = emitter;
         transport.record_received_data();
         transport.emit_data(Buffer("foobar"));
@@ -38,7 +38,7 @@ TEST_CASE("The record-received-data feature works") {
     }
 
     SECTION("Recording input data does not modify input data") {
-        Emitter emitter(Reactor::global(), Logger::global());
+        Emitter emitter(Reactor::make(), Logger::make());
         Transport &transport = emitter;
         transport.record_received_data();
         transport.on_data([](Buffer data) { REQUIRE(data.read() == "foo"); });
@@ -60,14 +60,14 @@ Helper::~Helper() {}
 
 TEST_CASE("The record-sent-data feature works") {
     SECTION("By default recording is disabled") {
-        Emitter emitter(Reactor::global(), Logger::global());
+        Emitter emitter(Reactor::make(), Logger::make());
         Transport &transport = emitter;
         transport.write("foobar");
         REQUIRE(transport.sent_data().length() == 0);
     }
 
     SECTION("Recording works correctly when enabled") {
-        Emitter emitter(Reactor::global(), Logger::global());
+        Emitter emitter(Reactor::make(), Logger::make());
         Transport &transport = emitter;
         transport.record_sent_data();
         transport.write("foobar");
@@ -75,7 +75,7 @@ TEST_CASE("The record-sent-data feature works") {
     }
 
     SECTION("Recording can also be disabled") {
-        Emitter emitter(Reactor::global(), Logger::global());
+        Emitter emitter(Reactor::make(), Logger::make());
         Transport &transport = emitter;
         transport.record_sent_data();
         transport.write("foobar");
@@ -85,7 +85,7 @@ TEST_CASE("The record-sent-data feature works") {
     }
 
     SECTION("Recording output data does not modify output data") {
-        Helper emitter(Reactor::global(), Logger::global());
+        Helper emitter(Reactor::make(), Logger::make());
         Transport &transport = emitter;
         transport.record_sent_data();
         transport.write("foo");

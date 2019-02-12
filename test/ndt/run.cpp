@@ -29,7 +29,7 @@ TEST_CASE("We deal with connect error") {
     run_with_specific_server_impl<failure, die, die, die, die, die, die, die,
                                   die, protocol::disconnect_and_callback>(
         entry, "127.0.0.1", 3001, [](Error err) { REQUIRE(err == MockedError()); }, {},
-        Reactor::global(), Logger::global());
+        Reactor::make(), Logger::make());
 }
 
 TEST_CASE("We deal with send-login error") {
@@ -37,7 +37,7 @@ TEST_CASE("We deal with send-login error") {
     run_with_specific_server_impl<success, failure, die, die, die, die, die,
                                   die, die, protocol::disconnect_and_callback>(
         entry, "127.0.0.1", 3001, [](Error err) { REQUIRE(err == MockedError()); }, {},
-        Reactor::global(), Logger::global());
+        Reactor::make(), Logger::make());
 }
 
 TEST_CASE("We deal with recv-and-ignore-kickoff error") {
@@ -45,7 +45,7 @@ TEST_CASE("We deal with recv-and-ignore-kickoff error") {
     run_with_specific_server_impl<success, success, failure, die, die, die, die,
                                   die, die, protocol::disconnect_and_callback>(
         entry, "127.0.0.1", 3001, [](Error err) { REQUIRE(err == MockedError()); }, {},
-        Reactor::global(), Logger::global());
+        Reactor::make(), Logger::make());
 }
 
 TEST_CASE("We deal with wait-in-queue error") {
@@ -54,7 +54,7 @@ TEST_CASE("We deal with wait-in-queue error") {
                                   die, die, die,
                                   protocol::disconnect_and_callback>(
         entry, "127.0.0.1", 3001, [](Error err) { REQUIRE(err == MockedError()); }, {},
-        Reactor::global(), Logger::global());
+        Reactor::make(), Logger::make());
 }
 
 TEST_CASE("We deal with recv-version error") {
@@ -63,7 +63,7 @@ TEST_CASE("We deal with recv-version error") {
                                   die, die, die, die,
                                   protocol::disconnect_and_callback>(
         entry, "127.0.0.1", 3001, [](Error err) { REQUIRE(err == MockedError()); }, {},
-        Reactor::global(), Logger::global());
+        Reactor::make(), Logger::make());
 }
 
 TEST_CASE("We deal with recv-tests-id error") {
@@ -72,7 +72,7 @@ TEST_CASE("We deal with recv-tests-id error") {
                                   failure, die, die, die,
                                   protocol::disconnect_and_callback>(
         entry, "127.0.0.1", 3001, [](Error err) { REQUIRE(err == MockedError()); }, {},
-        Reactor::global(), Logger::global());
+        Reactor::make(), Logger::make());
 }
 
 TEST_CASE("We deal with run-tests error") {
@@ -81,7 +81,7 @@ TEST_CASE("We deal with run-tests error") {
                                   success, failure, die, die,
                                   protocol::disconnect_and_callback>(
         entry, "127.0.0.1", 3001, [](Error err) { REQUIRE(err == MockedError()); }, {},
-        Reactor::global(), Logger::global());
+        Reactor::make(), Logger::make());
 }
 
 TEST_CASE("We deal with recv-results-and-logout error") {

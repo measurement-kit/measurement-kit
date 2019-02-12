@@ -49,7 +49,8 @@ TEST_CASE("ResponseParserNg deals with an UPGRADE request") {
 
 TEST_CASE("ResponseParserNg works as expected") {
     std::string data;
-    ResponseParserNg parser{Logger::make()};
+    auto logger = Logger::make();
+    ResponseParserNg parser{logger};
     std::string body;
 
     SECTION("With content-length response") {
@@ -77,7 +78,7 @@ TEST_CASE("ResponseParserNg works as expected") {
         parser.on_end([&body]() { REQUIRE(body == "1234567"); });
 
         for (auto c : data) {
-            mk::debug("%c\n", c);
+            logger->debug("%c\n", c);
             parser.feed(c);
         }
     }
@@ -111,7 +112,7 @@ TEST_CASE("ResponseParserNg works as expected") {
         parser.on_end([&body]() { REQUIRE(body == "abcabcabc"); });
 
         for (auto c : data) {
-            mk::debug("%c\n", c);
+            logger->debug("%c\n", c);
             parser.feed(c);
         }
     }
@@ -119,7 +120,8 @@ TEST_CASE("ResponseParserNg works as expected") {
 
 TEST_CASE("ResponseParserNg stops after first message") {
     std::string data;
-    ResponseParserNg parser{Logger::make()};
+    auto logger = Logger::make();
+    ResponseParserNg parser{logger};
     std::string body;
 
     //
@@ -151,7 +153,7 @@ TEST_CASE("ResponseParserNg stops after first message") {
     parser.on_end([&body]() { REQUIRE(body == "1234567"); });
 
     for (auto c : data) {
-        mk::debug("%c\n", c);
+        logger->debug("%c\n", c);
         parser.feed(c);
     }
 

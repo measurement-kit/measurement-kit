@@ -21,16 +21,16 @@ TEST_CASE("coroutine() is robust to connect error") {
     test_c2s::coroutine_impl<fail>(
         entry, "www.google.com", 3301, 10.0,
         [](Error err, Continuation<Error>) { REQUIRE(err == MockedError()); },
-        2.0, {}, Reactor::global(), Logger::global());
+        2.0, {}, Reactor::make(), Logger::make());
 }
 
 static void fail(SharedPtr<Context>, Callback<Error, uint8_t, std::string> cb,
-                 SharedPtr<Reactor> = Reactor::global()) {
+                 SharedPtr<Reactor> = Reactor::make()) {
     cb(MockedError(), 0, "");
 }
 
 static void invalid(SharedPtr<Context>, Callback<Error, uint8_t, std::string> cb,
-                    SharedPtr<Reactor> = Reactor::global()) {
+                    SharedPtr<Reactor> = Reactor::make()) {
     cb(NoError(), MSG_ERROR, "");
 }
 
@@ -48,7 +48,7 @@ TEST_CASE("run() deals with receiving message different from PREPARE") {
 
 static void invalid_port(SharedPtr<Context>,
                          Callback<Error, uint8_t, std::string> cb,
-                         SharedPtr<Reactor> = Reactor::global()) {
+                         SharedPtr<Reactor> = Reactor::make()) {
     cb(NoError(), TEST_PREPARE, "foobar");
 }
 
@@ -59,7 +59,7 @@ TEST_CASE("run() deals with receiving invalid port") {
 }
 
 static void too_large(SharedPtr<Context>, Callback<Error, uint8_t, std::string> cb,
-                      SharedPtr<Reactor> = Reactor::global()) {
+                      SharedPtr<Reactor> = Reactor::make()) {
     cb(NoError(), TEST_PREPARE, "65536");
 }
 
@@ -70,7 +70,7 @@ TEST_CASE("run() deals with receiving too large port") {
 }
 
 static void too_small(SharedPtr<Context>, Callback<Error, uint8_t, std::string> cb,
-                      SharedPtr<Reactor> = Reactor::global()) {
+                      SharedPtr<Reactor> = Reactor::make()) {
     cb(NoError(), TEST_PREPARE, "-1");
 }
 
@@ -82,7 +82,7 @@ TEST_CASE("run() deals with receiving too small port") {
 
 static void test_prepare(SharedPtr<Context>,
                          Callback<Error, uint8_t, std::string> cb,
-                         SharedPtr<Reactor> = Reactor::global()) {
+                         SharedPtr<Reactor> = Reactor::make()) {
     cb(NoError(), TEST_PREPARE, "3010");
 }
 
@@ -120,7 +120,7 @@ TEST_CASE("run() deals with unexpected message instead of TEST_START") {
 }
 
 static void test_start(SharedPtr<Context>, Callback<Error, uint8_t, std::string> cb,
-                       SharedPtr<Reactor> = Reactor::global()) {
+                       SharedPtr<Reactor> = Reactor::make()) {
     cb(NoError(), TEST_START, "");
 }
 
@@ -149,7 +149,7 @@ TEST_CASE("run() deals with unexpected message instead of TEST_MSG") {
 }
 
 static void test_msg(SharedPtr<Context>, Callback<Error, uint8_t, std::string> cb,
-                     SharedPtr<Reactor> = Reactor::global()) {
+                     SharedPtr<Reactor> = Reactor::make()) {
     cb(NoError(), TEST_MSG, "");
 }
 

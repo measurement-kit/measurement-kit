@@ -29,7 +29,7 @@ TEST_CASE("compare_headers_response works") {
         ooni::compare_headers_response({ {"foo", "bar"} },
                                        response,
                                        entry,
-                                        Logger::global());
+                                        Logger::make());
         REQUIRE((*entry)["tampering"]["total"] == true);
         REQUIRE((*entry)["tampering"]["request_line_capitalization"] == true);
     }
@@ -38,7 +38,7 @@ TEST_CASE("compare_headers_response works") {
         ooni::compare_headers_response({ {"foo", "bar"} },
                                        response,
                                        entry,
-                                       Logger::global());
+                                       Logger::make());
         REQUIRE((*entry)["tampering"]["total"] == true);
         REQUIRE((*entry)["tampering"]["request_line_capitalization"] == true);
     }
@@ -47,7 +47,7 @@ TEST_CASE("compare_headers_response works") {
         ooni::compare_headers_response({ {"foo", "bar"} },
                                        response,
                                        entry,
-                                       Logger::global());
+                                       Logger::make());
         REQUIRE((*entry)["tampering"]["total"].get<bool>() == false);
         REQUIRE((*entry)["tampering"]["request_line_capitalization"] == true);
     }
@@ -56,7 +56,7 @@ TEST_CASE("compare_headers_response works") {
         ooni::compare_headers_response({ {"foo", "bar"} },
                                        response,
                                        entry,
-                                       Logger::global());
+                                       Logger::make());
         REQUIRE((*entry)["tampering"]["total"].get<bool>() == false);
         REQUIRE((*entry)["tampering"]["request_line_capitalization"] == true);
     }
@@ -65,7 +65,7 @@ TEST_CASE("compare_headers_response works") {
         ooni::compare_headers_response({ {"foo", "bar"} },
                                        response,
                                        entry,
-                                       Logger::global());
+                                       Logger::make());
         REQUIRE((*entry)["tampering"]["total"].get<bool>() == false);
         REQUIRE((*entry)["tampering"]["request_line_capitalization"].get<bool>() == false);
     }
@@ -75,7 +75,7 @@ TEST_CASE("compare_headers_response works") {
         ooni::compare_headers_response({ {"foo", "bar"} },
                                        response,
                                        entry,
-                                       Logger::global());
+                                       Logger::make());
         REQUIRE((*entry)["tampering"]["header_name_diff"] == std::set<std::string>{"foo2"});
         REQUIRE((*entry)["tampering"]["header_field_name"] == true);
     }
@@ -84,7 +84,7 @@ TEST_CASE("compare_headers_response works") {
         ooni::compare_headers_response({ {"foo", "bar"}, {"foo2", "bar2"} },
                                        response,
                                        entry,
-                                       Logger::global());
+                                       Logger::make());
         REQUIRE((*entry)["tampering"]["header_name_diff"] == std::set<std::string>{"foo"});
         REQUIRE((*entry)["tampering"]["header_field_name"] == true);
     }
@@ -93,7 +93,7 @@ TEST_CASE("compare_headers_response works") {
         ooni::compare_headers_response({ {"foo", "bar"} },
                                        response,
                                        entry,
-                                       Logger::global());
+                                       Logger::make());
         REQUIRE((*entry)["tampering"]["header_name_diff"] == std::set<std::string>{});
         REQUIRE((*entry)["tampering"]["header_field_name"].get<bool>() == false);
     }

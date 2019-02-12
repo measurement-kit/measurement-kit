@@ -48,7 +48,7 @@ TEST_CASE("send_extended_login() deals with write error") {
 }
 
 static void fail(SharedPtr<Transport>, SharedPtr<Buffer>, size_t, Callback<Error> cb,
-                 SharedPtr<Reactor> = Reactor::global()) {
+                 SharedPtr<Reactor> = Reactor::make()) {
     cb(MockedError());
 }
 
@@ -59,7 +59,7 @@ TEST_CASE("recv_and_ignore_kickoff() deals with readn() error") {
 }
 
 static void invalid(SharedPtr<Transport>, SharedPtr<Buffer> buff, size_t n,
-                    Callback<Error> cb, SharedPtr<Reactor> = Reactor::global()) {
+                    Callback<Error> cb, SharedPtr<Reactor> = Reactor::make()) {
     std::string s(n, 'a');
     buff->write(s);
     cb(NoError());
@@ -72,7 +72,7 @@ TEST_CASE("recv_and_ignore_kickoff() deals with invalid kickoff message") {
 }
 
 static void fail(SharedPtr<Context>, Callback<Error, uint8_t, std::string> cb,
-                 SharedPtr<Reactor> = Reactor::global()) {
+                 SharedPtr<Reactor> = Reactor::make()) {
     cb(MockedError(), 0, "");
 }
 
@@ -83,7 +83,7 @@ TEST_CASE("wait_in_queue() deals with read() error") {
 }
 
 static void unexpected(SharedPtr<Context>, Callback<Error, uint8_t, std::string> cb,
-                       SharedPtr<Reactor> = Reactor::global()) {
+                       SharedPtr<Reactor> = Reactor::make()) {
     cb(NoError(), MSG_ERROR, "");
 }
 
@@ -94,7 +94,7 @@ TEST_CASE("wait_in_queue() deals with unexpected message error") {
 }
 
 static void bad_time(SharedPtr<Context>, Callback<Error, uint8_t, std::string> cb,
-                     SharedPtr<Reactor> = Reactor::global()) {
+                     SharedPtr<Reactor> = Reactor::make()) {
     cb(NoError(), SRV_QUEUE, "xo");
 }
 
@@ -109,7 +109,7 @@ static void call_soon_not_called(Callback<> &&, SharedPtr<Reactor>) {
 }
 
 static void s_fault(SharedPtr<Context>, Callback<Error, uint8_t, std::string> cb,
-                    SharedPtr<Reactor> = Reactor::global()) {
+                    SharedPtr<Reactor> = Reactor::make()) {
     cb(NoError(), SRV_QUEUE, "9977" /* SRV_QUEUE_SERVER_FAULT */);
 }
 
@@ -123,7 +123,7 @@ TEST_CASE("wait_in_queue() deals with server-fault wait time") {
 }
 
 static void s_busy(SharedPtr<Context>, Callback<Error, uint8_t, std::string> cb,
-                   SharedPtr<Reactor> = Reactor::global()) {
+                   SharedPtr<Reactor> = Reactor::make()) {
     cb(NoError(), SRV_QUEUE, "9987" /* SRV_QUEUE_SERVER_BUSY */);
 }
 
@@ -137,7 +137,7 @@ TEST_CASE("wait_in_queue() deals with server-busy wait time") {
 }
 
 static void s_busy60s(SharedPtr<Context>, Callback<Error, uint8_t, std::string> cb,
-                      SharedPtr<Reactor> = Reactor::global()) {
+                      SharedPtr<Reactor> = Reactor::make()) {
     cb(NoError(), SRV_QUEUE, "9999" /* SRV_QUEUE_SERVER_BUSY_60s */);
 }
 
@@ -157,7 +157,7 @@ static void call_soon_called(Callback<> &&, SharedPtr<Reactor>) {
 }
 
 static void heartbeat(SharedPtr<Context>, Callback<Error, uint8_t, std::string> cb,
-                      SharedPtr<Reactor> = Reactor::global()) {
+                      SharedPtr<Reactor> = Reactor::make()) {
     cb(NoError(), SRV_QUEUE, "9990" /* SRV_QUEUE_HEARTBEAT */);
 }
 
@@ -198,7 +198,7 @@ TEST_CASE("wait_in_queue() deals with format_msg_waiting_error") {
 }
 
 static void nonzero(SharedPtr<Context>, Callback<Error, uint8_t, std::string> cb,
-                    SharedPtr<Reactor> = Reactor::global()) {
+                    SharedPtr<Reactor> = Reactor::make()) {
     cb(NoError(), SRV_QUEUE, "1");
 }
 
@@ -215,7 +215,7 @@ TEST_CASE("wait_in_queue() deals with nonzero wait time") {
 
 static void queued_then_whitelisted(SharedPtr<Context>,
         Callback<Error, uint8_t, std::string> cb,
-        SharedPtr<Reactor> = Reactor::global()) {
+        SharedPtr<Reactor> = Reactor::make()) {
     static int state = 2;
     REQUIRE(state >= 0);
     cb(NoError(), SRV_QUEUE, std::to_string(state).c_str());
@@ -298,49 +298,49 @@ TEST_CASE("recv_results_and_logout() deals with unexpected message error") {
 }
 
 static void eof_error(SharedPtr<Transport>, SharedPtr<Buffer>, Callback<Error> cb,
-                      SharedPtr<Reactor> = Reactor::global()) {
+                      SharedPtr<Reactor> = Reactor::make()) {
     cb(EofError());
 }
 
 TEST_CASE("wait_close() deals with EofError") {
     SharedPtr<Context> ctx(new Context);
-    ctx->txp.reset(new Emitter(Reactor::global(), Logger::global()));
+    ctx->txp.reset(new Emitter(Reactor::make(), Logger::make()));
     protocol::wait_close_impl<eof_error>(
         ctx, [](Error err) { REQUIRE(err == NoError()); });
 }
 
 static void timeout_error(SharedPtr<Transport>, SharedPtr<Buffer>, Callback<Error> cb,
-                          SharedPtr<Reactor> = Reactor::global()) {
+                          SharedPtr<Reactor> = Reactor::make()) {
     cb(TimeoutError());
 }
 
 TEST_CASE("wait_close() deals with TimeoutError") {
     SharedPtr<Context> ctx(new Context);
-    ctx->txp.reset(new Emitter(Reactor::global(), Logger::global()));
+    ctx->txp.reset(new Emitter(Reactor::make(), Logger::make()));
     protocol::wait_close_impl<timeout_error>(
         ctx, [](Error err) { REQUIRE(err == NoError()); });
 }
 
 static void mocked_error(SharedPtr<Transport>, SharedPtr<Buffer>, Callback<Error> cb,
-                         SharedPtr<Reactor> = Reactor::global()) {
+                         SharedPtr<Reactor> = Reactor::make()) {
     cb(MockedError());
 }
 
 TEST_CASE("wait_close() deals with an error") {
     SharedPtr<Context> ctx(new Context);
-    ctx->txp.reset(new Emitter(Reactor::global(), Logger::global()));
+    ctx->txp.reset(new Emitter(Reactor::make(), Logger::make()));
     protocol::wait_close_impl<mocked_error>(
         ctx, [](Error err) { REQUIRE(err == WaitingCloseError()); });
 }
 
 static void no_error(SharedPtr<Transport>, SharedPtr<Buffer>, Callback<Error> cb,
-                     SharedPtr<Reactor> = Reactor::global()) {
+                     SharedPtr<Reactor> = Reactor::make()) {
     cb(NoError());
 }
 
 TEST_CASE("wait_close() deals with a extra data") {
     SharedPtr<Context> ctx(new Context);
-    ctx->txp.reset(new Emitter(Reactor::global(), Logger::global()));
+    ctx->txp.reset(new Emitter(Reactor::make(), Logger::make()));
     protocol::wait_close_impl<no_error>(
         ctx, [](Error err) { REQUIRE(err == DataAfterLogoutError()); });
 }
@@ -355,7 +355,7 @@ TEST_CASE("disconnect_and_callback_impl() without transport") {
 // To increase coverage
 TEST_CASE("disconnect_and_callback_impl() with transport") {
     SharedPtr<Context> ctx(new Context);
-    ctx->txp.reset(new Emitter(Reactor::global(), Logger::global()));
+    ctx->txp.reset(new Emitter(Reactor::make(), Logger::make()));
     ctx->callback = [](Error e) { REQUIRE(e == MockedError()); };
     protocol::disconnect_and_callback_impl(ctx, MockedError());
 }
