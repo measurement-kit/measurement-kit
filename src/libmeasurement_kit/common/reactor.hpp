@@ -44,9 +44,6 @@ class Reactor {
     /// to be thread safe _and_, on Unix, we ignore SIGPIPE.
     static SharedPtr<Reactor> make();
 
-    /// `global()` returns the global instance of the default Reactor.
-    static SharedPtr<Reactor> global();
-
     /// `~Reactor()` destroys any allocated resources.
     virtual ~Reactor();
 
