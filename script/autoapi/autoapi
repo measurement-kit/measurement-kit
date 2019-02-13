@@ -21,10 +21,6 @@ class Attribute(object):
             "int64_t": "0",
             "std::string": json.dumps(""),
         }.get(cxx_type, "{}")
-        # Casting from/to JSON is required for booleans because the FFI
-        # implementation uses integers instead of booleans.
-        self.cxx_cast_to_json = "(int64_t)" if cxx_type == "bool" else ""
-        self.cxx_cast_from_json = "(bool)" if cxx_type == "bool" else ""
         # We need to know the JSON type to tell our JSON library what is
         # the expected type of specific settings or options.
         self.json_type = {
@@ -40,12 +36,9 @@ class Attribute(object):
 class Setting(Attribute):
     """ Attribute of the Setting class. """
 
-    def __init__(self, cxx_type, key, value=None, mandatory=False,
-                 internal=False, tag=None):
+    def __init__(self, cxx_type, key, value=None, mandatory=False):
         Attribute.__init__(self, cxx_type, key, value)
         self.mandatory = mandatory
-        self.internal = internal
-        self.tag = tag if tag is not None else "common"
 
 class Event(object):
     """ Event emitted by FFI API while running tests. """
@@ -58,9 +51,8 @@ class Event(object):
 class Nettest(object):
     """ Network test runnable using the FFI API. """
 
-    def __init__(self, snake_case_name, tags, *attributes):
+    def __init__(self, snake_case_name, *attributes):
         self.snake_case_name = snake_case_name
-        self.tags = tags if tags is not None else list()
         self.name = "".join([e.capitalize() for e in snake_case_name.replace(".", "_").split("_")])
         self.attributes = list(attributes)
 
@@ -165,22 +157,19 @@ def main():
 
     settings = [Setting("std::map<std::string, std::string>", "annotations"),
 
-                Setting("std::vector<std::string>", "disabled_events",
-                        internal=True),
+                Setting("std::vector<std::string>", "disabled_events"),
 
-                Setting("std::vector<std::string>", "inputs",
-                        tag="needs_input"),
+                Setting("std::vector<std::string>", "inputs"),
 
-                Setting("std::vector<std::string>", "input_filepaths",
-                        tag="needs_input"),
+                Setting("std::vector<std::string>", "input_filepaths"),
 
                 Setting("std::string", "log_filepath"),
 
                 Setting("std::string", "log_level", "log_level_err"),
 
-                Setting("std::string", "name", mandatory=True, internal=True),
+                Setting("std::string", "name", mandatory=True),
 
-                Setting("Options", "options", internal=True),
+                Setting("Options", "options"),
 
                 Setting("std::string", "output_filepath")]
 
@@ -219,19 +208,19 @@ def main():
                Attribute("std::string", "software_name"),
                Attribute("std::string", "software_version")]
 
-    nettests = [Nettest("captive_portal", None),
-                Nettest("dash", ["performance"]),
-                Nettest("dns_injection", ["needs_input"]),
-                Nettest("facebook_messenger", None),
-                Nettest("http_header_field_manipulation", None),
-                Nettest("http_invalid_request_line", None),
-                Nettest("meek_fronted_requests", ["needs_input"]),
-                Nettest("multi_ndt", ["performance"]),
-                Nettest("ndt", ["performance"]),
-                Nettest("tcp_connect", ["needs_input"]),
-                Nettest("telegram", None),
-                Nettest("web_connectivity", ["needs_input", "websites"]),
-                Nettest("whatsapp", None,
+    nettests = [Nettest("captive_portal"),
+                Nettest("dash"),
+                Nettest("dns_injection"),
+                Nettest("facebook_messenger"),
+                Nettest("http_header_field_manipulation"),
+                Nettest("http_invalid_request_line"),
+                Nettest("meek_fronted_requests"),
+                Nettest("multi_ndt"),
+                Nettest("ndt"),
+                Nettest("tcp_connect"),
+                Nettest("telegram"),
+                Nettest("web_connectivity"),
+                Nettest("whatsapp",
                         Attribute("bool", "all_endpoints", "false"))]
 
     with open("./script/autoapi/nettests.hpp.j2", "r") as sourcefp:
