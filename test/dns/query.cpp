@@ -215,17 +215,21 @@ TEST_CASE("dns::query deals with inet_pton returning 0") {
 TEST_CASE("dns::query raises if the query is unsupported") {
     SharedPtr<Reactor> reactor = Reactor::make();
     SharedPtr<Logger> logger = Logger::make();
-    query("IN", "MX", "www.neubot.org",
-          [](Error e, SharedPtr<Message>) { REQUIRE(e == UnsupportedTypeError()); },
-          {{"dns/engine", "libevent"}}, reactor, logger);
+    reactor->run_with_initial_event([&]() {
+        query("IN", "MX", "www.neubot.org",
+              [](Error e, SharedPtr<Message>) { REQUIRE(e == UnsupportedTypeError()); },
+              {{"dns/engine", "libevent"}}, reactor, logger);
+    });
 }
 
 TEST_CASE("dns::query raises if the class is unsupported") {
     SharedPtr<Reactor> reactor = Reactor::make();
     SharedPtr<Logger> logger = Logger::make();
-    query("CS", "A", "www.neubot.org",
-          [](Error e, SharedPtr<Message>) { REQUIRE(e == UnsupportedClassError()); },
-          {{"dns/engine", "libevent"}}, reactor, logger);
+    reactor->run_with_initial_event([&]() {
+        query("CS", "A", "www.neubot.org",
+              [](Error e, SharedPtr<Message>) { REQUIRE(e == UnsupportedClassError()); },
+              {{"dns/engine", "libevent"}}, reactor, logger);
+    });
 }
 
 TEST_CASE("dns::query deals with invalid PTR name") {
@@ -233,9 +237,11 @@ TEST_CASE("dns::query deals with invalid PTR name") {
     SharedPtr<Logger> logger = Logger::make();
     // This should be enough to see the failure, more tests for the
     // parser for PTR addresses are in test/common/utils.cpp
-    query("IN", "PTR", "xx",
-          [](Error e, SharedPtr<Message>) { REQUIRE(e == InvalidNameForPTRError()); },
-          {{"dns/engine", "libevent"}}, reactor, logger);
+    reactor->run_with_initial_event([&]() {
+        query("IN", "PTR", "xx",
+              [](Error e, SharedPtr<Message>) { REQUIRE(e == InvalidNameForPTRError()); },
+              {{"dns/engine", "libevent"}}, reactor, logger);
+    });
 }
 
 // Test resolve_hostname
