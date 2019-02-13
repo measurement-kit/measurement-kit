@@ -224,11 +224,10 @@ static void queued_then_whitelisted(SharedPtr<Context>,
 
 TEST_CASE("wait_in_queue() reschedules itself until we are white listed") {
     SharedPtr<Context> ctx(new Context);
-    SharedPtr<Reactor> reactor = Reactor::make();
-    reactor->run_with_initial_event([=]() {
+    ctx->reactor->run_with_initial_event([=]() {
         protocol::wait_in_queue_impl<queued_then_whitelisted>(ctx, [=](Error e) {
             REQUIRE((e == NoError()));
-            reactor->stop();
+            ctx->reactor->stop();
         });
     });
 }
