@@ -557,7 +557,7 @@ TEST_CASE("http::request() correctly follows redirects") {
     reactor->run_with_initial_event([=]() {
         request(
             {
-                {"http/url", "http://fsrn.org"},
+                {"http/url", "http://google.com"},
                 {"http/max_redirects", 32},
                 {"net/ca_bundle_path", "cacert.pem"},
             },
@@ -568,11 +568,11 @@ TEST_CASE("http::request() correctly follows redirects") {
             [=](Error error, SharedPtr<Response> response) {
                 REQUIRE(!error);
                 REQUIRE(response->status_code == 200);
-                REQUIRE(response->request->url.schema == "https");
-                REQUIRE(response->request->url.address == "fsrn.org");
-                REQUIRE(response->previous->status_code == 302);
+                REQUIRE(response->request->url.schema == "http");
+                REQUIRE(response->request->url.address == "www.google.com");
+                REQUIRE(response->previous->status_code == 301);
                 REQUIRE(response->previous->request->url.schema == "http");
-                REQUIRE(response->previous->request->url.address == "fsrn.org");
+                REQUIRE(response->previous->request->url.address == "google.com");
                 REQUIRE(!response->previous->previous);
                 reactor->stop();
             }, reactor, Logger::make());
