@@ -10,13 +10,12 @@ namespace mk {
 namespace ndt {
 
 void run_with_specific_server(SharedPtr<nlohmann::json> entry, std::string address, int port,
-                              Callback<Error> callback, Settings settings = {},
-                              SharedPtr<Reactor> reactor = Reactor::global(),
-                              SharedPtr<Logger> logger = Logger::global());
+                              Callback<Error> callback, Settings settings,
+                              SharedPtr<Reactor> reactor,
+                              SharedPtr<Logger> logger);
 
-void run(SharedPtr<nlohmann::json> entry, Callback<Error> callback, Settings settings = {},
-         SharedPtr<Reactor> reactor = Reactor::global(),
-         SharedPtr<Logger> logger = Logger::global());
+void run(SharedPtr<nlohmann::json> entry, Callback<Error> callback, Settings settings,
+         SharedPtr<Reactor> reactor, SharedPtr<Logger> logger);
 
 } // namespace ndt
 } // namespace mk

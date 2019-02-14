@@ -66,8 +66,8 @@ TEST_CASE("dns query template works as expected") {
                     // more annoyed by this test being broken. Fix by using
                     // an insanely low timeout so it should always fail.
                     {{"dns/timeout", 0.0001}, {"dns/attempts", 1},
-                     {"dns/engine", "libevent"}}, reactor);
-            }, {{"dns/engine", "libevent"}}, reactor);
+                     {"dns/engine", "libevent"}}, reactor, Logger::make());
+            }, {{"dns/engine", "libevent"}}, reactor, Logger::make());
     });
 }
 
@@ -104,7 +104,7 @@ TEST_CASE("dns query template works as expected with system engine") {
                     REQUIRE((answers[1]["answer_type"] == "A"));
                     reactor->stop();
                 },
-                {{"dns/engine", "system"}}, reactor);
+                {{"dns/engine", "system"}}, reactor, Logger::make());
     });
 }
 
@@ -115,7 +115,7 @@ TEST_CASE("tcp connect returns error if port is missing") {
             REQUIRE(err);
             REQUIRE(!!txp);
             reactor->stop();
-        }, reactor);
+        }, reactor, Logger::make());
     });
 }
 
@@ -129,7 +129,7 @@ TEST_CASE("tcp connect returns error if port is invalid") {
                                    REQUIRE(err);
                                    REQUIRE(!!txp);
                                    reactor->stop();
-                               }, reactor);
+                               }, reactor, Logger::make());
     });
 }
 
@@ -177,8 +177,8 @@ TEST_CASE("http requests template works as expected") {
                         REQUIRE((req["response"]["body"] == nullptr));
                         REQUIRE((req["response"]["headers"].is_object()));
                         reactor->stop();
-                    }, reactor);
-            }, reactor);
+                    }, reactor, Logger::make());
+            }, reactor, Logger::make());
     });
 }
 

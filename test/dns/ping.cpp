@@ -26,7 +26,7 @@ TEST_CASE("The dns::ping() template works") {
     reactor->run_with_initial_event([&]() {
         dns::ping_nameserver("IN", "A", "www.google.com", 1.0,
                              Maybe<double>{10.0}, settings, reactor,
-                             Logger::global(),
+                             Logger::make(),
                              [](Error err, SharedPtr<dns::Message> message) {
                                  std::cout << err;
                                  if (message) {

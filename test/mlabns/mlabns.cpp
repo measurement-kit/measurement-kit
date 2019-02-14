@@ -25,7 +25,7 @@ TEST_CASE("Query works as expected") {
                           REQUIRE(!error);
                           reactor->stop();
                       },
-                      settings, reactor);
+                      settings, reactor, Logger::make());
     });
 }
 
@@ -51,7 +51,7 @@ TEST_CASE("Query can pass the settings to the dns level") {
                           REQUIRE(error);
                           reactor->stop();
                       },
-                      settings, reactor);
+                      settings, reactor, Logger::make());
     });
 }
 
@@ -71,7 +71,7 @@ TEST_CASE("Make sure that an error is passed to callback with invalid "
                           REQUIRE(error);
                           reactor->stop();
                       },
-                      settings, reactor);
+                      settings, reactor, Logger::make());
     });
 }
 
@@ -91,7 +91,7 @@ TEST_CASE("Make sure that an error is passed to callback with invalid metro "
                           REQUIRE(error);
                           reactor->stop();
                       },
-                      settings, reactor);
+                      settings, reactor, Logger::make());
     });
 }
 
@@ -111,7 +111,7 @@ TEST_CASE("Make sure that an error is passed to callback with invalid policy "
                           REQUIRE(error);
                           reactor->stop();
                       },
-                      settings, reactor);
+                      settings, reactor, Logger::make());
     });
 }
 
@@ -131,7 +131,7 @@ TEST_CASE("Make sure that an error is passed to callback with invalid tool "
                           REQUIRE(error);
                           reactor->stop();
                       },
-                      settings, reactor);
+                      settings, reactor, Logger::make());
     });
 }
 
@@ -160,7 +160,7 @@ TEST_CASE(
                                             },
                                             settings,
                                             reactor,
-                                            Logger::global());
+                                            Logger::make());
     });
 }
 
@@ -197,7 +197,7 @@ TEST_CASE("Make sure that an error is passed to callback if the response does "
                 REQUIRE(error == JsonProcessingError());
                 reactor->stop();
             },
-            settings, reactor, Logger::global());
+            settings, reactor, Logger::make());
     });
 }
 
@@ -234,6 +234,6 @@ TEST_CASE("Make sure that an error is passed to callback if the response "
                 REQUIRE(error == JsonProcessingError());
                 reactor->stop();
             },
-            settings, reactor, Logger::global());
+            settings, reactor, Logger::make());
     });
 }

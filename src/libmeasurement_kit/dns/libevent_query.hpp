@@ -120,12 +120,12 @@ class QueryContext : public NonMovable, public NonCopyable {
     SharedPtr<Message> message;
     Callback<Error, SharedPtr<Message>> callback;
 
-    SharedPtr<Logger> logger = Logger::global();
-    SharedPtr<Reactor> reactor = Reactor::global();
+    SharedPtr<Logger> logger;
+    SharedPtr<Reactor> reactor;
 
     QueryContext(evdns_base *b, Callback<Error, SharedPtr<Message>> c,
-            SharedPtr<Message> m, SharedPtr<Logger> l = Logger::global(),
-            SharedPtr<Reactor> r = Reactor::global()) {
+            SharedPtr<Message> m, SharedPtr<Logger> l,
+            SharedPtr<Reactor> r) {
         base = b;
         callback = c;
         message = m;
@@ -153,7 +153,7 @@ template <MK_MOCK(evdns_base_new), MK_MOCK(evdns_base_nameserver_sockaddr_add),
           typename evdns_base_uptr = evdns_base_uptr,
           MK_MOCK(evdns_base_set_option)>
 static inline evdns_base *
-create_evdns_base(Settings settings, SharedPtr<Reactor> reactor = Reactor::global()) {
+create_evdns_base(Settings settings, SharedPtr<Reactor> reactor) {
 
     event_base *evb = reactor->get_event_base();
     const int initialize_nameservers = settings.count("dns/nameserver") ? 0 : 1;
@@ -220,7 +220,7 @@ create_evdns_base(Settings settings, SharedPtr<Reactor> reactor = Reactor::globa
 template <MK_MOCK(inet_ntop)>
 static inline std::vector<Answer>
 build_answers_evdns(int code, char type, int count, int ttl, void *addresses,
-                    SharedPtr<Logger> logger = Logger::global()) {
+                    SharedPtr<Logger> logger) {
 
     std::vector<Answer> answers;
 

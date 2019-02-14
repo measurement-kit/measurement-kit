@@ -35,7 +35,7 @@ static Error fail(std::string, uint16_t, sockaddr_storage *, socklen_t *) {
 TEST_CASE("connect_base deals with evutil_parse_sockaddr_port error") {
     SharedPtr<Reactor> reactor = Reactor::make();
     reactor->run_with_initial_event([=]() {
-        connect_base<fail>("130.192.16.172", 80, 3.14, reactor, Logger::global(),
+        connect_base<fail>("130.192.16.172", 80, 3.14, reactor, Logger::make(),
                            [=](Error e, bufferevent *b, double) {
                                REQUIRE(e);
                                REQUIRE(b == nullptr);
@@ -50,7 +50,7 @@ TEST_CASE("connect_base deals with bufferevent_socket_new error") {
     bool ok = false;
     try {
         connect_base<make_sockaddr, fail>("130.192.16.172", 80, 3.14,
-                Reactor::global(), Logger::global(), nullptr);
+                Reactor::make(), Logger::make(), nullptr);
     } catch (GenericError &) {
         ok = true;
     }
@@ -63,8 +63,8 @@ TEST_CASE("connect_base deals with bufferevent_set_timeouts error") {
     bool ok = false;
     try {
         connect_base<make_sockaddr, ::bufferevent_socket_new,
-                     fail>("130.192.16.172", 80, 3.14, Reactor::global(),
-                           Logger::global(), nullptr);
+                     fail>("130.192.16.172", 80, 3.14, Reactor::make(),
+                           Logger::make(), nullptr);
     } catch (GenericError &) {
         ok = true;
     }
@@ -88,7 +88,7 @@ TEST_CASE("connect_base deals with bufferevent_socket_connect error") {
     reactor->run_with_initial_event([=]() {
         connect_base<make_sockaddr, ::bufferevent_socket_new,
                      bufferevent_set_timeouts, Fail::fail>(
-            "130.192.16.172", 80, 3.14, reactor, Logger::global(),
+            "130.192.16.172", 80, 3.14, reactor, Logger::make(),
             [=](Error e, bufferevent *b, double) {
                 REQUIRE(e);
                 REQUIRE(b == nullptr);
@@ -110,7 +110,7 @@ TEST_CASE("net::connect_many() correctly handles net::connect() success") {
                               REQUIRE(!err);
                               REQUIRE(conns.size() == 3);
                           },
-                          {}, reactor, Logger::global());
+                          {}, reactor, Logger::make());
     connect_many_impl<success>(ctx);
 }
 
@@ -127,7 +127,7 @@ TEST_CASE("net::connect_many() correctly handles net::connect() failure") {
                               REQUIRE(err);
                               REQUIRE(conns.size() == 1);
                           },
-                          {}, reactor, Logger::global());
+                          {}, reactor, Logger::make());
     connect_many_impl<fail>(ctx);
 }
 
@@ -143,7 +143,7 @@ TEST_CASE("net::connect_many() correctly handles net::connect() failure") {
 TEST_CASE("connect_base works with ipv4") {
     SharedPtr<Reactor> reactor = Reactor::make();
     reactor->run_with_initial_event([=]() {
-        connect_base("130.192.16.172", 80, 3.14, reactor, Logger::global(),
+        connect_base("130.192.16.172", 80, 3.14, reactor, Logger::make(),
                      [=](Error err, bufferevent *bev, double) {
                          REQUIRE(!err);
                          REQUIRE(bev);
@@ -161,7 +161,7 @@ static bool check_error(Error err) {
 TEST_CASE("connect_base works with ipv4 and closed port") {
     SharedPtr<Reactor> reactor = Reactor::make();
     reactor->run_with_initial_event([=]() {
-        connect_base("130.192.16.172", 81, 3.14, reactor, Logger::global(),
+        connect_base("130.192.16.172", 81, 3.14, reactor, Logger::make(),
                      [=](Error err, bufferevent *bev, double) {
                          REQUIRE(check_error(err));
                          REQUIRE(bev == nullptr);
@@ -173,7 +173,7 @@ TEST_CASE("connect_base works with ipv4 and closed port") {
 TEST_CASE("connect_base works with ipv4 and timeout") {
     SharedPtr<Reactor> reactor = Reactor::make();
     reactor->run_with_initial_event([=]() {
-        connect_base("130.192.16.172", 80, 0.00001, reactor, Logger::global(),
+        connect_base("130.192.16.172", 80, 0.00001, reactor, Logger::make(),
                      [=](Error err, bufferevent *bev, double) {
                          REQUIRE(err == TimeoutError());
                          REQUIRE(bev == nullptr);
@@ -185,7 +185,7 @@ TEST_CASE("connect_base works with ipv4 and timeout") {
 TEST_CASE("connect_base works with ipv6") {
     SharedPtr<Reactor> reactor = Reactor::make();
     reactor->run_with_initial_event([=]() {
-        connect_base("2a00:1450:4001:801::1004", 80, 3.14, reactor, Logger::global(),
+        connect_base("2a00:1450:4001:801::1004", 80, 3.14, reactor, Logger::make(),
                      [=](Error err, bufferevent *bev, double) {
                          /* Coverage note: depending on whether IPv6
                             works or not here we're going to see either
@@ -213,7 +213,7 @@ TEST_CASE("connect_first_of works with empty vector") {
                              REQUIRE(bev == nullptr);
                              reactor->stop();
                          },
-                         {{"net/timeout", 3.14}}, reactor);
+                         {{"net/timeout", 3.14}}, reactor, Logger::make());
     });
 }
 
@@ -235,7 +235,7 @@ TEST_CASE("connect_first_of works when all connect fail") {
                 REQUIRE(bev == nullptr);
                 reactor->stop();
             },
-            {{"net/timeout", 0.00001}}, reactor);
+            {{"net/timeout", 0.00001}}, reactor, Logger::make());
     });
 }
 
@@ -258,7 +258,7 @@ TEST_CASE("connect_first_of works when a connect succeeds") {
                 ::bufferevent_free(bev);
                 reactor->stop();
             },
-            {{"net/timeout", 3.14}}, reactor);
+            {{"net/timeout", 3.14}}, reactor, Logger::make());
     });
 }
 
@@ -270,7 +270,7 @@ TEST_CASE("connect() works with valid IPv4") {
             REQUIRE(r->connected_bev != nullptr);
             ::bufferevent_free(r->connected_bev);
             reactor->stop();
-        }, {}, reactor);
+        }, {}, reactor, Logger::make());
     });
 }
 
@@ -281,7 +281,7 @@ TEST_CASE("connect() fails when port is closed or filtered") {
             REQUIRE(e);
             REQUIRE(r->connected_bev == nullptr);
             reactor->stop();
-        }, {{"net/timeout", 1.0}}, reactor);
+        }, {{"net/timeout", 1.0}}, reactor, Logger::make());
     });
 }
 
@@ -298,7 +298,7 @@ TEST_CASE("connect() fails when setting an invalid dns") {
                        {"dns/timeout", 0.001},
                        {"dns/engine", "libevent"},
                        {"dns/attempts", 1}},
-                      reactor);
+                      reactor, Logger::make());
     });
 }
 
@@ -318,7 +318,7 @@ TEST_CASE("net::connect_many() works as expected") {
                                  }
                              });
                          }
-                     }, {}, reactor);
+                     }, {}, reactor, Logger::make());
     });
 }
 
@@ -336,7 +336,7 @@ TEST_CASE("net::connect() works with a custom reactor") {
                     txp->close([&]() { reactor->stop(); });
                     ok = true;
                 },
-                {}, reactor, Logger::global());
+                {}, reactor, Logger::make());
     });
     REQUIRE(ok);
 }
@@ -351,7 +351,7 @@ TEST_CASE("net::connect() can connect to open port") {
             REQUIRE(!resolve_result.inet_pton_ipv6);
             REQUIRE(resolve_result.addresses.size() > 0);
             txp->close([=]() { reactor->stop(); });
-        }, {}, reactor);
+        }, {}, reactor, Logger::make());
     });
 }
 
@@ -369,7 +369,7 @@ TEST_CASE("net::connect() can connect to ssl port") {
                 },
                 {{"net/ssl", true},
                  {"net/ca_bundle_path", "test/fixtures/saved_ca_bundle.pem"}},
-                reactor);
+                reactor, Logger::make());
     });
 }
 
@@ -383,7 +383,7 @@ TEST_CASE("net::connect() ssl fails when presented an expired certificate") {
                 },
                 {{"net/ssl", true},
                  {"net/ca_bundle_path", "test/fixtures/saved_ca_bundle.pem"}},
-                reactor);
+                reactor, Logger::make());
     });
 }
 
@@ -398,7 +398,7 @@ TEST_CASE("net::connect() ssl fails when presented a certificate with the "
                 },
                 {{"net/ssl", true},
                  {"net/ca_bundle_path", "test/fixtures/saved_ca_bundle.pem"}},
-                reactor);
+                reactor, Logger::make());
     });
 }
 
@@ -412,7 +412,7 @@ TEST_CASE("net::connect() ssl works when using SNI") {
                 },
                 {{"net/ssl", true},
                  {"net/ca_bundle_path", "test/fixtures/saved_ca_bundle.pem"}},
-                reactor);
+                reactor, Logger::make());
     });
 }
 
@@ -429,6 +429,6 @@ TEST_CASE("net::connect() works in case of error") {
                     reactor->stop();
                 },
                 {{"net/timeout", 5.0}},
-                reactor);
+                reactor, Logger::make());
     });
 }

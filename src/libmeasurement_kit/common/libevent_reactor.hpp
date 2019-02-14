@@ -72,7 +72,6 @@ class LibeventReactor : public Reactor, public NonCopyable, public NonMovable {
             if (initialized) {
                 return;
             }
-            mk::debug("initializing libevent once");
             if (evthread_init() != 0) {
                 throw std::runtime_error("evthread_init");
             }

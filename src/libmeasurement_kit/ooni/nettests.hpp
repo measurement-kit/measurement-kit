@@ -12,47 +12,37 @@ namespace mk {
 namespace ooni {
 
 void captiveportal(std::string, Settings, Callback<SharedPtr<nlohmann::json>>,
-                    SharedPtr<Reactor> = Reactor::global(),
-                    SharedPtr<Logger> = Logger::global());
+                    SharedPtr<Reactor>, SharedPtr<Logger>);
 
 void dns_injection(std::string, Settings, Callback<SharedPtr<nlohmann::json>>,
-                   SharedPtr<Reactor> = Reactor::global(),
-                   SharedPtr<Logger> = Logger::global());
+                   SharedPtr<Reactor>, SharedPtr<Logger>);
 
 void http_invalid_request_line(Settings, Callback<SharedPtr<nlohmann::json>>,
-                               SharedPtr<Reactor> = Reactor::global(),
-                               SharedPtr<Logger> = Logger::global());
+                               SharedPtr<Reactor>, SharedPtr<Logger>);
 
 void tcp_connect(std::string, Settings, Callback<SharedPtr<nlohmann::json>>,
-                 SharedPtr<Reactor> = Reactor::global(),
-                 SharedPtr<Logger> = Logger::global());
+                 SharedPtr<Reactor>, SharedPtr<Logger>);
 
 void web_connectivity(std::string input, Settings,
                       Callback<SharedPtr<nlohmann::json>>,
-                      SharedPtr<Reactor> = Reactor::global(),
-                      SharedPtr<Logger> = Logger::global());
+                      SharedPtr<Reactor>, SharedPtr<Logger>);
 
 void meek_fronted_requests(std::string input, Settings,
                            Callback<SharedPtr<nlohmann::json>>,
-                           SharedPtr<Reactor> = Reactor::global(),
-                           SharedPtr<Logger> = Logger::global());
+                           SharedPtr<Reactor>, SharedPtr<Logger>);
 
 void http_header_field_manipulation(std::string input, Settings,
                                     Callback<SharedPtr<nlohmann::json>>,
-                                    SharedPtr<Reactor> = Reactor::global(),
-                                    SharedPtr<Logger> = Logger::global());
+                                    SharedPtr<Reactor>, SharedPtr<Logger>);
 
 void telegram(Settings, Callback<SharedPtr<nlohmann::json>>,
-              SharedPtr<Reactor> = Reactor::global(),
-              SharedPtr<Logger> = Logger::global());
+              SharedPtr<Reactor>, SharedPtr<Logger>);
   
 void facebook_messenger(Settings, Callback<SharedPtr<nlohmann::json>>,
-                        SharedPtr<Reactor> = Reactor::global(),
-                        SharedPtr<Logger> = Logger::global());
+                        SharedPtr<Reactor>, SharedPtr<Logger>);
 
 void whatsapp(Settings, Callback<SharedPtr<nlohmann::json>>,
-              SharedPtr<Reactor> = Reactor::global(),
-              SharedPtr<Logger> = Logger::global());
+              SharedPtr<Reactor>, SharedPtr<Logger>);
 
 } // namespace ooni
 } // namespace mk

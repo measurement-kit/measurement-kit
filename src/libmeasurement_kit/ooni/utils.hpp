@@ -19,9 +19,8 @@ std::string scrub(
         std::string real_probe_ip
 );
 
-void resolver_lookup(Callback<Error, std::string> callback, Settings = {},
-                     SharedPtr<Reactor> reactor = Reactor::global(),
-                     SharedPtr<Logger> logger = Logger::global());
+void resolver_lookup(Callback<Error, std::string> callback, Settings,
+                     SharedPtr<Reactor> reactor, SharedPtr<Logger> logger);
 
 nlohmann::json represent_string(const std::string &s);
 

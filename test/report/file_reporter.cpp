@@ -77,6 +77,6 @@ TEST_CASE(
                         REQUIRE(entry["antani"].get<std::string>() == "fuffa");
                     }
                 });
-            }, Logger::global());
+            }, Logger::make());
         });
     }

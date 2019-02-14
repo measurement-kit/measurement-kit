@@ -25,8 +25,8 @@ class OoniReporter : public BaseReporter {
   private:
     OoniReporter(Settings, SharedPtr<Reactor>, SharedPtr<Logger>);
 
-    SharedPtr<Reactor> reactor = Reactor::global();
-    SharedPtr<Logger> logger = Logger::global();
+    SharedPtr<Reactor> reactor;
+    SharedPtr<Logger> logger;
     Settings settings; // Our private copy of the ooni_test settings
     std::string report_id;
 };

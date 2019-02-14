@@ -243,8 +243,8 @@ class EmitterBase : public Transport {
 
   protected:
     // TODO: it would probably better to have accessors
-    SharedPtr<Reactor> reactor = Reactor::global();
-    SharedPtr<Logger> logger = Logger::global();
+    SharedPtr<Reactor> reactor;
+    SharedPtr<Logger> logger;
     Buffer output_buff;
 
   private:

@@ -14,35 +14,35 @@ TEST_CASE("BouncerReply::create() works") {
 
     SECTION("When the collector is not found") {
         auto maybe_reply = ooni::BouncerReply::create(
-            R"({"error": "collector-not-found"})", Logger::global());
+            R"({"error": "collector-not-found"})", Logger::make());
         REQUIRE(!maybe_reply);
         REQUIRE(maybe_reply.as_error() == JsonProcessingError());
     }
 
     SECTION("When the response is invalid") {
         auto maybe_reply = ooni::BouncerReply::create(
-            R"({"error": "invalid-request"})", Logger::global());
+            R"({"error": "invalid-request"})", Logger::make());
         REQUIRE(!maybe_reply);
         REQUIRE(maybe_reply.as_error() == JsonProcessingError());
     }
 
     SECTION("When the error is something else") {
         auto maybe_reply = ooni::BouncerReply::create(
-            R"({"error": "xx"})", Logger::global());
+            R"({"error": "xx"})", Logger::make());
         REQUIRE(!maybe_reply);
         REQUIRE(maybe_reply.as_error() == JsonProcessingError());
     }
 
     SECTION("When the net-tests section is missing") {
         auto maybe_reply = ooni::BouncerReply::create(
-            R"({})", Logger::global());
+            R"({})", Logger::make());
         REQUIRE(!maybe_reply);
         REQUIRE(maybe_reply.as_error() == JsonProcessingError());
     }
 
     SECTION("When the parser throws invalid_argument") {
         auto maybe_reply = ooni::BouncerReply::create(
-            R"({)", Logger::global());
+            R"({)", Logger::make());
         REQUIRE(!maybe_reply);
         REQUIRE(maybe_reply.as_error() == JsonProcessingError());
     }
@@ -51,7 +51,7 @@ TEST_CASE("BouncerReply::create() works") {
 TEST_CASE("BouncerReply accessors are robust to missing fields") {
     auto maybe_reply = ooni::BouncerReply::create(
         R"({"net-tests": [{"test-helpers-alternate":[], "collector-alternate":1234}]})",
-        Logger::global());
+        Logger::make());
     REQUIRE(!!maybe_reply);
     auto reply = *maybe_reply;
 
@@ -94,8 +94,8 @@ TEST_CASE("BouncerReply accessors are robust to missing fields") {
 
 static void request_error(Settings, http::Headers, std::string,
                           Callback<Error, SharedPtr<http::Response>> cb,
-                          SharedPtr<Reactor> = Reactor::global(),
-                          SharedPtr<Logger> = Logger::global(),
+                          SharedPtr<Reactor> = Reactor::make(),
+                          SharedPtr<Logger> = Logger::make(),
                           SharedPtr<http::Response> = nullptr, int = 0) {
     cb(MockedError(), nullptr);
 }
@@ -115,7 +115,7 @@ TEST_CASE("post_net_tests() works") {
                     REQUIRE(e == MockedError());
                     reactor->stop();
                 },
-                settings, reactor, Logger::global());
+                settings, reactor, Logger::make());
         });
     }
 
@@ -131,7 +131,7 @@ TEST_CASE("post_net_tests() works") {
                     REQUIRE(e == JsonProcessingError());
                     reactor->stop();
                 },
-                settings, reactor, Logger::global());
+                settings, reactor, Logger::make());
         });
     }
 
@@ -170,7 +170,7 @@ TEST_CASE("post_net_tests() works") {
                                 "web-connectivity", "cloudfront"));
                     reactor->stop();
                 },
-                settings, reactor, Logger::global());
+                settings, reactor, Logger::make());
         });
     }
 }

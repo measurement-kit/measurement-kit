@@ -33,21 +33,19 @@ class ConnectResult {
 typedef std::function<void(std::vector<Error>, bufferevent *)> ConnectFirstOfCb;
 
 void connect_first_of(SharedPtr<ConnectResult> result, int port,
-                      ConnectFirstOfCb cb, Settings settings = {},
-                      SharedPtr<Reactor> reactor = Reactor::global(),
-                      SharedPtr<Logger> logger = Logger::global(), size_t index = 0,
+                      ConnectFirstOfCb cb, Settings settings,
+                      SharedPtr<Reactor> reactor,
+                      SharedPtr<Logger> logger, size_t index = 0,
                       SharedPtr<std::vector<Error>> errors = nullptr);
 
 void connect_logic(std::string hostname, int port,
                    Callback<Error, SharedPtr<ConnectResult>> cb,
-                   Settings settings = {},
-                   SharedPtr<Reactor> reactor = Reactor::global(),
-                   SharedPtr<Logger> logger = Logger::global());
+                   Settings settings, SharedPtr<Reactor> reactor,
+                   SharedPtr<Logger> logger);
 
 void connect_ssl(bufferevent *orig_bev, ssl_st *ssl, std::string hostname,
                  Callback<Error, bufferevent *> cb,
-                 SharedPtr<Reactor> = Reactor::global(),
-                 SharedPtr<Logger> = Logger::global());
+                 SharedPtr<Reactor>, SharedPtr<Logger>);
 
 using ConnectManyCb = Callback<Error, std::vector<SharedPtr<Transport>>>;
 
@@ -59,20 +57,20 @@ class ConnectManyCtx {
     std::string address;
     int port = 0;
     Settings settings;
-    SharedPtr<Reactor> reactor = Reactor::global();
-    SharedPtr<Logger> logger = Logger::global();
+    SharedPtr<Reactor> reactor;
+    SharedPtr<Logger> logger;
 };
 
 void connect(std::string address, int port,
              Callback<Error, SharedPtr<Transport>> callback,
-             Settings settings = {},
-             SharedPtr<Reactor> reactor = Reactor::global(),
-             SharedPtr<Logger> logger = Logger::global());
+             Settings settings,
+             SharedPtr<Reactor> reactor,
+             SharedPtr<Logger> logger);
 
 void connect_many(std::string address, int port, int num,
-        ConnectManyCb callback, Settings settings = {},
-        SharedPtr<Reactor> reactor = Reactor::global(),
-        SharedPtr<Logger> logger = Logger::global());
+        ConnectManyCb callback, Settings settings,
+        SharedPtr<Reactor> reactor,
+        SharedPtr<Logger> logger);
 
 } // namespace mk
 } // namespace net

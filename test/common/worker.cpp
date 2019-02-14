@@ -18,7 +18,7 @@
 TEST_CASE("The worker is robust to submitting many tasks in a row") {
     auto worker = mk::SharedPtr<mk::Worker>::make();
     for (size_t i = 0; i < 128; ++i) {
-        worker->call_in_thread(mk::Logger::global(), []() {
+        worker->call_in_thread(mk::Logger::make(), []() {
             using namespace std::chrono_literals;
             std::this_thread::sleep_for(2s);
         });
