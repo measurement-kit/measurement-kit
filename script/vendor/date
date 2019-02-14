@@ -1,0 +1,6 @@
+#!/bin/sh
+set -ex
+version=v2.4.1
+url=https://raw.githubusercontent.com/HowardHinnant/date/$version/include/date/date.h
+curl -fsSLO $url
+mv date.h include/measurement_kit/internal/vendor
