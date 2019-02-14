@@ -5,7 +5,7 @@
 #define SRC_LIBMEASUREMENT_KIT_OONI_ORCHESTRATE_IMPL_HPP
 
 #include <measurement_kit/common/nlohmann/json.hpp>
-#include <measurement_kit/internal/vendor/mkgeoip.h>
+#include <measurement_kit/internal/vendor/mkgeoip.hpp>
 
 #include "src/libmeasurement_kit/common/fcompose.hpp"
 #include "src/libmeasurement_kit/common/mock.hpp"
@@ -211,40 +211,28 @@ void update_(const ClientMetadata &m, Auth &&auth, SharedPtr<Reactor> reactor,
 static inline
 void do_find_location(const ClientMetadata &m, SharedPtr<Reactor> /*reactor*/,
                       Callback<Error &&, std::string &&, std::string &&> &&cb) {
-    mkgeoip_lookup_settings_uptr ls{mkgeoip_lookup_settings_new_nonnull()};
-    {
-        double timeout = m.settings.get("net/timeout", 10.0);
-        mkgeoip_lookup_settings_set_timeout_v2(ls.get(), (int64_t)timeout);
-    }
-    {
-        const std::string &cabp = m.ca_bundle_path;
-        mkgeoip_lookup_settings_set_ca_bundle_path_v2(ls.get(), cabp.c_str());
-    }
-    {
-        const std::string &p = m.geoip_country_path;
-        mkgeoip_lookup_settings_set_country_db_path_v2(ls.get(), p.c_str());
-    }
-    {
-        const std::string &p = m.geoip_asn_path;
-        mkgeoip_lookup_settings_set_asn_db_path_v2(ls.get(), p.c_str());
-    }
-    mkgeoip_lookup_results_uptr lr{
-            mkgeoip_lookup_settings_perform_nonnull(ls.get())};
-    std::string logs = mkgeoip_lookup_results_moveout_logs_v2(lr.get());
-    if (!mkgeoip_lookup_results_good_v2(lr.get())) {
+    mk::geoip::LookupSettings ls;
+    ls.timeout = (int64_t)m.settings.get("net/timeout", 10.0);
+    ls.ca_bundle_path = m.ca_bundle_path;
+    ls.country_db_path = m.geoip_country_path;
+    ls.asn_db_path = m.geoip_asn_path;
+    mk::geoip::LookupResults lr = mk::geoip::lookup(ls);
+    if (!lr.good) {
         m.logger->warn("=== BEGIN FIND_LOCATION RESULTS ===");
-        m.logger->warn("%s", logs.c_str());
+        for (auto &s : lr.logs) {
+            m.logger->warn("%s", s.c_str());
+        }
         m.logger->warn("=== END FIND_LOCATION RESULTS ===");
         cb(GenericError(), "", "");
         return;
     }
     m.logger->debug("=== BEGIN FIND_LOCATION RESULTS ===");
-    m.logger->debug("%s", logs.c_str());
+    for (auto &s : lr.logs) {
+        m.logger->debug("%s", s.c_str());
+    }
     m.logger->debug("=== END FIND_LOCATION RESULTS ===");
-    std::string probe_cc = mkgeoip_lookup_results_get_probe_cc_v2(lr.get());
-    int64_t n = mkgeoip_lookup_results_get_probe_asn_v2(lr.get());
-    std::string probe_asn = "AS";
-    probe_asn += std::to_string(n);
+    std::string probe_cc = lr.probe_cc;
+    std::string probe_asn = lr.probe_asn_string;
     cb(NoError(), std::move(probe_asn), std::move(probe_cc));
 }
 

@@ -1,13 +1,13 @@
 #!/bin/sh
 set -ex
-version=v0.11.2
+version=v0.13.0
 name=mkgeoip
 destdir=include/measurement_kit/internal/vendor
 install -d $destdir
-url=https://raw.githubusercontent.com/measurement-kit/$name/$version/$name.h
+url=https://raw.githubusercontent.com/measurement-kit/$name/$version/$name.hpp
 (
   set -ex
   cd $destdir
   curl -fsSLO $url
 )
-git add $destdir/$name.h
+git add $destdir/$name.hpp

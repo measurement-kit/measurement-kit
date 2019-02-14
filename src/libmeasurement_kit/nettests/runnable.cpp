@@ -16,8 +16,8 @@
 #include "src/libmeasurement_kit/report/file_reporter.hpp"
 #include "src/libmeasurement_kit/report/ooni_reporter.hpp"
 
-#include <measurement_kit/internal/vendor/mkiplookup.h>
-#include <measurement_kit/internal/vendor/mkmmdb.h>
+#include <measurement_kit/internal/vendor/mkiplookup.hpp>
+#include <measurement_kit/internal/vendor/mkmmdb.hpp>
 
 namespace mk {
 namespace nettests {
@@ -184,24 +184,26 @@ void Runnable::geoip_lookup(Callback<> cb) {
     if (real_probe_ip == default_probe_ip) {
         double timeout = options.get("net/timeout", 10.0);
         std::string ca = options.get("net/ca_bundle_path", std::string{});
-        mkiplookup_request_uptr req{mkiplookup_request_new_nonnull()};
-        mkiplookup_request_set_timeout(req.get(), (int64_t)timeout);
-        mkiplookup_request_set_ca_bundle_path(req.get(), ca.c_str());
-        mkiplookup_response_uptr res{
-                mkiplookup_request_perform_nonnull(req.get())};
-        std::string logs = mkiplookup_response_moveout_logs(res);
-        if (!mkiplookup_response_good(res.get())) {
+        mk::iplookup::Request req;
+        req.timeout = (int64_t)timeout;
+        req.ca_bundle_path = ca;
+        mk::iplookup::Response res = mk::iplookup::perform(req);
+        if (!res.good) {
             logger->emit_event_ex("failure.ip_lookup", {
                 {"failure", "generic_error"},
             });
             logger->warn("=== BEGIN IP_LOOKUP LOGS ===");
-            logger->warn("%s", logs.c_str());
+            for (auto &s : res.logs) {
+                logger->warn("%s", s.c_str());
+            }
             logger->warn("=== END IP_LOOKUP LOGS ===");
             annotations["failure_ip_lookup"] = "true";
         } else {
-            real_probe_ip = mkiplookup_response_get_probe_ip(res.get());
+            real_probe_ip = res.probe_ip;
             logger->debug("=== BEGIN IP_LOOKUP LOGS ===");
-            logger->debug("%s", logs.c_str());
+            for (auto &s : res.logs) {
+                logger->debug("%s", s.c_str());
+            }
             logger->debug("=== END IP_LOOKUP LOGS ===");
         }
     }
@@ -209,14 +211,17 @@ void Runnable::geoip_lookup(Callback<> cb) {
     std::string real_probe_cc = options.get("probe_cc", default_probe_cc);
     if (real_probe_cc == default_probe_cc) {
         std::string path = options.get("geoip_country_path", std::string{});
-        mkmmdb_uptr mmdb{mkmmdb_open_nonnull(path.c_str())};
-        std::string cc = mkmmdb_lookup_cc(mmdb.get(), real_probe_ip.c_str());
-        if (cc.empty()) {
+        mk::mmdb::Handle db;
+        std::vector<std::string> logs;
+        std::string cc;
+        if (!db.open(path, logs) || !db.lookup_cc(real_probe_ip, cc, logs)) {
             logger->emit_event_ex("failure.cc_lookup", {
                 {"failure", "generic_error"},
             });
             logger->warn("=== BEGIN CC_LOOKUP LOGS ===");
-            logger->warn("%s", mkmmdb_get_last_lookup_logs(mmdb.get()));
+            for (auto &s : logs) {
+                logger->warn("%s", s.c_str());
+            }
             logger->warn("=== END CC_LOOKUP LOGS ===");
             annotations["failure_cc_lookup"] = "true";
         } else {
@@ -227,19 +232,21 @@ void Runnable::geoip_lookup(Callback<> cb) {
     std::string real_probe_asn = options.get("probe_asn", default_probe_asn);
     if (real_probe_asn == default_probe_asn) {
         std::string path = options.get("geoip_asn_path", std::string{});
-        mkmmdb_uptr mmdb{mkmmdb_open_nonnull(path.c_str())};
-        int64_t n = mkmmdb_lookup_asn(mmdb.get(), real_probe_ip.c_str());
-        if (n <= 0) {
+        mk::mmdb::Handle db;
+        std::vector<std::string> logs;
+        std::string asn;
+        if (!db.open(path, logs) || !db.lookup_asn2(real_probe_ip, asn, logs)) {
             logger->emit_event_ex("failure.asn_lookup", {
                 {"failure", "generic_error"},
             });
             logger->warn("=== BEGIN ASN_LOOKUP LOGS ===");
-            logger->warn("%s", mkmmdb_get_last_lookup_logs(mmdb.get()));
+            for (auto &s : logs) {
+                logger->warn("%s", s.c_str());
+            }
             logger->warn("=== END ASN_LOOKUP LOGS ===");
             annotations["failure_asn_lookup"] = "true";
         } else {
-            real_probe_asn = "AS";
-            real_probe_asn += std::to_string(n);
+            std::swap(real_probe_asn, asn);
         }
     }
 
@@ -247,18 +254,21 @@ void Runnable::geoip_lookup(Callback<> cb) {
         "probe_network_name", default_probe_network_name);
     if (real_probe_network_name == default_probe_network_name) {
         std::string path = options.get("geoip_asn_path", std::string{});
-        mkmmdb_uptr mmdb{mkmmdb_open_nonnull(path.c_str())};
-        std::string nn = mkmmdb_lookup_org(mmdb.get(), real_probe_ip.c_str());
-        if (nn.empty()) {
+        mk::mmdb::Handle db;
+        std::vector<std::string> logs;
+        std::string org;
+        if (!db.open(path, logs) || !db.lookup_org(real_probe_ip, org, logs)) {
             logger->emit_event_ex("failure.network_name_lookup", {
                 {"failure", "generic_error"},
             });
             logger->warn("=== BEGIN NETWORK_NAME_LOOKUP LOGS ===");
-            logger->warn("%s", mkmmdb_get_last_lookup_logs(mmdb.get()));
+            for (auto &s : logs) {
+                logger->warn("%s", s.c_str());
+            }
             logger->warn("=== END NETWORK_NAME_LOOKUP LOGS ===");
             annotations["failure_network_name_lookup"] = "true";
         } else {
-            std::swap(nn, real_probe_network_name);
+            std::swap(org, real_probe_network_name);
         }
     }
 

@@ -10,7 +10,7 @@
 #include "src/libmeasurement_kit/ooni/templates.hpp"
 #include "src/libmeasurement_kit/ooni/error.hpp"
 
-#include <measurement_kit/internal/vendor/mkmmdb.h>
+#include <measurement_kit/internal/vendor/mkmmdb.hpp>
 
 namespace mk {
 namespace ooni {
@@ -28,17 +28,13 @@ static const std::map<std::string, std::string> &FB_SERVICE_HOSTNAMES = {
 
 static bool ip_in_fb_asn(Settings options, std::string ip) {
     std::string asn_p = options.get("geoip_asn_path", std::string{});
-    mkmmdb_uptr mmdb{mkmmdb_open_nonnull(asn_p.c_str())};
-    if (!mkmmdb_good(mmdb.get())) {
+    std::vector<std::string> logs;
+    std::string asn;
+    mk::mmdb::Handle db;
+    if (!db.open(asn_p, logs) || !db.lookup_asn2(ip, asn, logs)) {
         return false;
     }
-    int64_t n = mkmmdb_lookup_asn(mmdb.get(), ip.c_str());
-    if (n <= 0) {
-        return false;
-    }
-    std::string s = "AS";
-    s += std::to_string(n);
-    return s == FB_ASN;
+    return asn == FB_ASN;
 }
 
 static void

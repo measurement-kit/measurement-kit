@@ -4,23 +4,19 @@
 
 #include "src/libmeasurement_kit/common/encoding.hpp"
 
-#include "measurement_kit/internal/vendor/mkdata.h"
+#include "measurement_kit/internal/vendor/mkdata.hpp"
 
 namespace mk {
 
 Error utf8_parse(const std::string &str) {
-  mkdata_uptr d{mkdata_new_nonnull()};
-  mkdata_set_v2(d.get(), (const uint8_t *)str.c_str(), str.size());
-  if (!mkdata_contains_valid_utf8_v2(d.get())) {
+  if (!mk::data::contains_valid_utf8(str)) {
     return IllegalSequenceError();
   }
   return NoError();
 }
 
 std::string base64_encode(std::string str) {
-  mkdata_uptr d{mkdata_new_nonnull()};
-  mkdata_movein_data(d, std::move(str));
-  return mkdata_moveout_base64(d);
+  return mk::data::base64_encode(std::move(str));
 }
 
 std::string base64_encode_if_needed(std::string str) {
