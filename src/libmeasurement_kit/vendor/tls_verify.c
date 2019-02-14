@@ -27,7 +27,7 @@
 
 #include <openssl/x509v3.h>
 
-#include "src/libmeasurement_kit/ext/tls_internal.h"
+#include "src/libmeasurement_kit/vendor/tls_internal.h"
 
 #if defined _WIN32 && !defined __MINGW32__
 #define strcasecmp _stricmp

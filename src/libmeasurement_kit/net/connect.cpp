@@ -2,7 +2,7 @@
 // Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
-#include "src/libmeasurement_kit/ext/tls_internal.h"
+#include "src/libmeasurement_kit/vendor/tls_internal.h"
 
 #include "src/libmeasurement_kit/net/connect_impl.hpp"
 #include "src/libmeasurement_kit/net/emitter.hpp"

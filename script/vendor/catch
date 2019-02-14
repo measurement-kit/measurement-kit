@@ -1,6 +1,6 @@
 #!/bin/sh
 set -ex
-version=v2.4.2
+version=v2.6.1
 curl -fsSLo include/private/catch.hpp                                          \
   https://github.com/catchorg/Catch2/releases/download/$version/catch.hpp
 git commit -am "Vendor catchorg/Catch2@$version"

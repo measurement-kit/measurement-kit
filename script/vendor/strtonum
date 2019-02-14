@@ -2,4 +2,5 @@
 set -ex
 baseurl=https://raw.githubusercontent.com/libressl-portable/openbsd/master
 curl -fsSLO $baseurl/src/lib/libc/stdlib/strtonum.c
-mv strtonum.c src/libmeasurement_kit/portable
+mv strtonum.c src/libmeasurement_kit/vendor
+git commit -am "Vendor libressl-portable/openbsd@master's strtonum.c"

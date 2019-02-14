@@ -24,7 +24,7 @@
 //
 // 3. This notice may not be removed or altered from any source distribution.
 
-#include "src/libmeasurement_kit/ext/sole.hpp"
+#include "src/libmeasurement_kit/vendor/sole.hpp"
 
 #include <iomanip>
 #include <random>

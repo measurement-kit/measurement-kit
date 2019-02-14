@@ -19,7 +19,7 @@
 #include "src/libmeasurement_kit/common/non_copyable.hpp"
 #include "src/libmeasurement_kit/common/non_movable.hpp"
 #include "src/libmeasurement_kit/common/mock.hpp"
-#include "src/libmeasurement_kit/ext/tls_internal.h"
+#include "src/libmeasurement_kit/vendor/tls_internal.h"
 #include <cassert>
 #include <map>
 #include <measurement_kit/common/logger.hpp>

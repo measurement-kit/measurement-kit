@@ -3,7 +3,7 @@
 // and LICENSE for more information on the copying conditions.
 
 #include "src/libmeasurement_kit/http/response_parser.hpp"
-#include "src/libmeasurement_kit/ext/http_parser.h"
+#include <measurement_kit/internal/vendor/http_parser.h>
 
 #include <stddef.h>
 #include <string.h>

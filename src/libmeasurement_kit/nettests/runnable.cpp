@@ -11,7 +11,7 @@
 #include "src/libmeasurement_kit/ooni/bouncer.hpp"
 #include "src/libmeasurement_kit/ooni/utils.hpp"
 #include "src/libmeasurement_kit/nettests/utils.hpp"
-#include "src/libmeasurement_kit/ext/sole.hpp"
+#include "src/libmeasurement_kit/vendor/sole.hpp"
 
 #include "src/libmeasurement_kit/report/file_reporter.hpp"
 #include "src/libmeasurement_kit/report/ooni_reporter.hpp"
