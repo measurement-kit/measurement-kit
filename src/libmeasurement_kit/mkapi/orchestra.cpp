@@ -2,7 +2,7 @@
 // Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
-#include "measurement_kit/mkapi/orchestra.h"
+#include "measurement_kit/internal/mkapi/orchestra.h"
 
 #include <future>
 #include <mutex>
