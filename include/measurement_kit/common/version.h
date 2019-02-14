@@ -14,7 +14,7 @@
 // MK_VERSION is measurement-kit version according to manual tagging. This is
 // updated when we bless a new release. It does not accurately describe a
 // development build, for which MK_VERSION_FULL may be better.
-#define MK_VERSION "0.9.3"
+#define MK_VERSION "0.9.4"
 
 // MEASUREMENT_KIT_VERSION is a backward compatibility alias for MK_VERSION.
 #define MEASUREMENT_KIT_VERSION MK_VERSION
@@ -23,7 +23,7 @@
 // as part of the `./autogen.sh` script that prepares a source tarball. If we
 // cannot run `git` because we're not in a git repository, then we set this
 // variable equal to MK_VERSION.
-#define MK_VERSION_FULL "v0.9.3"
+#define MK_VERSION_FULL "v0.9.4"
 
 // MK_VERSION_MAJOR is the major version number extracted from MK_VERSION_FULL.
 #define MK_VERSION_MAJOR 0
@@ -32,7 +32,7 @@
 #define MK_VERSION_MINOR 9
 
 // MK_VERSION_PATCH is the patch version number extracted from MK_VERSION_FULL.
-#define MK_VERSION_PATCH 3
+#define MK_VERSION_PATCH 4
 
 // MK_VERSION_STABLE is 1 if this is a stable release, 0 otherwise.
 #define MK_VERSION_STABLE 1
@@ -47,7 +47,7 @@
 //       ^^^     ^^^     ^^^     ^^^
 //      major   minor   patch   stable
 // ```
-#define MK_VERSION_NUMERIC 0x00000000009000031LL
+#define MK_VERSION_NUMERIC 0x00000000009000041LL
 
 #ifdef __cplusplus
 extern "C" {
