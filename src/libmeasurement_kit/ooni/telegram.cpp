@@ -17,6 +17,11 @@ namespace ooni {
 static void tcp_many(const std::vector<std::string> ip_ports, SharedPtr<nlohmann::json> entry,
         Settings options, SharedPtr<Reactor> reactor, SharedPtr<Logger> logger,
         Callback<Error> all_done_cb) {
+    // "If all the connections to ports 80 and 443 to Telegram's access
+    // point IPs fail we consider Telegram to be blocked". So says the
+    // OONI spec for Telegram. Therefore, we start with a failure condition
+    // and we set a nonfailure condition if any request succeeds.
+    (*entry)["telegram_tcp_blocking"] = true;
     auto connected_cb = [=](std::string ip, int port, Callback<Error> done_cb) {
         return [=](Error connect_error, SharedPtr<net::Transport> txp) {
             nlohmann::json result = {
@@ -32,6 +37,7 @@ static void tcp_many(const std::vector<std::string> ip_ports, SharedPtr<nlohmann
                 logger->info("telegram: success TCP connecting to %s:%d",
                     ip.c_str(), port);
                 result["status"]["success"] = true;
+                // As mentioned above, one success implies not blocked
                 (*entry)["telegram_tcp_blocking"] = false;
             }
             (*entry)["tcp_connect"].push_back(result);
@@ -39,7 +45,6 @@ static void tcp_many(const std::vector<std::string> ip_ports, SharedPtr<nlohmann
             done_cb(connect_error);
         };
     };
-
     std::vector<Continuation<Error>> continuations;
     for (auto ip_port : ip_ports) {
         std::list<std::string> ip_port_l = split(ip_port, ":");
@@ -51,7 +56,6 @@ static void tcp_many(const std::vector<std::string> ip_ports, SharedPtr<nlohmann
         }
         std::string ip = ip_port_l.front();
         int port = std::stoi(ip_port_l.back());
-
         options["host"] = ip;
         options["port"] = port;
         continuations.push_back([=](Callback<Error> done_cb) {
@@ -69,6 +73,19 @@ static void http_many(const std::vector<std::string> urls, std::string type,
         // if any titles are not "Telegram Web", switch this to blocked
         (*entry)["telegram_web_status"] = "ok";
         (*entry)["telegram_web_failure"] = nullptr;
+        options["http/method"] = "GET";
+    } else {
+        // The OONI specification for telegram says that if any request doesn't
+        // receive back a response then "it" is considered blocked. Unclear to
+        // me what's "it" in that context. Until this is clarified, I'm going to
+        // keep the code as Joe coded it (i.e. all endpoints must fail for the
+        // service to be considered blocked) as I believe this is what Arturo
+        // most likely had in mind when he wrote the specification. Also, my
+        // understanding of the original Python implementation is that this is
+        // consistent with how Joe implemented it in MK.
+        //    -Simone (2018-12-19)
+        (*entry)["telegram_http_blocking"] = true;
+        options["http/method"] = "POST";
     }
     auto http_cb = [=](std::string url, Callback<Error> done_cb) {
         return [=](Error err, SharedPtr<http::Response> response) {
@@ -78,6 +95,8 @@ static void http_many(const std::vector<std::string> urls, std::string type,
                 if (type == "web") {
                     (*entry)["telegram_web_status"] = "blocked";
                     (*entry)["telegram_web_failure"] = err.reason;
+                } else if (type != "endpoints") {
+                    abort();  // Guard against unexpected values
                 }
             } else {
                 logger->info(
@@ -93,7 +112,6 @@ static void http_many(const std::vector<std::string> urls, std::string type,
             done_cb(err);
         };
     };
-
     std::vector<Continuation<Error>> continuations;
     for (auto url : urls) {
         options["http/url"] = url;
@@ -111,6 +129,7 @@ void telegram(Settings options, Callback<SharedPtr<nlohmann::json>> callback,
     SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
     std::vector<std::string> TELEGRAM_WEB_URLS = {
         "http://web.telegram.org/", "https://web.telegram.org/"};
+
     // should probably just make these std::pair<std::string,int>,
     // but I'm not sure if this will be better later when I get
     // rid of the duplication between this and the http ones
@@ -129,10 +148,6 @@ void telegram(Settings options, Callback<SharedPtr<nlohmann::json>> callback,
 
     logger->info("starting telegram test");
     SharedPtr<nlohmann::json> entry(new nlohmann::json);
-
-    // if any endpoints are (TCP or HTTP) reachable, switch this to false
-    (*entry)["telegram_tcp_blocking"] = true;
-    (*entry)["telegram_http_blocking"] = true;
 
     mk::fcompose(mk::fcompose_policy_async(),
         [=](Callback<> cb) {
@@ -159,9 +174,9 @@ void telegram(Settings options, Callback<SharedPtr<nlohmann::json>> callback,
                     cb();
                 });
         })([=]() {
-        logger->info("calling final callback");
-        callback(entry);
-    });
+            logger->info("calling final callback");
+            callback(entry);
+        });
 }
 
 } // namespace ooni
