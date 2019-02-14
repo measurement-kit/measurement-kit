@@ -23,11 +23,11 @@ TEST_CASE("coroutine() is robust to connect error") {
         [](Error err, Continuation<Error, double>) {
             REQUIRE(err == MockedError());
         },
-        2.0, {}, Reactor::global(), Logger::global());
+        2.0, {}, Reactor::make(), Logger::make());
 }
 
 static void failure(SharedPtr<Context>, Callback<Error, uint8_t, std::string> cb,
-                    SharedPtr<Reactor> = Reactor::global()) {
+                    SharedPtr<Reactor> = Reactor::make()) {
     cb(MockedError(), 0, "");
 }
 
@@ -39,7 +39,7 @@ TEST_CASE("finalizing_test() deals with read_msg() error") {
 }
 
 static void invalid(SharedPtr<Context>, Callback<Error, uint8_t, std::string> cb,
-                    SharedPtr<Reactor> = Reactor::global()) {
+                    SharedPtr<Reactor> = Reactor::make()) {
     cb(NoError(), MSG_ERROR, "");
 }
 
@@ -52,7 +52,7 @@ TEST_CASE("finalizing_test() deals with receiving invalid message") {
 
 // XXX: static test function with a state is not good
 static void empty(SharedPtr<Context>, Callback<Error, uint8_t, std::string> cb,
-                  SharedPtr<Reactor> = Reactor::global()) {
+                  SharedPtr<Reactor> = Reactor::make()) {
     static int count = 0;
     if (count++ == 0) {
         cb(NoError(), TEST_MSG, "");
@@ -83,7 +83,7 @@ TEST_CASE("run() deals with receiving message different from PREPARE") {
 
 static void invalid_port(SharedPtr<Context>,
                          Callback<Error, uint8_t, std::string> cb,
-                         SharedPtr<Reactor> = Reactor::global()) {
+                         SharedPtr<Reactor> = Reactor::make()) {
     cb(NoError(), TEST_PREPARE, "foobar");
 }
 
@@ -94,7 +94,7 @@ TEST_CASE("run() deals with receiving invalid port") {
 }
 
 static void too_large(SharedPtr<Context>, Callback<Error, uint8_t, std::string> cb,
-                      SharedPtr<Reactor> = Reactor::global()) {
+                      SharedPtr<Reactor> = Reactor::make()) {
     cb(NoError(), TEST_PREPARE, "65536");
 }
 
@@ -105,7 +105,7 @@ TEST_CASE("run() deals with receiving too large port") {
 }
 
 static void too_small(SharedPtr<Context>, Callback<Error, uint8_t, std::string> cb,
-                      SharedPtr<Reactor> = Reactor::global()) {
+                      SharedPtr<Reactor> = Reactor::make()) {
     cb(NoError(), TEST_PREPARE, "-1");
 }
 
@@ -116,7 +116,7 @@ TEST_CASE("run() deals with receiving too small port") {
 }
 
 static void success(SharedPtr<Context>, Callback<Error, uint8_t, std::string> cb,
-                    SharedPtr<Reactor> = Reactor::global()) {
+                    SharedPtr<Reactor> = Reactor::make()) {
     cb(NoError(), TEST_PREPARE, "3010");
 }
 
@@ -136,7 +136,7 @@ TEST_CASE("run() deals with coroutine failure") {
 
 static void test_prepare(SharedPtr<Context>,
                          Callback<Error, uint8_t, std::string> cb,
-                         SharedPtr<Reactor> = Reactor::global()) {
+                         SharedPtr<Reactor> = Reactor::make()) {
     cb(NoError(), TEST_PREPARE, "3010");
 }
 
@@ -160,7 +160,7 @@ TEST_CASE("run() deals with unexpected message instead of TEST_START") {
 }
 
 static void test_start(SharedPtr<Context>, Callback<Error, uint8_t, std::string> cb,
-                       SharedPtr<Reactor> = Reactor::global()) {
+                       SharedPtr<Reactor> = Reactor::make()) {
     cb(NoError(), TEST_START, "");
 }
 
@@ -177,7 +177,7 @@ static void coro_ok(SharedPtr<nlohmann::json>, std::string, test_s2c::Params,
 }
 
 static void failure(SharedPtr<Context>, Callback<Error, uint8_t, nlohmann::json> cb,
-                    SharedPtr<Reactor> = Reactor::global()) {
+                    SharedPtr<Reactor> = Reactor::make()) {
     cb(MockedError(), 0, {});
 }
 
@@ -188,7 +188,7 @@ TEST_CASE("run() deals with error when reading TEST_MSG") {
 }
 
 static void invalid(SharedPtr<Context>, Callback<Error, uint8_t, nlohmann::json> cb,
-                    SharedPtr<Reactor> = Reactor::global()) {
+                    SharedPtr<Reactor> = Reactor::make()) {
     cb(NoError(), MSG_ERROR, {});
 }
 
@@ -199,7 +199,7 @@ TEST_CASE("run() deals with unexpected message instead of TEST_MSG") {
 }
 
 static void msg_test(SharedPtr<Context>, Callback<Error, uint8_t, nlohmann::json> cb,
-                     SharedPtr<Reactor> = Reactor::global()) {
+                     SharedPtr<Reactor> = Reactor::make()) {
     cb(NoError(), TEST_MSG, {});
 }
 

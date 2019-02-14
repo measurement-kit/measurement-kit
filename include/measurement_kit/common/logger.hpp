@@ -78,9 +78,6 @@ class Logger {
     /// `make()` creates an instance of the default logger.
     static SharedPtr<Logger> make();
 
-    /// `global()` returns the global instance of the default logger.
-    static SharedPtr<Logger> global();
-
     /// \brief `logv()` writes a log message. \param mask is a mask of the
     /// verbosity level (e.g. MK_LOG_DEBUG) and possibly other
     /// specifiers (e.g. MK_LOG_EVENT). \param fmt is the format
@@ -222,44 +219,6 @@ class Logger {
     /// `~Logger()` destroys allocated resources.
     virtual ~Logger();
 };
-
-/// `log()` call the Logger::log() method of the global logger.
-void log(uint32_t, const char *, ...) __attribute__((format(printf, 2, 3)));
-
-/// `err()` call the Logger::err() method of the global logger.
-void err(const char *, ...) __attribute__((format(printf, 1, 2)));
-
-/// `warn()` call the Logger::warn() method of the global logger.
-void warn(const char *, ...) __attribute__((format(printf, 1, 2)));
-
-/// `info()` call the Logger::info() method of the global logger.
-void info(const char *, ...) __attribute__((format(printf, 1, 2)));
-
-/// `debug()` call the Logger::debug() method of the global logger.
-void debug(const char *, ...) __attribute__((format(printf, 1, 2)));
-
-/// `debug2()` call the Logger::debug2() method of the global logger.
-void debug2(const char *, ...) __attribute__((format(printf, 1, 2)));
-
-/// \brief `set_verbosity()` call the Logger::set_verbosity() method of the
-/// global logger.
-void set_verbosity(uint32_t v);
-
-/// \brief `increase_verbosity()` call the Logger::increase_verbosity()
-/// method of the global logger.
-void increase_verbosity();
-
-/// \brief `get_verbosity()` call the Logger::get_verbosity()
-/// method of the global logger.
-uint32_t get_verbosity();
-
-/// \brief `on_log()` call the Logger::on_log()
-/// method of the global logger.
-void on_log(Callback<uint32_t, const char *> &&fn);
-
-/// \brief `set_logfile()` call the Logger::set_logfile()
-/// method of the global logger.
-void set_logfile(std::string path);
 
 } // namespace mk
 

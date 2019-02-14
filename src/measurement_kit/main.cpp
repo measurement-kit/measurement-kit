@@ -23,6 +23,11 @@ static const struct {
 #undef XX
 };
 
+#define OPTID_HELP 256
+#define OPTID_VERSION 257
+#define OPTID_NO_BOUNCER 258
+#define OPTID_CA_BUNDLE_PATH 259
+
 static OptionSpec kv_specs[] = {
     {'A', "annotation", true, "key=value", "Add annotation"},
     {'b', "bouncer", true, "URL", "Set custom bouncer base URL"},
@@ -34,9 +39,10 @@ static OptionSpec kv_specs[] = {
     {'o', "reportfile", true, "PATH", "Set custom report file PATH"},
     {'s', "list", false, nullptr, "List available nettests"},
     {'v', "verbose", false, nullptr, "Increase verbosity"},
-    {256, "help", false, nullptr, "Display this help and exit"},
-    {257, "version", false, nullptr, "Display version number and exit"},
-    {258, "no-bouncer", false, nullptr, "Disable the bouncer"},
+    {OPTID_CA_BUNDLE_PATH, "ca-bundle-path", true, "PATH", "Set custom CA bundle"},
+    {OPTID_HELP, "help", false, nullptr, "Display this help and exit"},
+    {OPTID_NO_BOUNCER, "no-bouncer", false, nullptr, "Disable the bouncer"},
+    {OPTID_VERSION, "version", false, nullptr, "Display version number and exit"},
     {0, nullptr, 0, 0, nullptr}
 };
 
@@ -139,17 +145,25 @@ int main(int argc, char **argv) {
             initializers.push_back(
                 [](BaseTest &test) { test.increase_verbosity(); });
             break;
-        case 256:
+        case OPTID_HELP:
             return usage(0, stdout);
-        case 257:
+        case OPTID_VERSION:
             printf("measurement_kit version: %s (%s)\n", mk_version(),
                    mk_version_full());
             printf("libevent version: %s\n", mk_libevent_version());
             printf("OpenSSL version: %s\n", mk_openssl_version());
             return 0;
-        case 258:
+        case OPTID_NO_BOUNCER:
             initializers.push_back(
                 [](BaseTest &test) { test.set_option("no_bouncer", 1); });
+            break;
+        case OPTID_CA_BUNDLE_PATH:
+            {
+                std::string s = optarg;
+                initializers.push_back(
+                    [s](BaseTest &test) {
+                      test.set_option("net/ca_bundle_path", s.c_str()); });
+            }
             break;
         default:
             return usage(1, stderr);

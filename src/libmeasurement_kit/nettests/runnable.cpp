@@ -16,8 +16,8 @@
 #include "src/libmeasurement_kit/report/file_reporter.hpp"
 #include "src/libmeasurement_kit/report/ooni_reporter.hpp"
 
-#include <measurement_kit/vendor/mkiplookup.h>
-#include <measurement_kit/vendor/mkmmdb.h>
+#include <measurement_kit/internal/vendor/mkiplookup.h>
+#include <measurement_kit/internal/vendor/mkmmdb.h>
 
 namespace mk {
 namespace nettests {
@@ -25,15 +25,7 @@ namespace nettests {
 using namespace mk::report;
 using namespace mk::ooni;
 
-Runnable::~Runnable() {
-    for (auto fn : destroy_cbs) {
-        try {
-            fn();
-        } catch (const std::exception &) {
-            /* Suppress */ ;
-        }
-    }
-}
+Runnable::~Runnable() {}
 
 void Runnable::setup(std::string) {}
 void Runnable::teardown(std::string) {}
@@ -44,10 +36,6 @@ void Runnable::main(std::string, Settings, Callback<SharedPtr<nlohmann::json>> c
         [=]() { cb(SharedPtr<nlohmann::json>{new nlohmann::json}); });
 }
 void Runnable::fixup_entry(nlohmann::json &) {}
-
-std::deque<std::string> Runnable::fixup_inputs(std::deque<std::string> &&il) {
-  return il;
-}
 
 void Runnable::run_next_measurement(size_t thread_id, Callback<Error> cb,
                                     size_t num_entries,
@@ -140,15 +128,6 @@ void Runnable::run_next_measurement(size_t thread_id, Callback<Error> cb,
         entry["annotations"] = annotations;
         report.fill_entry(entry);
         fixup_entry(entry); // Let drivers possibly fix-up the entry
-        if (entry_cb) {
-            try {
-                entry_cb(entry.dump());
-            } catch (const std::exception &exc) {
-                logger->warn("Unhandled exception in entry_cb(): %s",
-                             exc.what());
-                /* FALLTHROUGH */
-            }
-        }
         // TODO(bassosimone): make sure that this entry contains the report ID
         // which probably is currently not the case.
         logger->emit_event_ex("measurement", nlohmann::json::object({
@@ -184,20 +163,25 @@ void Runnable::run_next_measurement(size_t thread_id, Callback<Error> cb,
 }
 
 void Runnable::geoip_lookup(Callback<> cb) {
+    static const std::string default_probe_ip = "127.0.0.1";
+    static const std::string default_probe_asn = "AS0";
+    static const std::string default_probe_cc = "ZZ";
+    static const std::string default_probe_network_name = "";
+
     // This is to ensure that when calling multiple times geoip_lookup we
     // always reset the probe_ip, probe_asn and probe_cc values.
-    probe_ip = "127.0.0.1";
-    probe_asn = "AS0";
-    probe_cc = "ZZ";
-    probe_network_name = "";
+    probe_ip = default_probe_ip;
+    probe_asn = default_probe_asn;
+    probe_cc = default_probe_cc;
+    probe_network_name = default_probe_network_name;
 
     bool save_ip = options.get("save_real_probe_ip", false);
     bool save_asn = options.get("save_real_probe_asn", true);
     bool save_cc = options.get("save_real_probe_cc", true);
     bool save_network_name = options.get("save_real_probe_network_name", true);
 
-    std::string real_probe_ip = "127.0.0.1";
-    {
+    std::string real_probe_ip = options.get("probe_ip", default_probe_ip);
+    if (real_probe_ip == default_probe_ip) {
         double timeout = options.get("net/timeout", 10.0);
         std::string ca = options.get("net/ca_bundle_path", std::string{});
         mkiplookup_request_uptr req{mkiplookup_request_new_nonnull()};
@@ -222,8 +206,8 @@ void Runnable::geoip_lookup(Callback<> cb) {
         }
     }
 
-    std::string real_probe_cc = "ZZ";
-    {
+    std::string real_probe_cc = options.get("probe_cc", default_probe_cc);
+    if (real_probe_cc == default_probe_cc) {
         std::string path = options.get("geoip_country_path", std::string{});
         mkmmdb_uptr mmdb{mkmmdb_open_nonnull(path.c_str())};
         std::string cc = mkmmdb_lookup_cc(mmdb.get(), real_probe_ip.c_str());
@@ -240,8 +224,8 @@ void Runnable::geoip_lookup(Callback<> cb) {
         }
     }
 
-    std::string real_probe_asn = "AS0";
-    {
+    std::string real_probe_asn = options.get("probe_asn", default_probe_asn);
+    if (real_probe_asn == default_probe_asn) {
         std::string path = options.get("geoip_asn_path", std::string{});
         mkmmdb_uptr mmdb{mkmmdb_open_nonnull(path.c_str())};
         int64_t n = mkmmdb_lookup_asn(mmdb.get(), real_probe_ip.c_str());
@@ -259,8 +243,9 @@ void Runnable::geoip_lookup(Callback<> cb) {
         }
     }
 
-    std::string real_probe_network_name;
-    {
+    std::string real_probe_network_name = options.get(
+        "probe_network_name", default_probe_network_name);
+    if (real_probe_network_name == default_probe_network_name) {
         std::string path = options.get("geoip_asn_path", std::string{});
         mkmmdb_uptr mmdb{mkmmdb_open_nonnull(path.c_str())};
         std::string nn = mkmmdb_lookup_org(mmdb.get(), real_probe_ip.c_str());
@@ -428,9 +413,6 @@ void Runnable::query_bouncer(Callback<Error> cb) {
 }
 
 void Runnable::begin(Callback<Error> cb) {
-    if (begin_cb) {
-        begin_cb();
-    }
     mk::utc_time_now(&test_start_time);
     beginning = mk::time_now();
     query_bouncer([=](Error error) {
@@ -470,7 +452,6 @@ void Runnable::begin(Callback<Error> cb) {
                             cb(error);
                             return;
                         }
-                        inputs = fixup_inputs(std::move(inputs));
                         size_t num_entries = inputs.size();
 
                         // Run `parallelism` measurements in parallel
@@ -495,26 +476,10 @@ void Runnable::begin(Callback<Error> cb) {
 }
 
 void Runnable::end(Callback<Error> cb) {
-    for (auto fn : end_cbs) {
-        try {
-            fn();
-        } catch (const std::exception &) {
-            /* Suppress */ ;
-        }
-    }
     logger->set_progress_offset(0.0);
     logger->set_progress_scale(1.0);
     logger->progress(0.95, "ending the test");
     report.close([=](Error err) {
-        reactor->with_current_data_usage([=](DataUsage &du) {
-            if (!!data_usage_cb) {
-                try {
-                    data_usage_cb(du);
-                } catch (const std::exception &) {
-                    /* Suppress */ ;
-                }
-            }
-        });
         logger->progress(1.00, "test complete");
         cb(err);
     });

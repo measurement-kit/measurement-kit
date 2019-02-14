@@ -67,8 +67,8 @@ class AndroidProber : public NonCopyable,
     /// \param evbase Event base to use (optional)
     AndroidProber(
         bool use_ipv4, int port,
-        SharedPtr<Reactor> reactor = Reactor::global(),
-        SharedPtr<Logger> logger = Logger::global());
+        SharedPtr<Reactor> reactor,
+        SharedPtr<Logger> logger);
 
     /// Destructor
     ~AndroidProber() { cleanup(); }
@@ -93,7 +93,7 @@ class AndroidProber : public NonCopyable,
     bool use_ipv4_ = true;         ///< using IPv4?
     SharedPtr<Reactor> reactor;          ///< The reactor
     int port_ = 0;                 ///< socket port
-    SharedPtr<Logger> logger = Logger::global();///< logger
+    SharedPtr<Logger> logger;      ///< logger
 
     Delegate<ProbeResult> result_cb_;  ///< on result callback
     Delegate<> timeout_cb_;            ///< on timeout callback

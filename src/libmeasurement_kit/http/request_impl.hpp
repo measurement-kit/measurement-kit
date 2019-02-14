@@ -18,8 +18,8 @@ namespace http {
 
 template <MK_MOCK_AS(net::connect, net_connect)>
 void request_connect_impl(Settings settings, Callback<Error, SharedPtr<Transport>> cb,
-                          SharedPtr<Reactor> reactor = Reactor::global(),
-                          SharedPtr<Logger> logger = Logger::global()) {
+                          SharedPtr<Reactor> reactor,
+                          SharedPtr<Logger> logger) {
     if (settings.find("http/url") == settings.end()) {
         cb(MissingUrlError(), {});
         return;

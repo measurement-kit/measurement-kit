@@ -42,7 +42,7 @@ TEST_CASE("process_input_filepaths() works as expected") {
         std::deque<std::string> inputs;
         mk::Error error =
             mk::nettests::process_input_filepaths(inputs,
-                true, {}, "IT", {}, mk::Logger::global(), nullptr, nullptr);
+                true, {}, "IT", {}, mk::Logger::make(), nullptr, nullptr);
         REQUIRE(error);
         REQUIRE(error ==
                 mk::ooni::MissingRequiredInputFileError());
@@ -55,7 +55,7 @@ TEST_CASE("process_input_filepaths() works as expected") {
         std::deque<std::string> inputs{"antani"};
         mk::Error error =
             mk::nettests::process_input_filepaths(inputs,
-                true, {}, "IT", {}, mk::Logger::global(), nullptr, nullptr);
+                true, {}, "IT", {}, mk::Logger::make(), nullptr, nullptr);
         REQUIRE(!error);
         REQUIRE(error == mk::NoError());
     }
@@ -65,7 +65,7 @@ TEST_CASE("process_input_filepaths() works as expected") {
         mk::Error error =
             mk::nettests::process_input_filepaths_impl<check_variable_expanded>(
                 inputs,
-                true, {"${probe_cc}"}, "IT", {}, mk::Logger::global(), nullptr,
+                true, {"${probe_cc}"}, "IT", {}, mk::Logger::make(), nullptr,
                 nullptr);
         /*
          * We are going to fail because the mocked function returns a
@@ -83,7 +83,7 @@ TEST_CASE("process_input_filepaths() works as expected") {
                                                        cannot_read_line>(
                 inputs,
                 true, {"./test/fixtures/urls.txt"}, "IT", {},
-                mk::Logger::global(), nullptr, nullptr);
+                mk::Logger::make(), nullptr, nullptr);
         REQUIRE(error);
         REQUIRE(error ==
                 mk::ooni::CannotReadAnyInputFileError());
@@ -94,7 +94,7 @@ TEST_CASE("process_input_filepaths() works as expected") {
         std::string cannot_open;
         mk::Error error =
             mk::nettests::process_input_filepaths(inputs,
-                true, {"./nonexistent"}, "IT", {}, mk::Logger::global(),
+                true, {"./nonexistent"}, "IT", {}, mk::Logger::make(),
                 [&](const std::string &p) { cannot_open = p; }, nullptr);
         REQUIRE(error);
         REQUIRE(error ==
@@ -109,7 +109,7 @@ TEST_CASE("process_input_filepaths() works as expected") {
             mk::nettests::process_input_filepaths_impl<mk::nettests::open_file_,
                                                        simulate_io_error>(
                 inputs, true, {"./test/fixtures/urls.txt"}, "IT", {},
-                mk::Logger::global(), nullptr,
+                mk::Logger::make(), nullptr,
                 [&](const std::string &p) { cannot_read = p; });
         REQUIRE(error);
         REQUIRE(error ==
@@ -122,7 +122,7 @@ TEST_CASE("process_input_filepaths() works as expected") {
         mk::Error error =
             mk::nettests::process_input_filepaths(
                 inputs, true, {"./test/fixtures/urls.txt"}, "IT",
-                {{"randomize_input", "antani"}}, mk::Logger::global(), nullptr,
+                {{"randomize_input", "antani"}}, mk::Logger::make(), nullptr,
                 nullptr);
         REQUIRE(error);
         REQUIRE(error == mk::ValueError());
@@ -135,7 +135,7 @@ TEST_CASE("process_input_filepaths() works as expected") {
                 mk::nettests::open_file_, mk::nettests::readline_,
                 intercept_randomize>(inputs, true, {"./test/fixtures/urls.txt"}, "IT",
                                      {{"randomize_input", "1"}},
-                                     mk::Logger::global(), nullptr, nullptr)),
+                                     mk::Logger::make(), nullptr, nullptr)),
             mk::MockedError);
     }
 
@@ -145,7 +145,7 @@ TEST_CASE("process_input_filepaths() works as expected") {
                               mk::nettests::open_file_, mk::nettests::readline_,
                               intercept_randomize>(inputs,
                               true, {"./test/fixtures/urls.txt"}, "IT", {},
-                              mk::Logger::global(), nullptr, nullptr)),
+                              mk::Logger::make(), nullptr, nullptr)),
                           mk::MockedError);
     }
 
@@ -156,7 +156,7 @@ TEST_CASE("process_input_filepaths() works as expected") {
                                                    mk::nettests::readline_,
                                                    intercept_randomize>(
             inputs, true, {"./test/fixtures/urls.txt"}, "IT",
-            {{"randomize_input", "0"}}, mk::Logger::global(), nullptr, nullptr);
+            {{"randomize_input", "0"}}, mk::Logger::make(), nullptr, nullptr);
     }
 
     SECTION("The randomize primitive works as expected") {
@@ -194,7 +194,7 @@ TEST_CASE("process_input_filepaths() works as expected") {
         mk::Error error =
             mk::nettests::process_input_filepaths(
                 inputs, false, {"./test/fixtures/urls.txt"}, "IT",
-                {{"randomize_input", "antani"}}, mk::Logger::global(), nullptr,
+                {{"randomize_input", "antani"}}, mk::Logger::make(), nullptr,
                 nullptr);
         REQUIRE(!error);
         REQUIRE(inputs.size() == 1);
@@ -206,7 +206,7 @@ TEST_CASE("process_input_filepaths() works as expected") {
         mk::Error error =
             mk::nettests::process_input_filepaths(
                 inputs, false, {"./test/fixtures/urls.txt"}, "IT",
-                {{"randomize_input", "antani"}}, mk::Logger::global(), nullptr,
+                {{"randomize_input", "antani"}}, mk::Logger::make(), nullptr,
                 nullptr);
         REQUIRE(!error);
         REQUIRE(inputs.size() == 1);
@@ -229,7 +229,7 @@ TEST_CASE("process_input_filepaths() works as expected") {
         mk::Error error =
             mk::nettests::process_input_filepaths(inputs,
                 true, {"./test/fixtures/urls.txt"}, "IT", {},
-                mk::Logger::global(), nullptr, nullptr);
+                mk::Logger::make(), nullptr, nullptr);
         REQUIRE(!error);
         std::unordered_set<std::string> result(inputs.begin(),
                                                inputs.end());

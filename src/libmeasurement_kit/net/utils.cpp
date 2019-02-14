@@ -143,7 +143,6 @@ int storage_init(sockaddr_storage *storage, socklen_t *salen,
     } else if (strcmp(family, "PF_INET6") == 0) {
         _family = PF_INET6;
     } else {
-        warn("utils:storage_init: invalid family");
         return -1;
     }
     return storage_init(storage, salen, _family, address, port, logger);
@@ -154,7 +153,6 @@ int storage_init(sockaddr_storage *storage, socklen_t *salen, int _family,
     const char *errstr;
     int _port = (int)mkp_strtonum(port, 0, 65535, &errstr);
     if (errstr != nullptr) {
-        warn("utils:storage_init: invalid port");
         return -1;
     }
     return storage_init(storage, salen, _family, address, _port, logger);

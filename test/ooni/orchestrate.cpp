@@ -101,26 +101,26 @@ TEST_CASE("Auth::is_valid() works correctly") {
     Auth auth;
 
     SECTION("When we are not logged in") {
-        REQUIRE(auth.is_valid(Logger::global()) == false);
+        REQUIRE(auth.is_valid(Logger::make()) == false);
     }
 
     SECTION("When the token is empty") {
         auth.logged_in = true;
-        REQUIRE(auth.is_valid(Logger::global()) == false);
+        REQUIRE(auth.is_valid(Logger::make()) == false);
     }
 
     SECTION("When we are logged in and time is expired") {
         auth.expiry_time = make_time_([](time_t t) { return t - 60; });
         auth.logged_in = true;
         auth.auth_token = "{TOKEN}";
-        REQUIRE(auth.is_valid(Logger::global()) == false);
+        REQUIRE(auth.is_valid(Logger::make()) == false);
     }
 
     SECTION("When we are logged in and time is not expired") {
         auth.expiry_time = make_time_([](time_t t) { return t + 60; });
         auth.logged_in = true;
         auth.auth_token = "{TOKEN}";
-        REQUIRE(auth.is_valid(Logger::global()) == true);
+        REQUIRE(auth.is_valid(Logger::make()) == true);
     }
 }
 
@@ -132,7 +132,7 @@ TEST_CASE("orchestrate::login() works correctly") {
         Settings settings;
         settings["net/ca_bundle_path"] = "cacert.pem";
         reactor->run_with_initial_event([&]() {
-            login({}, testing_registry_url(), settings, reactor, Logger::global(),
+            login({}, testing_registry_url(), settings, reactor, Logger::make(),
                   [&](Error &&e, Auth &&) {
                       err = e;
                       reactor->stop();
@@ -149,7 +149,7 @@ TEST_CASE("orchestrate::login() works correctly") {
         settings["net/ca_bundle_path"] = "cacert.pem";
         reactor->run_with_initial_event([&]() {
             login(std::move(auth), testing_registry_url(), settings, reactor,
-                  Logger::global(), [&](Error &&e, Auth &&) {
+                  Logger::make(), [&](Error &&e, Auth &&) {
                       err = e;
                       reactor->stop();
                   });

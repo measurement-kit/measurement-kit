@@ -290,38 +290,7 @@ class DefaultLogger : public Logger, public NonCopyable, public NonMovable {
     return SharedPtr<Logger>{std::make_shared<DefaultLogger>()};
 }
 
-/*static*/ SharedPtr<Logger> Logger::global() {
-    return locked_global([]() {
-        static SharedPtr<Logger> singleton = Logger::make();
-        return singleton;
-    });
-}
-
 Logger::~Logger() {}
-
-void log(uint32_t level, const char *fmt, ...) { XX(Logger::global(), level); }
-
-void err(const char *fmt, ...) { XX(Logger::global(), MK_LOG_ERR); }
-
-void warn(const char *fmt, ...) { XX(Logger::global(), MK_LOG_WARNING); }
-
-void info(const char *fmt, ...) { XX(Logger::global(), MK_LOG_INFO); }
-
-void debug(const char *fmt, ...) { XX(Logger::global(), MK_LOG_DEBUG); }
-
-void debug2(const char *fmt, ...) { XX(Logger::global(), MK_LOG_DEBUG2); }
-
-void set_verbosity(uint32_t v) { Logger::global()->set_verbosity(v); }
-
-void increase_verbosity() { Logger::global()->increase_verbosity(); }
-
-uint32_t get_verbosity() { return Logger::global()->get_verbosity(); }
-
-void on_log(Callback<uint32_t, const char *> &&fn) {
-    Logger::global()->on_log(std::move(fn));
-}
-
-void set_logfile(std::string path) { Logger::global()->set_logfile(path); }
 
 #undef XX
 

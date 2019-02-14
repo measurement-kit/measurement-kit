@@ -30,8 +30,8 @@ class Reply {
 
 /// Query mlab-ns and receive response.
 void query(std::string tool, Callback<Error, Reply> callback,
-           Settings settings = {}, SharedPtr<Reactor> reactor = Reactor::global(),
-           SharedPtr<Logger> logger = Logger::global());
+           Settings settings, SharedPtr<Reactor> reactor,
+           SharedPtr<Logger> logger);
 
 } // namespace mlabns
 } // namespace mk

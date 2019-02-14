@@ -4,7 +4,7 @@
 
 #include "src/libmeasurement_kit/common/encoding.hpp"
 
-#include "measurement_kit/vendor/mkdata.h"
+#include "measurement_kit/internal/vendor/mkdata.h"
 
 namespace mk {
 

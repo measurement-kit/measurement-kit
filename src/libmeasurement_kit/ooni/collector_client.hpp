@@ -22,15 +22,13 @@ std::string production_collector_url();
 std::string testing_collector_url();
 
 void submit_report(std::string filepath, std::string collector_base_url,
-                   Callback<Error> callback, Settings conf = {},
-                   SharedPtr<Reactor> = Reactor::global(),
-                   SharedPtr<Logger> = Logger::global());
+                   Callback<Error> callback, Settings conf,
+                   SharedPtr<Reactor>, SharedPtr<Logger>);
 
 void submit_report(std::string filepath, std::string collector_base_url,
                    std::string collector_front_domain,
-                   Callback<Error> callback, Settings conf = {},
-                   SharedPtr<Reactor> = Reactor::global(),
-                   SharedPtr<Logger> = Logger::global());
+                   Callback<Error> callback, Settings conf,
+                   SharedPtr<Reactor>, SharedPtr<Logger>);
 
 /*
     The following APIs are used to implement `submit_report()` and could
@@ -39,34 +37,30 @@ void submit_report(std::string filepath, std::string collector_base_url,
 */
 
 void connect(Settings, Callback<Error, SharedPtr<net::Transport>>,
-             SharedPtr<Reactor> = Reactor::global(), SharedPtr<Logger> = Logger::global());
+             SharedPtr<Reactor>, SharedPtr<Logger>);
 
 void create_report(SharedPtr<net::Transport>, nlohmann::json,
-                   Callback<Error, std::string>, Settings = {},
-                   SharedPtr<Reactor> = Reactor::global(),
-                   SharedPtr<Logger> = Logger::global());
+                   Callback<Error, std::string>, Settings,
+                   SharedPtr<Reactor>, SharedPtr<Logger>);
 
 void connect_and_create_report(nlohmann::json, Callback<Error, std::string>,
-                               Settings = {}, SharedPtr<Reactor> = Reactor::global(),
-                               SharedPtr<Logger> = Logger::global());
+                               Settings, SharedPtr<Reactor>,
+                               SharedPtr<Logger>);
 
 void update_report(SharedPtr<net::Transport>, std::string report_id, nlohmann::json,
-                   Callback<Error>, Settings = {},
-                   SharedPtr<Reactor> = Reactor::global(),
-                   SharedPtr<Logger> = Logger::global());
+                   Callback<Error>, Settings,
+                   SharedPtr<Reactor>, SharedPtr<Logger>);
 
 void connect_and_update_report(std::string report_id, nlohmann::json,
-                               Callback<Error>, Settings = {},
-                               SharedPtr<Reactor> = Reactor::global(),
-                               SharedPtr<Logger> = Logger::global());
+                               Callback<Error>, Settings,
+                               SharedPtr<Reactor>, SharedPtr<Logger>);
 
 void close_report(SharedPtr<net::Transport>, std::string report_id, Callback<Error>,
-                  Settings = {}, SharedPtr<Reactor> = Reactor::global(),
-                  SharedPtr<Logger> = Logger::global());
+                  Settings, SharedPtr<Reactor>, SharedPtr<Logger>);
 
 void connect_and_close_report(std::string report_id, Callback<Error>,
-                              Settings = {}, SharedPtr<Reactor> = Reactor::global(),
-                              SharedPtr<Logger> = Logger::global());
+                              Settings, SharedPtr<Reactor>,
+                              SharedPtr<Logger>);
 
 } // namespace collector
 } // namespace mk

@@ -14,14 +14,26 @@
 
 #include <measurement_kit/common/nlohmann/json.hpp>
 
-#include "src/libmeasurement_kit/engine.hpp"
+#include "src/libmeasurement_kit/common/encoding.hpp"
+#include "src/libmeasurement_kit/engine/task.hpp"
+#include "src/libmeasurement_kit/ffi.hpp"
 
-struct mk_event_ : public std::string {
-    using std::string::string;
-};
-
-static mk_event_t *mk_event_create(const nlohmann::json &json) noexcept {
-    return new mk_event_t{json.dump().data()};
+mk_event_t *mk_event_create_(const nlohmann::json &json) noexcept {
+    std::string ev;
+    try {
+        ev = json.dump();
+    } catch (const std::exception &exc) {
+        nlohmann::json failure;
+        failure["key"] = "bug.json_dump";
+        failure["value"]["failure"] = mk::base64_encode_if_needed(exc.what());
+        if (json.count("key") > 0) {
+            failure["value"]["orig_key"] = mk::base64_encode_if_needed(json.at("key"));
+        }
+        ev = failure.dump();
+    }
+    mk_unique_event event{new mk_event_t};
+    std::swap(*event, ev);
+    return event.release();
 }
 
 const char *mk_event_serialize(mk_event_t *event) noexcept {
@@ -50,7 +62,7 @@ mk_task_t *mk_nettest_start(const char *settings) noexcept {
 }
 
 mk_event_t *mk_task_wait_for_next_event(mk_task_t *task) noexcept {
-    return (task) ? mk_event_create(task->wait_for_next_event()) : nullptr;
+    return (task) ? mk_event_create_(task->wait_for_next_event()) : nullptr;
 }
 
 int mk_task_is_done(mk_task_t *task) noexcept {

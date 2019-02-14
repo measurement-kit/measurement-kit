@@ -14,7 +14,7 @@ using namespace mk::ndt;
 using namespace mk::net;
 
 static void fail(SharedPtr<Context>, Callback<Error, uint8_t, std::string> cb,
-                 SharedPtr<Reactor> = Reactor::global()) {
+                 SharedPtr<Reactor> = Reactor::make()) {
     cb(MockedError(), 0, "");
 }
 
@@ -25,7 +25,7 @@ TEST_CASE("run() deals with read() error") {
 }
 
 static void unexpected(SharedPtr<Context>, Callback<Error, uint8_t, std::string> cb,
-                       SharedPtr<Reactor> = Reactor::global()) {
+                       SharedPtr<Reactor> = Reactor::make()) {
     cb(NoError(), MSG_ERROR, "");
 }
 
@@ -37,7 +37,7 @@ TEST_CASE("run() deals with unexpected message type") {
 
 static void test_prepare(SharedPtr<Context>,
                          Callback<Error, uint8_t, std::string> cb,
-                         SharedPtr<Reactor> = Reactor::global()) {
+                         SharedPtr<Reactor> = Reactor::make()) {
     cb(NoError(), TEST_PREPARE, "");
 }
 
@@ -62,7 +62,7 @@ static ErrorOr<Buffer> success(std::string s) {
 }
 
 static void test_start(SharedPtr<Context>, Callback<Error, uint8_t, std::string> cb,
-                       SharedPtr<Reactor> = Reactor::global()) {
+                       SharedPtr<Reactor> = Reactor::make()) {
     cb(NoError(), TEST_START, "");
 }
 
@@ -75,7 +75,7 @@ TEST_CASE("run() deals with first format_test_msg() error") {
 
 TEST_CASE("run() deals with second format_test_msg() error") {
     SharedPtr<Context> ctx(new Context);
-    ctx->txp.reset(new Emitter(Reactor::global(), Logger::global()));
+    ctx->txp.reset(new Emitter(Reactor::make(), Logger::make()));
     test_meta::run_impl<test_prepare, test_start, success, fail>(
         ctx,
         [](Error err) { REQUIRE(err == SerializingClientApplicationError()); });
@@ -83,7 +83,7 @@ TEST_CASE("run() deals with second format_test_msg() error") {
 
 TEST_CASE("run() deals with third format_test_msg() error") {
     SharedPtr<Context> ctx(new Context);
-    ctx->txp.reset(new Emitter(Reactor::global(), Logger::global()));
+    ctx->txp.reset(new Emitter(Reactor::make(), Logger::make()));
     test_meta::run_impl<test_prepare, test_start, success, success, fail>(
         ctx, [](Error err) { REQUIRE(err == SerializingFinalMetaError()); });
 }
@@ -94,7 +94,7 @@ static void fail(SharedPtr<Context>, Buffer, Callback<Error> cb) {
 
 TEST_CASE("run() deals with write error") {
     SharedPtr<Context> ctx(new Context);
-    ctx->txp.reset(new Emitter(Reactor::global(), Logger::global()));
+    ctx->txp.reset(new Emitter(Reactor::make(), Logger::make()));
     test_meta::run_impl<test_prepare, test_start, success, success, success,
                         fail>(
         ctx, [](Error err) { REQUIRE(err == WritingMetaError()); });
@@ -104,7 +104,7 @@ static void success(SharedPtr<Context>, Buffer, Callback<Error> cb) { cb(NoError
 
 TEST_CASE("run() deals with third read() error") {
     SharedPtr<Context> ctx(new Context);
-    ctx->txp.reset(new Emitter(Reactor::global(), Logger::global()));
+    ctx->txp.reset(new Emitter(Reactor::make(), Logger::make()));
     test_meta::run_impl<test_prepare, test_start, success, success, success,
                         success, fail>(
         ctx, [](Error err) { REQUIRE(err == ReadingTestFinalizeError()); });
@@ -112,7 +112,7 @@ TEST_CASE("run() deals with third read() error") {
 
 TEST_CASE("run() deals with unexpected message on third read") {
     SharedPtr<Context> ctx(new Context);
-    ctx->txp.reset(new Emitter(Reactor::global(), Logger::global()));
+    ctx->txp.reset(new Emitter(Reactor::make(), Logger::make()));
     test_meta::run_impl<test_prepare, test_start, success, success, success,
                         success, unexpected>(
         ctx, [](Error err) { REQUIRE(err == NotTestFinalizeError()); });

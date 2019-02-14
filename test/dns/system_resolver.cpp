@@ -108,7 +108,11 @@ TEST_CASE("the system resolver is able to resolve an ipv6 address") {
 TEST_CASE("the system resolver can handle errors with a CNAME query") {
     run_system_resolver(
         "IN", "CNAME", "invalid_site.local", [](Error e, SharedPtr<Message>) {
-            REQUIRE(e == HostOrServiceNotProvidedOrNotKnownError());
+            bool ok = (
+                e == HostOrServiceNotProvidedOrNotKnownError() ||
+                e == TemporaryFailureError()
+            );
+            REQUIRE(ok);
         });
 }
 

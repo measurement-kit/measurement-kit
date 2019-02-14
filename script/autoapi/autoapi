@@ -67,7 +67,11 @@ class Nettest(object):
 def main():
     """ Main function """
 
-    events = [Event("failure.asn_lookup",
+    events = [Event("bug.json_dump",
+                    Attribute("std::string", "failure"),
+                    Attribute("std::string", "orig_key")),
+
+              Event("failure.asn_lookup",
                     Attribute("std::string", "failure")),
 
               Event("failure.cc_lookup",
@@ -190,12 +194,21 @@ def main():
                Attribute("bool", "ignore_bouncer_error", "true"),
                Attribute("bool", "ignore_open_report_error", "true"),
                Attribute("int64_t", "max_runtime", "-1"),
+               Attribute("std::string", "mlabns/address_family"),
+               Attribute("std::string", "mlabns/base_url"),
+               Attribute("std::string", "mlabns/country"),
+               Attribute("std::string", "mlabns/metro"),
+               Attribute("std::string", "mlabns/policy"),
                Attribute("std::string", "net/ca_bundle_path"),
                Attribute("double", "net/timeout", "10.0"),
                Attribute("bool", "no_bouncer", "false"),
                Attribute("bool", "no_collector", "false"),
                Attribute("bool", "no_file_report", "false"),
                Attribute("int64_t", "port", "0"),
+               Attribute("std::string", "probe_ip"),
+               Attribute("std::string", "probe_asn"),
+               Attribute("std::string", "probe_cc"),
+               Attribute("std::string", "probe_network_name"),
                Attribute("bool", "randomize_input", "true"),
                Attribute("bool", "save_real_probe_asn", "true"),
                Attribute("bool", "save_real_probe_cc", "true"),
@@ -234,7 +247,7 @@ def main():
         render = tpl.render(events=events, log_levels=log_levels,
                             settings=settings, options=options,
                             nettests=nettests)
-        with open("./src/libmeasurement_kit/engine.cpp", "w") as destfp:
+        with open("./src/libmeasurement_kit/engine/autoapi.cpp", "w") as destfp:
             destfp.write(render)
 
     for arg in sys.argv[1:]:

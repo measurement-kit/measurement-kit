@@ -43,33 +43,5 @@ void WebConnectivityRunnable::fixup_entry(nlohmann::json &entry) {
     }
 }
 
-std::deque<std::string>
-WebConnectivityRunnable::fixup_inputs(std::deque<std::string> &&il) {
-    std::deque<std::string> rv;
-    while (!il.empty()) {
-        std::string original_url;
-        std::swap(original_url, il.front());
-        il.pop_front();
-        ErrorOr<http::Url> maybe_url = http::parse_url_noexcept(original_url);
-        if (maybe_url.as_error() != NoError()) {
-            // Incorrect URL. WebConnectivity will complain for us later.
-            rv.push_back(std::move(original_url));
-            continue;
-        }
-        if (maybe_url->schema == "https" && maybe_url->port == 443) {
-            // "Test both http and https versions of a website" #1560
-            http::Url httpURL = *maybe_url;
-            httpURL.schema = "http";
-            httpURL.port = 80;
-            rv.push_back(httpURL.str());
-            // FALLTHROUGH
-        }
-        // return to the app the original URL rather than a possibly
-        // canonicalised version of it; see #1685.
-        rv.push_back(original_url);
-    }
-    return rv;
-}
-
 } // namespace nettests
 } // namespace mk

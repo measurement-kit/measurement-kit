@@ -169,12 +169,21 @@ The nettest task settings object is a JSON like:
     "ignore_bouncer_error": true,
     "ignore_open_report_error": true,
     "max_runtime": -1,
+    "mlabns/address_family": "ipv4",
+    "mlabns/base_url": "https://mlab-ns.appspot.com",
+    "mlabns/country": "IT",
+    "mlabns/metro": "trn",
+    "mlabns/policy": "random",
     "net/ca_bundle_path": "",
     "net/timeout": 10.0,
     "no_bouncer": false,
     "no_collector": false,
     "no_file_report": false,
     "port": 1234,
+    "probe_ip": "1.2.3.4",
+    "probe_asn": "AS30722",
+    "probe_cc": "IT",
+    "probe_network_name": "Network name",
     "randomize_input": true,
     "save_real_probe_asn": true,
     "save_real_probe_cc": true,
@@ -292,6 +301,29 @@ These are the available options:
   be stopped. Works _only_ for tests taking input. By default set to `-1`
   so that there is no maximum runtime for tests with input;
 
+- `"mlabns/address_family"`: (string) set to `"ipv4"` or `"ipv6"` to force
+   M-Lab NS to only return IPv4 or IPv6 addresses (you don't normally
+   need to set this option and it only has effect for NDT and DASH anyway);
+
+- `"mlabns/base_url"`: (string) base URL of the M-Lab NS service (you don't
+  normally need to set this option and it only has effect for NDT and
+  DASH anyway);
+
+- `"mlabns/country"`: (string) tells M-Lab NS the country in which you are
+  rather than letting it guess for you, so that it returns results that
+  are meaningful within that country (again, normally you don't need this
+  option, and it only impacts on DASH and NDT);
+
+- `"mlabns/metro"`: (string) this restricts the results returned by M-Lab
+  NS to a specific metro area; for example, setting this to `"ord"` will
+  only returns M-Lab servers in the Chicago area (again, you normally don't
+  need this option, and it only impacts on DASH and NDT);
+
+- `"mlabns/policy"`: (string) overrides the default M-Lab NS policy; for
+  example, setting this to `"random"` will return a random server (as stated
+  above, you normally don't need this variable, and it only impacts on
+  the NDT and DASH tests);
+
 - `"net/ca_bundle_path"`: (string) path to the CA bundle path to be used
   to validate SSL certificates. Required on mobile;
 
@@ -306,6 +338,16 @@ These are the available options:
 
 - `"no_file_report"`: (boolean) whether to write a report (i.e. measurement
   result) file on disk. By default set to `false`, meaning that we'll try;
+
+- `"probe_asn"`: (string) sets the `probe_asn` to be included into the
+  report, thus skipping the ASN resolution;
+
+- `"probe_cc"`: (string) like `probe_asn` but for country code;
+
+- `"probe_ip"`: (string) like `probe_asn` but for IP address;
+
+- `"probe_network_name"`: (string) like `probe_asn` but for the
+  name associated to the ASN;
 
 - `"port"`: (int) allows to override the port for tests that connect to a
   specific port, such as NDT and DASH;
@@ -350,6 +392,25 @@ is a string. Below we describe all the possible event keys, along with the
 "value" JSON structure. Unless otherwise specified, an event key can be emitted
 an arbitrary number of times during the lifecycle of a task. Unless otherwise
 specified, all the keys introduced below where added in MK v0.9.0.
+
+- `"bug.json_dump"`: (object) There was a failure in serialising an event
+  to JSON and we let you know about this Measurement Kit bug. Please, open an
+  issue on GitHub if you notice this kind of bug. This event has been added
+  in MK v0.9.2. The JSON returned by this event is like:
+
+```JSON
+{
+  "key": "bug.json_dump",
+  "value": {
+    "failure": "<failure_string>",
+    "orig_key": "<orig_key>",
+  }
+}
+```
+
+Where `<orig_key>` is the key that failure and `<failure_string>` is an
+error providing some additional information. Note that both fields MAY
+be base64 encoded if they're not JSON serialisable.
 
 - `"failure.asn_lookup"`: (object) There was a failure attempting to lookup the
   user autonomous system number. The JSON returned by this event is like:
@@ -771,7 +832,7 @@ function taskThread(settings) {
     emitEvent("status.end", {
       downloaded_kb: countDownloadedKb(),
       uploaded_kb: countUploadedKb(),
-      failure: (error) ? error.AsString() : null
+      failure: error.AsString()
     })
   }
 

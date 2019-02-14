@@ -64,7 +64,7 @@ TEST_CASE("HTTP Request class works as expected") {
         },
         "0123456789");
     Buffer buffer;
-    request.serialize(buffer);
+    request.serialize(buffer, Logger::make());
     auto serialized = buffer.read();
     std::string expect = "GET /antani?clacsonato=yes HTTP/1.0\r\n";
     expect += "User-Agent: Antani/1.0.0.0\r\n";
@@ -92,7 +92,7 @@ TEST_CASE("HTTP Request class works as expected with explicit path") {
         },
         "0123456789");
     Buffer buffer;
-    request.serialize(buffer);
+    request.serialize(buffer, Logger::make());
     auto serialized = buffer.read();
     std::string expect = "GET /antani?amicimiei HTTP/1.0\r\n";
     expect += "User-Agent: Antani/1.0.0.0\r\n";
@@ -131,7 +131,7 @@ TEST_CASE("http::request works as expected") {
                 REQUIRE(md5(response->body) ==
                         "5d2182cb241b5a9aefad8ce584831666");
                 reactor->stop();
-            }, reactor);
+            }, reactor, Logger::make());
     });
 }
 
@@ -153,7 +153,7 @@ TEST_CASE("http::request() works using HTTPS") {
                     REQUIRE(md5(response->body) ==
                             "1be9d96d157a3df328faa30e51faf63a");
                     reactor->stop();
-                }, reactor);
+                }, reactor, Logger::make());
     });
 }
 
@@ -180,7 +180,7 @@ TEST_CASE("http::request() works as expected over Tor") {
                         "5d2182cb241b5a9aefad8ce584831666");
                 }
                 reactor->stop();
-            }, reactor);
+            }, reactor, Logger::make());
     });
 }
 
@@ -202,7 +202,7 @@ TEST_CASE("http::request correctly receives errors") {
                 REQUIRE(error);
                 REQUIRE(response->response_line == "");
                 reactor->stop();
-            }, reactor);
+            }, reactor, Logger::make());
     });
 }
 
@@ -255,13 +255,14 @@ TEST_CASE("http::request_recv_response() deals with immediate EOF") {
                                               REQUIRE(!!r);
                                               reactor->stop();
                                           },
-                                          {}, reactor);
+                                          {}, reactor, Logger::make());
                     transport->emit_error(EofError());
                 },
                 {// With this connect() succeeds immediately and the
                  // callback receives a dumb Emitter transport that you
                  // can drive by calling its emit_FOO() methods
-                 {"net/dumb_transport", true}});
+                 {"net/dumb_transport", true}},
+                 Reactor::make(), Logger::make());
     });
 }
 
@@ -288,10 +289,12 @@ TEST_CASE("Behavior is correct when only tor_socks_port is specified") {
     };
 
     settings["http/url"] = "httpo://nkvphnp3p6agi5qq.onion/bouncer";
-    request_connect_impl<socks_port_is_9055>(settings, nullptr);
+    request_connect_impl<socks_port_is_9055>(settings, nullptr,
+        Reactor::make(), Logger::make());
 
     settings["http/url"] = "http://ooni.torproject.org/";
-    request_connect_impl<socks_port_is_empty>(settings, nullptr);
+    request_connect_impl<socks_port_is_empty>(settings, nullptr,
+        Reactor::make(), Logger::make());
 }
 
 SOCKS_PORT_IS(9999)
@@ -305,10 +308,12 @@ TEST_CASE("Behavior is correct with both tor_socks_port and socks5_proxy") {
     };
 
     settings["http/url"] = "httpo://nkvphnp3p6agi5qq.onion/bouncer";
-    request_connect_impl<socks_port_is_9999>(settings, nullptr);
+    request_connect_impl<socks_port_is_9999>(settings, nullptr,
+        Reactor::make(), Logger::make());
 
     settings["http/url"] = "http://ooni.torproject.org/";
-    request_connect_impl<socks_port_is_9055>(settings, nullptr);
+    request_connect_impl<socks_port_is_9055>(settings, nullptr,
+        Reactor::make(), Logger::make());
 }
 
 TEST_CASE("Behavior is corrent when only socks5_proxy is specified") {
@@ -319,10 +324,12 @@ TEST_CASE("Behavior is corrent when only socks5_proxy is specified") {
     };
 
     settings["http/url"] = "httpo://nkvphnp3p6agi5qq.onion/bouncer";
-    request_connect_impl<socks_port_is_9055>(settings, nullptr);
+    request_connect_impl<socks_port_is_9055>(settings, nullptr,
+        Reactor::make(), Logger::make());
 
     settings["http/url"] = "http://ooni.torproject.org/";
-    request_connect_impl<socks_port_is_9055>(settings, nullptr);
+    request_connect_impl<socks_port_is_9055>(settings, nullptr,
+        Reactor::make(), Logger::make());
 }
 
 SOCKS_PORT_IS(9050)
@@ -333,10 +340,12 @@ TEST_CASE("Behavior is OK w/o tor_socks_port and socks5_proxy") {
     };
 
     settings["http/url"] = "httpo://nkvphnp3p6agi5qq.onion/bouncer";
-    request_connect_impl<socks_port_is_9050>(settings, nullptr);
+    request_connect_impl<socks_port_is_9050>(settings, nullptr,
+        Reactor::make(), Logger::make());
 
     settings["http/url"] = "http://ooni.torproject.org/";
-    request_connect_impl<socks_port_is_empty>(settings, nullptr);
+    request_connect_impl<socks_port_is_empty>(settings, nullptr,
+        Reactor::make(), Logger::make());
 }
 
 TEST_CASE("http::request() callback is called if input URL parsing fails") {
@@ -348,7 +357,7 @@ TEST_CASE("http::request() callback is called if input URL parsing fails") {
                 called = true;
                 REQUIRE(err == MissingUrlError());
                 reactor->stop();
-            }, reactor);
+            }, reactor, Logger::make());
     });
     REQUIRE(called);
 }
@@ -361,7 +370,7 @@ TEST_CASE("http::request_connect_impl() works for normal connections") {
                                  REQUIRE(!error);
                                  REQUIRE(static_cast<bool>(transport));
                                  transport->close([=]() { reactor->stop(); });
-                             }, reactor);
+                             }, reactor, Logger::make());
     });
 }
 
@@ -377,7 +386,7 @@ TEST_CASE("http::request_send() works as expected") {
                                  {"http/method", "GET"},
                                  {"http/url", "http://www.google.com/"},
                              },
-                             {}, "", Logger::global(),
+                             {}, "", Logger::make(),
                              [=](Error error, SharedPtr<Request> request) {
                                  REQUIRE((request->method == "GET"));
                                  REQUIRE((request->url.schema == "http"));
@@ -389,7 +398,7 @@ TEST_CASE("http::request_send() works as expected") {
                                  REQUIRE(!error);
                                  transport->close([=]() { reactor->stop(); });
                              });
-            }, reactor);
+            }, reactor, Logger::make());
     });
 }
 
@@ -410,7 +419,7 @@ TEST_CASE("http::request_recv_response() works as expected") {
                         {"http/method", "GET"},
                         {"http/url", "http://www.google.com/"},
                     },
-                    {}, "", Logger::global(),
+                    {}, "", Logger::make(),
                     [=](Error error, SharedPtr<Request>) {
                         REQUIRE(!error);
                         request_recv_response(
@@ -419,9 +428,9 @@ TEST_CASE("http::request_recv_response() works as expected") {
                                 REQUIRE(status_code_ok(r->status_code));
                                 REQUIRE(r->body.size() > 0);
                                 transport->close([=]() { reactor->stop(); });
-                            }, {}, reactor);
+                            }, {}, reactor, Logger::make());
                     });
-            }, reactor);
+            }, reactor, Logger::make());
     });
 }
 
@@ -443,8 +452,8 @@ TEST_CASE("http::request_sendrecv() works as expected") {
                                      REQUIRE(status_code_ok(r->status_code));
                                      REQUIRE(r->body.size() > 0);
                                      transport->close([=]() { reactor->stop(); });
-                                 }, reactor);
-            }, reactor);
+                                 }, reactor, Logger::make());
+            }, reactor, Logger::make());
     });
 }
 
@@ -479,9 +488,9 @@ TEST_CASE("http::request_sendrecv() works for multiple requests") {
                                 REQUIRE(r->status_code == 200);
                                 REQUIRE(r->body.size() > 0);
                                 transport->close([=]() { reactor->stop(); });
-                            }, reactor);
-                    }, reactor);
-            }, reactor);
+                            }, reactor, Logger::make());
+                    }, reactor, Logger::make());
+            }, reactor, Logger::make());
     });
 }
 
@@ -513,7 +522,7 @@ TEST_CASE("http::request() works as expected using httpo URLs") {
                     REQUIRE(body["dns"]["address"] == "37.218.247.110:57004");
                 }
                 reactor->stop();
-            }, reactor);
+            }, reactor, Logger::make());
     });
 }
 
@@ -539,7 +548,7 @@ TEST_CASE("http::request() works as expected using tor_socks_port") {
                             "c0eb138de5f70c3b37566ba88146465d");
                 }
                 reactor->stop();
-            }, reactor);
+            }, reactor, Logger::make());
     });
 }
 
@@ -548,7 +557,7 @@ TEST_CASE("http::request() correctly follows redirects") {
     reactor->run_with_initial_event([=]() {
         request(
             {
-                {"http/url", "http://fsrn.org"},
+                {"http/url", "http://google.com"},
                 {"http/max_redirects", 32},
                 {"net/ca_bundle_path", "cacert.pem"},
             },
@@ -559,14 +568,14 @@ TEST_CASE("http::request() correctly follows redirects") {
             [=](Error error, SharedPtr<Response> response) {
                 REQUIRE(!error);
                 REQUIRE(response->status_code == 200);
-                REQUIRE(response->request->url.schema == "https");
-                REQUIRE(response->request->url.address == "fsrn.org");
-                REQUIRE(response->previous->status_code == 302);
+                REQUIRE(response->request->url.schema == "http");
+                REQUIRE(response->request->url.address == "www.google.com");
+                REQUIRE(response->previous->status_code == 301);
                 REQUIRE(response->previous->request->url.schema == "http");
-                REQUIRE(response->previous->request->url.address == "fsrn.org");
+                REQUIRE(response->previous->request->url.address == "google.com");
                 REQUIRE(!response->previous->previous);
                 reactor->stop();
-            }, reactor);
+            }, reactor, Logger::make());
     });
 }
 
@@ -594,7 +603,7 @@ TEST_CASE("Headers are preserved across redirects") {
                 REQUIRE(body["headers"]["Spam"] == "Ham");
                 reactor->stop();
             },
-            reactor);
+            reactor, Logger::make());
     });
 }
 
@@ -628,7 +637,7 @@ TEST_CASE("We correctly deal with end-of-response signalled by EOF") {
                 REQUIRE(response->previous->request->url.schema == "http");
                 reactor->stop();
             },
-            reactor);
+            reactor, Logger::make());
     });
 }
 
@@ -661,7 +670,7 @@ TEST_CASE("We correctly deal with schema-less redirect") {
                         == "/redirect-to");
                 reactor->stop();
             },
-            reactor);
+            reactor, Logger::make());
     });
 }
 
@@ -672,7 +681,7 @@ TEST_CASE("http::request_connect_impl fails without an url") {
                              [=](Error error, SharedPtr<Transport>) {
                                  REQUIRE(error == MissingUrlError());
                                  reactor->stop();
-                             }, reactor);
+                             }, reactor, Logger::make());
     });
 }
 
@@ -683,7 +692,7 @@ TEST_CASE("http::request_connect_impl fails with an uncorrect url") {
                              [=](Error error, SharedPtr<Transport>) {
                                  REQUIRE(error == UrlParserError());
                                  reactor->stop();
-                             }, reactor);
+                             }, reactor, Logger::make());
     });
 }
 
@@ -695,13 +704,13 @@ TEST_CASE("http::request_send fails without url in settings") {
             [=](Error error, SharedPtr<Transport> transport) {
                 REQUIRE(!error);
                 request_send(transport, {{"http/method", "GET"}}, {}, "",
-                             Logger::global(),
+                             Logger::make(),
                              [=](Error error, SharedPtr<Request> request) {
                                  REQUIRE(!request);
                                  REQUIRE(error == MissingUrlError());
                                  transport->close([=]() { reactor->stop(); });
                              });
-            }, reactor);
+            }, reactor, Logger::make());
     });
 }
 
@@ -712,7 +721,7 @@ TEST_CASE("http::request() fails if fails request_send()") {
                 [=](Error error, SharedPtr<Response>) {
                     REQUIRE(error);
                     reactor->stop();
-                }, reactor);
+                }, reactor, Logger::make());
     });
 }
 
@@ -779,16 +788,16 @@ TEST_CASE("http::redirect() works as expected") {
 
 static void fail_request(Settings, Headers, std::string,
                          Callback<Error, SharedPtr<Response>> cb,
-                         SharedPtr<Reactor> = Reactor::global(),
-                         SharedPtr<Logger> = Logger::global(),
+                         SharedPtr<Reactor> = Reactor::make(),
+                         SharedPtr<Logger> = Logger::make(),
                          SharedPtr<Response> = nullptr, int = 0) {
     cb(MockedError(), SharedPtr<Response>::make());
 }
 
 static void non_200_response(Settings, Headers, std::string,
                              Callback<Error, SharedPtr<Response>> cb,
-                             SharedPtr<Reactor> = Reactor::global(),
-                             SharedPtr<Logger> = Logger::global(),
+                             SharedPtr<Reactor> = Reactor::make(),
+                             SharedPtr<Logger> = Logger::make(),
                              SharedPtr<Response> = nullptr, int = 0) {
     SharedPtr<Response> response = SharedPtr<Response>::make();
     response->status_code = 500;
@@ -798,8 +807,8 @@ static void non_200_response(Settings, Headers, std::string,
 
 static void fail_parsing(Settings, Headers, std::string,
                          Callback<Error, SharedPtr<Response>> cb,
-                         SharedPtr<Reactor> = Reactor::global(),
-                         SharedPtr<Logger> = Logger::global(),
+                         SharedPtr<Reactor> = Reactor::make(),
+                         SharedPtr<Logger> = Logger::make(),
                          SharedPtr<Response> = nullptr, int = 0) {
     SharedPtr<Response> response = SharedPtr<Response>::make();
     response->status_code = 200;
@@ -818,7 +827,7 @@ TEST_CASE("request_json_string() works as expected") {
                   REQUIRE(error == MockedError());
                     reactor->stop();
               },
-              {}, reactor, Logger::global());
+              {}, reactor, Logger::make());
         });
     }
 
@@ -831,7 +840,7 @@ TEST_CASE("request_json_string() works as expected") {
                   REQUIRE(resp->status_code != 200);
                   reactor->stop();
               },
-              {}, reactor, Logger::global());
+              {}, reactor, Logger::make());
         });
     }
 
@@ -842,7 +851,7 @@ TEST_CASE("request_json_string() works as expected") {
               [=](Error error, SharedPtr<Response>, nlohmann::json) {
                   REQUIRE(error == JsonProcessingError());
               },
-              {}, reactor, Logger::global());
+              {}, reactor, Logger::make());
         });
     }
 }

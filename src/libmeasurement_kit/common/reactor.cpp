@@ -18,11 +18,4 @@ void Reactor::run_with_initial_event(Callback<> &&cb) {
     run();
 }
 
-/*static*/ SharedPtr<Reactor> Reactor::global() {
-    return locked_global([]() {
-        static SharedPtr<Reactor> singleton = make();
-        return singleton;
-    });
-}
-
 } // namespace mk

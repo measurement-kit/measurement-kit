@@ -50,14 +50,14 @@ class Socks5 : public Emitter {
     std::string proxy_port;
 };
 
-Buffer socks5_format_auth_request(SharedPtr<Logger> = Logger::global());
-ErrorOr<bool> socks5_parse_auth_response(Buffer &, SharedPtr<Logger> = Logger::global());
-ErrorOr<Buffer> socks5_format_connect_request(Settings, SharedPtr<Logger> = Logger::global());
-ErrorOr<bool> socks5_parse_connect_response(Buffer &, SharedPtr<Logger> = Logger::global());
+Buffer socks5_format_auth_request(SharedPtr<Logger>);
+ErrorOr<bool> socks5_parse_auth_response(Buffer &, SharedPtr<Logger>);
+ErrorOr<Buffer> socks5_format_connect_request(Settings, SharedPtr<Logger>);
+ErrorOr<bool> socks5_parse_connect_response(Buffer &, SharedPtr<Logger>);
 
 void socks5_connect(std::string address, int port, Settings settings,
         std::function<void(Error, SharedPtr<Transport>)> callback,
-        SharedPtr<Reactor> reactor = Reactor::global(), SharedPtr<Logger> logger = Logger::global());
+        SharedPtr<Reactor> reactor, SharedPtr<Logger> logger);
 
 } // namespace net
 } // namespace mk

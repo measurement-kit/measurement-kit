@@ -133,7 +133,7 @@ class Request {
 
     Request() {}
     Error init(Settings, Headers, std::string);
-    void serialize(net::Buffer &, SharedPtr<Logger> logger = Logger::global());
+    void serialize(net::Buffer &, SharedPtr<Logger> logger);
 
     static ErrorOr<SharedPtr<Request>> make(Settings, Headers, std::string);
 };
@@ -153,8 +153,7 @@ struct Response {
 ErrorOr<Url> redirect(const Url &orig_url, const std::string &location);
 
 void request_connect(Settings, Callback<Error, SharedPtr<net::Transport>>,
-                     SharedPtr<Reactor> = Reactor::global(),
-                     SharedPtr<Logger> = Logger::global());
+                     SharedPtr<Reactor>, SharedPtr<Logger>);
 
 void request_send(SharedPtr<net::Transport>, Settings, Headers, std::string,
                   SharedPtr<Logger>, Callback<Error, SharedPtr<Request>>);
@@ -164,20 +163,16 @@ void request_maybe_send(ErrorOr<SharedPtr<Request>>, SharedPtr<net::Transport>,
                         SharedPtr<Logger>, Callback<Error, SharedPtr<Request>>);
 
 void request_recv_response(SharedPtr<net::Transport>, Callback<Error, SharedPtr<Response>>,
-                           Settings = {}, SharedPtr<Reactor> = Reactor::global(),
-                           SharedPtr<Logger> = Logger::global());
+                           Settings, SharedPtr<Reactor>, SharedPtr<Logger>);
 
 void request_sendrecv(SharedPtr<net::Transport>, Settings, Headers, std::string,
                       Callback<Error, SharedPtr<Response>>,
-                      SharedPtr<Reactor> = Reactor::global(),
-                      SharedPtr<Logger> = Logger::global());
+                      SharedPtr<Reactor>, SharedPtr<Logger>);
 
 // Same as above except that the optional Request is passed in explicitly
 void request_maybe_sendrecv(ErrorOr<SharedPtr<Request>>, SharedPtr<net::Transport>,
                             Callback<Error, SharedPtr<Response>>,
-                            Settings = {},
-                            SharedPtr<Reactor> = Reactor::global(),
-                            SharedPtr<Logger> = Logger::global());
+                            Settings, SharedPtr<Reactor>, SharedPtr<Logger>);
 
 /*
  * For settings the following options are defined:
@@ -193,13 +188,13 @@ void request_maybe_sendrecv(ErrorOr<SharedPtr<Request>>, SharedPtr<net::Transpor
  */
 
 void request(Settings, Headers, std::string, Callback<Error, SharedPtr<Response>>,
-             SharedPtr<Reactor> = Reactor::global(), SharedPtr<Logger> = Logger::global(),
+             SharedPtr<Reactor>, SharedPtr<Logger>,
              SharedPtr<Response> previous = {}, int nredirects = 0);
 
 inline void get(std::string url, Callback<Error, SharedPtr<Response>> cb,
-                Headers headers = {}, Settings settings = {},
-                SharedPtr<Reactor> reactor = Reactor::global(),
-                SharedPtr<Logger> lp = Logger::global(),
+                Headers headers, Settings settings,
+                SharedPtr<Reactor> reactor,
+                SharedPtr<Logger> lp,
                 SharedPtr<Response> previous = {},
                 int nredirects = 0) {
     settings["http/method"] = "GET";
