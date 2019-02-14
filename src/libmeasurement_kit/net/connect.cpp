@@ -2,8 +2,6 @@
 // Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
-#include "src/libmeasurement_kit/vendor/tls_internal.h"
-
 #include "src/libmeasurement_kit/net/connect_impl.hpp"
 #include "src/libmeasurement_kit/net/emitter.hpp"
 #include "src/libmeasurement_kit/net/socks5.hpp"
@@ -138,7 +136,7 @@ void connect_logic(std::string hostname, int port,
                      settings, reactor, logger);
 }
 
-void connect_ssl(bufferevent *orig_bev, ssl_st *ssl, std::string hostname,
+void connect_ssl(bufferevent *orig_bev, ssl_st *ssl,
                  Callback<Error, bufferevent *> cb, SharedPtr<Reactor> reactor,
                  SharedPtr<Logger> logger) {
     logger->debug("ssl: handshake...");
@@ -158,23 +156,13 @@ void connect_ssl(bufferevent *orig_bev, ssl_st *ssl, std::string hostname,
     bufferevent_setcb(
         bev, nullptr, nullptr, mk_bufferevent_on_event,
         new Callback<Error, bufferevent *>(
-            [cb, logger, hostname](Error err, bufferevent *bev) {
-                ssl_st *ssl = bufferevent_openssl_get_ssl(bev);
-
+            [cb, logger](Error err, bufferevent *bev) {
                 if (err) {
                     logger->debug("ssl: handshake error: %s", err.what());
                     bufferevent_free(bev);
                     cb(err, nullptr);
                     return;
                 }
-
-                err = libssl::verify_peer(hostname, ssl, logger);
-                if (err) {
-                    bufferevent_free(bev);
-                    cb(err, nullptr);
-                    return;
-                }
-
                 logger->debug("ssl: handshake... complete");
                 cb(err, bev);
             }));
@@ -241,7 +229,15 @@ void connect(std::string address, int port,
                     logger->info("Re-enabling SSLv2 and SSLv3");
                     libssl::enable_v23(*cssl);
                 }
-                connect_ssl(r->connected_bev, *cssl, address,
+                err = libssl::set_hostname_for_verification(
+                        address, *cssl, logger);
+                if (err != NoError()) {
+                    bufferevent_free(r->connected_bev);
+                    callback(err, make_txp<Emitter>(
+                        timeout, r, reactor, logger));
+                    return;
+                }
+                connect_ssl(r->connected_bev, *cssl,
                             [r, callback, timeout, reactor,
                              logger, settings](Error err, bufferevent *bev) {
                                 if (err) {

@@ -19,13 +19,13 @@
 #include "src/libmeasurement_kit/common/non_copyable.hpp"
 #include "src/libmeasurement_kit/common/non_movable.hpp"
 #include "src/libmeasurement_kit/common/mock.hpp"
-#include "src/libmeasurement_kit/vendor/tls_internal.h"
 #include <cassert>
 #include <map>
 #include <measurement_kit/common/logger.hpp>
 #include "src/libmeasurement_kit/net/error.hpp"
 #include <openssl/err.h>
 #include <openssl/ssl.h>
+#include <openssl/x509v3.h>
 #include <string>
 
 namespace mk {
@@ -288,9 +288,9 @@ template <size_t max_cache_size = 64> class Cache {
 };
 
 /*!
-    \brief Verify SSL peer.
+    \brief Set hostname for verifying the peer certificate.
 
-    \param hostname Expected SNI hostname.
+    \param hostname Expected hostname.
 
     \param ssl Pointer to SSL struct.
 
@@ -298,32 +298,26 @@ template <size_t max_cache_size = 64> class Cache {
 
     \return NoError() on success, an error on failure.
 */
-template <MK_MOCK(SSL_get_verify_result), MK_MOCK(SSL_get_peer_certificate),
-        MK_MOCK(tls_check_name)>
-Error verify_peer(std::string hostname, SSL *ssl, SharedPtr<Logger> logger) {
-    assert(ssl != nullptr);
+template <MK_MOCK(SSL_get0_param), MK_MOCK(X509_VERIFY_PARAM_set1_host)>
+Error set_hostname_for_verification(
+        std::string hostname, SSL *ssl, SharedPtr<Logger> logger) {
+    if (ssl == nullptr) {
+        logger->warn("You passed me a null SSL pointer");
+        return ValueError();
+    }
     logger->debug("SSL version: %s", SSL_get_version(ssl));
-    long verify_err = SSL_get_verify_result(ssl);
-    if (verify_err != X509_V_OK) {
-        logger->warn("ssl: got an invalid certificate");
-        return SslInvalidCertificateError(
-                X509_verify_cert_error_string(verify_err));
+    X509_VERIFY_PARAM *param = SSL_get0_param(ssl);
+    if (param == nullptr) {
+        logger->warn("Cannot get the X509_VERIFY_PARAM");
+        return GenericError();
     }
-    X509 *server_cert = SSL_get_peer_certificate(ssl);
-    if (server_cert == nullptr) {
-        logger->warn("ssl: got no certificate");
-        return SslNoCertificateError();
-    }
-    auto match = 0;
-    auto err = tls_check_name(nullptr, server_cert, hostname.c_str(), &match);
-    X509_free(server_cert); // Make sure we don't leak memory
-    if (err != 0) {
-        logger->warn("ssl: got invalid hostname");
-        return SslInvalidHostnameError();
-    }
-    if (!match) {
-        logger->warn("ssl: name not present in server certificate");
-        return SslMissingHostnameError();
+    X509_VERIFY_PARAM_set_hostflags(
+            param, X509_CHECK_FLAG_NO_PARTIAL_WILDCARDS);
+    bool good = X509_VERIFY_PARAM_set1_host(
+        param, hostname.data(), hostname.size());
+    if (!good) {
+        logger->warn("Cannot set the hostname for hostname verification");
+        return GenericError();
     }
     return NoError();
 }

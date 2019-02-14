@@ -128,64 +128,35 @@ TEST_CASE("Cache works as expected") {
     }
 }
 
-static long ssl_get_verify_result_fail(const SSL *) {
-    return X509_V_ERR_UNABLE_TO_GET_ISSUER_CERT;
-}
-
-static long ssl_get_verify_result_success(const SSL *) {
-    return X509_V_OK;
-}
-
-static X509 *ssl_get_peer_certificate_fail(const SSL *) {
+static X509_VERIFY_PARAM *ssl_get0_param_fail(SSL *) {
     return nullptr;
 }
 
-static X509 *ssl_get_peer_certificate_success(const SSL *) {
-    return X509_new();
+static int x509_verify_param_set1_host_fail(
+        X509_VERIFY_PARAM *, const char *, size_t) {
+    return false;
 }
 
-static int tls_check_name_fail(struct tls *, X509 *, const char *, int *) {
-    return -1;
-}
-
-static int tls_check_name_nomatch(struct tls *, X509 *, const char *, int *x) {
-    *x = 0;
-    return 0;
-}
-
-TEST_CASE("verify_peer works as expected") {
+TEST_CASE("set_hostname_for_verification works as expected") {
     Cache<> c;
 
-    SECTION("when SSL_get_verify_result fails") {
+    SECTION("when the SSL pointer is NULL") {
+        REQUIRE(set_hostname_for_verification(
+                  "x.org", nullptr, Logger::make()) != NoError());
+    }
+
+    SECTION("when SSL_get0_param fails") {
         auto ssl = *c.get_client_ssl(default_cert, "x.org", Logger::make());
-        REQUIRE(verify_peer<ssl_get_verify_result_fail>(
-                      "", ssl, Logger::make()) != NoError());
+        REQUIRE(set_hostname_for_verification<ssl_get0_param_fail>(
+                      "x.org", ssl, Logger::make()) != NoError());
         SSL_free(ssl);
     }
 
-    SECTION("when SSL_get_peer_certificate fails") {
+    SECTION("when X509_VERIFY_PARAM_set1_host fails") {
         auto ssl = *c.get_client_ssl(default_cert, "x.org", Logger::make());
-        REQUIRE((verify_peer<ssl_get_verify_result_success,
-                             ssl_get_peer_certificate_fail>(
-                      "", ssl, Logger::make())) != NoError());
-        SSL_free(ssl);
-    }
-
-    SECTION("when tls_check_name fails") {
-        auto ssl = *c.get_client_ssl(default_cert, "x.org", Logger::make());
-        REQUIRE((verify_peer<ssl_get_verify_result_success,
-                             ssl_get_peer_certificate_success,
-                             tls_check_name_fail>("", ssl, Logger::make())) !=
-                NoError());
-        SSL_free(ssl);
-    }
-
-    SECTION("when tls_check_name does not match") {
-        auto ssl = *c.get_client_ssl(default_cert, "x.org", Logger::make());
-        REQUIRE((verify_peer<ssl_get_verify_result_success,
-                             ssl_get_peer_certificate_success,
-                             tls_check_name_nomatch>(
-                      "", ssl, Logger::make())) != NoError());
+        REQUIRE(set_hostname_for_verification<SSL_get0_param,
+                             x509_verify_param_set1_host_fail>(
+                      "x.org", ssl, Logger::make()) != NoError());
         SSL_free(ssl);
     }
 }
