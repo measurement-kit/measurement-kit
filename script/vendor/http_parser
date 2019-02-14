@@ -5,4 +5,3 @@ curl -fsSLo include/measurement_kit/internal/vendor/http_parser.h              \
     https://raw.githubusercontent.com/nodejs/http-parser/$version/http_parser.h
 curl -fsSLo src/libmeasurement_kit/vendor/http_parser.c                        \
     https://raw.githubusercontent.com/nodejs/http-parser/$version/http_parser.c
-git commit -am "Vendor nodejs/http-parser@$version"

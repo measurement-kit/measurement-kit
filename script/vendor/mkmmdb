@@ -11,4 +11,3 @@ url=https://raw.githubusercontent.com/measurement-kit/$name/$version/$name.h
   curl -fsSLO $url
 )
 git add $destdir/$name.h
-git commit -am "Vendor measurement-kit/$name@$version"
