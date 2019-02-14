@@ -27,7 +27,7 @@ with_hirl_do_ex(nlohmann::json options,
             {"name", "HttpInvalidRequestLine"},
             {"options", options},
     };
-    mk_unique_task task{mk_nettest_start(settings.dump().c_str())};
+    mk_unique_task task{mk_task_start(settings.dump().c_str())};
     REQUIRE(!!task);
     uint64_t count = 0;
     while (!mk_task_is_done(task.get())) {
@@ -175,7 +175,7 @@ randomize_input_test_helper(bool randomize_input, const nlohmann::json &inputs,
                                 {"parallelism", 1},
                                 {"randomize_input", randomize_input},
                         }}};
-    mk_unique_task task{mk_nettest_start(settings.dump().c_str())};
+    mk_unique_task task{mk_task_start(settings.dump().c_str())};
     REQUIRE(!!task);
     uint64_t count = 0;
     while (!mk_task_is_done(task.get())) {

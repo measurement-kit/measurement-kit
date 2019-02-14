@@ -263,9 +263,9 @@ class MK_NETTESTS_DEPRECATED BaseTest {
         // whether to handle this possible error condition or not.
         std::string serialized_settings;
         serialized_settings = tip->settings.dump();
-        mk_unique_task tup{mk_nettest_start(serialized_settings.c_str())};
+        mk_unique_task tup{mk_task_start(serialized_settings.c_str())};
         if (!tup) {
-            throw std::runtime_error("mk_nettest_start() failed");
+            throw std::runtime_error("mk_task_start() failed");
         }
         while (!mk_task_is_done(tup.get())) {
             nlohmann::json ev;

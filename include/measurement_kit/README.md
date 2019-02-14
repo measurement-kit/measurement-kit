@@ -22,7 +22,7 @@ We encourage you to avoid using it when a more user-friendly API is available.
 typedef          struct mk_event_   mk_event_t;
 typedef          struct mk_task_    mk_task_t;
 
-mk_task_t       *mk_nettest_start(const char *settings);
+mk_task_t       *mk_task_start(const char *settings);
 mk_event_t      *mk_task_wait_for_next_event(mk_task_t *task);
 int              mk_task_is_done(mk_task_t *task);
 void             mk_task_interrupt(mk_task_t *task);
@@ -56,7 +56,7 @@ finished running.
 
 ## API documentation
 
-`mk_nettest_start` starts a nettest task with the settings provided
+`mk_task_start` starts a task (generally a nettest) with the settings provided
 as a serialized JSON. Returns `NULL` if `conf` was `NULL`, or in
 case of parse error. You own (and must destroy) the returned task
 pointer.
@@ -91,7 +91,7 @@ The following C++ example runs the "Ndt" test with "INFO" verbosity.
     "name": "Ndt",
     "log_level": "INFO"
   })";
-  mk_task_t *task = mk_nettest_start(settings);
+  mk_task_t *task = mk_task_start(settings);
   if (!task) {
     std::clog << "ERROR: cannot start task" << std::endl;
     return;
@@ -197,7 +197,7 @@ The nettest task settings object is a JSON like:
 }
 ```
 
-The only mandatory key is `name`, which identifies the nettest. All the other
+The only mandatory key is `name`, which identifies the task. All the other
 keys are optional. Above we have shown the most commonly used `options`, that
 are described in greater detail below. The value we included for options
 is their default value (_however_, the value of non-`options` settings _is not_
@@ -804,7 +804,7 @@ Where `value` is empty.
 ## Task pseudocode
 
 The following illustrates in pseudocode the operations performed
-by a nettest once you call `mk_nettest_start`. It not 100% accurate;
+by a nettest once you call `mk_task_start`. It not 100% accurate;
 in particular, we have omitted the code that generates most log
 messages. This pseudocode is meant to help you understand how
 Measurement Kit works internally, and specifically how all the

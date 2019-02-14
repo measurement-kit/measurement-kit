@@ -14,7 +14,7 @@
  * statically with its own version of libc++.
  */
 int main() {
-    mk_task_t *task = mk_nettest_start(R"({
+    mk_task_t *task = mk_task_start(R"({
         "name": "Ndt",
         "log_level": "INFO",
         "options": {
