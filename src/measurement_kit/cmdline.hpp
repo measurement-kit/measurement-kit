@@ -12,6 +12,8 @@
 #include "portable/getopt.h"
 #include "portable/unistd.h"
 
+#include "src/libmeasurement_kit/common/callback.hpp"
+
 using namespace mk;
 using namespace mk::nettests;
 

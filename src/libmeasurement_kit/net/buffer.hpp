@@ -6,6 +6,7 @@
 
 #include <measurement_kit/common.hpp>
 #include <cstring>
+#include <functional>
 
 #include "src/libmeasurement_kit/common/error_or.hpp"
 

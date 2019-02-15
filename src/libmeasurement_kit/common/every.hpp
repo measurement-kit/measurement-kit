@@ -5,9 +5,9 @@
 #define SRC_LIBMEASUREMENT_KIT_COMMON_EVERY_HPP
 
 #include <functional>
-#include <measurement_kit/common/callback.hpp>
 #include <measurement_kit/common/shared_ptr.hpp>
 
+#include "src/libmeasurement_kit/common/callback.hpp"
 #include "src/libmeasurement_kit/common/reactor.hpp"
 
 namespace mk {

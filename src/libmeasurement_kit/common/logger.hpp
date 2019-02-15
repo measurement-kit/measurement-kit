@@ -11,10 +11,11 @@
 #include <vector>
 
 #include <measurement_kit/common/aaa_base.h>
-#include <measurement_kit/common/callback.hpp>
 #include <measurement_kit/common/logger.hpp>
 #include <measurement_kit/common/nlohmann/json.hpp>
 #include <measurement_kit/common/shared_ptr.hpp>
+
+#include "src/libmeasurement_kit/common/callback.hpp"
 
 // Note: the attribute we use below is GCC and Clang specific (and Clang
 // identifies itself as GCC), so make sure other compilers are not going to

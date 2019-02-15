@@ -2,7 +2,6 @@
 #ifndef MEASUREMENT_KIT_COMMON_HPP
 #define MEASUREMENT_KIT_COMMON_HPP
 #include <measurement_kit/common/aaa_base.h>
-#include <measurement_kit/common/callback.hpp>
 #include <measurement_kit/common/data_usage.hpp>
 #include <measurement_kit/common/error.hpp>
 #include <measurement_kit/common/logger.hpp>

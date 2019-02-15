@@ -4,7 +4,6 @@
 
 #include <measurement_kit/common/aaa_base.h>
 #include <measurement_kit/common/error.hpp>
-#include <measurement_kit/common/callback.hpp>
 #include <measurement_kit/common/logger.hpp>
 #include <measurement_kit/common/shared_ptr.hpp>
 
@@ -17,6 +16,7 @@
 #include <list>
 #include <mutex>
 
+#include "src/libmeasurement_kit/common/callback.hpp"
 #include "src/libmeasurement_kit/common/delegate.hpp"
 #include "src/libmeasurement_kit/common/logger.hpp"
 #include "src/libmeasurement_kit/common/locked.hpp"
