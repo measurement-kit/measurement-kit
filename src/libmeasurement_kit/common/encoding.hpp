@@ -4,7 +4,8 @@
 #ifndef SRC_LIBMEASUREMENT_KIT_COMMON_ENCODING_HPP
 #define SRC_LIBMEASUREMENT_KIT_COMMON_ENCODING_HPP
 
-#include <measurement_kit/common/error.hpp>
+#include "src/libmeasurement_kit/common/error.hpp"
+
 #include <string>
 
 namespace mk {

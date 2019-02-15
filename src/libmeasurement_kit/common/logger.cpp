@@ -3,7 +3,6 @@
 // and LICENSE for more information on the copying conditions.
 
 #include <measurement_kit/common/aaa_base.h>
-#include <measurement_kit/common/error.hpp>
 #include <measurement_kit/common/logger.hpp>
 #include <measurement_kit/common/shared_ptr.hpp>
 
@@ -18,6 +17,7 @@
 
 #include "src/libmeasurement_kit/common/callback.hpp"
 #include "src/libmeasurement_kit/common/delegate.hpp"
+#include "src/libmeasurement_kit/common/error.hpp"
 #include "src/libmeasurement_kit/common/logger.hpp"
 #include "src/libmeasurement_kit/common/locked.hpp"
 #include "src/libmeasurement_kit/common/non_copyable.hpp"

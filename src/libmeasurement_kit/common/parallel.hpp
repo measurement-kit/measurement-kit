@@ -4,10 +4,10 @@
 #ifndef SRC_LIBMEASUREMENT_KIT_COMMON_PARALLEL_HPP
 #define SRC_LIBMEASUREMENT_KIT_COMMON_PARALLEL_HPP
 
-#include <measurement_kit/common/error.hpp>
 #include <measurement_kit/common/shared_ptr.hpp>
 
 #include "src/libmeasurement_kit/common/continuation.hpp"
+#include "src/libmeasurement_kit/common/error.hpp"
 
 namespace mk {
 

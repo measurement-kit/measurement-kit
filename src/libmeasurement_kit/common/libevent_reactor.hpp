@@ -22,7 +22,7 @@
 #include <event2/util.h>                           // for evutil_socket_t
 #include "src/libmeasurement_kit/common/callback.hpp"     // for mk::Callback
 #include <measurement_kit/common/data_usage.hpp>   // for mk::DataUsage
-#include <measurement_kit/common/error.hpp>        // for mk::Error
+#include "src/libmeasurement_kit/common/error.hpp"        // for mk::Error
 #include <measurement_kit/common/logger.hpp>       // for mk::warn
 #include <mutex>                                   // for std::recursive_mutex
 #include <signal.h>                                // for sigaction

@@ -17,7 +17,7 @@
 #include <event2/bufferevent_ssl.h>
 #include <event2/event.h>
 #include <functional>
-#include <measurement_kit/common/error.hpp>
+#include "src/libmeasurement_kit/common/error.hpp"
 #include "src/libmeasurement_kit/common/error_or.hpp"
 #include "src/libmeasurement_kit/common/logger.hpp"
 #include "src/libmeasurement_kit/net/buffer.hpp"

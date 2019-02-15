@@ -31,7 +31,7 @@
 #include <utility>
 
 #include <measurement_kit/common/data_usage.hpp>
-#include <measurement_kit/common/error.hpp>
+#include "src/libmeasurement_kit/common/error.hpp"
 #include "src/libmeasurement_kit/common/logger.hpp"
 #include <measurement_kit/common/nlohmann/json.hpp>
 #include "src/libmeasurement_kit/common/settings.hpp"

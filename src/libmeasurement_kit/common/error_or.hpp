@@ -4,7 +4,7 @@
 #ifndef SRC_LIBMEASUREMENT_KIT_COMMON_ERROR_OR_HPP
 #define SRC_LIBMEASUREMENT_KIT_COMMON_ERROR_OR_HPP
 
-#include <measurement_kit/common/error.hpp>
+#include "src/libmeasurement_kit/common/error.hpp"
 
 #include <stdexcept>
 
