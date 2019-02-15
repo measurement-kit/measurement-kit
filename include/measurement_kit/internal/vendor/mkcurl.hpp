@@ -47,6 +47,12 @@ struct Request {
   /// connect_to is the string to pass to CURLOPT_CONNECT_TO. In the common
   /// case, you want to set this string to `::<IP>:`.
   std::string connect_to;
+
+  /// retries tells this library how many times it needs to retry if
+  /// a request fails because of a DNS error or a connect error. Note
+  /// that the number here is the number of times a request will be
+  /// _retried_, i.e., it does not count the initial request.
+  size_t retries = 2;
 };
 
 /// Log is a log entry.
@@ -328,6 +334,26 @@ static const char *HTTPVersionString(long httpv) noexcept {
   return "";
 }
 
+// perform_and_retry performs the request implied by @p handle for
+// @p retries times. A request is only retried if (a) it failed and (b)
+// the reason for failure is either DNS or connect error.
+static CURLcode perform_and_retry(
+    CURL *handlep, size_t retries, std::vector<Log> &logs) noexcept {
+  CURLcode rv{};
+  bool retriable{};
+  for (;;) {
+    rv = curl_easy_perform(handlep);
+    MKCURL_HOOK(curl_easy_perform, rv);
+    retriable = retries-- > 0 && (rv == CURLE_COULDNT_CONNECT ||
+                                  rv == CURLE_COULDNT_RESOLVE_HOST);
+    if (!retriable) {
+      break;
+    }
+    mkcurl_log(logs, "Transient failure; let's try one more time");
+  }
+  return rv;
+}
+
 Response perform(const Request &req) noexcept {
   mkcurl_uptr handle;
   {
@@ -574,10 +600,8 @@ Response perform(const Request &req) noexcept {
     }
   }
   {
-    res.error = curl_easy_perform(handle.get());
-    MKCURL_HOOK(curl_easy_perform, res.error);
+    res.error = perform_and_retry(handle.get(), req.retries, res.logs);
     if (res.error != CURLE_OK) {
-      mkcurl_log(res.logs, "curl_easy_perform() failed");
       return res;
     }
   }
