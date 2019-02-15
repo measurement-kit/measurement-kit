@@ -192,19 +192,11 @@ void Runnable::geoip_lookup(Callback<> cb) {
             logger->emit_event_ex("failure.ip_lookup", {
                 {"failure", "generic_error"},
             });
-            logger->warn("=== BEGIN IP_LOOKUP LOGS ===");
-            for (auto &s : res.logs) {
-                logger->warn("%s", s.c_str());
-            }
-            logger->warn("=== END IP_LOOKUP LOGS ===");
+            logger->logsv(MK_LOG_WARNING, res.logs);
             annotations["failure_ip_lookup"] = "true";
         } else {
             real_probe_ip = res.probe_ip;
-            logger->debug("=== BEGIN IP_LOOKUP LOGS ===");
-            for (auto &s : res.logs) {
-                logger->debug("%s", s.c_str());
-            }
-            logger->debug("=== END IP_LOOKUP LOGS ===");
+            logger->logsv(MK_LOG_DEBUG, res.logs);
         }
     }
 
@@ -218,14 +210,11 @@ void Runnable::geoip_lookup(Callback<> cb) {
             logger->emit_event_ex("failure.cc_lookup", {
                 {"failure", "generic_error"},
             });
-            logger->warn("=== BEGIN CC_LOOKUP LOGS ===");
-            for (auto &s : logs) {
-                logger->warn("%s", s.c_str());
-            }
-            logger->warn("=== END CC_LOOKUP LOGS ===");
+            logger->logsv(MK_LOG_WARNING, logs);
             annotations["failure_cc_lookup"] = "true";
         } else {
             std::swap(cc, real_probe_cc);
+            logger->logsv(MK_LOG_DEBUG, logs);
         }
     }
 
@@ -239,14 +228,11 @@ void Runnable::geoip_lookup(Callback<> cb) {
             logger->emit_event_ex("failure.asn_lookup", {
                 {"failure", "generic_error"},
             });
-            logger->warn("=== BEGIN ASN_LOOKUP LOGS ===");
-            for (auto &s : logs) {
-                logger->warn("%s", s.c_str());
-            }
-            logger->warn("=== END ASN_LOOKUP LOGS ===");
+            logger->logsv(MK_LOG_WARNING, logs);
             annotations["failure_asn_lookup"] = "true";
         } else {
             std::swap(real_probe_asn, asn);
+            logger->logsv(MK_LOG_DEBUG, logs);
         }
     }
 
@@ -261,14 +247,11 @@ void Runnable::geoip_lookup(Callback<> cb) {
             logger->emit_event_ex("failure.network_name_lookup", {
                 {"failure", "generic_error"},
             });
-            logger->warn("=== BEGIN NETWORK_NAME_LOOKUP LOGS ===");
-            for (auto &s : logs) {
-                logger->warn("%s", s.c_str());
-            }
-            logger->warn("=== END NETWORK_NAME_LOOKUP LOGS ===");
+            logger->logsv(MK_LOG_WARNING, logs);
             annotations["failure_network_name_lookup"] = "true";
         } else {
             std::swap(org, real_probe_network_name);
+            logger->logsv(MK_LOG_INFO, logs);
         }
     }
 

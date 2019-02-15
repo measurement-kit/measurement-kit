@@ -7,6 +7,9 @@
 #include <stdarg.h>
 #include <stdint.h>
 
+#include <string>
+#include <vector>
+
 #include <measurement_kit/common/aaa_base.h>
 #include <measurement_kit/common/callback.hpp>
 #include <measurement_kit/common/nlohmann/json.hpp>
@@ -120,6 +123,14 @@ class Logger {
     /// be written into the logfile.
     virtual void logv(uint32_t mask, const char *fmt, va_list ap)
         __attribute__((format(printf, 3, 0))) = 0;
+
+    /// `logs()` is exactly like logv(), except that the \p s string is
+    /// directly emitted rather than being passed to snprintf. If the \p
+    /// s argument is NULL, this function does nothing.
+    virtual void logs(uint32_t mask, const char *s) = 0;
+
+    /// `logsv()` calls logv() with \p mask for every string in \p v.
+    virtual void logsv(uint32_t mask, const std::vector<std::string> &v) = 0;
 
     /// `log()` calls logv().
     virtual void log(uint32_t, const char *, ...)
