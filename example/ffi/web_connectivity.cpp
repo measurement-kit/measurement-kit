@@ -35,9 +35,9 @@ int main() {
             fprintf(stderr, "ERROR: cannot wait for next event\n");
             exit(1);
         }
-        const char *serio = mk_event_serialize(event);
+        const char *serio = mk_event_serialization(event);
         if (serio == NULL) {
-            fprintf(stderr, "ERROR: cannot serialize event\n");
+            fprintf(stderr, "ERROR: cannot get event serialization\n");
             exit(1);
         }
         printf("%s\n", serio);

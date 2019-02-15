@@ -27,7 +27,7 @@ mk_event_t      *mk_task_wait_for_next_event(mk_task_t *task);
 int              mk_task_is_done(mk_task_t *task);
 void             mk_task_interrupt(mk_task_t *task);
 
-const char      *mk_event_serialize(mk_event_t *event);
+const char      *mk_event_serialization(mk_event_t *event);
 void             mk_event_destroy(mk_event_t *event);
 
 void             mk_task_destroy(mk_task_t *task);
@@ -72,7 +72,7 @@ the `task` is `NULL`, nonzero is returned.
 `mk_task_interrupt` interrupts a running `task`. Interrupting a `NULL` task
 has no effect.
 
-`mk_event_serialize` obtains the JSON serialization of `event`. Return `NULL`
+`mk_event_serialization` obtains the JSON serialization of `event`. Return `NULL`
 if either the `event` is `NULL` or there is an error.
 
 `mk_event_destroy` destroys the memory associated with `event`. Attempting to
@@ -102,9 +102,9 @@ The following C++ example runs the "Ndt" test with "INFO" verbosity.
       std::clog << "ERROR: cannot wait for next event" << std::endl;
       break;
     }
-    const char *json_serialized_event = mk_event_serialize(event);
+    const char *json_serialized_event = mk_event_serialization(event);
     if (!json_serialized_event) {
-      std::clog << "ERROR: cannot serialize event" << std::endl;
+      std::clog << "ERROR: cannot get event serialization" << std::endl;
       break;
     }
     {

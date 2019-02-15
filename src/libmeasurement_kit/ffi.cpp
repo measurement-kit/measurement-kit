@@ -36,7 +36,7 @@ mk_event_t *mk_event_create_(const nlohmann::json &json) noexcept {
     return event.release();
 }
 
-const char *mk_event_serialize(mk_event_t *event) noexcept {
+const char *mk_event_serialization(mk_event_t *event) noexcept {
     return (event) ? event->data() : nullptr;
 }
 

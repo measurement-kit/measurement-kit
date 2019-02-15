@@ -35,8 +35,15 @@ extern "C" {
 /** mk_event_t is an opaque event emitted by a task. */
 typedef struct mk_event_ mk_event_t;
 
-/** mk_event_serialize() obtains a JSON serialization of an event. */
-const char *mk_event_serialize(mk_event_t *event) MK_FFI_NOEXCEPT;
+/* Backward compatibility macro. We released v0.9.0 with such name but the
+ * name is misleading because the function does not compute a serialization
+ * but rather just returns the already computed serialization. As such, it
+ * is just a getter. The backward compatibility macro will not be removed
+ * until MK v0.12.0 and may also survive longer than that. */
+#define mk_event_serialize mk_event_serialization
+
+/** mk_event_serialization() obtains a JSON serialization of an event. */
+const char *mk_event_serialization(mk_event_t *event) MK_FFI_NOEXCEPT;
 
 /** mk_event_destroy() destroys an event. */
 void mk_event_destroy(mk_event_t *event) MK_FFI_NOEXCEPT;
@@ -44,8 +51,9 @@ void mk_event_destroy(mk_event_t *event) MK_FFI_NOEXCEPT;
 /** mk_task_t is a task that Measurement Kit can run. */
 typedef struct mk_task_ mk_task_t;
 
-// Backward compatibility macro. We released v0.9.0 with such name but
-// it is not general enough so we changed this name in v0.10.0.
+/* Backward compatibility macro. We released v0.9.0 with such name but
+ * it is not general enough so we changed this name in v0.10.0. The
+ * macro will be here at least until MK v0.12.0. */
 #define mk_nettest_start mk_task_start
 
 /** mk_task_start() starts a task with the specified JSON settings. You own

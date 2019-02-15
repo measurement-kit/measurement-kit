@@ -275,7 +275,7 @@ class MK_NETTESTS_DEPRECATED BaseTest {
                     throw std::runtime_error(
                             "mk_task_wait_for_next_event() failed");
                 }
-                const char *s = mk_event_serialize(eup.get());
+                const char *s = mk_event_serialization(eup.get());
                 assert(s != nullptr);
 #ifdef MK_NETTESTS_TRACE_EVENTS
                 std::clog << "mk::nettests: got event: " << s << std::endl;

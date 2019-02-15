@@ -33,7 +33,7 @@ with_hirl_do_ex(nlohmann::json options,
     while (!mk_task_is_done(task.get())) {
         mk_unique_event event{mk_task_wait_for_next_event(task.get())};
         REQUIRE(!!event);
-        auto s = mk_event_serialize(event.get());
+        auto s = mk_event_serialization(event.get());
         //std::clog << "with_hirl_do_ex: " << s << std::endl;  // to debug
         REQUIRE(!!s);
         auto doc = nlohmann::json::parse(s);
@@ -181,7 +181,7 @@ randomize_input_test_helper(bool randomize_input, const nlohmann::json &inputs,
     while (!mk_task_is_done(task.get())) {
         mk_unique_event event{mk_task_wait_for_next_event(task.get())};
         REQUIRE(!!event);
-        auto s = mk_event_serialize(event.get());
+        auto s = mk_event_serialization(event.get());
         // Uncomment to debug
         //std::clog << "randomize_input_test_helper: " << s << std::endl;
         REQUIRE(!!s);
