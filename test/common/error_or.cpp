@@ -7,6 +7,7 @@
 #include "include/private/catch.hpp"
 
 #include <measurement_kit/common.hpp>
+#include "src/libmeasurement_kit/common/error_or.hpp"
 
 using namespace mk;
 

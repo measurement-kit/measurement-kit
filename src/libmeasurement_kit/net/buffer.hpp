@@ -7,6 +7,8 @@
 #include <measurement_kit/common.hpp>
 #include <cstring>
 
+#include "src/libmeasurement_kit/common/error_or.hpp"
+
 struct evbuffer;
 
 namespace mk {

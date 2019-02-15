@@ -4,8 +4,10 @@
 #ifndef SRC_LIBMEASUREMENT_KIT_COMMON_UTILS_HPP
 #define SRC_LIBMEASUREMENT_KIT_COMMON_UTILS_HPP
 
+#include "src/libmeasurement_kit/common/error_or.hpp"
 #include "src/libmeasurement_kit/common/mock.hpp"
 #include "src/libmeasurement_kit/common/logger.hpp"
+#include "src/libmeasurement_kit/common/settings.hpp"
 
 #include <cctype>
 #include <cmath>

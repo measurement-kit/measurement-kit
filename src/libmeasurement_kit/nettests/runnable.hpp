@@ -8,6 +8,7 @@
 #include "src/libmeasurement_kit/common/non_copyable.hpp"
 #include "src/libmeasurement_kit/common/non_movable.hpp"
 #include "src/libmeasurement_kit/common/reactor.hpp"
+#include "src/libmeasurement_kit/common/settings.hpp"
 
 #include "src/libmeasurement_kit/report/report.hpp"
 

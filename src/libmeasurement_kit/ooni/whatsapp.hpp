@@ -4,7 +4,7 @@
 #ifndef SRC_LIBMEASUREMENT_KIT_OONI_WHATSAPP_HPP
 #define SRC_LIBMEASUREMENT_KIT_OONI_WHATSAPP_HPP
 
-#include "measurement_kit/common/error_or.hpp"
+#include "src/libmeasurement_kit/common/error_or.hpp"
 #include "src/libmeasurement_kit/ooni/error.hpp"
 
 namespace mk {

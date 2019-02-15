@@ -9,6 +9,7 @@
 #include <ctime>
 
 #include "src/libmeasurement_kit/common/logger.hpp"
+#include "src/libmeasurement_kit/common/settings.hpp"
 
 namespace mk {
 namespace report {

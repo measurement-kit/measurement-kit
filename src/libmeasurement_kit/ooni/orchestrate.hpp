@@ -5,13 +5,12 @@
 #define SRC_LIBMEASUREMENT_KIT_OONI_ORCHESTRATE_HPP
 
 #include <measurement_kit/common/error.hpp>
-#include <measurement_kit/common/logger.hpp>
 #include <measurement_kit/common/nlohmann/json.hpp>
-#include <measurement_kit/common/settings.hpp>
 #include <measurement_kit/common/shared_ptr.hpp>
 #include <measurement_kit/common/version.h>
 
 #include "src/libmeasurement_kit/common/logger.hpp"
+#include "src/libmeasurement_kit/common/settings.hpp"
 
 namespace mk {
 namespace ooni {

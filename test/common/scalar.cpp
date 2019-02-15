@@ -6,7 +6,7 @@
 
 #include "include/private/catch.hpp"
 
-#include <measurement_kit/common/settings.hpp>
+#include "src/libmeasurement_kit/common/settings.hpp"
 
 using namespace mk;
 

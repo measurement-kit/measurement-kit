@@ -6,6 +6,7 @@
 
 #include "include/private/catch.hpp"
 
+#include "src/libmeasurement_kit/common/error_or.hpp"
 #include "src/libmeasurement_kit/common/logger.hpp"
 #include "src/libmeasurement_kit/net/libssl.hpp"
 #include <future>

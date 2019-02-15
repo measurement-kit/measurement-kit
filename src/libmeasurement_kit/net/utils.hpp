@@ -8,6 +8,7 @@
 #include <ws2tcpip.h>
 #endif
 
+#include "src/libmeasurement_kit/common/error_or.hpp"
 #include "src/libmeasurement_kit/common/socket.hpp"
 #include "src/libmeasurement_kit/common/logger.hpp"
 

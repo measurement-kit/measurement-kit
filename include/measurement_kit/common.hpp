@@ -5,11 +5,8 @@
 #include <measurement_kit/common/callback.hpp>
 #include <measurement_kit/common/data_usage.hpp>
 #include <measurement_kit/common/error.hpp>
-#include <measurement_kit/common/error_or.hpp>
 #include <measurement_kit/common/logger.hpp>
 #include <measurement_kit/common/platform.h>
-#include <measurement_kit/common/scalar.hpp>
-#include <measurement_kit/common/settings.hpp>
 #include <measurement_kit/common/shared_ptr.hpp>
 #include <measurement_kit/common/version.h>
 #endif
