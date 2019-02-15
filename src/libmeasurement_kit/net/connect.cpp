@@ -229,7 +229,7 @@ void connect(std::string address, int port,
                     logger->info("Re-enabling SSLv2 and SSLv3");
                     libssl::enable_v23(*cssl);
                 }
-                err = libssl::set_hostname_for_verification(
+                err = libssl::enable_hostname_validation(
                         address, *cssl, logger);
                 if (err != NoError()) {
                     bufferevent_free(r->connected_bev);

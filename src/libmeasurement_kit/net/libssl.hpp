@@ -288,7 +288,7 @@ template <size_t max_cache_size = 64> class Cache {
 };
 
 /*!
-    \brief Set hostname for verifying the peer certificate.
+    \brief Enables certificate and hostname validation.
 
     \param hostname Expected hostname.
 
@@ -299,13 +299,16 @@ template <size_t max_cache_size = 64> class Cache {
     \return NoError() on success, an error on failure.
 */
 template <MK_MOCK(SSL_get0_param), MK_MOCK(X509_VERIFY_PARAM_set1_host)>
-Error set_hostname_for_verification(
+Error enable_hostname_validation(
         std::string hostname, SSL *ssl, SharedPtr<Logger> logger) {
     if (ssl == nullptr) {
         logger->warn("You passed me a null SSL pointer");
         return ValueError();
     }
     logger->debug("SSL version: %s", SSL_get_version(ssl));
+    // See https://wiki.openssl.org/index.php/Hostname_validation. Works
+    // with both LibreSSL and OpenSSL >= 1.0.2.
+    SSL_set_verify(ssl, SSL_VERIFY_PEER, nullptr);
     X509_VERIFY_PARAM *param = SSL_get0_param(ssl);
     if (param == nullptr) {
         logger->warn("Cannot get the X509_VERIFY_PARAM");

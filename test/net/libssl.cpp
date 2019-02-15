@@ -137,24 +137,24 @@ static int x509_verify_param_set1_host_fail(
     return false;
 }
 
-TEST_CASE("set_hostname_for_verification works as expected") {
+TEST_CASE("enable_hostname_validation works as expected") {
     Cache<> c;
 
     SECTION("when the SSL pointer is NULL") {
-        REQUIRE(set_hostname_for_verification(
+        REQUIRE(enable_hostname_validation(
                   "x.org", nullptr, Logger::make()) != NoError());
     }
 
     SECTION("when SSL_get0_param fails") {
         auto ssl = *c.get_client_ssl(default_cert, "x.org", Logger::make());
-        REQUIRE(set_hostname_for_verification<ssl_get0_param_fail>(
+        REQUIRE(enable_hostname_validation<ssl_get0_param_fail>(
                       "x.org", ssl, Logger::make()) != NoError());
         SSL_free(ssl);
     }
 
     SECTION("when X509_VERIFY_PARAM_set1_host fails") {
         auto ssl = *c.get_client_ssl(default_cert, "x.org", Logger::make());
-        REQUIRE(set_hostname_for_verification<SSL_get0_param,
+        REQUIRE(enable_hostname_validation<SSL_get0_param,
                              x509_verify_param_set1_host_fail>(
                       "x.org", ssl, Logger::make()) != NoError());
         SSL_free(ssl);
