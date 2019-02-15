@@ -8,6 +8,8 @@
 #include <list>
 #include <measurement_kit/common.hpp>
 
+#include "src/libmeasurement_kit/common/logger.hpp"
+
 namespace mk {
 namespace nettests {
 

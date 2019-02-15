@@ -8,6 +8,8 @@
 
 #include <measurement_kit/common.hpp>
 
+#include <string.h>
+
 using namespace mk;
 
 TEST_CASE("The default constructed error is true-ish") {

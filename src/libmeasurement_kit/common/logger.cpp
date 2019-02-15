@@ -18,6 +18,7 @@
 #include <mutex>
 
 #include "src/libmeasurement_kit/common/delegate.hpp"
+#include "src/libmeasurement_kit/common/logger.hpp"
 #include "src/libmeasurement_kit/common/locked.hpp"
 #include "src/libmeasurement_kit/common/non_copyable.hpp"
 #include "src/libmeasurement_kit/common/non_movable.hpp"

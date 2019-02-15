@@ -5,6 +5,7 @@
 #define SRC_LIBMEASUREMENT_KIT_COMMON_REACTOR_HPP
 
 #include "src/libmeasurement_kit/common/socket.hpp"
+#include "src/libmeasurement_kit/common/logger.hpp"
 
 #include <measurement_kit/common/callback.hpp>
 #include <measurement_kit/common/data_usage.hpp>

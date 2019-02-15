@@ -11,6 +11,8 @@
 #include <measurement_kit/common/shared_ptr.hpp>
 #include <measurement_kit/common/version.h>
 
+#include "src/libmeasurement_kit/common/logger.hpp"
+
 namespace mk {
 namespace ooni {
 namespace orchestrate {

@@ -9,6 +9,7 @@
 #endif
 
 #include "src/libmeasurement_kit/common/socket.hpp"
+#include "src/libmeasurement_kit/common/logger.hpp"
 
 #include <measurement_kit/common.hpp>
 

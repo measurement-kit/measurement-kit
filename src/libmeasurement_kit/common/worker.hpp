@@ -17,6 +17,7 @@
 #include <thread>
 #include <utility>
 
+#include "src/libmeasurement_kit/common/logger.hpp"
 #include "src/libmeasurement_kit/common/non_copyable.hpp"
 #include "src/libmeasurement_kit/common/non_movable.hpp"
 
