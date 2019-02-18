@@ -39,7 +39,8 @@ void mk_report_resubmit_request_set_ca_bundle_path(
 
 /** mk_report_resubmit_request_set_timeout sets the timeout. Specifically, this
  * is the number of seconds after which the resubmit request is aborted. Note
- * that a zero or negative timeout means no timeout. If the @p request argument
+ * that a zero or negative timeout means no timeout. Not setting any timeout
+ * will cause MK to use a reasonable default. If the @p request argument
  * is NULL, then this function will gracefully do nothing. */
 void mk_report_resubmit_request_set_timeout(
     mk_report_resubmit_request_t *request, int64_t value);
@@ -52,9 +53,10 @@ void mk_report_resubmit_request_delete(mk_report_resubmit_request_t *request);
 typedef struct mk_report_resubmit_response mk_report_resubmit_response_t;
 
 /** mk_report_resubmit_movein_and_perform resubmits a report. It will only
- * return NULL in case of allocation failure. Otherwise, it returns a pointer
+ * return NULL either in case of allocation failure or if @p request is
+ * NULL. Otherwise, it will return a mk_report_resubmit_response pointer
  * that you own and must mk_report_resubmit_response_delete() when done. It
- * should also be noted that this is operation has a move semantic; after
+ * should also be noted that this operation has move semantics: after
  * you've called this function, you should not use @p request again. */
 mk_report_resubmit_response_t *mk_report_resubmit_movein_and_perform(
     mk_report_resubmit_request_t *request);
