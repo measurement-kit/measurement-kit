@@ -8,14 +8,14 @@
 
 #include <measurement_kit/ffi.h>
 
-TEST_CASE("mk_nettest_start() works as expected") {
+TEST_CASE("mk_task_start() works as expected") {
     SECTION("With nullptr settings") {
-        auto task = mk_nettest_start(nullptr);
+        auto task = mk_task_start(nullptr);
         REQUIRE(task == nullptr);
     }
 
     SECTION("With invalid settings") {
-        auto task = mk_nettest_start("{");
+        auto task = mk_task_start("{");
         REQUIRE(task == nullptr);
     }
 }

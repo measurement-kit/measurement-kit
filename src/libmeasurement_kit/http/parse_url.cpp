@@ -6,7 +6,7 @@
 
 #include <ctype.h>
 
-#include "src/libmeasurement_kit/ext/http_parser.h"
+#include <measurement_kit/internal/vendor/http_parser.h>
 
 namespace mk {
 namespace http {
@@ -28,12 +28,12 @@ Url parse_url(std::string url) {
                                url_parser.field_data[UF_SCHEMA].len);
     // "URL schema should be case-insensitive" #1652
     for (size_t i = 0; i < retval.schema.size(); ++i) {
-        char ch = retval.schema[i];
+        int ch = retval.schema[i];
         // The following is just a precaution to avoid passing an invalid
         // value to tolower(). The parser should make that impossible. Thus
         // if the assumption is invalid, die miserably in flames.
         if (ch < 0 || ch > 127) abort();
-        retval.schema[i] = tolower(ch);
+        retval.schema[i] = (char)tolower(ch);
     }
     retval.address = url.substr(url_parser.field_data[UF_HOST].off,
                                 url_parser.field_data[UF_HOST].len);

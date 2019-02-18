@@ -30,7 +30,7 @@ TEST_CASE("mk_event_create_() deals with invalid JSON value") {
   // Before #1728 was fixed, the following statement was crashing
   mk_unique_event ev{mk_event_create_(json)};
   REQUIRE(ev != nullptr);
-  REQUIRE(mk_event_serialize(ev.get()) != nullptr);
+  REQUIRE(mk_event_serialization(ev.get()) != nullptr);
 }
 
 TEST_CASE("mk_event_create_() deals with invalid JSON event key") {
@@ -40,5 +40,5 @@ TEST_CASE("mk_event_create_() deals with invalid JSON event key") {
   // Before #1728 was fixed, the following statement was crashing
   mk_unique_event ev{mk_event_create_(json)};
   REQUIRE(ev != nullptr);
-  REQUIRE(mk_event_serialize(ev.get()) != nullptr);
+  REQUIRE(mk_event_serialization(ev.get()) != nullptr);
 }

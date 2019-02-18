@@ -3,8 +3,6 @@
 // and LICENSE for more information on the copying conditions.
 
 #include <measurement_kit/common/aaa_base.h>
-#include <measurement_kit/common/error.hpp>
-#include <measurement_kit/common/callback.hpp>
 #include <measurement_kit/common/logger.hpp>
 #include <measurement_kit/common/shared_ptr.hpp>
 
@@ -17,7 +15,10 @@
 #include <list>
 #include <mutex>
 
+#include "src/libmeasurement_kit/common/callback.hpp"
 #include "src/libmeasurement_kit/common/delegate.hpp"
+#include "src/libmeasurement_kit/common/error.hpp"
+#include "src/libmeasurement_kit/common/logger.hpp"
 #include "src/libmeasurement_kit/common/locked.hpp"
 #include "src/libmeasurement_kit/common/non_copyable.hpp"
 #include "src/libmeasurement_kit/common/non_movable.hpp"
@@ -89,30 +90,49 @@ class DefaultLogger : public Logger, public NonCopyable, public NonMovable {
             /* NOTHING */;
         }
 
+        logs_unlocked_(level, buffer_);
+    }
+
+    void logs_unlocked_(uint32_t level, const char *s) {
+        if (!s) {
+            return;
+        }
         // Since v0.4 we dispatch the MK_LOG_EVENT event to the proper handler
         // if set, otherwise we fallthrough passing it to consumer_.
         if (event_handler_ and (level & MK_LOG_EVENT) != 0) {
             try {
-                event_handler_(buffer_);
+                event_handler_(s);
             } catch (const std::exception &) {
                 /* Suppress */;
             }
             return;
         }
-
         if (consumer_) {
             try {
-                consumer_(level, buffer_);
+                consumer_(level, s);
             } catch (const std::exception &) {
                 /* Suppress */;
             }
         }
-
         if (ofile_) {
             // FIX: use `std::endl` rather than `\n` to make sure we flush
             // after each line. Fixes TheTorProject/ooniprobe-ios#80.
-            *ofile_ << buffer_ << std::endl;
+            *ofile_ << s << std::endl;
             // TODO: suppose here write fails... what do we want to do?
+        }
+    }
+
+    void logs(uint32_t level, const char *s) override {
+        std::unique_lock<std::recursive_mutex> _{mutex_};
+        if ((level & MK_LOG_VERBOSITY_MASK) <= verbosity_) {
+            logs_unlocked_(level, s);
+        }
+    }
+
+    void logsv(uint32_t level, const std::vector<std::string> &v) override {
+        std::unique_lock<std::recursive_mutex> _{mutex_};
+        if ((level & MK_LOG_VERBOSITY_MASK) <= verbosity_) {
+            for (auto &s : v) logs_unlocked_(level, s.c_str());
         }
     }
 

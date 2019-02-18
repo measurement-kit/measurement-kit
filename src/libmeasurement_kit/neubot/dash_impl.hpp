@@ -56,7 +56,7 @@
 
 #include "src/libmeasurement_kit/common/mock.hpp"
 #include "src/libmeasurement_kit/common/utils.hpp"
-#include "src/libmeasurement_kit/ext/sole.hpp"
+#include "src/libmeasurement_kit/vendor/sole.hpp"
 #include "src/libmeasurement_kit/mlabns/mlabns.hpp"
 #include "src/libmeasurement_kit/http/http.hpp"
 

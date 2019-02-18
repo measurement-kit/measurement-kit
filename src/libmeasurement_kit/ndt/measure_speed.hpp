@@ -5,7 +5,7 @@
 #define SRC_LIBMEASUREMENT_KIT_NDT_MEASURE_SPEED_HPP
 
 #include "src/libmeasurement_kit/common/utils.hpp"
-#include <measurement_kit/common/callback.hpp>
+#include "src/libmeasurement_kit/common/callback.hpp"
 
 namespace mk {
 namespace ndt {

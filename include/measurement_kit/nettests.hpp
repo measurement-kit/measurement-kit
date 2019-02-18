@@ -263,9 +263,9 @@ class MK_NETTESTS_DEPRECATED BaseTest {
         // whether to handle this possible error condition or not.
         std::string serialized_settings;
         serialized_settings = tip->settings.dump();
-        mk_unique_task tup{mk_nettest_start(serialized_settings.c_str())};
+        mk_unique_task tup{mk_task_start(serialized_settings.c_str())};
         if (!tup) {
-            throw std::runtime_error("mk_nettest_start() failed");
+            throw std::runtime_error("mk_task_start() failed");
         }
         while (!mk_task_is_done(tup.get())) {
             nlohmann::json ev;
@@ -275,7 +275,7 @@ class MK_NETTESTS_DEPRECATED BaseTest {
                     throw std::runtime_error(
                             "mk_task_wait_for_next_event() failed");
                 }
-                const char *s = mk_event_serialize(eup.get());
+                const char *s = mk_event_serialization(eup.get());
                 assert(s != nullptr);
 #ifdef MK_NETTESTS_TRACE_EVENTS
                 std::clog << "mk::nettests: got event: " << s << std::endl;

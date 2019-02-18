@@ -5,6 +5,7 @@
 #define SRC_LIBMEASUREMENT_KIT_OONI_BOUNCER_HPP
 
 #include "src/libmeasurement_kit/common/reactor.hpp"
+#include "src/libmeasurement_kit/common/settings.hpp"
 
 #include <list>
 #include <measurement_kit/common.hpp>

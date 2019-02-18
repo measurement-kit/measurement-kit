@@ -5,6 +5,7 @@
 #define SRC_LIBMEASUREMENT_KIT_DNS_QUERY_HPP
 
 #include "src/libmeasurement_kit/common/reactor.hpp"
+#include "src/libmeasurement_kit/common/settings.hpp"
 #include "src/libmeasurement_kit/dns/error.hpp"
 #include "src/libmeasurement_kit/dns/query_class.hpp"
 #include "src/libmeasurement_kit/dns/query_type.hpp"

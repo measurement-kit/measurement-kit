@@ -4,7 +4,7 @@
 #ifndef SRC_LIBMEASUREMENT_KIT_TRACEROUTE_ERROR_HPP
 #define SRC_LIBMEASUREMENT_KIT_TRACEROUTE_ERROR_HPP
 
-#include <measurement_kit/common.hpp>
+#include "src/libmeasurement_kit/common/error.hpp"
 
 namespace mk {
 namespace traceroute {

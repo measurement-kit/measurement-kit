@@ -4,7 +4,7 @@
 
 #include "test/winsock.hpp"
 
-#include "measurement_kit/mkapi/orchestra.h"
+#include "measurement_kit/internal/mkapi/orchestra.h"
 
 #include <iostream>
 

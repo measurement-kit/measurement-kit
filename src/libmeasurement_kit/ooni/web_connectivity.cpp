@@ -12,7 +12,7 @@
 #include <cctype>
 #include <set>
 
-#include <measurement_kit/internal/vendor/mkmmdb.h>
+#include <measurement_kit/internal/vendor/mkmmdb.hpp>
 
 #define BODY_PROPORTION_FACTOR 0.7
 
@@ -192,20 +192,18 @@ static void compare_dns_queries(SharedPtr<nlohmann::json> entry,
     std::set<std::string> ctrl_asns;
 
     std::string asn_p = options.get("geoip_asn_path", std::string{});
-    mkmmdb_uptr mmdb{mkmmdb_open_nonnull(asn_p.c_str())};
+    std::vector<std::string> logs;
+    mk::mmdb::Handle db;
+    (void)db.open(asn_p, logs);  // lookup will fail if open fails
     for (auto exp_addr : exp_addresses) {
-        int64_t n = mkmmdb_lookup_asn(mmdb.get(), exp_addr.c_str());
-        if (n > 0) {
-            std::string asn = "AS";
-            asn += std::to_string(n);
+        std::string asn;
+        if (db.lookup_asn2(exp_addr, asn, logs) == true) {
             exp_asns.insert(asn);
         }
     }
     for (auto ctrl_addr : ctrl_addresses) {
-        int64_t n = mkmmdb_lookup_asn(mmdb.get(), ctrl_addr.c_str());
-        if (n > 0) {
-            std::string asn = "AS";
-            asn += std::to_string(n);
+        std::string asn;
+        if (db.lookup_asn2(ctrl_addr, asn, logs) == true) {
             ctrl_asns.insert(asn);
         }
     }

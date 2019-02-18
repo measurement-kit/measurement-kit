@@ -1,14 +1,13 @@
 #!/bin/sh
 set -ex
-version=v0.8.3
+version=v0.10.0
 name=mkcurl
 destdir=include/measurement_kit/internal/vendor
 install -d $destdir
-url=https://raw.githubusercontent.com/measurement-kit/$name/$version/$name.h
+url=https://raw.githubusercontent.com/measurement-kit/$name/$version/$name.hpp
 (
   set -ex
   cd $destdir
   curl -fsSLO $url
 )
-git add $destdir/$name.h
-git commit -am "Vendor measurement-kit/$name@$version"
+git add $destdir/$name.hpp

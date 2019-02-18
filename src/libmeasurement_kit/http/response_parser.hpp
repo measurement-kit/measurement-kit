@@ -4,7 +4,7 @@
 #ifndef SRC_LIBMEASUREMENT_KIT_HTTP_RESPONSE_PARSER_HPP
 #define SRC_LIBMEASUREMENT_KIT_HTTP_RESPONSE_PARSER_HPP
 
-#include "../ext/http_parser.h"
+#include <measurement_kit/internal/vendor/http_parser.h>
 
 #include "src/libmeasurement_kit/common/delegate.hpp"
 #include "src/libmeasurement_kit/common/non_copyable.hpp"

@@ -4,7 +4,7 @@
 #ifndef SRC_LIBMEASUREMENT_KIT_COMMON_LEXICAL_CAST_HPP
 #define SRC_LIBMEASUREMENT_KIT_COMMON_LEXICAL_CAST_HPP
 
-#include <measurement_kit/common/scalar.hpp>
+#include "src/libmeasurement_kit/common/scalar.hpp"
 
 namespace mk {
 

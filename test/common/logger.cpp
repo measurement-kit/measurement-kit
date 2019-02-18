@@ -6,6 +6,8 @@
 
 #include "include/private/catch.hpp"
 
+#include "src/libmeasurement_kit/common/logger.hpp"
+
 #include <measurement_kit/common.hpp>
 
 #include <string>
@@ -126,4 +128,37 @@ TEST_CASE("We pass MK_LOG_EVENT only to event-handler if it is set") {
     logger->log(MK_LOG_WARNING|MK_LOG_EVENT, "{}");
     REQUIRE(!log_called);
     REQUIRE(eh_called);
+}
+
+TEST_CASE("The logs API works as expected") {
+    std::string buffer;
+    auto logger = mk::Logger::make();
+    logger->on_log([&buffer](uint32_t, const char *s) {
+        buffer += s;
+        buffer += "\n";
+    });
+    logger->set_verbosity(MK_LOG_INFO);
+    logger->logs(MK_LOG_WARNING, nullptr);  // should be handled gracefully
+    logger->logs(MK_LOG_DEBUG, "Antani");
+    logger->logs(MK_LOG_INFO, "Foo");
+    logger->logs(MK_LOG_DEBUG, "Antani");
+    logger->logs(MK_LOG_INFO, "Bar");
+    REQUIRE(buffer == "Foo\nBar\n");
+}
+
+TEST_CASE("The logsv API works as expected") {
+    std::string buffer;
+    auto logger = mk::Logger::make();
+    logger->on_log([&buffer](uint32_t, const char *s) {
+        buffer += s;
+        buffer += "\n";
+    });
+    std::vector<std::string> foobar{"Foo", "Bar"};
+    std::vector<std::string> mascetti{"Antani", "Antani"};
+    logger->set_verbosity(MK_LOG_INFO);
+    logger->logsv(MK_LOG_DEBUG, mascetti);
+    logger->logsv(MK_LOG_INFO, foobar);
+    logger->logsv(MK_LOG_DEBUG, mascetti);
+    logger->logsv(MK_LOG_INFO, foobar);
+    REQUIRE(buffer == "Foo\nBar\nFoo\nBar\n");
 }

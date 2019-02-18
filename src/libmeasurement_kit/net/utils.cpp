@@ -2,7 +2,7 @@
 // Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
-#include "src/libmeasurement_kit/ext/http_parser.h"
+#include <measurement_kit/internal/vendor/http_parser.h>
 #include "src/libmeasurement_kit/net/error.hpp"
 #include "src/libmeasurement_kit/net/utils.hpp"
 

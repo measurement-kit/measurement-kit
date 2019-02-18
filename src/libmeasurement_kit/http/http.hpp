@@ -6,6 +6,7 @@
 
 #include <measurement_kit/common/nlohmann/json.hpp>
 
+#include "src/libmeasurement_kit/common/settings.hpp"
 #include "src/libmeasurement_kit/net/transport.hpp"
 
 namespace mk {

@@ -2,7 +2,7 @@
 // Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
 
-#include <measurement_kit/common/callback.hpp>
+#include "src/libmeasurement_kit/common/callback.hpp"
 #include "src/libmeasurement_kit/common/worker.hpp"
 #include "src/libmeasurement_kit/common/non_copyable.hpp"
 #include "src/libmeasurement_kit/common/non_movable.hpp"

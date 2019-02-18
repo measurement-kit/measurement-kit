@@ -8,6 +8,7 @@
 
 #include <event2/dns.h>
 
+#include "src/libmeasurement_kit/common/error.hpp"
 #include "src/libmeasurement_kit/dns/error.hpp"
 #include "src/libmeasurement_kit/dns/libevent_query.hpp"
 
