@@ -12,6 +12,33 @@
 namespace mk {
 namespace collector {
 
+/// Settings contains common network related settings.
+class Settings {
+ public:
+  /// base_url is the OONI collector base_url
+  std::string base_url;
+
+  /// ca_bundle_path is the path to the CA bundle (required on mobile)
+  std::string ca_bundle_path;
+
+  /// timeout is the whole operation timeout (in seconds)
+  int64_t timeout = 30;
+};
+
+/// LoadResult is the result of loading a structure from JSON.
+template <typename Type>
+class LoadResult {
+ public:
+  /// good indicates whether loading succeeded.
+  bool good = false;
+
+  /// reason indicates the failure reason on failure.
+  std::string reason;
+
+  /// value is the parsed value on success.
+  Type value = {};
+};
+
 /// OpenRequest is a request to open a report with a collector.
 class OpenRequest {
  public:
@@ -30,21 +57,18 @@ class OpenRequest {
   /// test_name is the nettest name
   std::string test_name;
 
-  /// test_version is the nettest version
-  std::string test_version;
-
   /// test_start_time is the time when the test started
   std::string test_start_time;
 
-  /// base_url is the OONI collector base_url
-  std::string base_url;
-
-  /// ca_bundle_path is the path to the CA bundle (required on mobile)
-  std::string ca_bundle_path;
-
-  /// timeout is the whole operation timeout (in seconds)
-  int64_t timeout = 30;
+  /// test_version is the nettest version
+  std::string test_version;
 };
+
+/// open_request_from_measurement initializes an OpenRequest structure
+/// from an existing @p measurement. This is the function that you want
+/// to call when you want to resubmit a specific measurement.
+LoadResult<OpenRequest> open_request_from_measurement(
+    const std::string &measurement) noexcept;
 
 /// OpenResponse is the response to an open request.
 struct OpenResponse {
@@ -59,7 +83,8 @@ struct OpenResponse {
 };
 
 /// open opens a report with a collector.
-OpenResponse open(const OpenRequest &request) noexcept;
+OpenResponse open(const OpenRequest &request,
+                  const Settings &settings) noexcept;
 
 /// UpdateRequest is a request to update a report with a new measurement.
 struct UpdateRequest {
@@ -68,15 +93,6 @@ struct UpdateRequest {
 
   /// content is the measurement entry serialised as a string.
   std::string content;
-
-  /// base_url is the OONI collector base URL.
-  std::string base_url;
-
-  /// ca_bundle_path is the path to the CA bundle (required on mobile).
-  std::string ca_bundle_path;
-
-  /// timeout is the whole-operation timeout (in seconds).
-  int64_t timeout = 30;
 };
 
 /// UpdateResponse is a response to an update request.
@@ -88,21 +104,13 @@ struct UpdateResponse {
 };
 
 /// update updates a report by adding a new measurement.
-UpdateResponse update(const UpdateRequest &request) noexcept;
+UpdateResponse update(const UpdateRequest &request,
+                      const Settings &settings) noexcept;
 
 /// CloseRequest is a request to close a report.
 struct CloseRequest {
   /// report_id is the report ID
   std::string report_id;
-
-  /// base_url is OONI collector's base URL
-  std::string base_url;
-
-  /// ca_bundle_path is the path to the CA bundle (required on mobile)
-  std::string ca_bundle_path;
-
-  /// timeout is the whole-operation timeout (in seconds)
-  int64_t timeout = 30;
 };
 
 /// CloseResponse is a response to a close request
@@ -115,7 +123,8 @@ struct CloseResponse {
 };
 
 /// close closes a report.
-CloseResponse close(const CloseRequest &request) noexcept;
+CloseResponse close(const CloseRequest &request,
+                    const Settings &settings) noexcept;
 
 }  // namespace collector
 }  // namespace mk
@@ -124,6 +133,7 @@ CloseResponse close(const CloseRequest &request) noexcept;
 // symbol. If you only care about API, you can stop reading here.
 #ifdef MKCOLLECTOR_INLINE_IMPL
 
+#include <stdexcept>
 #include <sstream>
 
 #include "json.hpp"
@@ -147,15 +157,37 @@ static void log_body(const std::string &prefix, const std::string &body,
   logs.push_back(ss.str());
 }
 
-OpenResponse open(const OpenRequest &request) noexcept {
+LoadResult<OpenRequest> open_request_from_measurement(
+    const std::string &measurement) noexcept {
+  LoadResult<OpenRequest> result;
+  nlohmann::json doc;
+  try {
+    doc = nlohmann::json::parse(measurement);
+    doc.at("probe_asn").get_to(result.value.probe_asn);
+    doc.at("probe_cc").get_to(result.value.probe_cc);
+    doc.at("software_name").get_to(result.value.software_name);
+    doc.at("software_version").get_to(result.value.software_version);
+    doc.at("test_name").get_to(result.value.test_name);
+    doc.at("test_start_time").get_to(result.value.test_start_time);
+    doc.at("test_version").get_to(result.value.test_version);
+  } catch (const std::exception &exc) {
+    result.reason = exc.what();
+    return result;
+  }
+  result.good = true;
+  return result;
+}
+
+OpenResponse open(const OpenRequest &request,
+                  const Settings &settings) noexcept {
   OpenResponse response;
   curl::Request curl_request;
-  curl_request.ca_path = request.ca_bundle_path;
-  curl_request.timeout = request.timeout;
+  curl_request.ca_path = settings.ca_bundle_path;
+  curl_request.timeout = settings.timeout;
   curl_request.method = "POST";
   curl_request.headers.push_back("Content-Type: application/json");
   {
-    std::string url = request.base_url;
+    std::string url = settings.base_url;
     url += "/report";
     std::swap(url, curl_request.url);
   }
@@ -206,15 +238,16 @@ OpenResponse open(const OpenRequest &request) noexcept {
   return response;
 }
 
-UpdateResponse update(const UpdateRequest &request) noexcept {
+UpdateResponse update(const UpdateRequest &request,
+                      const Settings &settings) noexcept {
   UpdateResponse response;
   curl::Request curl_request;
-  curl_request.ca_path = request.ca_bundle_path;
-  curl_request.timeout = request.timeout;
+  curl_request.ca_path = settings.ca_bundle_path;
+  curl_request.timeout = settings.timeout;
   curl_request.method = "POST";
   curl_request.headers.push_back("Content-Type: application/json");
   {
-    std::string url = request.base_url;
+    std::string url = settings.base_url;
     url += "/report/";
     url += request.report_id;
     std::swap(url, curl_request.url);
@@ -224,7 +257,18 @@ UpdateResponse update(const UpdateRequest &request) noexcept {
     nlohmann::json doc;
     doc["format"] = "json";
     try {
-      doc["content"] = nlohmann::json::parse(request.content);
+      auto content = nlohmann::json::parse(request.content);
+      // Implementation note: the following checks rely on the fact that
+      // we're inside a try...catch block and nlohmann/json will throw if
+      // content is not an object, a field is missing, etc. That's also
+      // why we're using throw to leave this block rather than return.
+      if (content.at("data_format_version") != "0.2.0") {
+        throw std::runtime_error("Unsupported data_format_version");
+      }
+      if (content.at("report_id") != request.report_id) {
+        throw std::runtime_error("The report_id is inconsistent");
+      }
+      doc["content"] = std::move(content);
       body = doc.dump();
     } catch (const std::exception &exc) {
       response.logs.push_back(exc.what());
@@ -247,14 +291,15 @@ UpdateResponse update(const UpdateRequest &request) noexcept {
   return response;
 }
 
-CloseResponse close(const CloseRequest &request) noexcept {
+CloseResponse close(const CloseRequest &request,
+                    const Settings &settings) noexcept {
   CloseResponse response;
   curl::Request curl_request;
   curl_request.method = "POST";
-  curl_request.ca_path = request.ca_bundle_path;
-  curl_request.timeout = request.timeout;
+  curl_request.ca_path = settings.ca_bundle_path;
+  curl_request.timeout = settings.timeout;
   {
-    std::string url = request.base_url;
+    std::string url = settings.base_url;
     url += "/report/";
     url += request.report_id;
     url += "/close";
