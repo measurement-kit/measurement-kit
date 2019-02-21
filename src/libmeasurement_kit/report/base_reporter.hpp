@@ -7,12 +7,12 @@
 #include "src/libmeasurement_kit/common/continuation.hpp"
 #include "src/libmeasurement_kit/common/non_copyable.hpp"
 #include "src/libmeasurement_kit/common/non_movable.hpp"
-#include "src/libmeasurement_kit/report/report.hpp"
+#include "src/libmeasurement_kit/report/report_legacy.hpp"
 
 namespace mk {
 namespace report {
 
-class Report;
+class ReportLegacy;
 
 class BaseReporter : public NonCopyable, public NonMovable {
   public:
@@ -22,7 +22,7 @@ class BaseReporter : public NonCopyable, public NonMovable {
 
     // TODO: refactor moving these inline functions inside of the .cpp file
 
-    virtual Continuation<Error> open(Report &) {
+    virtual Continuation<Error> open(ReportLegacy &) {
         return do_open_([=](Callback<Error> cb) { cb(NoError()); });
     }
 

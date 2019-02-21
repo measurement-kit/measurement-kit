@@ -30,7 +30,7 @@ OoniReporter::OoniReporter(Settings s, SharedPtr<Reactor> r, SharedPtr<Logger> l
     return reporter.as<BaseReporter>();
 }
 
-Continuation<Error> OoniReporter::open(Report &report) {
+Continuation<Error> OoniReporter::open(ReportLegacy &report) {
     return do_open_([=, &report](Callback<Error> cb) {
         logger->info("Opening report; please be patient...");
         ooni::collector::connect_and_create_report(

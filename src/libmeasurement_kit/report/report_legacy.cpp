@@ -9,18 +9,18 @@
 
 #include "src/libmeasurement_kit/report/base_reporter.hpp"
 #include "src/libmeasurement_kit/report/error.hpp"
-#include "src/libmeasurement_kit/report/report.hpp"
+#include "src/libmeasurement_kit/report/report_legacy.hpp"
 
 namespace mk {
 namespace report {
 
-Report::Report() {}
+ReportLegacy::ReportLegacy() {}
 
-void Report::add_reporter(SharedPtr<BaseReporter> reporter) {
+void ReportLegacy::add_reporter(SharedPtr<BaseReporter> reporter) {
     reporters_.push_back(reporter);
 }
 
-void Report::fill_entry(nlohmann::json &entry) const {
+void ReportLegacy::fill_entry(nlohmann::json &entry) const {
     entry["test_name"] = test_name;
     entry["test_version"] = test_version;
     entry["test_start_time"] = *mk::timestamp(&test_start_time);
@@ -40,7 +40,7 @@ void Report::fill_entry(nlohmann::json &entry) const {
     entry["report_id"] = report_id;
 }
 
-nlohmann::json Report::get_dummy_entry() const {
+nlohmann::json ReportLegacy::get_dummy_entry() const {
     nlohmann::json entry;
     fill_entry(entry);
     return entry;
@@ -48,20 +48,20 @@ nlohmann::json Report::get_dummy_entry() const {
 
 #define FMAP mk::fmap<SharedPtr<BaseReporter>, Continuation<Error>>
 
-void Report::open(Callback<Error> callback) {
+void ReportLegacy::open(Callback<Error> callback) {
     mk::parallel(FMAP(reporters_, [=](SharedPtr<BaseReporter> r) {
         return r->open(*this);
     }), callback);
 }
 
-void Report::write_entry(nlohmann::json entry, Callback<Error> callback,
+void ReportLegacy::write_entry(nlohmann::json entry, Callback<Error> callback,
                          SharedPtr<Logger>) {
     mk::parallel(FMAP(reporters_, [=](SharedPtr<BaseReporter> r) {
         return r->write_entry(entry);
     }), callback);
 }
 
-void Report::close(Callback<Error> callback) {
+void ReportLegacy::close(Callback<Error> callback) {
     mk::parallel(FMAP(reporters_, [](SharedPtr<BaseReporter> r) {
         return r->close();
     }), callback);

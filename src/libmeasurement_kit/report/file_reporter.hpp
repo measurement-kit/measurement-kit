@@ -15,7 +15,7 @@ class FileReporter : public BaseReporter {
   public:
     static SharedPtr<BaseReporter> make(std::string filename);
 
-    Continuation<Error> open(Report &report) override;
+    Continuation<Error> open(ReportLegacy &report) override;
     Continuation<Error> write_entry(nlohmann::json entry) override;
     Continuation<Error> close() override;
 

@@ -9,7 +9,7 @@
 #include "src/libmeasurement_kit/common/utils.hpp"
 #include "src/libmeasurement_kit/report/base_reporter.hpp"
 #include "src/libmeasurement_kit/report/error.hpp"
-#include "src/libmeasurement_kit/report/report.hpp"
+#include "src/libmeasurement_kit/report/report_legacy.hpp"
 
 using namespace mk;
 using namespace mk::report;
@@ -22,7 +22,7 @@ class CountedReporter : public BaseReporter {
 
     ~CountedReporter() override;
 
-    Continuation<Error> open(Report &) override {
+    Continuation<Error> open(ReportLegacy &) override {
         return do_open_([=](Callback<Error> cb) {
             ++open_count;
             return cb(NoError());
@@ -58,7 +58,7 @@ class FailingReporter : public BaseReporter {
 
     ~FailingReporter() override;
 
-    Continuation<Error> open(Report & /*report*/) override {
+    Continuation<Error> open(ReportLegacy & /*report*/) override {
         return do_open_([=](Callback<Error> cb) {
             if (open_count++ == 0) {
                 cb(MockedError());
@@ -96,11 +96,11 @@ class FailingReporter : public BaseReporter {
 FailingReporter::~FailingReporter() {}
 
 TEST_CASE("The constructor works correctly") {
-    REQUIRE_NOTHROW(Report());
+    REQUIRE_NOTHROW(ReportLegacy());
 }
 
 TEST_CASE("The open() method works correctly") {
-    Report report;
+    ReportLegacy report;
     report.add_reporter(BaseReporter::make());
     report.open([&](Error err) {
         REQUIRE(!err);
@@ -118,7 +118,7 @@ TEST_CASE("The open() method works correctly") {
 TEST_CASE("We can retry a partially successful open") {
     SharedPtr<CountedReporter> counted_reporter = CountedReporter::make();
     SharedPtr<FailingReporter> failing_reporter = FailingReporter::make();
-    Report report;
+    ReportLegacy report;
     report.add_reporter(counted_reporter.as<BaseReporter>());
     report.add_reporter(failing_reporter.as<BaseReporter>());
     report.open([&](Error err) {
@@ -141,7 +141,7 @@ TEST_CASE("We can retry a partially successful open") {
 }
 
 TEST_CASE("The write_entry() method works correctly") {
-    Report report;
+    ReportLegacy report;
     report.add_reporter(BaseReporter::make());
     nlohmann::json entry;
     report.write_entry(entry, [&](Error err) {
@@ -192,7 +192,7 @@ TEST_CASE("We can retry a partially successful write_entry()") {
     SharedPtr<CountedReporter> counted_reporter = CountedReporter::make();
     SharedPtr<FailingReporter> failing_reporter = FailingReporter::make();
     failing_reporter->open_count = 1; // So open won't fail
-    Report report;
+    ReportLegacy report;
     report.add_reporter(counted_reporter.as<BaseReporter>());
     report.add_reporter(failing_reporter.as<BaseReporter>());
     report.open([&](Error err) {
@@ -221,7 +221,7 @@ TEST_CASE("We can retry a partially successful write_entry()") {
 }
 
 TEST_CASE("The close() method works correctly") {
-    Report report;
+    ReportLegacy report;
     report.add_reporter(BaseReporter::make());
     report.open([&](Error err) {
         REQUIRE(!err);
@@ -243,7 +243,7 @@ TEST_CASE("We can retry a partially successful close") {
     SharedPtr<CountedReporter> counted_reporter = CountedReporter::make();
     SharedPtr<FailingReporter> failing_reporter = FailingReporter::make();
     failing_reporter->open_count = 1; // So open won't fail
-    Report report;
+    ReportLegacy report;
     report.add_reporter(counted_reporter.as<BaseReporter>());
     report.add_reporter(failing_reporter.as<BaseReporter>());
     report.open([&](Error err) {
@@ -269,7 +269,7 @@ TEST_CASE("We can retry a partially successful close") {
 }
 
 TEST_CASE("We can override software name and version") {
-    Report report;
+    ReportLegacy report;
     nlohmann::json entry;
 
     // We must set the `test_start_time` because otherwise the
