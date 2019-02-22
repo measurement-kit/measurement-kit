@@ -29,7 +29,7 @@ static Error map_error(std::ostream &file) {
     return reporter.as<BaseReporter>();
 }
 
-Continuation<Error> FileReporter::open(Report &) {
+Continuation<Error> FileReporter::open(ReportLegacy &) {
     return do_open_([=](Callback<Error> cb) {
         if (filename == "-") {
             cb(NoError());

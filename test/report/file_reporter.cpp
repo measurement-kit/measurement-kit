@@ -18,7 +18,7 @@ TEST_CASE("The constructor works correctly") {
 }
 
 TEST_CASE("open() tells us if it encounters an error") {
-    Report report;
+    ReportLegacy report;
     SharedPtr<BaseReporter> reporter = FileReporter::make("/nonexistent/foobar.njson");
     // This should cause failure on open() because directory doesn't exist
     reporter->open(report)([](Error err) {
@@ -36,7 +36,7 @@ TEST_CASE(
         options["opt1"] = "value1";
         options["opt2"] = "value2";
 
-        Report report;
+        ReportLegacy report;
         report.test_name = "example_test";
         report.test_version = MEASUREMENT_KIT_VERSION;
         report.options = options;

@@ -1,8 +1,8 @@
 // Part of Measurement Kit <https://measurement-kit.github.io/>.
 // Measurement Kit is free software under the BSD license. See AUTHORS
 // and LICENSE for more information on the copying conditions.
-#ifndef SRC_LIBMEASUREMENT_KIT_REPORT_REPORT_HPP
-#define SRC_LIBMEASUREMENT_KIT_REPORT_REPORT_HPP
+#ifndef SRC_LIBMEASUREMENT_KIT_REPORT_REPORT_LEGACY_HPP
+#define SRC_LIBMEASUREMENT_KIT_REPORT_REPORT_LEGACY_HPP
 
 #include <measurement_kit/common.hpp>
 
@@ -16,7 +16,7 @@ namespace report {
 
 class BaseReporter; // Forward decl.
 
-class Report {
+class ReportLegacy {
   public:
     const std::string software_name = "measurement_kit";
     const std::string software_version = MEASUREMENT_KIT_VERSION;
@@ -35,7 +35,7 @@ class Report {
 
     std::string report_id; /* Set after open(), if possible */
 
-    Report();
+    ReportLegacy();
 
     void add_reporter(SharedPtr<BaseReporter> reporter);
 

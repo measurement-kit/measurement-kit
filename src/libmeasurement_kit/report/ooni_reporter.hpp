@@ -14,7 +14,7 @@ class OoniReporter : public BaseReporter {
   public:
     static SharedPtr<BaseReporter> make(Settings, SharedPtr<Reactor>, SharedPtr<Logger>);
 
-    Continuation<Error> open(Report &report) override;
+    Continuation<Error> open(ReportLegacy &report) override;
     Continuation<Error> write_entry(nlohmann::json entry) override;
     Continuation<Error> close() override;
 

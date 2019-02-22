@@ -10,7 +10,7 @@
 #include "src/libmeasurement_kit/common/reactor.hpp"
 #include "src/libmeasurement_kit/common/settings.hpp"
 
-#include "src/libmeasurement_kit/report/report.hpp"
+#include "src/libmeasurement_kit/report/report_legacy.hpp"
 
 #include <ctime>
 #include <deque>
@@ -58,7 +58,7 @@ class Runnable : public NonCopyable, public NonMovable {
     std::list<std::string> test_helpers_bouncer_names();
 
   private:
-    report::Report report;
+    report::ReportLegacy report;
     tm test_start_time;
     double beginning = 0.0;
 
