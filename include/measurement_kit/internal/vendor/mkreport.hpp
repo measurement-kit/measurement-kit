@@ -135,6 +135,8 @@ bool dump(const Measurement &measurement, std::string &str,
 #include "date.h"
 #include "json.hpp"
 
+#include "mkuuid4.hpp"
+
 namespace mk {
 namespace report {
 
@@ -236,16 +238,12 @@ bool dump(const Measurement &measurement, std::string &str,
   nlohmann::json m;
   m["annotations"] = measurement.report.annotations;
   m["data_format_version"] = "0.2.0";
-  // The `id` field is constant for all tests. This field is not used in
-  // practice and is poised to be removed by the specification. My previous
-  // code used r-lyeh/sole@c61c49f10d to generate a UUID4. However, that
-  // library uses std::random_device, which is broken with Mingw [1], so I've
-  // taken the decision of not bothering myself with parsing this field and
-  // of always emitting a conventional value for this field.
-  //
-  // [1] https://sourceforge.net/p/mingw-w64/bugs/338/
-  m["id"] = "bdd20d7a-bba5-40dd-a111-9863d7908572";
-  m["input"] = measurement.input;
+  m["id"] = mk::uuid4::gen();
+  if (!measurement.input.empty()) {
+    m["input"] = measurement.input;
+  } else {
+    m["input"] = nullptr;
+  }
   m["input_hashes"] = nlohmann::json::array();  // conventional value
   m["measurement_start_time"] = measurement.start_time;
   m["options"] = nlohmann::json::array();  // conventional value
