@@ -96,6 +96,11 @@ void Runnable::run_next_measurement(size_t thread_id, Callback<Error> cb,
         if (entry["input"] == "") {
             entry["input"] = nullptr;
         }
+        // Make sure we have a failure key. OONI relies on it.
+        if (test_keys->count("failure") <= 0) {
+            logger->warn("BUG: the test returned no failure key.");
+            (*test_keys)["failure"] = "generic_error";
+        }
         entry["test_keys"] = *test_keys;
         entry["test_keys"]["client_resolver"] = resolver_ip;
         entry["measurement_start_time"] =
