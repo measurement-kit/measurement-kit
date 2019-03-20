@@ -43,7 +43,7 @@ void connect_logic(std::string hostname, int port,
                    Settings settings, SharedPtr<Reactor> reactor,
                    SharedPtr<Logger> logger);
 
-void connect_ssl(bufferevent *orig_bev, ssl_st *ssl, std::string hostname,
+void connect_ssl(bufferevent *orig_bev, ssl_st *ssl,
                  Callback<Error, bufferevent *> cb,
                  SharedPtr<Reactor>, SharedPtr<Logger>);
 
