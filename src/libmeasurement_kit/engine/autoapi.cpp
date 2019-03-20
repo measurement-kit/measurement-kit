@@ -295,7 +295,7 @@ nlohmann::json possibly_validate_event(nlohmann::json &&event) {
             break;
         }
     } while (0);
-    return event;
+    return std::move(event);
 }
 
 static nlohmann::json known_events() {
