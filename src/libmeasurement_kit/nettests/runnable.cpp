@@ -137,20 +137,28 @@ void Runnable::run_next_measurement(size_t thread_id, Callback<Error> cb,
         report.write_entry(entry, [=](Error error) {
             if (error) {
                 logger->warn("cannot write entry");
-                logger->emit_event_ex("failure.measurement_submission", {
-                    {"idx", saved_current_entry},
-                    {"json_str", entry.dump()},
-                    {"failure", error.reason},
-                });
+                if (!options.get("no_collector", false)) {
+                    // We should only emit submission related events when
+                    // the collector is enabled. Otherwise we confuse OONI.
+                    logger->emit_event_ex("failure.measurement_submission", {
+                        {"idx", saved_current_entry},
+                        {"json_str", entry.dump()},
+                        {"failure", error.reason},
+                    });
+                }
                 if (not options.get("ignore_write_entry_error", true)) {
                     cb(error);
                     return;
                 }
             } else {
                 logger->debug("net_test: written entry");
-                logger->emit_event_ex("status.measurement_submission", {
-                    {"idx", saved_current_entry}
-                });
+                if (!options.get("no_collector", false)) {
+                    // Like above, emit this event only if the collector
+                    // has been enabled by the user.
+                    logger->emit_event_ex("status.measurement_submission", {
+                        {"idx", saved_current_entry}
+                    });
+                }
             }
             logger->emit_event_ex("status.measurement_done", {
                 {"idx", saved_current_entry}
