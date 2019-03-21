@@ -473,13 +473,6 @@ class MeekFrontedRequestsTest : public BaseTest {
     }
 };
 
-class MultiNdtTest : public BaseTest {
-  public:
-    MultiNdtTest() : BaseTest() {
-        impl_->settings["name"] = "MultiNdt";
-    }
-};
-
 class NdtTest : public BaseTest {
   public:
     NdtTest() : BaseTest() {

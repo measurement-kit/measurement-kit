@@ -68,7 +68,7 @@ int main(void) {
      */
 
     schedule([&]() {
-        mk::nettests::MultiNdtTest()
+        mk::nettests::NdtTest()
 
             // By default measurement-kit only prints warnings
             .set_verbosity(MK_LOG_INFO)

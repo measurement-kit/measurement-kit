@@ -25,7 +25,6 @@ using namespace mk::nettests;
     XX(http_header_field_manipulation)                                         \
     XX(http_invalid_request_line)                                              \
     XX(meek_fronted_requests)                                                  \
-    XX(multi_ndt)                                                              \
     XX(ndt)                                                                    \
     XX(tcp_connect)                                                            \
     XX(telegram)                                                               \

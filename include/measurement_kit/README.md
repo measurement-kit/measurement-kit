@@ -126,7 +126,6 @@ The following nettests tasks are defined (case matters):
 - `"HttpHeaderFieldManipulation"`: OONI's HTTP header field manipulation test.
 - `"HttpInvalidRequestLine"`: OONI's HTTP invalid request line test.
 - `"MeekFrontedRequests"`: OONI's meek fronted requests test.
-- `"MultiNdt"`: the multi NDT network performance test.
 - `"Ndt"`: the NDT network performance test.
 - `"TcpConnect"`: OONI's TCP connect test.
 - `"Telegram"`: OONI's Telegram test.

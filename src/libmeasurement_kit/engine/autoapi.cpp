@@ -339,7 +339,6 @@ static std::string known_tasks() {
     json.push_back("HttpHeaderFieldManipulation");
     json.push_back("HttpInvalidRequestLine");
     json.push_back("MeekFrontedRequests");
-    json.push_back("MultiNdt");
     json.push_back("Ndt");
     json.push_back("TcpConnect");
     json.push_back("Telegram");
@@ -386,10 +385,6 @@ static std::unique_ptr<nettests::Runnable> make_runnable(const std::string &s) {
     }
     if (s == "MeekFrontedRequests") {
         runnable.reset(new nettests::MeekFrontedRequestsRunnable);
-        return runnable;
-    }
-    if (s == "MultiNdt") {
-        runnable.reset(new nettests::MultiNdtRunnable);
         return runnable;
     }
     if (s == "Ndt") {
