@@ -371,10 +371,12 @@ These are the available options:
   connect to a specific port, such as NDT and DASH;
 
 - `"software_name"`: (string) name of the app. By default set to
-  `"measurement_kit"`;
+  `"measurement_kit"`. This string will be included in the user-agent
+  header when contacting mlab-ns.
 
 - `"software_version"`: (string) version of the app. By default set to the
-  current version of Measurement Kit.
+  current version of Measurement Kit. As for `software_name` this string
+  will be included in the user-agent header when contacting mlab-ns.
 
 ## Events
 
