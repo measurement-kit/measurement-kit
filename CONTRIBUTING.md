@@ -1,7 +1,10 @@
 # Contributing to Measurement Kit
 
 Measurement Kit is a Free and Open Source software project that welcomes
-new contributions.
+new contributions. Measurement Kit is a [OONI](https://ooni.torproject.org/)
+project; this document is a Measurement-Kit-specific instance of
+the generic [OONI Software Development Guidelines](
+https://ooni.torproject.org/post/ooni-software-development-guidelines/).
 
 ## How to contribute code
 

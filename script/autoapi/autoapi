@@ -215,7 +215,6 @@ def main():
                 Nettest("http_header_field_manipulation"),
                 Nettest("http_invalid_request_line"),
                 Nettest("meek_fronted_requests"),
-                Nettest("multi_ndt"),
                 Nettest("ndt"),
                 Nettest("tcp_connect"),
                 Nettest("telegram"),

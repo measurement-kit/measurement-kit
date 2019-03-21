@@ -5,6 +5,7 @@
 #define SRC_LIBMEASUREMENT_KIT_MLABNS_MLABNS_IMPL_HPP
 
 #include <measurement_kit/common/nlohmann/json.hpp>
+#include <measurement_kit/common/version.h>
 
 #include "src/libmeasurement_kit/mlabns/mlabns.hpp"
 #include "src/libmeasurement_kit/common/mock.hpp"
@@ -64,6 +65,21 @@ static inline ErrorOr<std::string> as_query(Settings &settings) {
     return {NoError(), query};
 }
 
+static inline http::Headers make_headers(const Settings &settings) noexcept {
+  std::string ua;
+  if (settings.count("software_name") > 0 &&
+      settings.count("software_version") > 0) {
+    ua += settings.at("software_name");
+    ua += "/";
+    ua += settings.at("software_version");
+    ua += " ";
+  }
+  ua += "libmeasurement_kit/" MK_VERSION;
+  http::Headers headers;
+  http::headers_push_back(headers, "User-Agent", std::move(ua));
+  return headers;
+}
+
 template <MK_MOCK_AS(http::request_json_no_body, request_json_no_body)>
 void query_impl(std::string tool, Callback<Error, Reply> callback,
                 Settings settings, SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
@@ -83,7 +99,7 @@ void query_impl(std::string tool, Callback<Error, Reply> callback,
     url += *query;
     logger->debug("query mlabns for tool %s", tool.c_str());
     logger->debug("mlabns url: %s", url.c_str());
-    request_json_no_body("GET", url, {},
+    request_json_no_body("GET", url, make_headers(settings),
         [callback, logger](Error error, SharedPtr<http::Response> /*response*/,
                            nlohmann::json node) {
             if (error) {

@@ -122,7 +122,7 @@ void AndroidProber::send_probe(std::string addr, int port, int ttl,
 
     init();
 
-    logger->debug("send_probe(%s, %d, %d, %lu)", addr.c_str(), port,
+    logger->debug("send_probe(%s, %d, %d, %zu)", addr.c_str(), port,
               ttl, payload.length());
 
     if (sockfd_ < 0) {
@@ -228,18 +228,18 @@ ProbeResult AndroidProber::on_socket_readable() {
                                          (sockaddr *)&storage, &solen)) < 0) {
                 throw std::runtime_error("recv() failed");
             }
-            logger->debug("recv_bytes = %lu", r.recv_bytes);
+            logger->debug("recv_bytes = %zd", r.recv_bytes);
             r.valid_reply = true;
             logger->debug("valid_reply = %d", r.valid_reply);
             r.reply = std::string((const char *)buff, r.recv_bytes);
-            logger->debug("reply = <%lu bytes>", r.reply.length());
+            logger->debug("reply = <%zu bytes>", r.reply.length());
             r.interface_ip = get_source_addr(use_ipv4_, &storage);
             logger->debug("interface_ip = %s", r.interface_ip.c_str());
             return r;
         }
         throw std::runtime_error("recvmsg() failed");
     }
-    logger->debug("recv_bytes = %lu", r.recv_bytes);
+    logger->debug("recv_bytes = %zd", r.recv_bytes);
 
     if (use_ipv4_) {
         expected_level = SOL_IP;

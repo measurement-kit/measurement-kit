@@ -126,7 +126,6 @@ The following nettests tasks are defined (case matters):
 - `"HttpHeaderFieldManipulation"`: OONI's HTTP header field manipulation test.
 - `"HttpInvalidRequestLine"`: OONI's HTTP invalid request line test.
 - `"MeekFrontedRequests"`: OONI's meek fronted requests test.
-- `"MultiNdt"`: the multi NDT network performance test.
 - `"Ndt"`: the NDT network performance test.
 - `"TcpConnect"`: OONI's TCP connect test.
 - `"Telegram"`: OONI's Telegram test.
@@ -371,10 +370,12 @@ These are the available options:
   connect to a specific port, such as NDT and DASH;
 
 - `"software_name"`: (string) name of the app. By default set to
-  `"measurement_kit"`;
+  `"measurement_kit"`. This string will be included in the user-agent
+  header when contacting mlab-ns.
 
 - `"software_version"`: (string) version of the app. By default set to the
-  current version of Measurement Kit.
+  current version of Measurement Kit. As for `software_name` this string
+  will be included in the user-agent header when contacting mlab-ns.
 
 ## Events
 
