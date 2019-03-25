@@ -9,7 +9,6 @@
 | branch | Unix      | coverage  | Windows  |
 |--------|-----------|-----------|----------|
 | master | [![Build Status](https://img.shields.io/travis/measurement-kit/measurement-kit/master.svg?label=travis)](https://travis-ci.org/measurement-kit/measurement-kit) | [![codecov](https://codecov.io/gh/measurement-kit/measurement-kit/branch/master/graph/badge.svg)](https://codecov.io/gh/measurement-kit/measurement-kit) | [![Build status](https://img.shields.io/appveyor/ci/bassosimone/measurement-kit/master.svg?label=appveyor)](https://ci.appveyor.com/project/bassosimone/measurement-kit/branch/master) |
-| stable | [![Build Status](https://img.shields.io/travis/measurement-kit/measurement-kit/stable.svg?label=travis)](https://travis-ci.org/measurement-kit/measurement-kit) | [![codecov](https://codecov.io/gh/measurement-kit/measurement-kit/branch/stable/graph/badge.svg)](https://codecov.io/gh/measurement-kit/measurement-kit) | [![Build status](https://img.shields.io/appveyor/ci/bassosimone/measurement-kit/stable.svg?label=appveyor)](https://ci.appveyor.com/project/bassosimone/measurement-kit/branch/stable) |
 
 Measurement Kit is a library that implements open network measurement
 methodologies (performance, censorship, etc.) for Android, iOS, Windows,
