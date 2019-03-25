@@ -77,7 +77,7 @@ Small pull requests should be tagged as `hotfix` and can be self
 merged. All other pull request should be reviewed by another core
 developer who will take responsibility of the merge. The repository
 should be configured such that it is not possible to merge into
-`master` (or `stable`) if unit tests are not passing.
+`master` if unit tests are not passing.
 
 If the diff is small, squash merge is preferred, otherwise preserve
 the history.  In general it is a good idea to keep your branches
