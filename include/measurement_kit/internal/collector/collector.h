@@ -172,7 +172,7 @@ size_t mk_collector_open_response_logs_size(
  * pointer if @p response is NULL and/or @p idx is out of bounds. Otherwise,
  * the returned string is owned by @p response and has the same lifecycle
  * of @p response. We guarantee that the returned string is either valid
- * UTF-8 or the base64 encoding of a non UTF-8 string. */ 
+ * UTF-8 or the base64 encoding of a non UTF-8 string. */
 const char *mk_collector_open_response_logs_at(
     const mk_collector_open_response_t *response, size_t idx);
 
@@ -237,7 +237,7 @@ size_t mk_collector_update_response_logs_size(
  * pointer if @p response is NULL and/or @p idx is out of bounds. Otherwise,
  * the returned string is owned by @p response and has the same lifecycle
  * of @p response. We guarantee that the returned string is either valid
- * UTF-8 or the base64 encoding of a non UTF-8 string. */ 
+ * UTF-8 or the base64 encoding of a non UTF-8 string. */
 const char *mk_collector_update_response_logs_at(
     const mk_collector_update_response_t *response, size_t idx);
 
@@ -295,7 +295,7 @@ size_t mk_collector_close_response_logs_size(
  * pointer if @p response is NULL and/or @p idx is out of bounds. Otherwise,
  * the returned string is owned by @p response and has the same lifecycle
  * of @p response. We guarantee that the returned string is either valid
- * UTF-8 or the base64 encoding of a non UTF-8 string. */ 
+ * UTF-8 or the base64 encoding of a non UTF-8 string. */
 const char *mk_collector_close_response_logs_at(
     const mk_collector_close_response_t *response, size_t idx);
 
@@ -312,6 +312,94 @@ void mk_collector_close_response_delete(
 mk_collector_close_response_t *mk_collector_close(
     const mk_collector_close_request_t *request,
     const mk_collector_settings_t *settings);
+
+/** mk_collector_resubmit_request_t is a request to resubmit a measurement. */
+typedef struct mk_collector_resubmit_request mk_collector_resubmit_request_t;
+
+/** mk_collector_resubmit_request_new creates a new resubmit measurement
+ * request. The return value may be NULL on failure. If not NULL, is a pointer
+ * that you own and must mk_collector_resubmit_request_delete when done. */
+mk_collector_resubmit_request_t *mk_collector_resubmit_request_new(void);
+
+/** mk_collector_resubmit_request_set_content sets the measurement entry to
+ * be added to the report. This must of course be a valid JSON. This function
+ * behaves gracefully if passed NULL pointer arguments. */
+void mk_collector_resubmit_request_set_content(
+    mk_collector_resubmit_request_t *request, const char *value);
+
+/** mk_collector_resubmit_request_set_ca_bundle_path sets the path to the CA
+ * bundle to be used to validate TLS endpoints. This setting is optional on
+ * desktop and requied on mobile. This function gracefully does nothing if the
+ * @p settings and/or the @p value arguments are NULL pointers. */
+void mk_collector_resubmit_request_set_ca_bundle_path(
+    mk_collector_resubmit_request_t *request, const char *value);
+
+/** mk_collector_resubmit_request_set_timeout sets the number of seconds after
+ * which an outstanding, not completed HTTP request is aborted. A negative
+ * or zero value disables the timeout. The default is a positive, but
+ * otherwise unspecified, number of seconds. This function will do nothing
+ * if the @p request argument is a NULL pointer. */
+void mk_collector_resubmit_request_set_timeout(
+    mk_collector_resubmit_request_t *request, int64_t timeout);
+
+/** mk_collector_resubmit_request_delete deletes @p request. This function
+ * will gracefully do nothing if @p request is a NULL pointer. */
+void mk_collector_resubmit_request_delete(
+    mk_collector_resubmit_request_t *request);
+
+/** mk_collector_resubmit_response_t contains the response to a request to
+ * resubmit a measurement using the OONI collector. */
+typedef struct mk_collector_resubmit_response mk_collector_resubmit_response_t;
+
+/** mk_collector_resubmit_response_good returns zero if we failed to resubmit
+ * and nonzero otherwise. This function will always return zero if the
+ * @p response argument is a NULL pointer. */
+int64_t mk_collector_resubmit_response_good(
+    const mk_collector_resubmit_response_t *response);
+
+/** mk_collector_resubmit_response_report_id returns the report ID. The returned
+ * value may be NULL on failure, e.g. if @p response is NULL. Otherwise it is
+ * a pointer owned by @p response and having the same lifecycle. Note that
+ * the return value may be an empty string if we failed to resubmit. */
+const char *mk_collector_resubmit_response_report_id(
+    const mk_collector_resubmit_response_t *response);
+
+/** mk_collector_resubmit_response_content returns the updated measurement
+ * content. Specifically, the measurement has been updated with the correct
+ * report ID. The returned value may be NULL on failure, e.g. if @p
+ * response is NULL. Otherwise it is a pointer owned by @p response and having
+ * the same lifecycle. Note that the return value may be an empty string if
+ * we fail early in the resubmission. */
+const char *mk_collector_resubmit_response_content(
+    const mk_collector_resubmit_response_t *response);
+
+/** mk_collector_resubmit_response_logs_size returns the number of log entries
+ * contained by @p response. This number will always be zero in case the
+ * provided @p response argument is a NULL pointer. */
+size_t mk_collector_resubmit_response_logs_size(
+    const mk_collector_resubmit_response_t *response);
+
+/** mk_collector_resubmit_response_logs_at returns the specific log entry at
+ * index @p idx contained in @p response. This function will return a NULL
+ * pointer if @p response is NULL and/or @p idx is out of bounds. Otherwise,
+ * the returned string is owned by @p response and has the same lifecycle
+ * of @p response. We guarantee that the returned string is either valid
+ * UTF-8 or the base64 encoding of a non UTF-8 string. */
+const char *mk_collector_resubmit_response_logs_at(
+    const mk_collector_resubmit_response_t *response, size_t idx);
+
+/** mk_collector_resubmit_response_delete deletes @p response. This function
+ * will gracefully do nothing if @p response is a NULL pointer. */
+void mk_collector_resubmit_response_delete(
+    mk_collector_resubmit_response_t *response);
+
+/** mk_collector_resubmit attempts to resubmit a report with a OONI collector
+ * using the provided @p request and @p settings. This function may return
+ * NULL on failure, including the case where the input arguments are NULL
+ * pointers. You own the returned value, if not NULL, and must delete it
+ * using mk_collector_resubmit_response_delete when done using it. */
+mk_collector_resubmit_response_t *mk_collector_resubmit(
+    const mk_collector_resubmit_request_t *request);
 
 #ifdef __cplusplus
 }
