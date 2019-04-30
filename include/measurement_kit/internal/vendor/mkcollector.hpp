@@ -65,10 +65,13 @@ class OpenRequest {
 };
 
 /// open_request_from_measurement initializes an OpenRequest structure
-/// from an existing @p measurement. This is the function that you want
-/// to call when you want to resubmit a specific measurement.
+/// from an existing @p measurement. This factory also requires you
+/// to pass @p software_name and @p software_version to inform the OONI
+/// collector about who is submitting this measurement. This is the function
+/// that you want to call when you want to resubmit a measurement.
 LoadResult<OpenRequest> open_request_from_measurement(
-    const std::string &measurement) noexcept;
+    const std::string &measurement, const std::string &software_name,
+    const std::string &software_version) noexcept;
 
 /// OpenResponse is the response to an open request.
 struct OpenResponse {
@@ -158,15 +161,14 @@ static void log_body(const std::string &prefix, const std::string &body,
 }
 
 LoadResult<OpenRequest> open_request_from_measurement(
-    const std::string &measurement) noexcept {
+    const std::string &measurement, const std::string &software_name,
+    const std::string &software_version) noexcept {
   LoadResult<OpenRequest> result;
   nlohmann::json doc;
   try {
     doc = nlohmann::json::parse(measurement);
     doc.at("probe_asn").get_to(result.value.probe_asn);
     doc.at("probe_cc").get_to(result.value.probe_cc);
-    doc.at("software_name").get_to(result.value.software_name);
-    doc.at("software_version").get_to(result.value.software_version);
     doc.at("test_name").get_to(result.value.test_name);
     doc.at("test_start_time").get_to(result.value.test_start_time);
     doc.at("test_version").get_to(result.value.test_version);
@@ -174,6 +176,10 @@ LoadResult<OpenRequest> open_request_from_measurement(
     result.reason = exc.what();
     return result;
   }
+  // We need to specify the software_name and software_version of the
+  // app that is resubmitting; see https://github.com/ooni/spec/issues/134
+  result.value.software_name = software_name;
+  result.value.software_version = software_version;
   result.good = true;
   return result;
 }
