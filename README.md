@@ -1,6 +1,6 @@
 # Measurement Kit
 
-> Portable C++14 network measurement library
+> Network measurement engine
 
 [![GitHub license](https://img.shields.io/badge/License-BSD%202--Clause-orange.svg)](https://raw.githubusercontent.com/measurement-kit/measurement-kit/master/LICENSE) [![Github Releases](https://img.shields.io/github/release/measurement-kit/measurement-kit.svg)](https://github.com/measurement-kit/measurement-kit/releases) [![Github Issues](https://img.shields.io/github/issues/measurement-kit/measurement-kit.svg)](https://github.com/measurement-kit/measurement-kit/issues)
 
@@ -20,6 +20,12 @@ novel tools.
 
 Please, refer to the [include/measurement_kit](include/measurement_kit)
 folder documentation for an up-to-date list of available tests.
+
+Note that this repository contains the C++ implementation of Measurement
+Kit, but we're also working on a Go implementation, available at
+[github.com/measurement-kit/engine](https://github.com/measurement-kit/engine).
+This implementation is currently experimental. The tentative plan is to use
+the Go implementation for nettests that are written in Go.
 
 ## API and examples
 
