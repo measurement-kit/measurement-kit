@@ -8,11 +8,13 @@ this basic C-like FFI-friendly API:
 
 - [ObjectiveC API](https://github.com/measurement-kit/mkall-ios);
 
-- [Java API](https://github.com/measurement-kit/mkall-java);
+- [Android API](https://github.com/measurement-kit/android-libs);
 
 - [Golang API](https://github.com/measurement-kit/go-measurement-kit);
 
-We encourage you to avoid using it when a more user-friendly API is available.
+We encourage you to avoid using it when a more user-friendly API is available
+because, for each specific platform, we will strive to maintain backwards
+compatibility with the most high level API available on such platform.
 
 ## Synopsis
 
