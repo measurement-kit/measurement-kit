@@ -3,6 +3,9 @@ set -e
 
 # This is the entry point for running CI on Linux.
 
+# TODO(bassosimone): more refactoring of this code is possible
+# and has been deferred to proceed piecemeal.
+
 if [ "$1" = "asan" ]; then
   export BUILD_TYPE="$1"
   export CFLAGS="-fsanitize=address -O1 -fno-omit-frame-pointer"
@@ -31,17 +34,6 @@ elif [ "$1" = "coverage" ]; then
   export CXXFLAGS="-O0 -g -fprofile-arcs -ftest-coverage"
   export LDFLAGS="-lgcov"
 
-elif [ "$1" = "lsan" ]; then
-  # TODO(bassosimone): lsan is implied by asan. We're removing lsan builds
-  # from all repositories, so this branch should be removed as well.
-  export BUILD_TYPE="lsan"
-  export CFLAGS="-fsanitize=leak"
-  export CXXFLAGS="-fsanitize=leak"
-  export LDFLAGS="-fsanitize=leak"
-  export CMAKE_BUILD_OPTIONS="-v"
-  export CMAKE_OPTIONS="-G Ninja -D CMAKE_BUILD_TYPE=Debug"
-  export CTEST_OPTIONS="--output-on-failure -j2"
-
 elif [ "$1" = "ubsan" ]; then
   export BUILD_TYPE="ubsan"
   export CFLAGS="-fsanitize=undefined -fno-sanitize-recover"
@@ -58,16 +50,13 @@ elif [ "$1" = "vanilla" ]; then
   export CTEST_OPTIONS="--output-on-failure -j2"
 
 else
-  # TODO(bassosimone): remember to remove lsan also from here
-  echo "Usage: $0 [asan|clang|coverage|lsan|tsan|ubsan|vanilla]" 1>&2
+  echo "Usage: $0 [asan|clang|coverage|tsan|ubsan|vanilla]" 1>&2
   exit 1
 fi
 
 ROOTDIR=`cd $(dirname $0)/../../../ && pwd -P`
 if [ -x ./autogen.sh ]; then
   BUILD_TOOL=autotools
-elif [ -f CMakeLists.txt ]; then
-  BUILD_TOOL=cmake
 else
   echo "$0: cannot determine build system type" 1>&2
   exit 1
