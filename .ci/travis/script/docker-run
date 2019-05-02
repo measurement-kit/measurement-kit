@@ -45,4 +45,4 @@ docker run                                                                     \
     -v $REPOROOT:/mk                                                           \
     $DOCKER_OPTIONS                                                            \
     $docker_image                                                              \
-    /mk/.ci/common/script/$script_name
+    /mk/.ci/travis/script/$script_name
