@@ -7,6 +7,10 @@ cd $REPOROOT
 env|grep -v TOKEN|sort
 tc qdisc add dev eth0 root netem delay 200ms 10ms # Reduce speed
 ./autogen.sh
+# Enforce -Werror when building on Travis to make sure warnings are
+# not going to be neglected and instead block automatic builds.
+export CXXFLAGS="$CXXFLAGS -Werror"
+export CFLAGS="$CFLAGS -Werror"
 ./configure --disable-dependency-tracking $CONFIGURE_OPTIONS
 make -j`nproc` $MAKE_OPTIONS
 # Setting empty TESTS so later we can run tests with higher parallelism
