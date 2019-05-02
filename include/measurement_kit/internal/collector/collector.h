@@ -330,6 +330,20 @@ mk_collector_resubmit_request_t *mk_collector_resubmit_request_new(void);
 void mk_collector_resubmit_request_set_content(
     mk_collector_resubmit_request_t *request, const char *value);
 
+/** mk_collector_resubmit_request_set_software_name sets the name of the
+ * software that is executing the measurement upload. If you don't set
+ * this value, we'll use `libmeasurement_kit`. This function behaves in
+ * a graceful way if passed NULL pointer arguments. */
+void mk_collector_resubmit_request_set_software_name(
+    mk_collector_resubmit_request_t *request, const char *value);
+
+/** mk_collector_resubmit_request_set_software_version sets the version of the
+ * software that is executing the measurement upload. If you don't set
+ * this value, we'll use the current version of MK. This function behaves in
+ * a graceful way if passed NULL pointer arguments. */
+void mk_collector_resubmit_request_set_software_version(
+    mk_collector_resubmit_request_t *request, const char *value);
+
 /** mk_collector_resubmit_request_set_ca_bundle_path sets the path to the CA
  * bundle to be used to validate TLS endpoints. This setting is optional on
  * desktop and requied on mobile. This function gracefully does nothing if the
