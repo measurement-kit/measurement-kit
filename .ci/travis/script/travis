@@ -1,0 +1,75 @@
+#!/bin/sh
+set -e
+
+# This is the entry point for running CI on Linux.
+
+if [ "$1" = "asan" ]; then
+  export BUILD_TYPE="$1"
+  export CFLAGS="-fsanitize=address -O1 -fno-omit-frame-pointer"
+  export CXXFLAGS="-fsanitize=address -O1 -fno-omit-frame-pointer"
+  export LDFLAGS="-fsanitize=address -fno-omit-frame-pointer"
+  export CMAKE_BUILD_OPTIONS="-v"
+  export CMAKE_OPTIONS="-G Ninja -D CMAKE_BUILD_TYPE=Debug"
+  export CTEST_OPTIONS="--output-on-failure -j2"
+
+elif [ "$1" = "clang" ]; then
+  export BUILD_TYPE="$1"
+  export CMAKE_BUILD_OPTIONS="-v"
+  export CMAKE_OPTIONS="-G Ninja -D CMAKE_BUILD_TYPE=Release"
+  export CTEST_OPTIONS="--output-on-failure -j2"
+  export CXXFLAGS="-stdlib=libc++"
+  # Note: this is required because Travis overrides CC and CXX.
+  export MK_CC=clang
+  export MK_CXX=clang++
+
+elif [ "$1" = "coverage" ]; then
+  export BUILD_TYPE="$1"
+  export CFLAGS="-O0 -g -fprofile-arcs -ftest-coverage"
+  export CMAKE_BUILD_OPTIONS="-v"
+  export CMAKE_OPTIONS="-G Ninja -D CMAKE_BUILD_TYPE=Debug"
+  export CTEST_OPTIONS="--output-on-failure -j2"
+  export CXXFLAGS="-O0 -g -fprofile-arcs -ftest-coverage"
+  export LDFLAGS="-lgcov"
+
+elif [ "$1" = "lsan" ]; then
+  # TODO(bassosimone): lsan is implied by asan. We're removing lsan builds
+  # from all repositories, so this branch should be removed as well.
+  export BUILD_TYPE="lsan"
+  export CFLAGS="-fsanitize=leak"
+  export CXXFLAGS="-fsanitize=leak"
+  export LDFLAGS="-fsanitize=leak"
+  export CMAKE_BUILD_OPTIONS="-v"
+  export CMAKE_OPTIONS="-G Ninja -D CMAKE_BUILD_TYPE=Debug"
+  export CTEST_OPTIONS="--output-on-failure -j2"
+
+elif [ "$1" = "ubsan" ]; then
+  export BUILD_TYPE="ubsan"
+  export CFLAGS="-fsanitize=undefined -fno-sanitize-recover"
+  export CXXFLAGS="-fsanitize=undefined -fno-sanitize-recover"
+  export LDFLAGS="-fsanitize=undefined"
+  export CMAKE_BUILD_OPTIONS="-v"
+  export CMAKE_OPTIONS="-G Ninja -D CMAKE_BUILD_TYPE=Debug"
+  export CTEST_OPTIONS="--output-on-failure -j2"
+
+elif [ "$1" = "vanilla" ]; then
+  export BUILD_TYPE="vanilla"
+  export CMAKE_BUILD_OPTIONS="-v"
+  export CMAKE_OPTIONS="-G Ninja -D CMAKE_BUILD_TYPE=Release"
+  export CTEST_OPTIONS="--output-on-failure -j2"
+
+else
+  # TODO(bassosimone): remember to remove lsan also from here
+  echo "Usage: $0 [asan|clang|coverage|lsan|tsan|ubsan|vanilla]" 1>&2
+  exit 1
+fi
+
+ROOTDIR=`cd $(dirname $0)/../../../ && pwd -P`
+if [ -x ./autogen.sh ]; then
+  BUILD_TOOL=autotools
+elif [ -f CMakeLists.txt ]; then
+  BUILD_TOOL=cmake
+else
+  echo "$0: cannot determine build system type" 1>&2
+  exit 1
+fi
+$ROOTDIR/.ci/travis/script/docker-run bassosimone/mk-debian $BUILD_TOOL

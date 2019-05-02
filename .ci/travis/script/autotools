@@ -1,0 +1,29 @@
+#!/bin/sh
+# This is the build script invoked for running autotools based builds. We use
+# autotools at least for measurement-kit/measurement-kit.
+set -ex
+REPOROOT=$(cd $(dirname $0)/../../../ && pwd -P)
+cd $REPOROOT
+env|grep -v TOKEN|sort
+tc qdisc add dev eth0 root netem delay 200ms 10ms # Reduce speed
+./autogen.sh
+./configure --disable-dependency-tracking $CONFIGURE_OPTIONS
+make -j`nproc` $MAKE_OPTIONS
+# Setting empty TESTS so later we can run tests with higher parallelism
+make check -j`nproc` TESTS= $MAKE_CHECK_OPTIONS
+make check -j6 $MAKE_CHECK_OPTIONS || {
+  if [ -f ./test-suite.log ]; then
+    cat ./test-suite.log
+  fi
+  exit 1
+}
+if [ "$BUILD_TYPE" = "coverage" ]; then
+  lcov --directory . --capture -o lcov-all.info
+  lcov --remove lcov-all.info                                                  \
+    '/mk/include/private/*' '/mk/include/measurement_kit/internal/vendor/*'    \
+    '/mk/example/*' '/mk/src/measurement_kit/*'                                \
+    -o lcov.info
+  curl -fsSL -o codecov.sh https://codecov.io/bash
+  bash codecov.sh -X gcov -f lcov.info
+fi
+make install
