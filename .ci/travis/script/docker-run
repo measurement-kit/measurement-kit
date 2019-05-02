@@ -1,0 +1,48 @@
+#!/bin/sh
+set -e
+
+# This runs docker and forwards relevant environment variables
+
+REPOROOT=$(cd $(dirname $0)/../../../ && pwd -P)
+
+if [ $# -ne 2 ]; then
+    echo "usage: $0 docker-image-name script-name" 1>&2
+    exit 1
+fi
+
+docker_image=$1
+script_name=$2
+
+# Travis overrides the CC and CXX set by us. Re-instate them.
+if [ "$TRAVIS_BRANCH" != "" -a "$MK_CC" != "" ]; then
+    CC=$MK_CC
+fi
+if [ "$TRAVIS_BRANCH" != "" -a "$MK_CXX" != "" ]; then
+    CXX=$MK_CXX
+fi
+
+# Note: NET_ADMIN cap is needed to slow down speed tests to avoid hammering
+# the servers with very fast clients for no good reason.
+docker run                                                                     \
+    --cap-add=NET_ADMIN                                                        \
+    -e "BUILD_TYPE=$BUILD_TYPE"                                                \
+    -e "CC=$CC"                                                                \
+    -e "CFLAGS=$CFLAGS"                                                        \
+    -e "CMAKE_BUILD_OPTIONS=$CMAKE_BUILD_OPTIONS"                              \
+    -e "CMAKE_OPTIONS=$CMAKE_OPTIONS"                                          \
+    -e "CODECOV_TOKEN=$CODECOV_TOKEN"                                          \
+    -e "CONFIGURE_OPTIONS=$CONFIGURE_OPTIONS"                                  \
+    -e "CPPFLAGS=$CPPFLAGS"                                                    \
+    -e "CTEST_OPTIONS=$CTEST_OPTIONS"                                          \
+    -e "CXX=$CXX"                                                              \
+    -e "CXXFLAGS=$CXXFLAGS"                                                    \
+    -e "LDFLAGS=$LDFLAGS"                                                      \
+    -e "MAKE_CHECK_OPTIONS=$MAKE_CHECK_OPTIONS"                                \
+    -e "MAKE_OPTIONS=$MAKE_OPTIONS"                                            \
+    -e "TRAVIS_BRANCH=$TRAVIS_BRANCH"                                          \
+    -e "VERBOSE=$VERBOSE"                                                      \
+    -e "V=$V"                                                                  \
+    -v $REPOROOT:/mk                                                           \
+    $DOCKER_OPTIONS                                                            \
+    $docker_image                                                              \
+    /mk/.ci/common/script/$script_name
