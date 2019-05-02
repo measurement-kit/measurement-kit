@@ -108,12 +108,15 @@ void mk_collector_open_request_delete(mk_collector_open_request_t *request);
 typedef struct mk_collector_load_open_request mk_collector_load_open_request_t;
 
 /** mk_collector_load_open_request_t loads an open request from the serialized
- * measurement JSON contained in @p measurement. This function may return a
- * NULL pointer on failure, including e.g. when @p measurement is NULL. If the
+ * measurement JSON contained in @p measurement. You need also to specify
+ * the @p software_name and @p software_version of the application that will
+ * perform the measurement resubmission. This function may return a
+ * NULL pointer on failure, including e.g. when arguments are NULL. If the
  * return value is not NULL, you own it and must dispose of it when you are
  * done using mk_collector_load_open_request_delete. */
 mk_collector_load_open_request_t *mk_collector_load_open_request(
-    const char *measurement);
+    const char *measurement, const char *software_name,
+    const char *software_version);
 
 /** mk_collector_load_open_request_good returns zero if loading failed
  * and nonzero if it succeded. In particular, it will always return zero
