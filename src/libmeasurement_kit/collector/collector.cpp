@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include <measurement_kit/common/version.h>
 #include <measurement_kit/internal/vendor/json.hpp>
 #include <measurement_kit/internal/vendor/mkbouncer.hpp>
 #include <measurement_kit/internal/vendor/mkcollector.hpp>
@@ -94,10 +95,15 @@ struct mk_collector_load_open_request {
 };
 
 mk_collector_load_open_request_t *mk_collector_load_open_request(
-    const char *measurement) {
-  if (measurement == nullptr) return nullptr;
+    const char *measurement, const char *software_name,
+    const char *software_version) {
+  if (measurement == nullptr || software_name == nullptr ||
+      software_version == nullptr) {
+    return nullptr;
+  }
   auto load = new mk_collector_load_open_request_t;
-  load->m = mk::collector::open_request_from_measurement(measurement);
+  load->m = mk::collector::open_request_from_measurement(
+      measurement, software_name, software_version);
   return load;
 }
 
@@ -389,7 +395,7 @@ static mk_collector_resubmit_response_t *mk_collector_resubmit_(
     new mk_collector_resubmit_response_t
   };
   auto load_result = mk::collector::open_request_from_measurement(
-      request->content);
+      request->content, "measurement-kit", MK_VERSION);
   if (!load_result.good) {
     response->logs.push_back(std::move(load_result.reason));
     return response.release();
