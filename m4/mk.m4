@@ -204,7 +204,7 @@ AC_DEFUN([MK_REQUIRE_CFLAG], [
 ])
 
 AC_DEFUN([MK_REQUIRE_CXX14], [
-  AX_CXX_COMPILE_STDCXX(14, noext, mandatory)
+  MK_REQUIRE_CXXFLAG([-std=c++14])
 ])
 
 AC_DEFUN([MK_REQUIRE_CXXFLAG], [
@@ -286,4 +286,15 @@ AC_DEFUN([MK_PTHREAD], [
   CFLAGS="$CFLAGS $PTHREAD_CFLAGS"
   CXXFLAGS="$CXXFLAGS $PTHREAD_CFLAGS"
   LIBS="$PTHREAD_LIBS $LIBS"
+])
+
+AC_DEFUN([MK_WERROR], [
+  AC_ARG_ENABLE([Werror], AC_HELP_STRING([--enable-Werror],
+                [Compile with -Werror]),
+                [mk_enable_werror=1], [mk_enable_werror=0])
+  if test $mk_enable_werror; then
+    AC_MSG_NOTICE([Adding -Werror to build CFLAGS and CXXFLAGS])
+    MK_REQUIRE_CFLAG([-Werror])
+    MK_REQUIRE_CXXFLAG([-Werror])
+  fi
 ])
