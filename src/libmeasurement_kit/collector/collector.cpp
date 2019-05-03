@@ -291,6 +291,8 @@ mk_collector_close_response_t *mk_collector_close(
 
 struct mk_collector_resubmit_request {
   std::string content;
+  std::string software_name = "libmeasurement_kit";
+  std::string software_version = MK_VERSION;
   mk::collector::Settings settings;
 };
 
@@ -301,6 +303,16 @@ mk_collector_resubmit_request_t *mk_collector_resubmit_request_new() {
 void mk_collector_resubmit_request_set_content(
     mk_collector_resubmit_request_t *request, const char *value) {
   if (request && value) request->content = value;
+}
+
+void mk_collector_resubmit_request_set_software_name(
+    mk_collector_resubmit_request_t *request, const char *value) {
+  if (request && value) request->software_name = value;
+}
+
+void mk_collector_resubmit_request_set_software_version(
+    mk_collector_resubmit_request_t *request, const char *value) {
+  if (request && value) request->software_version = value;
 }
 
 void mk_collector_resubmit_request_set_ca_bundle_path(
@@ -395,7 +407,7 @@ static mk_collector_resubmit_response_t *mk_collector_resubmit_(
     new mk_collector_resubmit_response_t
   };
   auto load_result = mk::collector::open_request_from_measurement(
-      request->content, "measurement-kit", MK_VERSION);
+      request->content, request->software_name, request->software_version);
   if (!load_result.good) {
     response->logs.push_back(std::move(load_result.reason));
     return response.release();

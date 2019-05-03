@@ -17,6 +17,7 @@ bash -lc "pacman --noconfirm -Syyuu"
 rem Install required tools
 bash -xlc "pacman --noconfirm -S --needed base-devel"
 bash -xlc "pacman --noconfirm -S --needed mingw-w64-x86_64-toolchain"
+bash -xlc "pacman --noconfirm -S --needed libreadline"
 
 rem Invoke subsequent bash in the build tree
 cd %APPVEYOR_BUILD_FOLDER%
