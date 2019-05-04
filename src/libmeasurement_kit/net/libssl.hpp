@@ -38,10 +38,12 @@ static inline void libssl_init_once(SharedPtr<Logger> logger) {
         static bool initialized = false;
         if (!initialized) {
             logger->debug2("initializing libssl once");
+#if OPENSSL_VERSION_NUMBER < 0x10100000L && !defined(LIBRESSL_VERSION_NUMBER)
             SSL_library_init();
             ERR_load_crypto_strings();
             SSL_load_error_strings();
             OpenSSL_add_all_algorithms();
+#endif
             initialized = true;
         }
     });
