@@ -42,7 +42,7 @@ installed. For current information, we encourage you to read the very simple
 build script that we use on Travis CI to setup a Unix environment, from
 which you can gather up-to-date information regarding required packages on
 a Debian like system. To this end, please refer to the content of the
-[.ci/common](.ci/common) folder.
+[.ci/travis](.ci/travis) folder.
 
 With all the dependencies statisfied, build with:
 
