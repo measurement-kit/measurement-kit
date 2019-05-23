@@ -128,11 +128,28 @@ void Runnable::run_next_measurement(size_t thread_id, Callback<Error> cb,
         entry["annotations"] = annotations;
         report.fill_entry(entry);
         fixup_entry(entry); // Let drivers possibly fix-up the entry
+
+        // We should not dump without checking. See #1823.
+        std::string dumped;
+        try {
+          dumped = entry.dump();
+        } catch (const std::exception &exc) {
+          logger->warn("net_test: cannot dump entry");
+          entry["test_keys"] = nullptr;
+          entry["test_keys"]["failure"] = "json_processing_error";
+          try {
+            dumped = entry.dump();
+          } catch (const std::exception &exc) {
+            logger->warn("net_test: cannot really dump entry");
+            dumped = R"({"test_keys":{"failure":"json_processing_error"}})";
+          }
+        }
+
         // TODO(bassosimone): make sure that this entry contains the report ID
         // which probably is currently not the case.
         logger->emit_event_ex("measurement", nlohmann::json::object({
             {"idx", saved_current_entry},
-            {"json_str", entry.dump()},
+            {"json_str", dumped},
         }));
         report.write_entry(entry, [=](Error error) {
             if (error) {
@@ -142,7 +159,7 @@ void Runnable::run_next_measurement(size_t thread_id, Callback<Error> cb,
                     // the collector is enabled. Otherwise we confuse OONI.
                     logger->emit_event_ex("failure.measurement_submission", {
                         {"idx", saved_current_entry},
-                        {"json_str", entry.dump()},
+                        {"json_str", dumped},
                         {"failure", error.reason},
                     });
                 }
