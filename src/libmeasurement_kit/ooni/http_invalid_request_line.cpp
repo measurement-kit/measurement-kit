@@ -5,8 +5,11 @@
 #include "src/libmeasurement_kit/common/utils.hpp"
 #include "src/libmeasurement_kit/ooni/nettests.hpp"
 #include "src/libmeasurement_kit/ooni/templates.hpp"
+#include "src/libmeasurement_kit/ooni/utils.hpp"
 #include "src/libmeasurement_kit/net/transport.hpp"
 #include "src/libmeasurement_kit/ooni/error.hpp"
+
+#include <measurement_kit/internal/vendor/mkdata.hpp>
 
 namespace mk {
 namespace ooni {
@@ -50,16 +53,14 @@ static void send_receive_invalid_request_line(net::Endpoint endpoint,
         // of 5 seconds.
         reactor->call_later(timeout, [=]() {
             if (*received_data != request_line) {
-                logger->warn("Tampering detected: '%s' != '%s'",
-                             received_data->c_str(), request_line.c_str());
+                logger->warn("Tampering detected");
                 (*entry)["tampering"] = true;
             } else {
-                logger->debug("Tampering not detected: '%s' == '%s'",
-                              received_data->c_str(), request_line.c_str());
+                logger->debug("Tampering not detected");
                 (*entry)["tampering"] = false;
             }
-            (*entry)["sent"] = request_line;
-            (*entry)["received"] = *received_data;
+            (*entry)["sent"] = represent_string(request_line);
+            (*entry)["received"] = represent_string(*received_data);
             txp->close([=]() { cb(entry); });
         });
     }, reactor, logger);
@@ -81,8 +82,7 @@ void http_invalid_request_line(Settings options,
 
     if (!endpoint) {
         logger->warn("Invalid helper endpoint: %s (backend = '%s')",
-                     endpoint.as_error().what(),
-                     options["backend"].c_str());
+                     endpoint.as_error().what(), options["backend"].c_str());
         (*entry)["failure"] = endpoint.as_error().reason;
         cb(entry);
         return;
@@ -99,8 +99,7 @@ void http_invalid_request_line(Settings options,
         if (*tests_run == total_tests) {
             for (auto &x : (*entry)["failure_list"]) {
                 if (x != nullptr) {
-                    (*entry)["failure"]
-                        = ParallelOperationError().reason;
+                    (*entry)["failure"] = ParallelOperationError().reason;
                     break;
                 }
             }
