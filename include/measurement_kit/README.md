@@ -161,12 +161,16 @@ The nettest task settings object is a JSON like:
   "name": "WebConnectivity",
   "options": {
     "all_endpoints": false,
+    "backend": "",
     "bouncer_base_url": "",
     "collector_base_url": "",
+    "constant_bitrate": 0,
     "dns/nameserver": "",
     "dns/engine": "system",
+    "expected_body": "",
     "geoip_asn_path": "",
     "geoip_country_path": "",
+    "hostname": "",
     "ignore_bouncer_error": true,
     "ignore_open_report_error": true,
     "max_runtime": -1,
@@ -175,6 +179,7 @@ The nettest task settings object is a JSON like:
     "mlabns/country": "IT",
     "mlabns/metro": "trn",
     "mlabns/policy": "random",
+    "mlabns_tool_name": "",
     "net/ca_bundle_path": "",
     "net/timeout": 10.0,
     "no_bouncer": false,
@@ -192,7 +197,9 @@ The nettest task settings object is a JSON like:
     "save_real_resolver_ip": true,
     "server": "neubot.mlab.mlab1.trn01.measurement-lab.org",
     "software_name": "measurement_kit",
-    "software_version": "<current-mk-version>"
+    "software_version": "<current-mk-version>",
+    "test_suite": 0,
+    "uuid": ""
   },
   "output_filepath": "results.njson",
 }
@@ -269,11 +276,17 @@ These are the available options:
   available endpoints in tests that work with specific endpoints, such
   as, the "WhatsApp" test;
 
+- `"backend"`: (string) pass specific backend to OONI tests requiring it,
+  e.g., WebConnectivity, HTTP Invalid Request Line;
+
 - `"bouncer_base_url"`: (string) base URL of OONI bouncer, by default set to
   the empty string. If empty, the OONI bouncer will be used;
 
 - `"collector_base_url"`: (string) base URL of OONI collector, by default set
   to the empty string. If empty, the OONI collector will be used;
+
+- `"constant_bitrate"`: (int) force DASH to run at the specified
+  constant bitrate;
 
 - `"dns/nameserver"`: (string) nameserver to be used with non-`system` DNS
   engines. Can or cannot include an optional port number. By default, set
@@ -284,11 +297,15 @@ These are the available options:
   names. Can also be set to `"libevent"`, to use libevent's DNS engine.
   In such case, you must provide a `"dns/nameserver"` as well;
 
+- `"expected_body"`: (string) body expected by Meek Fronted Requests;
+
 - `"geoip_asn_path"`: (string) path to the GeoLite2 `.mmdb` ASN database
   file. By default not set;
 
 - `"geoip_country_path"`: (string) path to the GeoLite2 `.mmdb` Country
   database file. By default not set;
+
+- `"hostname"`: (string) hostname to be used by the DASH test;
 
 - `"ignore_bouncer_error"`: (boolean) whether to ignore an error in contacting
   the OONI bouncer. By default set to `true` so that bouncer errors will
@@ -324,6 +341,9 @@ These are the available options:
   example, setting this to `"random"` will return a random server (as stated
   above, you normally don't need this variable, and it only impacts on
   the NDT and DASH tests);
+
+- `"mlabns_tool_name"`: (string) force NDT to use an mlab-ns tool
+  name different from the default (`"ndt"`);
 
 - `"net/ca_bundle_path"`: (string) path to the CA bundle path to be used
   to validate SSL certificates. Required on mobile;
@@ -377,7 +397,11 @@ These are the available options:
 
 - `"software_version"`: (string) version of the app. By default set to the
   current version of Measurement Kit. As for `software_name` this string
-  will be included in the user-agent header when contacting mlab-ns.
+  will be included in the user-agent header when contacting mlab-ns;
+
+- `"test_suite"`: (int) force NDT to use a specific test suite;
+
+- `"uuid"`: (string) force DASH to use a specific UUID.
 
 ## Events
 

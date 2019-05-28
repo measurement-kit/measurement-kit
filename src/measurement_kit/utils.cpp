@@ -10,6 +10,7 @@
 #endif
 
 #include <inttypes.h>
+#include <stdint.h>
 
 #include "src/measurement_kit/cmdline.hpp"
 
@@ -107,4 +108,14 @@ std::string as_available_options_string(const OptionSpec *os) {
     }
     ret += "\n";
     return ret;
+}
+
+int64_t must_convert_to_int(std::string s) noexcept {
+  const char *errstr = nullptr;
+  int64_t retval = mkp_strtonum(s.c_str(), INT64_MIN, INT64_MAX, &errstr);
+  if (errstr != nullptr) {
+    fprintf(stderr, "cannot convert to number: %s\n", errstr);
+    exit(1);
+  }
+  return retval;
 }

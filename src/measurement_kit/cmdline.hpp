@@ -61,4 +61,6 @@ std::vector<option> as_long_options(const OptionSpec *);
 std::string as_getopt_string(const OptionSpec *);
 std::string as_available_options_string(const OptionSpec *);
 
+int64_t must_convert_to_int(std::string s) noexcept;
+
 #endif

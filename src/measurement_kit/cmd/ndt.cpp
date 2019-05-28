@@ -36,7 +36,7 @@ int main(std::list<Callback<BaseTest &>> &initializers, int argc, char **argv) {
             test.set_option("mlabns_tool_name", optarg);
             break;
         case 'p':
-            test.set_option("port", optarg);
+            test.set_option("port", must_convert_to_int(optarg));
             break;
         case 'T':
             use_default_test_suite = false;
