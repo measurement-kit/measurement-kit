@@ -7,7 +7,7 @@
 namespace tcp_connect {
 
 #define USAGE                                                                  \
-    "usage: measurement_kit [options] tcp_connect [-f input_file]"
+    "usage: measurement_kit [options] tcp_connect -f input_file"
 
 int main(std::list<Callback<BaseTest &>> &initializers, int argc, char **argv) {
     mk::nettests::TcpConnectTest test;
