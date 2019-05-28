@@ -21,8 +21,9 @@ class Settings {
   /// ca_bundle_path is the path to the CA bundle (required on mobile)
   std::string ca_bundle_path;
 
-  /// timeout is the whole operation timeout (in seconds)
-  int64_t timeout = 30;
+  /// timeout is the whole operation timeout (in seconds). Zero indicatest
+  /// that there actually is no timeout.
+  int64_t timeout = 0;
 };
 
 /// LoadResult is the result of loading a structure from JSON.
