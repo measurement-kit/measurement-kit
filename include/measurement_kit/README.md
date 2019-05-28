@@ -185,6 +185,7 @@ The nettest task settings object is a JSON like:
     "no_bouncer": false,
     "no_collector": false,
     "no_file_report": false,
+    "no_geoip": false,
     "port": 1234,
     "probe_ip": "1.2.3.4",
     "probe_asn": "AS30722",
@@ -359,6 +360,9 @@ These are the available options:
 
 - `"no_file_report"`: (boolean) whether to write a report (i.e. measurement
   result) file on disk. By default set to `false`, meaning that we'll try;
+
+- `"no_geoip"`: (boolean) whether to perform GeoIP lookup. By default set to
+  `false`, meaning that we'll try;
 
 - `"probe_asn"`: (string) sets the `probe_asn` to be included into the
   report, thus skipping the ASN resolution;

@@ -116,8 +116,7 @@ int main(int argc, char **argv) {
             break;
         case 'g':
             initializers.push_back([](BaseTest &test) {
-                test.set_option("save_real_probe_asn", "0");
-                test.set_option("save_real_probe_cc", "0");
+                test.set_option("no_geoip", true);
             });
             break;
         case 'l':

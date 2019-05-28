@@ -204,9 +204,10 @@ void Runnable::geoip_lookup(Callback<> cb) {
     bool save_asn = options.get("save_real_probe_asn", true);
     bool save_cc = options.get("save_real_probe_cc", true);
     bool save_network_name = options.get("save_real_probe_network_name", true);
+    bool no_geoip = options.get("no_geoip", false);
 
     std::string real_probe_ip = options.get("probe_ip", default_probe_ip);
-    if (real_probe_ip == default_probe_ip) {
+    if (real_probe_ip == default_probe_ip && no_geoip == false) {
         double timeout = options.get("net/timeout", 10.0);
         std::string ca = options.get("net/ca_bundle_path", std::string{});
         mk::iplookup::Request req;
@@ -226,7 +227,7 @@ void Runnable::geoip_lookup(Callback<> cb) {
     }
 
     std::string real_probe_cc = options.get("probe_cc", default_probe_cc);
-    if (real_probe_cc == default_probe_cc) {
+    if (real_probe_cc == default_probe_cc && no_geoip == false) {
         std::string path = options.get("geoip_country_path", std::string{});
         mk::mmdb::Handle db;
         std::vector<std::string> logs;
@@ -244,7 +245,7 @@ void Runnable::geoip_lookup(Callback<> cb) {
     }
 
     std::string real_probe_asn = options.get("probe_asn", default_probe_asn);
-    if (real_probe_asn == default_probe_asn) {
+    if (real_probe_asn == default_probe_asn && no_geoip == false) {
         std::string path = options.get("geoip_asn_path", std::string{});
         mk::mmdb::Handle db;
         std::vector<std::string> logs;
@@ -263,7 +264,8 @@ void Runnable::geoip_lookup(Callback<> cb) {
 
     std::string real_probe_network_name = options.get(
         "probe_network_name", default_probe_network_name);
-    if (real_probe_network_name == default_probe_network_name) {
+    if (real_probe_network_name == default_probe_network_name &&
+        no_geoip == false) {
         std::string path = options.get("geoip_asn_path", std::string{});
         mk::mmdb::Handle db;
         std::vector<std::string> logs;
