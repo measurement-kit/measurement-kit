@@ -128,12 +128,12 @@ int main(int argc, char **argv) {
             break;
         case 'N':
             initializers.push_back([](BaseTest &test) {
-                test.set_option("no_file_report", "1");
+                test.set_option("no_file_report", true);
             });
             break;
         case 'n':
             initializers.push_back(
-                [](BaseTest &test) { test.set_option("no_collector", "1"); });
+                [](BaseTest &test) { test.set_option("no_collector", true); });
             break;
         case 'o':
             [&]() {
@@ -160,7 +160,7 @@ int main(int argc, char **argv) {
             return 0;
         case OPTID_NO_BOUNCER:
             initializers.push_back(
-                [](BaseTest &test) { test.set_option("no_bouncer", 1); });
+                [](BaseTest &test) { test.set_option("no_bouncer", true); });
             break;
         case OPTID_CA_BUNDLE_PATH:
             {
