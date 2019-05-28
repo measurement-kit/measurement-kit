@@ -36,18 +36,6 @@ void http_request_impl(SharedPtr<nlohmann::json> entry, Settings settings,
         settings["http/method"] = "GET";
     }
 
-    /*
-     * XXX probe ip passed down the stack to allow us to scrub it from the
-     * entry; see issue #1110 for plans to make this better.
-     */
-    std::string probe_ip = settings.get("real_probe_ip_", std::string{});
-    auto redact = [=](std::string s) {
-        if (probe_ip != "" && !settings.get("save_real_probe_ip", false)) {
-            s = mk::ooni::scrub(s, probe_ip);
-        }
-        return s;
-    };
-
     mocked_http_request(
         settings, headers, body,
         [=](Error error, SharedPtr<http::Response> response) {
@@ -92,12 +80,12 @@ void http_request_impl(SharedPtr<nlohmann::json> entry, Settings settings,
                         */
                         for (auto h : response->headers) {
                             rr["response"]["headers"][h.key] =
-                                represent_string(redact(h.value));
+                                represent_string(redact(settings, h.value));
                         }
                         rr["response"]["body"] =
-                            represent_string(redact(response->body));
+                            represent_string(redact(settings, response->body));
                         rr["response"]["response_line"] =
-                            represent_string(redact(response->response_line));
+                            represent_string(redact(settings, response->response_line));
                         rr["response"]["code"] = response->status_code;
                     } else {
                         rr["response"]["body"] = nullptr;
@@ -107,10 +95,10 @@ void http_request_impl(SharedPtr<nlohmann::json> entry, Settings settings,
                     // Note: we checked above that we can deref `request`
                     for (auto h : request->headers) {
                         rr["request"]["headers"][h.key] =
-                            represent_string(redact(h.value));
+                            represent_string(redact(settings, h.value));
                     }
                     rr["request"]["body"] =
-                        represent_string(redact(request->body));
+                        represent_string(redact(settings, request->body));
                     rr["request"]["url"] = request->url.str();
                     rr["request"]["method"] = request->method;
                     rr["request"]["tor"] = {{

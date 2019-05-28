@@ -60,7 +60,7 @@ static void send_receive_invalid_request_line(net::Endpoint endpoint,
                 (*entry)["tampering"] = false;
             }
             (*entry)["sent"] = represent_string(request_line);
-            (*entry)["received"] = represent_string(*received_data);
+            (*entry)["received"] = represent_string(redact(settings, *received_data));
             txp->close([=]() { cb(entry); });
         });
     }, reactor, logger);
