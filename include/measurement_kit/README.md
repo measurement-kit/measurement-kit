@@ -845,7 +845,7 @@ because that is the easiest language to show manipulation of JSON
 objects such as the `settings` object.
 
 As of MK v0.9.0-alpha.9, there are some misalignments between the pseudocode
-and the implementation, which we'll fix during the v0.10.0 releases.
+and the implementation, which we'll fix during the v0.12.0 releases.
 
 As mentioned, a nettest runs in its own thread. It first validate
 settings, then it opens the logfile (if needed), and finally it
@@ -909,16 +909,15 @@ by setting the appropriate settings.
         return
       }
     }
+    // TODO(bassosimone): we should make sure the progress described here
+    // is consistent with the one emitted by the real code.
+    emitProgress(0.1, "contacted bouncer")
   }
-
-  // TODO(bassosimone): we should make sure the progress described here
-  // is consistent with the one emitted by the real code.
-  emitProgress(0.1, "contacted bouncer")
 
   let probe_ip = "127.0.0.1"
   if (settings.options.probe_ip != "") {
     probe_ip = settings.options.probe_ip
-  } else {
+  } else if (!settings.options.no_geoip) {
     let error
     [probe_ip, error] = lookupIP(settings)
     if (error) {
@@ -933,7 +932,7 @@ by setting the appropriate settings.
       probe_network_name = "Unknown"
   if (settings.options.probe_asn != "") {
     probe_asn = settings.options.probe_asn
-  } else if (settings.options.geoip_asn_path != "") {
+  } else if (!settings.options.no_geoip) {
     let error
     [probe_asn, probe_network_name, error] = lookupASN(settings)
     if (error) {
@@ -947,7 +946,7 @@ by setting the appropriate settings.
   let probe_cc = "ZZ"
   if (settings.options.probe_cc != "") {
     probe_cc = settings.options.probe_cc
-  } else if (settings.options.geoip_country_path != "") {
+  } else if (!settings.options.no_geoip) {
     let error
     [probe_cc, error] = lookupCC(settings)
     if (error) {
@@ -958,14 +957,15 @@ by setting the appropriate settings.
     }
   }
 
-  emitEvent("status.geoip_lookup", {
-    probe_ip: probe_ip,
-    probe_asn: probe_asn,
-    probe_network_name: probe_network_name,
-    probe_cc: probe_cc
-  })
-
-  emitProgress(0.2, "geoip lookup")
+  if (!settings.options.no_geoip) {
+    emitEvent("status.geoip_lookup", {
+      probe_ip: probe_ip,
+      probe_asn: probe_asn,
+      probe_network_name: probe_network_name,
+      probe_cc: probe_cc
+    })
+    emitProgress(0.2, "geoip lookup")
+  }
 
   // TODO(bassosimone): take decision wrt null vs. ""
   let resolver_ip = null
@@ -979,7 +979,6 @@ by setting the appropriate settings.
       emitWarning(settings, "cannot lookup resolver IP")
     }
   }
-
   emitEvent("status.resolver_lookup", {
     resolver_ip: resolver_ip
   })
