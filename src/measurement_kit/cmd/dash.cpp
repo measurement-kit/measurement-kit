@@ -17,7 +17,7 @@ int main(std::list<Callback<BaseTest &>> &initializers, int argc, char **argv) {
     for (int ch; (ch = getopt(argc, argv, "b:U:")) != -1;) {
         switch (ch) {
         case 'b':
-            test.set_option("constant_bitrate", optarg);
+            test.set_option("constant_bitrate", must_convert_to_int(optarg));
             break;
         case 'U':
             test.set_option("uuid", optarg);

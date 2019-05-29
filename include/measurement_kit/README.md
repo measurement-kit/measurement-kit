@@ -161,12 +161,16 @@ The nettest task settings object is a JSON like:
   "name": "WebConnectivity",
   "options": {
     "all_endpoints": false,
+    "backend": "",
     "bouncer_base_url": "",
     "collector_base_url": "",
+    "constant_bitrate": 0,
     "dns/nameserver": "",
     "dns/engine": "system",
+    "expected_body": "",
     "geoip_asn_path": "",
     "geoip_country_path": "",
+    "hostname": "",
     "ignore_bouncer_error": true,
     "ignore_open_report_error": true,
     "max_runtime": -1,
@@ -175,11 +179,13 @@ The nettest task settings object is a JSON like:
     "mlabns/country": "IT",
     "mlabns/metro": "trn",
     "mlabns/policy": "random",
+    "mlabns_tool_name": "",
     "net/ca_bundle_path": "",
     "net/timeout": 10.0,
     "no_bouncer": false,
     "no_collector": false,
     "no_file_report": false,
+    "no_geoip": false,
     "port": 1234,
     "probe_ip": "1.2.3.4",
     "probe_asn": "AS30722",
@@ -192,7 +198,9 @@ The nettest task settings object is a JSON like:
     "save_real_resolver_ip": true,
     "server": "neubot.mlab.mlab1.trn01.measurement-lab.org",
     "software_name": "measurement_kit",
-    "software_version": "<current-mk-version>"
+    "software_version": "<current-mk-version>",
+    "test_suite": 0,
+    "uuid": ""
   },
   "output_filepath": "results.njson",
 }
@@ -269,11 +277,17 @@ These are the available options:
   available endpoints in tests that work with specific endpoints, such
   as, the "WhatsApp" test;
 
+- `"backend"`: (string) pass specific backend to OONI tests requiring it,
+  e.g., WebConnectivity, HTTP Invalid Request Line;
+
 - `"bouncer_base_url"`: (string) base URL of OONI bouncer, by default set to
   the empty string. If empty, the OONI bouncer will be used;
 
 - `"collector_base_url"`: (string) base URL of OONI collector, by default set
   to the empty string. If empty, the OONI collector will be used;
+
+- `"constant_bitrate"`: (int) force DASH to run at the specified
+  constant bitrate;
 
 - `"dns/nameserver"`: (string) nameserver to be used with non-`system` DNS
   engines. Can or cannot include an optional port number. By default, set
@@ -284,11 +298,15 @@ These are the available options:
   names. Can also be set to `"libevent"`, to use libevent's DNS engine.
   In such case, you must provide a `"dns/nameserver"` as well;
 
+- `"expected_body"`: (string) body expected by Meek Fronted Requests;
+
 - `"geoip_asn_path"`: (string) path to the GeoLite2 `.mmdb` ASN database
   file. By default not set;
 
 - `"geoip_country_path"`: (string) path to the GeoLite2 `.mmdb` Country
   database file. By default not set;
+
+- `"hostname"`: (string) hostname to be used by the DASH test;
 
 - `"ignore_bouncer_error"`: (boolean) whether to ignore an error in contacting
   the OONI bouncer. By default set to `true` so that bouncer errors will
@@ -325,6 +343,9 @@ These are the available options:
   above, you normally don't need this variable, and it only impacts on
   the NDT and DASH tests);
 
+- `"mlabns_tool_name"`: (string) force NDT to use an mlab-ns tool
+  name different from the default (`"ndt"`);
+
 - `"net/ca_bundle_path"`: (string) path to the CA bundle path to be used
   to validate SSL certificates. Required on mobile;
 
@@ -339,6 +360,9 @@ These are the available options:
 
 - `"no_file_report"`: (boolean) whether to write a report (i.e. measurement
   result) file on disk. By default set to `false`, meaning that we'll try;
+
+- `"no_geoip"`: (boolean) whether to perform GeoIP lookup. By default set to
+  `false`, meaning that we'll try;
 
 - `"probe_asn"`: (string) sets the `probe_asn` to be included into the
   report, thus skipping the ASN resolution;
@@ -377,7 +401,11 @@ These are the available options:
 
 - `"software_version"`: (string) version of the app. By default set to the
   current version of Measurement Kit. As for `software_name` this string
-  will be included in the user-agent header when contacting mlab-ns.
+  will be included in the user-agent header when contacting mlab-ns;
+
+- `"test_suite"`: (int) force NDT to use a specific test suite;
+
+- `"uuid"`: (string) force DASH to use a specific UUID.
 
 ## Events
 
@@ -817,7 +845,7 @@ because that is the easiest language to show manipulation of JSON
 objects such as the `settings` object.
 
 As of MK v0.9.0-alpha.9, there are some misalignments between the pseudocode
-and the implementation, which we'll fix during the v0.10.0 releases.
+and the implementation, which we'll fix during the v0.12.0 releases.
 
 As mentioned, a nettest runs in its own thread. It first validate
 settings, then it opens the logfile (if needed), and finally it
@@ -881,16 +909,15 @@ by setting the appropriate settings.
         return
       }
     }
+    // TODO(bassosimone): we should make sure the progress described here
+    // is consistent with the one emitted by the real code.
+    emitProgress(0.1, "contacted bouncer")
   }
-
-  // TODO(bassosimone): we should make sure the progress described here
-  // is consistent with the one emitted by the real code.
-  emitProgress(0.1, "contacted bouncer")
 
   let probe_ip = "127.0.0.1"
   if (settings.options.probe_ip != "") {
     probe_ip = settings.options.probe_ip
-  } else {
+  } else if (!settings.options.no_geoip) {
     let error
     [probe_ip, error] = lookupIP(settings)
     if (error) {
@@ -905,7 +932,7 @@ by setting the appropriate settings.
       probe_network_name = "Unknown"
   if (settings.options.probe_asn != "") {
     probe_asn = settings.options.probe_asn
-  } else if (settings.options.geoip_asn_path != "") {
+  } else if (!settings.options.no_geoip) {
     let error
     [probe_asn, probe_network_name, error] = lookupASN(settings)
     if (error) {
@@ -919,7 +946,7 @@ by setting the appropriate settings.
   let probe_cc = "ZZ"
   if (settings.options.probe_cc != "") {
     probe_cc = settings.options.probe_cc
-  } else if (settings.options.geoip_country_path != "") {
+  } else if (!settings.options.no_geoip) {
     let error
     [probe_cc, error] = lookupCC(settings)
     if (error) {
@@ -930,14 +957,15 @@ by setting the appropriate settings.
     }
   }
 
-  emitEvent("status.geoip_lookup", {
-    probe_ip: probe_ip,
-    probe_asn: probe_asn,
-    probe_network_name: probe_network_name,
-    probe_cc: probe_cc
-  })
-
-  emitProgress(0.2, "geoip lookup")
+  if (!settings.options.no_geoip) {
+    emitEvent("status.geoip_lookup", {
+      probe_ip: probe_ip,
+      probe_asn: probe_asn,
+      probe_network_name: probe_network_name,
+      probe_cc: probe_cc
+    })
+    emitProgress(0.2, "geoip lookup")
+  }
 
   // TODO(bassosimone): take decision wrt null vs. ""
   let resolver_ip = null
@@ -951,7 +979,6 @@ by setting the appropriate settings.
       emitWarning(settings, "cannot lookup resolver IP")
     }
   }
-
   emitEvent("status.resolver_lookup", {
     resolver_ip: resolver_ip
   })

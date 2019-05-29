@@ -27,6 +27,8 @@ static const struct {
 #define OPTID_VERSION 257
 #define OPTID_NO_BOUNCER 258
 #define OPTID_CA_BUNDLE_PATH 259
+#define OPTID_GEOIP_COUNTRY_PATH 260
+#define OPTID_GEOIP_ASN_PATH 261
 
 static OptionSpec kv_specs[] = {
     {'A', "annotation", true, "key=value", "Add annotation"},
@@ -43,6 +45,10 @@ static OptionSpec kv_specs[] = {
     {OPTID_HELP, "help", false, nullptr, "Display this help and exit"},
     {OPTID_NO_BOUNCER, "no-bouncer", false, nullptr, "Disable the bouncer"},
     {OPTID_VERSION, "version", false, nullptr, "Display version number and exit"},
+    {OPTID_GEOIP_COUNTRY_PATH, "geoip-country-path", true, "PATH",
+     "Path of the MaxMind country DB to use"},
+    {OPTID_GEOIP_ASN_PATH, "geoip-asn-path", true, "PATH",
+     "Path of the MaxMind ASN path to use"},
     {0, nullptr, 0, 0, nullptr}
 };
 
@@ -110,8 +116,7 @@ int main(int argc, char **argv) {
             break;
         case 'g':
             initializers.push_back([](BaseTest &test) {
-                test.set_option("save_real_probe_asn", "0");
-                test.set_option("save_real_probe_cc", "0");
+                test.set_option("no_geoip", true);
             });
             break;
         case 'l':
@@ -123,12 +128,12 @@ int main(int argc, char **argv) {
             break;
         case 'N':
             initializers.push_back([](BaseTest &test) {
-                test.set_option("no_file_report", "1");
+                test.set_option("no_file_report", true);
             });
             break;
         case 'n':
             initializers.push_back(
-                [](BaseTest &test) { test.set_option("no_collector", "1"); });
+                [](BaseTest &test) { test.set_option("no_collector", true); });
             break;
         case 'o':
             [&]() {
@@ -155,14 +160,30 @@ int main(int argc, char **argv) {
             return 0;
         case OPTID_NO_BOUNCER:
             initializers.push_back(
-                [](BaseTest &test) { test.set_option("no_bouncer", 1); });
+                [](BaseTest &test) { test.set_option("no_bouncer", true); });
             break;
         case OPTID_CA_BUNDLE_PATH:
             {
-                std::string s = optarg;
+                std::string s = optarg; // capture and forward optarg
                 initializers.push_back(
                     [s](BaseTest &test) {
                       test.set_option("net/ca_bundle_path", s.c_str()); });
+            }
+            break;
+        case OPTID_GEOIP_COUNTRY_PATH:
+            {
+                std::string s = optarg; // capture and forward optarg
+                initializers.push_back(
+                    [s](BaseTest &test) {
+                      test.set_option("geoip_country_path", s.c_str()); });
+            }
+            break;
+        case OPTID_GEOIP_ASN_PATH:
+            {
+                std::string s = optarg; // capture and forward optarg
+                initializers.push_back(
+                    [s](BaseTest &test) {
+                      test.set_option("geoip_asn_path", s.c_str()); });
             }
             break;
         default:

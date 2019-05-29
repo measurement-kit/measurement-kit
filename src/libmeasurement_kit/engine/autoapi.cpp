@@ -590,6 +590,18 @@ void task_run_legacy(Task *task, TaskImpl *pimpl, nlohmann::json &settings) {
             {
                 bool found = false;
                 do {
+                    if (key == "address") {
+                        found = true;
+                        if (!value.is_string()) {
+                            std::stringstream ss;
+                            ss << "Found " << key << " option which has the "
+                               << "wrong type (fyi: it should be a "
+                               << "string)";
+                            emit_settings_warning(task, ss.str().data());
+                            // FALLTHROUGH
+                        }
+                        break;
+                    }
                     if (key == "all_endpoints") {
                         found = true;
                         if (!value.is_boolean()) {
@@ -597,6 +609,18 @@ void task_run_legacy(Task *task, TaskImpl *pimpl, nlohmann::json &settings) {
                             ss << "Found " << key << " option which has the "
                                << "wrong type (fyi: it should be a "
                                << "boolean)";
+                            emit_settings_warning(task, ss.str().data());
+                            // FALLTHROUGH
+                        }
+                        break;
+                    }
+                    if (key == "backend") {
+                        found = true;
+                        if (!value.is_string()) {
+                            std::stringstream ss;
+                            ss << "Found " << key << " option which has the "
+                               << "wrong type (fyi: it should be a "
+                               << "string)";
                             emit_settings_warning(task, ss.str().data());
                             // FALLTHROUGH
                         }
@@ -626,6 +650,18 @@ void task_run_legacy(Task *task, TaskImpl *pimpl, nlohmann::json &settings) {
                         }
                         break;
                     }
+                    if (key == "constant_bitrate") {
+                        found = true;
+                        if (!value.is_number_integer()) {
+                            std::stringstream ss;
+                            ss << "Found " << key << " option which has the "
+                               << "wrong type (fyi: it should be a "
+                               << "number_integer)";
+                            emit_settings_warning(task, ss.str().data());
+                            // FALLTHROUGH
+                        }
+                        break;
+                    }
                     if (key == "dns/nameserver") {
                         found = true;
                         if (!value.is_string()) {
@@ -650,6 +686,18 @@ void task_run_legacy(Task *task, TaskImpl *pimpl, nlohmann::json &settings) {
                         }
                         break;
                     }
+                    if (key == "expected_body") {
+                        found = true;
+                        if (!value.is_string()) {
+                            std::stringstream ss;
+                            ss << "Found " << key << " option which has the "
+                               << "wrong type (fyi: it should be a "
+                               << "string)";
+                            emit_settings_warning(task, ss.str().data());
+                            // FALLTHROUGH
+                        }
+                        break;
+                    }
                     if (key == "geoip_asn_path") {
                         found = true;
                         if (!value.is_string()) {
@@ -663,6 +711,18 @@ void task_run_legacy(Task *task, TaskImpl *pimpl, nlohmann::json &settings) {
                         break;
                     }
                     if (key == "geoip_country_path") {
+                        found = true;
+                        if (!value.is_string()) {
+                            std::stringstream ss;
+                            ss << "Found " << key << " option which has the "
+                               << "wrong type (fyi: it should be a "
+                               << "string)";
+                            emit_settings_warning(task, ss.str().data());
+                            // FALLTHROUGH
+                        }
+                        break;
+                    }
+                    if (key == "hostname") {
                         found = true;
                         if (!value.is_string()) {
                             std::stringstream ss;
@@ -770,6 +830,18 @@ void task_run_legacy(Task *task, TaskImpl *pimpl, nlohmann::json &settings) {
                         }
                         break;
                     }
+                    if (key == "mlabns_tool_name") {
+                        found = true;
+                        if (!value.is_string()) {
+                            std::stringstream ss;
+                            ss << "Found " << key << " option which has the "
+                               << "wrong type (fyi: it should be a "
+                               << "string)";
+                            emit_settings_warning(task, ss.str().data());
+                            // FALLTHROUGH
+                        }
+                        break;
+                    }
                     if (key == "net/ca_bundle_path") {
                         found = true;
                         if (!value.is_string()) {
@@ -819,6 +891,18 @@ void task_run_legacy(Task *task, TaskImpl *pimpl, nlohmann::json &settings) {
                         break;
                     }
                     if (key == "no_file_report") {
+                        found = true;
+                        if (!value.is_boolean()) {
+                            std::stringstream ss;
+                            ss << "Found " << key << " option which has the "
+                               << "wrong type (fyi: it should be a "
+                               << "boolean)";
+                            emit_settings_warning(task, ss.str().data());
+                            // FALLTHROUGH
+                        }
+                        break;
+                    }
+                    if (key == "no_geoip") {
                         found = true;
                         if (!value.is_boolean()) {
                             std::stringstream ss;
@@ -987,6 +1071,30 @@ void task_run_legacy(Task *task, TaskImpl *pimpl, nlohmann::json &settings) {
                         break;
                     }
                     if (key == "software_version") {
+                        found = true;
+                        if (!value.is_string()) {
+                            std::stringstream ss;
+                            ss << "Found " << key << " option which has the "
+                               << "wrong type (fyi: it should be a "
+                               << "string)";
+                            emit_settings_warning(task, ss.str().data());
+                            // FALLTHROUGH
+                        }
+                        break;
+                    }
+                    if (key == "test_suite") {
+                        found = true;
+                        if (!value.is_number_integer()) {
+                            std::stringstream ss;
+                            ss << "Found " << key << " option which has the "
+                               << "wrong type (fyi: it should be a "
+                               << "number_integer)";
+                            emit_settings_warning(task, ss.str().data());
+                            // FALLTHROUGH
+                        }
+                        break;
+                    }
+                    if (key == "uuid") {
                         found = true;
                         if (!value.is_string()) {
                             std::stringstream ss;

@@ -32,8 +32,9 @@ struct Request {
   /// body contains the request body (possibly a binary body).
   std::string body;
 
-  /// timeout is the time after which the request is aborted (in seconds)
-  int64_t timeout = 30;
+  /// timeout is the time after which the request is aborted (in seconds). A
+  /// value of zero means that no timeout is implemented.
+  int64_t timeout = 0;
 
   /// proxy_url is the optional URL of the proxy to use.
   std::string proxy_url;
@@ -538,10 +539,9 @@ Response perform(const Request &req) noexcept {
       return res;
     }
   }
-  if (req.timeout >= 0) {
-    long t = 0L;
-    // Implementation note: `0L` means infinite for CURLOPT_TIMEOUT.
-    if (req.timeout > 0 && req.timeout < LONG_MAX) t = (long)req.timeout;
+  {
+    long t = 0L; // Note: `0L` means "infinite" for CURLOPT_TIMEOUT.
+    if (req.timeout >= 0 && req.timeout < LONG_MAX) t = (long)req.timeout;
     res.error = curl_easy_setopt(handle.get(), CURLOPT_TIMEOUT, t);
     MKCURL_HOOK(curl_easy_setopt_CURLOPT_TIMEOUT, res.error);
     if (res.error != CURLE_OK) {

@@ -22,7 +22,7 @@ int main(std::list<Callback<BaseTest &>> &initializers, int argc, char **argv) {
             test.add_input_filepath(optarg);
             break;
         case 't':
-            test.set_option("max_runtime", optarg);
+            test.set_option("max_runtime", must_convert_to_int(optarg));
             break;
         case 'u':
             test.add_input(optarg);

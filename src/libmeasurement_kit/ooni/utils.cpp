@@ -40,5 +40,17 @@ std::string scrub(std::string s, std::string real_probe_ip) {
     return s;
 }
 
+std::string redact(Settings settings, std::string s) {
+    /*
+     * XXX probe ip passed down the stack to allow us to scrub it from the
+     * entry; see issue #1110 for plans to make this better.
+     */
+    std::string probe_ip = settings.get("real_probe_ip_", std::string{});
+    if (probe_ip != "" && !settings.get("save_real_probe_ip", false)) {
+        s = mk::ooni::scrub(std::move(s), probe_ip);
+    }
+    return s;
+}
+
 } // namespace ooni
 } // namespace mk

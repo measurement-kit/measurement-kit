@@ -24,6 +24,8 @@ void resolver_lookup(Callback<Error, std::string> callback, Settings,
 
 nlohmann::json represent_string(const std::string &s);
 
+std::string redact(Settings settings, std::string s);
+
 } // namespace ooni
 } // namespace mk
 #endif

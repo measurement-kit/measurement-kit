@@ -204,9 +204,10 @@ void Runnable::geoip_lookup(Callback<> cb) {
     bool save_asn = options.get("save_real_probe_asn", true);
     bool save_cc = options.get("save_real_probe_cc", true);
     bool save_network_name = options.get("save_real_probe_network_name", true);
+    bool no_geoip = options.get("no_geoip", false);
 
     std::string real_probe_ip = options.get("probe_ip", default_probe_ip);
-    if (real_probe_ip == default_probe_ip) {
+    if (real_probe_ip == default_probe_ip && no_geoip == false) {
         double timeout = options.get("net/timeout", 10.0);
         std::string ca = options.get("net/ca_bundle_path", std::string{});
         mk::iplookup::Request req;
@@ -226,7 +227,7 @@ void Runnable::geoip_lookup(Callback<> cb) {
     }
 
     std::string real_probe_cc = options.get("probe_cc", default_probe_cc);
-    if (real_probe_cc == default_probe_cc) {
+    if (real_probe_cc == default_probe_cc && no_geoip == false) {
         std::string path = options.get("geoip_country_path", std::string{});
         mk::mmdb::Handle db;
         std::vector<std::string> logs;
@@ -244,7 +245,7 @@ void Runnable::geoip_lookup(Callback<> cb) {
     }
 
     std::string real_probe_asn = options.get("probe_asn", default_probe_asn);
-    if (real_probe_asn == default_probe_asn) {
+    if (real_probe_asn == default_probe_asn && no_geoip == false) {
         std::string path = options.get("geoip_asn_path", std::string{});
         mk::mmdb::Handle db;
         std::vector<std::string> logs;
@@ -263,7 +264,8 @@ void Runnable::geoip_lookup(Callback<> cb) {
 
     std::string real_probe_network_name = options.get(
         "probe_network_name", default_probe_network_name);
-    if (real_probe_network_name == default_probe_network_name) {
+    if (real_probe_network_name == default_probe_network_name &&
+        no_geoip == false) {
         std::string path = options.get("geoip_asn_path", std::string{});
         mk::mmdb::Handle db;
         std::vector<std::string> logs;
@@ -280,32 +282,50 @@ void Runnable::geoip_lookup(Callback<> cb) {
         }
     }
 
+    // Note: if geoip is skipped, we need to update internal variables but
+    // we should not emit log messages because that may be confusing. The main
+    // use case for this feature is running MK nettest from ooni/probe-engine
+    // where we start MK with the GeoIP lookup being already performed.
     if (save_ip) {
-        logger->info("Your public IP address: %s", real_probe_ip.c_str());
-        logger->debug("saving user's real ip on user's request");
+        if (no_geoip == false) {
+            logger->info("Your public IP address: %s", real_probe_ip.c_str());
+            logger->debug("saving user's real ip on user's request");
+        }
         probe_ip = real_probe_ip;
     }
     if (save_cc) {
-        logger->info("Your country: %s", real_probe_cc.c_str());
+        if (no_geoip == false) {
+            logger->info("Your country: %s", real_probe_cc.c_str());
+        }
         probe_cc = real_probe_cc;
     }
     if (save_asn) {
-        logger->info("Your ISP identifier: %s", real_probe_asn.c_str());
+        if (no_geoip == false) {
+            logger->info("Your ISP identifier: %s", real_probe_asn.c_str());
+        }
         probe_asn = real_probe_asn;
     }
     if (save_network_name) {
-        logger->info("Your ISP name: %s", real_probe_network_name.c_str());
+        if (no_geoip == false) {
+            logger->info("Your ISP name: %s", real_probe_network_name.c_str());
+        }
         probe_network_name = real_probe_network_name;
     }
 
     // Note: using real_probe_xxx variables because the result of this phase
     // SHOULD be independent of the configured privacy settings.
-    logger->emit_event_ex("status.geoip_lookup", {
-        {"probe_asn", real_probe_asn},
-        {"probe_cc", real_probe_cc},
-        {"probe_ip", real_probe_ip},
-        {"probe_network_name", real_probe_network_name},
-    });
+    //
+    // However, emitting this event when the GeoIP is explicitly disabled
+    // is utterly confusing, therefore let's not do that.
+    if (no_geoip == false) {
+        logger->emit_event_ex("status.geoip_lookup", {
+            {"probe_asn", real_probe_asn},
+            {"probe_cc", real_probe_cc},
+            {"probe_ip", real_probe_ip},
+            {"probe_network_name", real_probe_network_name},
+        });
+        logger->progress(0.05, "geoip lookup");
+    }
 
     /*
      * XXX Passing down the stack the real probe IP to allow
@@ -379,7 +399,6 @@ void Runnable::query_bouncer(Callback<Error> cb) {
     // Note: `use_bouncer` is set for tasks that must not use the bouncer while
     // the setting is to allow users to bypass the bouncer.
     if (!use_bouncer || disable_bouncer.as_value() == true) {
-        logger->info("Skipping bouncer");
         cb(NoError());
         return;
     }
@@ -442,7 +461,6 @@ void Runnable::begin(Callback<Error> cb) {
         geoip_lookup([=]() {
             resolver_lookup(
                 [=](Error error, std::string resolver_ip_) {
-                    logger->progress(0.05, "geoip lookup");
                     if (!error) {
                         resolver_ip = resolver_ip_;
                     } else {
@@ -454,12 +472,12 @@ void Runnable::begin(Callback<Error> cb) {
                                          error.what());
                             // FALLTHROUGH
                         }
-                        logger->progress(0.1, "open report");
                         if (error and
                             not options.get("ignore_open_report_error", true)) {
                             cb(error);
                             return;
                         }
+                        logger->progress(0.1, "starting the test");
                         logger->set_progress_offset(0.1);
                         logger->set_progress_scale(0.8);
 

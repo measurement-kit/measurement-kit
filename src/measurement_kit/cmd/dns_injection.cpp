@@ -7,7 +7,7 @@
 namespace dns_injection {
 
 #define USAGE                                                                  \
-    "usage: measurement_kit [options] dns_injection [-f input_file]\n"         \
+    "usage: measurement_kit [options] dns_injection -f input_file\n"           \
     "                       [-r invalid_resolver_ip]"
 
 int main(std::list<Callback<BaseTest &>> &initializers, int argc, char **argv) {

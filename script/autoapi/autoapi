@@ -173,13 +173,18 @@ def main():
 
                 Setting("std::string", "output_filepath")]
 
-    options = [Attribute("bool", "all_endpoints", ""),
+    options = [Attribute("std::string", "address"),
+               Attribute("bool", "all_endpoints", "false"),
+               Attribute("std::string", "backend"),
                Attribute("std::string", "bouncer_base_url", json.dumps("https://bouncer.ooni.io")),
                Attribute("std::string", "collector_base_url"),
+               Attribute("int64_t", "constant_bitrate", "0"),
                Attribute("std::string", "dns/nameserver"),
                Attribute("std::string", "dns/engine", json.dumps("system")),
+               Attribute("std::string", "expected_body"),
                Attribute("std::string", "geoip_asn_path"),
                Attribute("std::string", "geoip_country_path"),
+               Attribute("std::string", "hostname"),
                Attribute("bool", "ignore_bouncer_error", "true"),
                Attribute("bool", "ignore_open_report_error", "true"),
                Attribute("int64_t", "max_runtime", "-1"),
@@ -188,11 +193,13 @@ def main():
                Attribute("std::string", "mlabns/country"),
                Attribute("std::string", "mlabns/metro"),
                Attribute("std::string", "mlabns/policy"),
+               Attribute("std::string", "mlabns_tool_name"),
                Attribute("std::string", "net/ca_bundle_path"),
                Attribute("double", "net/timeout", "10.0"),
                Attribute("bool", "no_bouncer", "false"),
                Attribute("bool", "no_collector", "false"),
                Attribute("bool", "no_file_report", "false"),
+               Attribute("bool", "no_geoip", "false"),
                Attribute("int64_t", "port", "0"),
                Attribute("std::string", "probe_ip"),
                Attribute("std::string", "probe_asn"),
@@ -206,7 +213,9 @@ def main():
                Attribute("bool", "save_real_resolver_ip", "true"),
                Attribute("std::string", "server", ""),
                Attribute("std::string", "software_name"),
-               Attribute("std::string", "software_version")]
+               Attribute("std::string", "software_version"),
+               Attribute("int64_t", "test_suite"),
+               Attribute("std::string", "uuid")]
 
     nettests = [Nettest("captive_portal"),
                 Nettest("dash"),
