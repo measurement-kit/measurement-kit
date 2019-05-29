@@ -21,12 +21,6 @@ novel tools.
 Please, refer to the [include/measurement_kit](include/measurement_kit)
 folder documentation for an up-to-date list of available tests.
 
-Note that this repository contains the C++ implementation of Measurement
-Kit, but we're also working on a Go implementation, available at
-[github.com/measurement-kit/engine](https://github.com/measurement-kit/engine).
-This implementation is currently experimental. The tentative plan is to use
-the Go implementation for nettests that are written in Go.
-
 ## API and examples
 
 Measurement Kit exposes a simple C-like API that is described in detail
