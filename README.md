@@ -59,20 +59,22 @@ for Homebrew.
 
 ## Mingw-w64 instructions
 
-For information on how to compile Measurement Kit using the [Mingw-w64](
-https://mingw-w64.org/doku.php) compiler distribution for Windows, please refer
-to the [measurement-kit/script-build-unix](
-https://github.com/measurement-kit/script-build-unix) repository.
+We (cross) compile binaries for Windows using the [Mingw-w64](
+https://mingw-w64.org/doku.php) compiler distribution. The scripts
+we use to do that are also part of the [
+measurement-kit/homebrew-measurement-kit](
+https://github.com/measurement-kit/homebrew-measurement-kit) tap
+for Homebrew.
 
-To better understand how to compile using Mingw-w64, it is also useful to
-look into how we build Measurement Kit on AppVeyor. To this end, we encourage
-you check the [.ci/appveyor](.ci/appveyor) folder.
+We also build MK using Mingw-w64 on Windows when running AppVeyor
+integration tests. To see how we do that, please check the
+[.ci/appveyor](.ci/appveyor) folder.
 
 ## Android instructions
 
 For cross-compiling Measurement Kit for Android, please refer to the
-[measurement-kit/script-build-unix](
-https://github.com/measurement-kit/script-build-unix) repository. For
+[measurement-kit/script-build-android](
+https://github.com/measurement-kit/script-build-android) repository. For
 integrating Measurement Kit cross-compiled for Android with Java classes
 that you can use from Android, please see [measurement-kit/android-libs](
 https://github.com/measurement-kit/android-libs). For how to use Measurement
@@ -82,11 +84,11 @@ https://github.com/measurement-kit/android-example).
 ## iOS instructions
 
 For cross-compiling Measurement Kit for iOS, please refer to the
-[measurement-kit/script-build-unix](
-https://github.com/measurement-kit/script-build-unix) repository. For
+[measurement-kit/script-build-ios](
+https://github.com/measurement-kit/script-build-ios) repository. For
 integrating Measurement Kit cross-compiled for iOS into a framework
-that you can use from iOS, please see [measurement-kit/ios-libs](
-https://github.com/measurement-kit/ios-libs). For how to use Measurement
+that you can use from iOS, please see [measurement-kit/mkall-ios](
+https://github.com/measurement-kit/mkall-ios). For how to use Measurement
 Kit in an iOS project, please see [measurement-kit/ios-example](
 https://github.com/measurement-kit/ios-example).
 
