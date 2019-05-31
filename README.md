@@ -84,8 +84,8 @@ https://github.com/measurement-kit/android-example).
 ## iOS instructions
 
 For cross-compiling Measurement Kit for iOS, please refer to the
-[measurement-kit/script-build-ios](
-https://github.com/measurement-kit/script-build-ios) repository. For
+[measurement-kit/homebrew-measurement-kit](
+https://github.com/measurement-kit/homebrew-measurement-kit) repository. For
 integrating Measurement Kit cross-compiled for iOS into a framework
 that you can use from iOS, please see [measurement-kit/mkall-ios](
 https://github.com/measurement-kit/mkall-ios). For how to use Measurement
