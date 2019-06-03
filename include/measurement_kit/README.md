@@ -231,7 +231,8 @@ are available:
   write logs. By default logs are written on `stderr`;
 
 - `"log_level"`: (string; optional) how much information you want to see
-  written in the log file and emitted by log-related events.
+  written in the log file and emitted by log-related events. The default log
+  level is "WARNING" (see below);
 
 - `"name"`: (string; mandatory) name of the nettest to run. The available
   nettest names have been described above;
@@ -260,6 +261,8 @@ The available log levels are:
 When you specify a log level in the settings, only messages with a log level
 equal or greater than the specified one are emitted. For example, if you
 specify `"INFO"`, you will only see `"ERR"`, `"WARNING"`, and `"INFO"` logs.
+
+The default log level is "WARNING".
 
 ## Options
 
