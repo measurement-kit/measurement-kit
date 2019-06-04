@@ -73,8 +73,8 @@ integration tests. To see how we do that, please check the
 ## Android instructions
 
 For cross-compiling Measurement Kit for Android, please refer to the
-[measurement-kit/script-build-android](
-https://github.com/measurement-kit/script-build-android) repository. For
+[measurement-kit/homebrew-measurement-kit](
+https://github.com/measurement-kit/homebrew-measurement-kit) repository. For
 integrating Measurement Kit cross-compiled for Android with Java classes
 that you can use from Android, please see [measurement-kit/android-libs](
 https://github.com/measurement-kit/android-libs). For how to use Measurement
