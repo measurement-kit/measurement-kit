@@ -422,7 +422,7 @@ void Runnable::query_bouncer(Callback<Error> cb) {
                 }
                 options["collector_base_url"] = *maybe_collector;
                 logger->info("Using discovered collector: %s",
-                                        maybe_collector->c_str());
+                             maybe_collector->c_str());
             }
             for (auto th: test_helpers_data) {
                 auto maybe_helper = reply->get_test_helper_alternate(
@@ -440,7 +440,7 @@ void Runnable::query_bouncer(Callback<Error> cb) {
                 if (options.find(th.second) != options.end()) {
                     continue;
                 }
-                logger->info("Using discovered helper as '%s'",
+                logger->debug("Using discovered helper as '%s'",
                              th.second.c_str());
                 options[th.second] = *maybe_helper;
             }

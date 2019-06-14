@@ -18,7 +18,7 @@ void compare_headers_response(http::Headers headers,
                              SharedPtr<http::Response> response, SharedPtr<nlohmann::json> entry,
                              SharedPtr<Logger> logger) {
     if (response->body.empty()) {
-        logger->warn("empty response body");
+        logger->warn("HHFM: empty response body");
         (*entry)["tampering"]["total"] = true;
         (*entry)["tampering"]["request_line_capitalization"] = true;
         return;
@@ -28,7 +28,7 @@ void compare_headers_response(http::Headers headers,
     try {
         resp = nlohmann::json::parse(response->body);
     } catch (const std::exception &) {
-        logger->warn("response body not valid JSON");
+        logger->warn("HHFM: response body not valid JSON");
         (*entry)["tampering"]["total"] = true;
         (*entry)["tampering"]["request_line_capitalization"] = true;
         return;
@@ -43,6 +43,8 @@ void compare_headers_response(http::Headers headers,
     } else {
         (*entry)["tampering"]["request_line_capitalization"] = false;
     }
+    logger->info("HHFM: request line capitalization: %s",
+        (*entry)["tampering"]["request_line_capitalization"].dump().c_str());
 
     // ooni-probe behavior to report header keys in the request or response
     // but not both. (case-sensitive, and ignoring values)
@@ -65,6 +67,11 @@ void compare_headers_response(http::Headers headers,
                         std::inserter(diff, diff.begin()));
     (*entry)["tampering"]["header_name_diff"] = diff;
     (*entry)["tampering"]["header_field_name"] = !diff.empty();
+
+    logger->info("HHFM: header name diff: %s",
+        (*entry)["tampering"]["header_name_diff"].dump().c_str());
+    logger->info("HHFM: header field name: %s",
+        (*entry)["tampering"]["header_field_name"].dump().c_str());
 }
 
 void http_header_field_manipulation(std::string /*input*/, Settings options,
