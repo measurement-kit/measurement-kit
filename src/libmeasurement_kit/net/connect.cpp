@@ -226,7 +226,7 @@ void connect(std::string address, int port,
                     return;
                 }
                 if (*allow_ssl23 == true) {
-                    logger->info("Re-enabling SSLv2 and SSLv3");
+                    logger->debug("Re-enabling SSLv2 and SSLv3");
                     libssl::enable_v23(*cssl);
                 }
                 err = libssl::enable_hostname_validation(
@@ -258,7 +258,7 @@ void connect(std::string address, int port,
                                 if (*allow_dirty_shutdown == true) {
                                     bufferevent_openssl_set_allow_dirty_shutdown(
                                         bev, 1);
-                                    logger->info("Allowing dirty SSL shutdown");
+                                    logger->debug("Allowing dirty SSL shutdown");
                                 }
                                 assert(err == NoError());
                                 callback(err, make_txp(
