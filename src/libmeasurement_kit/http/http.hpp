@@ -23,7 +23,7 @@ namespace http {
 */
 
 MK_DEFINE_ERR(MK_ERR_HTTP(0), UpgradeError, "http_upgrade_error")
-MK_DEFINE_ERR(MK_ERR_HTTP(1), ParserError, "http_parser_error")
+//MK_DEFINE_ERR(MK_ERR_HTTP(1), ParserError, "http_parser_error") // removed
 MK_DEFINE_ERR(MK_ERR_HTTP(2), UrlParserError, "http_url_parser_error")
 MK_DEFINE_ERR(MK_ERR_HTTP(3), MissingUrlSchemaError, "http_missing_url_schema")
 MK_DEFINE_ERR(MK_ERR_HTTP(4), MissingUrlHostError, "http_missing_url_host")

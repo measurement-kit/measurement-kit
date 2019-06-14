@@ -203,7 +203,7 @@ class ResponseParserNg : public NonCopyable, public NonMovable {
         // }
         //
         if (x != n) {
-            throw ParserError(map_parser_error_());
+            throw map_parser_error_();
         }
         return n;
     }
