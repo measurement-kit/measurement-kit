@@ -218,6 +218,7 @@ void update_report_impl(SharedPtr<Transport> transport, std::string report_id,
 
     Error err = valid_entry(entry);
     if (err != NoError()) {
+        logger->warn("collector: you passed me an invalid entry");
         callback(err);
         return;
     }
