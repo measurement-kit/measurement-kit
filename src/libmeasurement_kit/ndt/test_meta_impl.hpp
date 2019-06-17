@@ -55,8 +55,11 @@ void run_impl(SharedPtr<Context> ctx, Callback<Error> cb) {
                 ErrorOr<Buffer> out;
 
                 ctx->logger->debug("send client.version");
-                out = messages_format_test_msg_first(
-                    "client.version:" MEASUREMENT_KIT_VERSION);
+                std::string client_version = "client.version:";
+                client_version += ctx->settings.get(
+                    "software_version", MEASUREMENT_KIT_VERSION
+                );
+                out = messages_format_test_msg_first(client_version.c_str());
                 if (!out) {
                     callback(SerializingClientVersionError());
                     return;
@@ -65,8 +68,13 @@ void run_impl(SharedPtr<Context> ctx, Callback<Error> cb) {
                 ctx->logger->debug("send client.version ... 0");
 
                 ctx->logger->debug("send client.application");
+                std::string client_application = "client.application:";
+                client_application += ctx->settings.get(
+                    "software_name", "measurement-kit"
+                );
                 out = messages_format_test_msg_second(
-                    "client.application:measurement-kit");
+                    client_application.c_str()
+                );
                 if (!out) {
                     callback(SerializingClientApplicationError());
                     return;
