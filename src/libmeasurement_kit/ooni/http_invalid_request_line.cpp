@@ -20,7 +20,8 @@ static const int timeout = 5;
 // to increase this value by 1!
 static const int total_tests = 5;
 
-static void send_receive_invalid_request_line(net::Endpoint endpoint,
+static void send_receive_invalid_request_line(std::string subtestName,
+                                              net::Endpoint endpoint,
                                               std::string request_line,
                                               Callback<SharedPtr<nlohmann::json>> cb,
                                               Settings settings,
@@ -34,16 +35,17 @@ static void send_receive_invalid_request_line(net::Endpoint endpoint,
         {"sent", nullptr},
         {"failure", nullptr}
     }};
+    logger->info("HIRL: %s: starting", subtestName.c_str());
     templates::tcp_connect(settings, [=](Error err, SharedPtr<net::Transport> txp) {
         if (err) {
-            logger->warn("http_invalid_request_line: error connecting");
+            logger->warn("HIRL: %s: error connecting", subtestName.c_str());
             (*entry)["failure"] = err.reason;
             cb(entry);
             return;
         }
         SharedPtr<std::string> received_data(new std::string);
         txp->on_data([=](net::Buffer data) {
-            logger->debug("http_invalid_request_line: on_data: %s",
+            logger->debug("HIRL: %s, on_data: %s", subtestName.c_str(),
                           data.peek().c_str());
             *received_data += data.read();
         });
@@ -53,10 +55,10 @@ static void send_receive_invalid_request_line(net::Endpoint endpoint,
         // of 5 seconds.
         reactor->call_later(timeout, [=]() {
             if (*received_data != request_line) {
-                logger->warn("Tampering detected");
+                logger->warn("HIRL: %s: tampering detected", subtestName.c_str());
                 (*entry)["tampering"] = true;
             } else {
-                logger->debug("Tampering not detected");
+                logger->info("HIRL: %s: tampering not detected", subtestName.c_str());
                 (*entry)["tampering"] = false;
             }
             (*entry)["sent"] = represent_string(request_line);
@@ -88,7 +90,7 @@ void http_invalid_request_line(Settings options,
         return;
     }
 
-    logger->info("Using helper: %s", options["backend"].c_str());
+    logger->debug("Using helper: %s", options["backend"].c_str());
 
     auto handle_response = [=](SharedPtr<nlohmann::json> inner) {
         *tests_run += 1;
@@ -120,8 +122,8 @@ void http_invalid_request_line(Settings options,
     std::string test_random_invalid_method(mk::random_str_uppercase(4));
     test_random_invalid_method += " / HTTP/1.1\n\r";
     send_receive_invalid_request_line(
-        *endpoint, test_random_invalid_method, handle_response,
-        options, reactor, logger);
+      "random_invalid_method", *endpoint, test_random_invalid_method,
+      handle_response, options, reactor, logger);
 
     // test_random_invalid_field_count
     // ' '.join(randomStr(5) for x in range(4)) + '\n\r'
@@ -131,30 +133,31 @@ void http_invalid_request_line(Settings options,
     }
     test_random_invalid_field_count += "\n\r";
     send_receive_invalid_request_line(
-        *endpoint, test_random_invalid_field_count, handle_response,
-        options, reactor, logger);
+      "random_invalid_field_count", *endpoint, test_random_invalid_field_count,
+      handle_response, options, reactor, logger);
 
     // test_random_big_request_method
     // randomStr(1024) + ' / HTTP/1.1\n\r'
     std::string test_random_big_request_method(mk::random_str_uppercase(1024));
     test_random_big_request_method += " / HTTP/1.1\n\r";
     send_receive_invalid_request_line(
-        *endpoint, test_random_big_request_method, handle_response,
-        options, reactor, logger);
+      "random_big_request_method", *endpoint, test_random_big_request_method,
+      handle_response, options, reactor, logger);
 
     // test_random_invalid_version_number
     // 'GET / HTTP/' + randomStr(3)
     std::string test_random_invalid_version_number("GET / HTTP/");
     test_random_invalid_version_number += mk::random_str_uppercase(3);
     send_receive_invalid_request_line(
-        *endpoint, test_random_invalid_version_number,
-        handle_response, options, reactor, logger);
+      "random_invalid_version_number", *endpoint,
+      test_random_invalid_version_number, handle_response, options, reactor,
+      logger);
 
     // test_squid_cache_manager
     // 'GET cache_object://localhost/ HTTP/1.0\n\r'
     std::string test_squid_cache_manager("GET cache_object://localhost/ HTTP/1.0\n\r");
     send_receive_invalid_request_line(
-      *endpoint, test_squid_cache_manager, handle_response,
+      "squid_cache_manager", *endpoint, test_squid_cache_manager, handle_response,
       options, reactor, logger);
 }
 
