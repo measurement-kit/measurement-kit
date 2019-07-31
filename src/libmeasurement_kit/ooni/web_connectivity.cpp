@@ -399,16 +399,17 @@ static void control_request(http::Headers headers_to_pass_along,
     http::request(settings, headers, body,
                   [=](Error error, SharedPtr<http::Response> response) {
                       if (!error) {
+                          nlohmann::json doc;
                           try {
-                              (*entry)["control"] =
-                                  nlohmann::json::parse(response->body);
-                              callback(NoError());
-                              return;
+                              doc = nlohmann::json::parse(response->body);
                           } catch (const std::exception &) {
                               (*entry)["control_failure"] = "json_parse_error";
                               callback(JsonProcessingError());
                               return;
                           }
+                          (*entry)["control"] = std::move(doc);
+                          callback(NoError());
+                          return;
                       }
                       (*entry)["control_failure"] = error.reason;
                       callback(error);
