@@ -139,9 +139,14 @@ static void compare_http_requests(SharedPtr<nlohmann::json> entry,
     }
 }
 
-static void compare_dns_queries(SharedPtr<nlohmann::json> entry,
+static void compare_dns_queries(mk::http::Url url, SharedPtr<nlohmann::json> entry,
                                 std::vector<std::string> experiment_addresses,
                                 nlohmann::json control, Settings options) {
+    // Short circuit for the case where we're using an IP address.
+    if (mk::net::is_ip_addr(url.address)) {
+        (*entry)["dns_consistency"] = "consistent";
+        return;
+    }
 
     SharedPtr<Logger> logger = Logger::make();
     // When the controls fails in the same way as the experiment we consider the
@@ -251,7 +256,8 @@ static bool compare_tcp_connect(SharedPtr<nlohmann::json> entry, nlohmann::json 
 static void compare_control_experiment(std::string input, SharedPtr<nlohmann::json> entry,
                                        SharedPtr<http::Response> response,
                                        std::vector<std::string> addresses,
-                                       Settings options, SharedPtr<Logger> logger) {
+                                       Settings options, SharedPtr<Logger> logger,
+                                       mk::http::Url url) {
     if ((*entry)["control_failure"] != nullptr) {
         logger->warn(
             "web_connectivity: skipping control comparison due to failure");
@@ -266,7 +272,7 @@ static void compare_control_experiment(std::string input, SharedPtr<nlohmann::js
     }
 
     logger->debug("web_connectivity: comparing dns_queries");
-    compare_dns_queries(entry, addresses, (*entry)["control"]["dns"], options);
+    compare_dns_queries(url, entry, addresses, (*entry)["control"]["dns"], options);
 
     logger->debug("web_connectivity: comparing tcp_connect");
     bool tcp_connect_success =
@@ -524,8 +530,14 @@ static void experiment_dns_query(
     SharedPtr<Reactor> reactor, SharedPtr<Logger> logger) {
 
     if (net::is_ip_addr(hostname)) {
-        // Don't perform DNS resolutions if it's an IP address
-        // XXX This means we are not filling the entry
+        // Don't perform DNS resolutions if it's an IP address. The spec of
+        // web connectivity does not say what to do in case we are not doing
+        // the DNS step. A good value to indicate we've not done this step
+        // seems to be `null`. That is also Go-friendly because you can use
+        // a pointer in the structure definition.
+        //
+        // See <https://github.com/ooni/spec/issues/148>.
+        (*entry)["queries"] = nullptr;
         std::vector<std::string> addresses;
         addresses.push_back(hostname);
         callback(NoError(), addresses);
@@ -661,7 +673,7 @@ void web_connectivity(std::string input, Settings options,
                                                  "control with experiment");
                                     compare_control_experiment(
                                         input, entry, response, addresses,
-                                        options, logger);
+                                        options, logger, *url);
                                     callback(entry);
 
                                 },
