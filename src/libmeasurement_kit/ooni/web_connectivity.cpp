@@ -583,12 +583,6 @@ void web_connectivity(std::string input, Settings options,
     (*entry)["tcp_connect"] = nlohmann::json::array();
     (*entry)["control"] = nlohmann::json({});
 
-    if (!mk::startswith(input, "http://") &&
-        !mk::startswith(input, "https://")) {
-        // Similarly to ooni-probe also accept a list of endpoints
-        input = "http://" + input;
-    }
-
     ErrorOr<http::Url> url = mk::http::parse_url_noexcept(input);
 
     if (!url) {
