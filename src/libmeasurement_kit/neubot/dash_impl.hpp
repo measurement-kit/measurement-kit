@@ -99,6 +99,7 @@ class DashLoopCtx {
     Settings settings;
     SharedPtr<net::Transport> txp;
     std::string uuid;
+    std::string server_url;
 };
 
 template <MK_MOCK_AS(http::request_send, http_request_send),
@@ -309,13 +310,22 @@ void run_loop_(SharedPtr<DashLoopCtx> ctx) {
                               {"received", length},
                               {"remote_address", ctx->txp->peername().hostname},
                               {"request_ticks", saved_time},
+                              /* This is an extension from the code that was
+                               * originally implemented in Neubot */
+                              {"server_url", ctx->server_url},
                               {"timestamp", llround(saved_time)},
                               {"use_fixed_rates", *use_fixed_rates},
                               {"uuid", ctx->uuid},
                               /*
-                               * This version indicates measurement-kit.
+                               * History of this field:
+                               *
+                               * 0.007001000: added support for server_url.
+                               *
+                               * 0.007000000: measurement-kit.
+                               *
+                               * 0.004016009: last Neubot version.
                                */
-                              {"version", "0.007000000"}});
+                              {"version", "0.007001000"}});
                         double speed = length / time_elapsed;
                         double s_k = (speed * 8) / 1000;
                         std::stringstream ss;
@@ -367,6 +377,7 @@ void run_impl(std::string url, std::string auth_token, std::string real_address,
     // each time we run a new DASH test.
     //
     ctx->uuid = mk::sole::uuid4().str();
+    ctx->server_url = url;
     settings["http/url"] = url;
     settings["http/method"] = "GET";
     logger->info("Start dash test with: %s", url.c_str());
