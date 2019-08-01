@@ -393,6 +393,9 @@ void Runnable::query_bouncer(Callback<Error> cb) {
             "no_bouncer", false);
     if (disable_bouncer.as_error() != NoError()) {
         logger->warn("Invalid 'no_bouncer' option");
+        logger->emit_event_ex("failure.startup", nlohmann::json::object({
+            {"failure", "value_error"},
+        }));
         cb(disable_bouncer.as_error());
         return;
     }
@@ -409,6 +412,9 @@ void Runnable::query_bouncer(Callback<Error> cb) {
         bouncer, test_name, test_version, test_helpers_bouncer_names(),
         [=](Error error, SharedPtr<BouncerReply> reply) {
             if (error) {
+                logger->emit_event_ex("failure.startup", nlohmann::json::object({
+                    {"failure", error.what()},
+                }));
                 cb(error);
                 return;
             }
@@ -417,6 +423,9 @@ void Runnable::query_bouncer(Callback<Error> cb) {
                 auto maybe_collector = reply->get_collector_alternate("https");
                 if (!maybe_collector) {
                     logger->warn("no collector found");
+                    logger->emit_event_ex("failure.startup", nlohmann::json::object({
+                        {"failure", maybe_collector.as_error().what()},
+                    }));
                     cb(maybe_collector.as_error());
                     return;
                 }
@@ -431,6 +440,9 @@ void Runnable::query_bouncer(Callback<Error> cb) {
                 if (!maybe_helper) {
                     maybe_helper = reply->get_test_helper(th.first);
                     if (!maybe_helper) {
+                        logger->emit_event_ex("failure.startup", nlohmann::json::object({
+                            {"failure", maybe_helper.as_error().what()},
+                        }));
                         logger->warn("Cannot find alternate or normal helper");
                         continue;
                     }
