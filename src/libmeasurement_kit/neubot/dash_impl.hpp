@@ -503,6 +503,19 @@ void collect_(SharedPtr<net::Transport> txp, SharedPtr<nlohmann::json> entry,
           reactor, logger);
 }
 
+// sanitize_entry_ removes the user IP address from the JSON document that is
+// going to be saved by OONI and submitted to the collector.
+//
+// See <https://github.com/measurement-kit/measurement-kit/issues/1871>.
+static inline void sanitize_entry_(SharedPtr<nlohmann::json> entry) noexcept {
+    if (entry->count("receiver_data") == 1) {
+        for (auto &e : entry->at("receiver_data")) {
+            e["internal_address"] = "127.0.0.1";
+            e["real_address"] = "127.0.0.1";
+        }
+    }
+}
+
 template <MK_MOCK_AS(http::request_connect, http_request_connect),
           MK_MOCK_AS(http::request_sendrecv, http_request_sendrecv_negotiate),
           MK_MOCK_AS(http::request_sendrecv, http_request_sendrecv_collect)>
@@ -549,6 +562,7 @@ void negotiate_with_(std::string hostname, SharedPtr<nlohmann::json> entry,
                                      collect_<http_request_sendrecv_collect>(
                                            txp, entry, auth_token, settings,
                                            reactor, logger, [=](Error error) {
+                                               sanitize_entry_(entry);
                                                // Dispose of the `txp`
                                                txp->close([=]() { cb(error); });
                                            });
