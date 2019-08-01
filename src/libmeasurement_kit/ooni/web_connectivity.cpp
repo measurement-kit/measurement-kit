@@ -389,6 +389,12 @@ static void control_request(http::Headers headers_to_pass_along,
     request["http_request_headers"] = true_headers;
     std::string body = request.dump();
 
+    /* We want a larger timeout when communicating with the OONI backend
+     * because it may take time for the backend to retrieve a web page and
+     * we don't want to recv() to timeout too soon.
+     *
+     * See <https://github.com/measurement-kit/measurement-kit/issues/1864>. */
+    settings["net/timeout"] = 30.0;
     settings["http/url"] = settings["backend"];
     settings["http/method"] = "POST";
     headers_push_back(headers, "Content-Type", "application/json");
