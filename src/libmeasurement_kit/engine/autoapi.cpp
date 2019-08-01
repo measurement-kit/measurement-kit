@@ -914,6 +914,18 @@ void task_run_legacy(Task *task, TaskImpl *pimpl, nlohmann::json &settings) {
                         }
                         break;
                     }
+                    if (key == "no_resolver_lookup") {
+                        found = true;
+                        if (!value.is_boolean()) {
+                            std::stringstream ss;
+                            ss << "Found " << key << " option which has the "
+                               << "wrong type (fyi: it should be a "
+                               << "boolean)";
+                            emit_settings_warning(task, ss.str().data());
+                            // FALLTHROUGH
+                        }
+                        break;
+                    }
                     if (key == "port") {
                         found = true;
                         if (!value.is_number_integer()) {

@@ -29,6 +29,7 @@ static const struct {
 #define OPTID_CA_BUNDLE_PATH 259
 #define OPTID_GEOIP_COUNTRY_PATH 260
 #define OPTID_GEOIP_ASN_PATH 261
+#define OPTID_NO_RESOLVER_LOOKUP 262
 
 static OptionSpec kv_specs[] = {
     {'A', "annotation", true, "key=value", "Add annotation"},
@@ -49,6 +50,8 @@ static OptionSpec kv_specs[] = {
      "Path of the MaxMind country DB to use"},
     {OPTID_GEOIP_ASN_PATH, "geoip-asn-path", true, "PATH",
      "Path of the MaxMind ASN path to use"},
+    {OPTID_NO_RESOLVER_LOOKUP, "no-resolver-lookup", false, nullptr,
+     "Disable looking up the resolver's IP address"},
     {0, nullptr, 0, 0, nullptr}
 };
 
@@ -185,6 +188,11 @@ int main(int argc, char **argv) {
                     [s](BaseTest &test) {
                       test.set_option("geoip_asn_path", s.c_str()); });
             }
+            break;
+        case OPTID_NO_RESOLVER_LOOKUP:
+            initializers.push_back([](BaseTest &test) {
+                test.set_option("no_resolver_lookup", true);
+            });
             break;
         default:
             return usage(1, stderr);
