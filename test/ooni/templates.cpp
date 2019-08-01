@@ -45,7 +45,7 @@ TEST_CASE("dns query template works as expected") {
                         answers = query["answers"];
                         REQUIRE(answers.is_array());
                         REQUIRE((answers[0]["ttl"].is_number()));
-                        REQUIRE((answers[0]["ipv4"] == "130.192.16.172"));
+                        REQUIRE((answers[0]["ipv4"] == "130.192.16.171"));
                         REQUIRE((answers[0]["answer_type"] == "A"));
                         /* Second query and response (should be error) */
                         query = queries[1];
@@ -97,10 +97,10 @@ TEST_CASE("dns query template works as expected with system engine") {
                     REQUIRE(answers.is_array());
                     REQUIRE(answers.size() == 2);
                     REQUIRE((answers[0]["ttl"].is_null()));
-                    REQUIRE((answers[0]["hostname"] == "server-nexa.polito.it"));
+                    REQUIRE((answers[0]["hostname"] == "nexa.polito.it"));
                     REQUIRE((answers[0]["answer_type"] == "CNAME"));
                     REQUIRE((answers[1]["ttl"].is_null()));
-                    REQUIRE((answers[1]["ipv4"] == "130.192.16.172"));
+                    REQUIRE((answers[1]["ipv4"] == "130.192.16.171"));
                     REQUIRE((answers[1]["answer_type"] == "A"));
                     reactor->stop();
                 },
