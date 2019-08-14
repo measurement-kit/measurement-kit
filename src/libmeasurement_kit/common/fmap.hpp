@@ -16,7 +16,7 @@ template <typename A, typename B>
 std::vector<B> fmap(std::vector<A> i, std::function<B(A)> f) {
     std::vector<B> o;
     std::transform(i.begin(), i.end(), std::back_inserter(o), f);
-    return std::move(o);
+    return o;
 }
 
 } // namespace mk

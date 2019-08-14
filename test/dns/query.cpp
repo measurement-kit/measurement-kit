@@ -29,16 +29,18 @@ static evdns_request *null_resolver_reverse(evdns_base *,
 }
 static int null_inet_pton(int, const char *, void *) { return 0; }
 
-#ifdef __MINGW32__
-static const char *null_inet_ntop(int, void *, char *, size_t)
-#elif defined _MSC_VER
-static const char *null_inet_ntop(int, const void *, char *, size_t)
-#else
-static const char *null_inet_ntop(int, const void *, char *, socklen_t)
-#endif
-{
-    return nullptr;
+#ifdef _WIN32
+static inline const char *null_inet_ntop(int, void *, char *, size_t) {
+     return nullptr;
 }
+static inline const char *null_inet_ntop(int, const void *, char *, size_t) {
+     return nullptr;
+}
+#else
+static inline const char *null_inet_ntop(int, const void *, char *, socklen_t) {
+     return nullptr;
+}
+#endif
 
 static evdns_base *null_evdns_base_new(event_base *, int) {
     return (evdns_base *)nullptr;

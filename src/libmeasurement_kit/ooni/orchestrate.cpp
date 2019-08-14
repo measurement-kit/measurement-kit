@@ -107,12 +107,8 @@ bool Auth::is_valid(SharedPtr<Logger> logger) const noexcept {
     logger->debug("orchestrator: now_localtime: %s",
                   std::to_string(now_localtime).c_str());
     tm now_temp{};
-#ifdef _MSC_VER
-    if (gmtime_s(&now_temp, &now_localtime) != 0) {
-#else
     if (gmtime_r(&now_localtime, &now_temp) == nullptr) {
-#endif
-        logger->warn("orchestrator: std::gmtime_r() failed");
+        logger->warn("orchestrator: gmtime_r() failed");
         return false;
     }
     auto now_utc = std::mktime(&now_temp);

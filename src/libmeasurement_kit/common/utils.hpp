@@ -110,34 +110,12 @@ void timeval_now(timeval *tv) {
 
 double time_now();
 
-// TODO(bassosimone): find a better solution, which most likely is
-// using the C++11 library to provide this functionality.
-#ifdef _WIN32
-static inline void utc_time_now(struct tm *utc) {
-    time_t tv = {};
-    tv = time(nullptr);
-    // Note: on Windows gmtime() uses thread local storage. Disable
-    // the related warning since we don't store the return value.
-    //
-    // See <https://stackoverflow.com/a/12060751>.
-#ifdef _MSC_VER
-#pragma warning(disable:4996)
-#endif
-    auto rv = gmtime(&tv);
-#ifdef _MSC_VER
-#pragma warning(default:4996)
-#endif
-    assert(rv != nullptr);
-    *utc = *rv;
-}
-#else
-template <MK_MOCK(time), MK_MOCK(gmtime_r)>
+template <MK_MOCK(time)>
 void utc_time_now(struct tm *utc) {
     time_t tv = {};
     tv = time(nullptr);
-    gmtime_r(&tv, utc);
+    (void)gmtime_r(&tv, utc);
 }
-#endif
 
 Error parse_iso8601_utc(std::string ts, std::tm *tmb);
 

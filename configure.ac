@@ -16,7 +16,7 @@ case "$host" in
     # Must link with ws2_32
     LIBS="$LIBS -lws2_32"
     # Required to expose inet_pton()
-    CPPFLAGS="$CPPFLAGS -D_WIN32_WINNT=0x0600"
+    CPPFLAGS="$CPPFLAGS -D_WIN32_WINNT=0x0600 -D_POSIX_C_SOURCE"
   ;;
 esac
 
@@ -24,8 +24,13 @@ AC_PROG_CXX
 MK_PTHREAD
 
 AC_CHECK_FUNCS([err errx warn warnx getopt getopt_long getopt_long_only        \
-                gmtime_r strcasecmp strtonum])
+                strcasecmp strtonum])
 AC_CHECK_DECLS([optreset], [], [], [#include <getopt.h>])
+
+AC_CHECK_DECLS([gmtime_r], [], [], [#include <time.h>])
+if test $ac_have_decl != 1; then
+  AC_MSG_ERROR("No support for gmtime_r")
+fi
 
 MK_AM_OPENSSL
 MK_AM_LIBEVENT
