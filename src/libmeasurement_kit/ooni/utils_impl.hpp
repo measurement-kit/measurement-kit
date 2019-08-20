@@ -20,6 +20,10 @@ void resolver_lookup_impl(Callback<Error, std::string> callback,
                           Settings settings,
                           SharedPtr<Reactor> reactor,
                           SharedPtr<Logger> logger) {
+  if (settings.get("no_resolver_lookup", false) == true) {
+    callback(NoError(), "127.0.0.1");
+    return;
+  }
   dns_query("IN", "A", "whoami.akamai.net",
       [=](Error error, SharedPtr<dns::Message> message) {
         if (!error) {

@@ -10,7 +10,7 @@ namespace nettests {
 
 DashRunnable::DashRunnable() noexcept {
     test_name = "dash";
-    test_version = "0.7.0";
+    test_version = "0.7.1";
     needs_input = false;
 }
 

@@ -99,6 +99,7 @@ class DashLoopCtx {
     Settings settings;
     SharedPtr<net::Transport> txp;
     std::string uuid;
+    std::string server_url;
 };
 
 template <MK_MOCK_AS(http::request_send, http_request_send),
@@ -309,13 +310,22 @@ void run_loop_(SharedPtr<DashLoopCtx> ctx) {
                               {"received", length},
                               {"remote_address", ctx->txp->peername().hostname},
                               {"request_ticks", saved_time},
+                              /* This is an extension from the code that was
+                               * originally implemented in Neubot */
+                              {"server_url", ctx->server_url},
                               {"timestamp", llround(saved_time)},
                               {"use_fixed_rates", *use_fixed_rates},
                               {"uuid", ctx->uuid},
                               /*
-                               * This version indicates measurement-kit.
+                               * History of this field:
+                               *
+                               * 0.007001000: added support for server_url.
+                               *
+                               * 0.007000000: measurement-kit.
+                               *
+                               * 0.004016009: last Neubot version.
                                */
-                              {"version", "0.007000000"}});
+                              {"version", "0.007001000"}});
                         double speed = length / time_elapsed;
                         double s_k = (speed * 8) / 1000;
                         std::stringstream ss;
@@ -367,6 +377,7 @@ void run_impl(std::string url, std::string auth_token, std::string real_address,
     // each time we run a new DASH test.
     //
     ctx->uuid = mk::sole::uuid4().str();
+    ctx->server_url = url;
     settings["http/url"] = url;
     settings["http/method"] = "GET";
     logger->info("Start dash test with: %s", url.c_str());
@@ -503,6 +514,19 @@ void collect_(SharedPtr<net::Transport> txp, SharedPtr<nlohmann::json> entry,
           reactor, logger);
 }
 
+// sanitize_entry_ removes the user IP address from the JSON document that is
+// going to be saved by OONI and submitted to the collector.
+//
+// See <https://github.com/measurement-kit/measurement-kit/issues/1871>.
+static inline void sanitize_entry_(SharedPtr<nlohmann::json> entry) noexcept {
+    if (entry->count("receiver_data") == 1) {
+        for (auto &e : entry->at("receiver_data")) {
+            e["internal_address"] = "127.0.0.1";
+            e["real_address"] = "127.0.0.1";
+        }
+    }
+}
+
 template <MK_MOCK_AS(http::request_connect, http_request_connect),
           MK_MOCK_AS(http::request_sendrecv, http_request_sendrecv_negotiate),
           MK_MOCK_AS(http::request_sendrecv, http_request_sendrecv_collect)>
@@ -549,6 +573,7 @@ void negotiate_with_(std::string hostname, SharedPtr<nlohmann::json> entry,
                                      collect_<http_request_sendrecv_collect>(
                                            txp, entry, auth_token, settings,
                                            reactor, logger, [=](Error error) {
+                                               sanitize_entry_(entry);
                                                // Dispose of the `txp`
                                                txp->close([=]() { cb(error); });
                                            });

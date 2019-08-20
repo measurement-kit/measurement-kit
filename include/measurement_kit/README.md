@@ -184,6 +184,7 @@ The nettest task settings object is a JSON like:
     "no_collector": false,
     "no_file_report": false,
     "no_geoip": false,
+    "no_resolver_lookup": false,
     "port": 1234,
     "probe_ip": "1.2.3.4",
     "probe_asn": "AS30722",
@@ -364,6 +365,10 @@ These are the available options:
 
 - `"no_geoip"`: (boolean) whether to perform GeoIP lookup. By default set to
   `false`, meaning that we'll try;
+
+- `"no_resolver_lookup"`: (boolean) whether to lookup the IP address of
+  the resolver. By default `false`, meaning that we'll try. When true we
+  will set the resolver IP address to `127.0.0.1`;
 
 - `"probe_asn"`: (string) sets the `probe_asn` to be included into the
   report, thus skipping the ASN resolution;
@@ -968,9 +973,8 @@ by setting the appropriate settings.
     emitProgress(0.2, "geoip lookup")
   }
 
-  // TODO(bassosimone): take decision wrt null vs. ""
-  let resolver_ip = null
-  {
+  let resolver_ip = "127.0.0.1"
+  if (!settings.options.no_resolver_lookup) {
     let error
     [resolver_ip, error] = lookupResolver(settings)
     if (error) {

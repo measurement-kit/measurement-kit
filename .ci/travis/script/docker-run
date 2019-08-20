@@ -1,5 +1,5 @@
 #!/bin/sh
-set -e
+set -ex
 
 # This runs docker and forwards relevant environment variables
 
@@ -21,10 +21,24 @@ if [ "$TRAVIS_BRANCH" != "" -a "$MK_CXX" != "" ]; then
     CXX=$MK_CXX
 fi
 
-# Note: NET_ADMIN cap is needed to slow down speed tests to avoid hammering
-# the servers with very fast clients for no good reason.
+#
+# The following code creates network emulation such that downloading is
+# comparable to the performance of a cable network.
+#
+# See <https://www.sitespeed.io/documentation/sitespeed.io/connectivity/>.
+docker network create --driver bridge                                          \
+                      --subnet=10.0.0.0/24                                     \
+                      --gateway=10.0.0.1                                       \
+                      --opt "com.docker.network.bridge.name"="cable-bridge"    \
+                      cable
+sudo tc qdisc add dev cable-bridge root handle 1: htb default 12
+sudo tc class add dev cable-bridge parent 1:1 classid 1:12 htb rate 5mbit ceil 5mbit
+sudo tc qdisc add dev cable-bridge parent 1:12 netem delay 14ms
+
 docker run                                                                     \
+    --cap-add=SYS_PTRACE                                                       \
     --cap-add=NET_ADMIN                                                        \
+    --network=cable                                                            \
     -e "BUILD_TYPE=$BUILD_TYPE"                                                \
     -e "CC=$CC"                                                                \
     -e "CFLAGS=$CFLAGS"                                                        \
