@@ -20,7 +20,9 @@ elif [ "$1" = "clang" ]; then
   export CMAKE_BUILD_OPTIONS="-v"
   export CMAKE_OPTIONS="-G Ninja -D CMAKE_BUILD_TYPE=Release"
   export CTEST_OPTIONS="--output-on-failure -j2"
-  export CXXFLAGS="-stdlib=libc++"
+  # Note: -Wno-c++17-extensions required as learned during
+  # https://github.com/measurement-kit/measurement-kit/pull/1805
+  export CXXFLAGS="-stdlib=libc++ -Wno-c++17-extensions"
   # Note: MK_C{C,XX} are required because Travis overrides CC and CXX.
   export MK_CC=clang
   export MK_CXX=clang++
