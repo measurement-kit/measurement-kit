@@ -46,7 +46,6 @@ for flag in -Wall -Wextra -pedantic -Wmissing-prototypes; do
   MK_MAYBE_APPEND_CFLAG([$flag])
   MK_MAYBE_APPEND_CXXFLAG([$flag])
 done
-MK_MAYBE_APPEND_CXXFLAG([-Wno-c++17-extensions]) # Silence clang on macOS
 
 AX_ADD_FORTIFY_SOURCE
 
