@@ -36,9 +36,9 @@ elif [ "$1" = "coverage" ]; then
 
 elif [ "$1" = "ubsan" ]; then
   export BUILD_TYPE="ubsan"
-  export CFLAGS="-fsanitize=undefined -fno-sanitize-recover"
-  export CXXFLAGS="-fsanitize=undefined -fno-sanitize-recover"
-  export LDFLAGS="-fsanitize=undefined"
+  export CFLAGS="-g -fsanitize=undefined -fno-sanitize-recover"
+  export CXXFLAGS="-g -fsanitize=undefined -fno-sanitize-recover"
+  export LDFLAGS="-g -fsanitize=undefined"
   export CMAKE_BUILD_OPTIONS="-v"
   export CMAKE_OPTIONS="-G Ninja -D CMAKE_BUILD_TYPE=Debug"
   export CTEST_OPTIONS="--output-on-failure -j2"
@@ -50,7 +50,7 @@ elif [ "$1" = "vanilla" ]; then
   export CTEST_OPTIONS="--output-on-failure -j2"
 
 else
-  echo "Usage: $0 [asan|clang|coverage|tsan|ubsan|vanilla]" 1>&2
+  echo "Usage: $0 [asan|clang|coverage|ubsan|vanilla]" 1>&2
   exit 1
 fi
 
