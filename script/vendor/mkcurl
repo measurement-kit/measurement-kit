@@ -1,6 +1,6 @@
 #!/bin/sh
 set -ex
-version=v0.11.0
+version=v0.12.0
 name=mkcurl
 destdir=include/measurement_kit/internal/vendor
 install -d $destdir
@@ -10,4 +10,3 @@ url=https://raw.githubusercontent.com/measurement-kit/$name/$version/$name.hpp
   cd $destdir
   curl -fsSLO $url
 )
-git add $destdir/$name.hpp
