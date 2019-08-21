@@ -10,4 +10,3 @@ url=https://raw.githubusercontent.com/measurement-kit/$name/$version/$name.hpp
   cd $destdir
   curl -fsSLO $url
 )
-git add $destdir/$name.hpp
