@@ -60,7 +60,7 @@ TEST_CASE("mk_event_create_() correctly guarantees UTF-7 output") {
   // (Cultural note: despite being born in Sanremo I'm actually opposed to
   // the festival, which I consider low quality music, and I fancy much more
   // Rock in the Casbah, a summer festival in Sanremo's casbah.)
-  const std::string sanremo{"Perché Sanremo è Sanremo"};
+  const std::string sanremo{"Perché Sanremo è Sanremo 😇"};
   nlohmann::json json;
   json[sanremo] = sanremo;
   mk_unique_event ev{mk_event_create_(json)};
@@ -68,6 +68,6 @@ TEST_CASE("mk_event_create_() correctly guarantees UTF-7 output") {
   auto seriop = mk_event_serialization(ev.get());
   REQUIRE(seriop != nullptr);
   auto serios = std::string{seriop};
-  auto ex = R"({"Perch\u00e9 Sanremo \u00e8 Sanremo":"Perch\u00e9 Sanremo \u00e8 Sanremo"})";
+  auto ex = R"({"Perch\u00e9 Sanremo \u00e8 Sanremo \ud83d\ude07":"Perch\u00e9 Sanremo \u00e8 Sanremo \ud83d\ude07"})";
   REQUIRE(serios == ex);
 }
