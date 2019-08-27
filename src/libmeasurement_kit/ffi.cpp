@@ -21,7 +21,16 @@
 mk_event_t *mk_event_create_(const nlohmann::json &json) noexcept {
     std::string ev;
     try {
-        ev = json.dump();
+        // The following encodes the JSON in the most compact representation
+        // (i.e. indent=-1, indent_char=' '), and make sure that we emit in
+        // ouput only ASCII characters (i.e. UTF-7 rather than UTF-8). We're
+        // doing this to increase the likelihood that the code that will be
+        // parsing this JSON will accept it. For example, Java's modified
+        // UTF-8 SHOULD be able to deal with UTF-7 where `U+0000` is properly
+        // encoded but MAY NOT deal correctly with an UTF-8 stream.
+        //
+        // See https://developer.android.com/training/articles/perf-jni#utf-8-and-utf-16-strings
+        ev = json.dump(-1, ' ', true);
     } catch (const std::exception &exc) {
         nlohmann::json failure;
         failure["key"] = "bug.json_dump";
