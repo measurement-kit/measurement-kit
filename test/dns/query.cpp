@@ -389,12 +389,12 @@ TEST_CASE("The libevent resolver works as expected") {
     });
 
     reactor->run_with_initial_event([=]() {
-        query("IN", "REVERSE_AAAA", "2001:858:2:2:aabb::563b:1e28",
+        query("IN", "REVERSE_AAAA", "2a01:4f8:172:1b46::abba:5:1",
               [=](Error e, SharedPtr<Message> message) {
                   REQUIRE(!e);
                   REQUIRE(message->error_code == DNS_ERR_NONE);
                   REQUIRE(message->answers.size() == 1);
-                  REQUIRE(message->answers[0].hostname == "nova.torproject.org");
+                  REQUIRE(message->answers[0].hostname == "saxatile.torproject.org");
                   REQUIRE(message->rtt > 0.0);
                   REQUIRE(message->answers[0].ttl > 0);
                   reactor->stop();
@@ -402,13 +402,13 @@ TEST_CASE("The libevent resolver works as expected") {
     });
 
     reactor->run_with_initial_event([=]() {
-        query("IN", "PTR", "8.2.e.1.b.3.6.5.0.0.0.0.b.b.a.a.2.0.0.0.2.0.0.0.8."
-                           "5.8.0.1.0.0.2.ip6.arpa",
+        query("IN", "PTR",
+              "1.0.0.0.5.0.0.0.a.b.b.a.0.0.0.0.6.4.b.1.2.7.1.0.8.f.4.0.1.0.a.2.ip6.arpa",
               [=](Error e, SharedPtr<Message> message) {
                   REQUIRE(!e);
                   REQUIRE(message->error_code == DNS_ERR_NONE);
                   REQUIRE(message->answers.size() == 1);
-                  REQUIRE(message->answers[0].hostname == "nova.torproject.org");
+                  REQUIRE(message->answers[0].hostname == "saxatile.torproject.org");
                   REQUIRE(message->rtt > 0.0);
                   REQUIRE(message->answers[0].ttl > 0);
                   reactor->stop();

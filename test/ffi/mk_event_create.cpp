@@ -42,3 +42,32 @@ TEST_CASE("mk_event_create_() deals with invalid JSON event key") {
   REQUIRE(ev != nullptr);
   REQUIRE(mk_event_serialization(ev.get()) != nullptr);
 }
+
+TEST_CASE("mk_event_create_() correctly encodes NULL bytes") {
+  const uint8_t zeroterm[] = {115, 98, 115, 0, 115, 98, 115};
+  const std::string zerostring{(const char *)zeroterm, sizeof(zeroterm)};
+  nlohmann::json json;
+  json[zerostring] = zerostring;
+  mk_unique_event ev{mk_event_create_(json)};
+  REQUIRE(ev != nullptr);
+  auto seriop = mk_event_serialization(ev.get());
+  REQUIRE(seriop != nullptr);
+  auto serios = std::string{seriop};
+  REQUIRE(serios == R"({"sbs\u0000sbs":"sbs\u0000sbs"})");
+}
+
+TEST_CASE("mk_event_create_() correctly guarantees UTF-7 output") {
+  // (Cultural note: despite being born in Sanremo I'm actually opposed to
+  // the festival, which I consider low quality music, and I fancy much more
+  // Rock in the Casbah, a summer festival in Sanremo's casbah.)
+  const std::string sanremo{"Perché Sanremo è Sanremo 😇"};
+  nlohmann::json json;
+  json[sanremo] = sanremo;
+  mk_unique_event ev{mk_event_create_(json)};
+  REQUIRE(ev != nullptr);
+  auto seriop = mk_event_serialization(ev.get());
+  REQUIRE(seriop != nullptr);
+  auto serios = std::string{seriop};
+  auto ex = R"({"Perch\u00e9 Sanremo \u00e8 Sanremo \ud83d\ude07":"Perch\u00e9 Sanremo \u00e8 Sanremo \ud83d\ude07"})";
+  REQUIRE(serios == ex);
+}
