@@ -16,7 +16,7 @@
 #include <cassert>
 #include <new>
 #include <memory>
-#include <limits.h>
+#include <climits>
 #include <type_traits>
 
 extern "C" {

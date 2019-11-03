@@ -49,7 +49,7 @@ void mk_traceroute_android_unused() {}
 #include <linux/errqueue.h>
 #include <sys/uio.h>
 
-#include <string.h>
+#include <cstring>
 #include <unistd.h>
 
 namespace mk {
