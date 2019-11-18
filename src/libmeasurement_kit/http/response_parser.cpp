@@ -5,8 +5,8 @@
 #include "src/libmeasurement_kit/http/response_parser.hpp"
 #include <measurement_kit/internal/vendor/http_parser.h>
 
-#include <stddef.h>
-#include <string.h>
+#include <cstddef>
+#include <cstring>
 
 extern "C" {
 
