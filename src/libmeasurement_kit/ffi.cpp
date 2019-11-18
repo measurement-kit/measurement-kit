@@ -6,8 +6,8 @@
 
 #include <measurement_kit/ffi.h>
 
-#include <limits.h>
-#include <string.h>
+#include <climits>
+#include <cstring>
 
 #include <exception>
 #include <string>
