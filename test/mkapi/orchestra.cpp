@@ -25,7 +25,7 @@ TEST_CASE("mkapi_orchestra_client works") {
   mkapi_orchestra_client_set_probe_family(client.get(), "xxx-zzz");
   mkapi_orchestra_client_set_probe_timezone(client.get(), "Europe/Rome");
   mkapi_orchestra_client_set_registry_url(
-      client.get(), "https://registry.proteus.test.ooni.io");
+      client.get(), "https://ps-test.ooni.io");
   mkapi_orchestra_client_set_secrets_file(client.get(), ".orchestra.json");
   mkapi_orchestra_client_set_software_name(client.get(), "dummy");
   mkapi_orchestra_client_set_software_version(client.get(), "0.1.0");
