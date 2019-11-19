@@ -93,7 +93,7 @@ TEST_CASE("the system resolver is able to resolve an ipv4 address") {
 #ifndef _WIN32
 TEST_CASE("the system resolver is able to resolve an ipv6 address") {
     run_system_resolver(
-        "IN", "AAAA", "ooni.torproject.org", [](Error e, SharedPtr<Message> message) {
+        "IN", "AAAA", "www.google.com", [](Error e, SharedPtr<Message> message) {
             REQUIRE(!e);
             REQUIRE(message->answers.size() > 0);
             auto found = false;
