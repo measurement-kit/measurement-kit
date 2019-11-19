@@ -370,7 +370,7 @@ TEST_CASE("The libevent resolver works as expected") {
     });
 
     reactor->run_with_initial_event([=]() {
-        query("IN", "AAAA", "ooni.torproject.org",
+        query("IN", "AAAA", "www.google.com",
               [=](Error e, SharedPtr<Message> message) {
                   REQUIRE(!e);
                   REQUIRE(message->error_code == DNS_ERR_NONE);

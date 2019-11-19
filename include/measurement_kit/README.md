@@ -173,7 +173,7 @@ The nettest task settings object is a JSON like:
     "ignore_open_report_error": true,
     "max_runtime": -1,
     "mlabns/address_family": "ipv4",
-    "mlabns/base_url": "https://mlab-ns.appspot.com",
+    "mlabns/base_url": "https://locate.measurementlab.net/",
     "mlabns/country": "IT",
     "mlabns/metro": "trn",
     "mlabns/policy": "random",

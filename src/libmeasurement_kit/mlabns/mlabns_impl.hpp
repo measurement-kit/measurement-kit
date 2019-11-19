@@ -89,7 +89,7 @@ void query_impl(std::string tool, Callback<Error, Reply> callback,
         return;
     }
     std::string url = settings.get("mlabns/base_url", std::string{
-                                       "https://mlab-ns.appspot.com/"
+                                       "https://locate.measurementlab.net/",
                                    });
     if (!regexp::lowercase_letters_only(tool)) {
         callback(InvalidToolNameError(), Reply());
