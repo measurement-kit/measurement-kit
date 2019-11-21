@@ -11,13 +11,13 @@
 #include "src/libmeasurement_kit/ooni/bouncer.hpp"
 #include "src/libmeasurement_kit/ooni/utils.hpp"
 #include "src/libmeasurement_kit/nettests/utils.hpp"
-#include "src/libmeasurement_kit/vendor/sole.hpp"
 
 #include "src/libmeasurement_kit/report/file_reporter.hpp"
 #include "src/libmeasurement_kit/report/ooni_reporter.hpp"
 
 #include <measurement_kit/internal/vendor/mkiplookup.hpp>
 #include <measurement_kit/internal/vendor/mkmmdb.hpp>
+#include <measurement_kit/internal/vendor/mkuuid4.hpp>
 
 namespace mk {
 namespace nettests {
@@ -101,7 +101,7 @@ void Runnable::run_next_measurement(size_t thread_id, Callback<Error> cb,
         entry["measurement_start_time"] =
             *mk::timestamp(&measurement_start_time);
         entry["test_runtime"] = mk::time_now() - start_time;
-        entry["id"] = mk::sole::uuid4().str();
+        entry["id"] = mk::uuid4::gen();
 
         // Until we have support for passing options, leave it empty
         entry["options"] = nlohmann::json::array();
