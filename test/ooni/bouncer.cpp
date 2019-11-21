@@ -152,7 +152,9 @@ TEST_CASE("post_net_tests() works") {
                     };
                     auto check_https = [](std::string s) {
                         REQUIRE(s.substr(0, 8) == "https://");
-                        REQUIRE(s.find("ooni.io") != std::string::npos);
+                        // User to be `ooni.io` but now we also have cases
+                        // in which we're returned `ooni.nu`.
+                        REQUIRE(s.find("ooni.") != std::string::npos);
                     };
                     auto check_cf = [](std::string s) {
                         REQUIRE(s.substr(0, 8) == "https://");

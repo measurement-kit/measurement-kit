@@ -56,11 +56,11 @@
 
 #include "src/libmeasurement_kit/common/mock.hpp"
 #include "src/libmeasurement_kit/common/utils.hpp"
-#include "src/libmeasurement_kit/vendor/sole.hpp"
 #include "src/libmeasurement_kit/mlabns/mlabns.hpp"
 #include "src/libmeasurement_kit/http/http.hpp"
 
 #include <measurement_kit/common/nlohmann/json.hpp>
+#include <measurement_kit/internal/vendor/mkuuid4.hpp>
 
 #define DASH_INITIAL_RATE 3000
 #define DASH_MAX_ITERATIONS 15
@@ -376,7 +376,7 @@ void run_impl(std::string url, std::string auth_token, std::string real_address,
     // a specific UUID has been removed and we generate a random new UUID
     // each time we run a new DASH test.
     //
-    ctx->uuid = mk::sole::uuid4().str();
+    ctx->uuid = mk::uuid4::gen();
     ctx->server_url = url;
     settings["http/url"] = url;
     settings["http/method"] = "GET";
