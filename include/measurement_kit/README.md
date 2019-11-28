@@ -669,8 +669,9 @@ like:
 }
 ```
 
-Where `percentage` is the percentage of completion of the nettest, and `message`
-indicates the operation that the nettest just completed.
+Where `percentage` is the percentage of completion of the nettest, as a real
+number between 0.0 and 1.0, and `message` indicates the operation that the
+nettest just completed.
 
 - `"status.queued"`: (object) Indicates that the nettest has been accepted. In
 case there are already running nettests, as mentioned above, they will be
