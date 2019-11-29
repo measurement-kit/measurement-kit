@@ -13,13 +13,10 @@ namespace collector {
 /*
     To submit a file report, use one of the following collectors. By default
     the library uses the `production` collector.
-
-    The testing collector has been discontinued as of 2019-04-30, hence we
-    are now using the production collector as agreed with @hellais.
 */
 
 #define MK_OONI_PRODUCTION_COLLECTOR_URL "https://b.collector.ooni.io"
-#define MK_OONI_TESTING_COLLECTOR_URL "https://b.collector.ooni.io"
+#define MK_OONI_TESTING_COLLECTOR_URL "https://ps-test.ooni.io"
 
 std::string production_collector_url();
 std::string testing_collector_url();

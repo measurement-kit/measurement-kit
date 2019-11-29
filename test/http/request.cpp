@@ -117,7 +117,7 @@ TEST_CASE("http::request works as expected") {
     reactor->run_with_initial_event([=]() {
         request(
             {
-                {"http/url", "http://a.http.th.ooni.io/"},
+                {"http/url", "http://www.google.com/humans.txt"},
                 {"http/method", "GET"},
                 {"http/http_version", "HTTP/1.1"},
             },
@@ -129,7 +129,7 @@ TEST_CASE("http::request works as expected") {
                 REQUIRE(!error);
                 REQUIRE(response->status_code == 200);
                 REQUIRE(md5(response->body) ==
-                        "5d2182cb241b5a9aefad8ce584831666");
+                        "58789d6fc04cbf43b2b4e7605044b1ed");
                 reactor->stop();
             }, reactor, Logger::make());
     });
@@ -162,7 +162,7 @@ TEST_CASE("http::request() works as expected over Tor") {
     reactor->run_with_initial_event([=]() {
         request(
             {
-                {"http/url", "http://a.http.th.ooni.io/"},
+                {"http/url", "http://ps-test.ooni.io/"},
                 {"http/method", "GET"},
                 {"http/http_version", "HTTP/1.1"},
                 {"Connection", "close"},
@@ -531,21 +531,21 @@ TEST_CASE("http::request() works as expected using tor_socks_port") {
     reactor->run_with_initial_event([=]() {
         request(
             {
-                {"http/url", "http://a.http.th.ooni.io/"},
-                {"http/method", "POST"},
+                {"http/url", "http://www.google.com/humans.txt"},
+                {"http/method", "GET"},
                 {"http/http_version", "HTTP/1.1"},
                 {"net/tor_socks_port", "9050"},
             },
             {
                 {"Accept", "*/*"},
             },
-            "{\"test-helpers\": [\"dns\"]}",
+            "",
             [=](Error error, SharedPtr<Response> response) {
                 REQUIRE(check_error_after_tor(error));
                 if (!error) {
                     REQUIRE(response->status_code == 200);
                     REQUIRE(md5(response->body) ==
-                            "c0eb138de5f70c3b37566ba88146465d");
+                            "58789d6fc04cbf43b2b4e7605044b1ed");
                 }
                 reactor->stop();
             }, reactor, Logger::make());
