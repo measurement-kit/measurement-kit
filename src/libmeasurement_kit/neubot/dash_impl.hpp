@@ -535,7 +535,7 @@ void negotiate_with_(std::string hostname, SharedPtr<nlohmann::json> entry,
                      SharedPtr<Logger> logger, Callback<Error> cb) {
     logger->info("Negotiating with: %s", hostname.c_str());
     std::stringstream ss;
-    ss << "http://" << hostname << "/";
+    ss << "https://" << hostname << "/";
     std::string url = ss.str();
     settings["http/url"] = url;
     http_request_connect(
