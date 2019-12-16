@@ -94,10 +94,10 @@ AC_DEFUN([MK_AM_OPENSSL], [
                 LDFLAGS="$LDFLAGS -L$withval/lib"
               ],
               [
-	        if test -d /usr/local/Cellar/openssl; then
-		  AC_MSG_WARN([Using the OpenSSL installed via brew...])
-		  mk_openssl_v=`ls /usr/local/Cellar/openssl|tail -n1`
-		  mk_openssl_d="/usr/local/Cellar/openssl/$mk_openssl_v"
+	        if test -d /usr/local/Cellar/openssl@1.1; then
+		  AC_MSG_WARN([Using the OpenSSL v1.1 installed via brew...])
+		  mk_openssl_v=`ls /usr/local/Cellar/openssl@1.1|tail -n1`
+		  mk_openssl_d="/usr/local/Cellar/openssl@1.1/$mk_openssl_v"
 		  CPPFLAGS="$CPPFLAGS -I$mk_openssl_d/include"
 		  LDFLAGS="$LDFLAGS -L$mk_openssl_d/lib"
 		fi
