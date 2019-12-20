@@ -138,7 +138,7 @@ TEST_CASE("http requests template works as expected") {
     SharedPtr<Reactor> reactor = Reactor::make();
     reactor->run_with_initial_event([=]() {
         templates::http_request(
-            entry, {{"http/url", "https://ooni.torproject.org/"},
+            entry, {{"http/url", "https://httpbin.org/"},
                     {"net/ca_bundle_path", "cacert.pem"}}, {}, "",
             [=](Error err, SharedPtr<http::Response>) {
                 REQUIRE(!err);
