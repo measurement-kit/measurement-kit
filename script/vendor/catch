@@ -1,5 +1,5 @@
 #!/bin/sh
 set -ex
-version=v2.9.2
+version=v2.11.0
 curl -fsSLo include/private/catch.hpp                                          \
   https://github.com/catchorg/Catch2/releases/download/$version/catch.hpp
