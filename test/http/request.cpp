@@ -189,7 +189,7 @@ TEST_CASE("http::request correctly receives errors") {
     reactor->run_with_initial_event([=]() {
         request(
             {
-                {"http/url", "http://nexa.polito.it:81/robots.txt"},
+                {"http/url", "http://www.example.com:81/robots.txt"},
                 {"http/method", "GET"},
                 {"http/http_version", "HTTP/1.1"},
                 {"net/timeout", "3.0"},
@@ -213,7 +213,7 @@ TEST_CASE("http::request_recv_response() behaves correctly when EOF "
     SharedPtr<Logger> logger = Logger::make();
     SharedPtr<Reactor> reactor = Reactor::make();
     reactor->run_with_initial_event([&]() {
-        connect("nexa.polito.it", 80,
+        connect("www.example.com", 80,
                 [&](Error err, SharedPtr<Transport> transport) {
                     REQUIRE(!err);
 

@@ -327,7 +327,7 @@ TEST_CASE("net::connect() works with a custom reactor") {
     SharedPtr<Reactor> reactor = Reactor::make();
     auto ok = false;
     reactor->run_with_initial_event([&]() {
-        connect("nexa.polito.it", 22,
+        connect("www.example.com", 80,
                 [&](Error error, SharedPtr<Transport> txp) {
                     if (error) {
                         reactor->stop();
@@ -358,7 +358,7 @@ TEST_CASE("net::connect() can connect to open port") {
 TEST_CASE("net::connect() can connect to ssl port") {
     SharedPtr<Reactor> reactor = Reactor::make();
     reactor->run_with_initial_event([=]() {
-        connect("nexa.polito.it", 443,
+        connect("www.example.com", 443,
                 [=](Error error, SharedPtr<Transport> txp) {
                     REQUIRE(!error);
                     auto resolve_result = txp->dns_result();
@@ -419,7 +419,7 @@ TEST_CASE("net::connect() ssl works when using SNI") {
 TEST_CASE("net::connect() works in case of error") {
     SharedPtr<Reactor> reactor = Reactor::make();
     reactor->run_with_initial_event([=]() {
-        connect("nexa.polito.it", 81,
+        connect("www.example.com", 81,
                 [=](Error error, SharedPtr<Transport> txp) {
                     REQUIRE(error);
                     auto resolve_result = txp->dns_result();

@@ -90,7 +90,7 @@ TEST_CASE("throw error while fails evdns_base_nameserver_sockaddr_add") {
     REQUIRE_THROWS_AS(
         (create_evdns_base<::evdns_base_new, null_evdns_base_nameserver_sockaddr_add,
                            base_free_evdns_base_nameserver_sockaddr_add>(
-            {{"dns/nameserver", "nexa"}}, Reactor::make())),
+            {{"dns/nameserver", "antani"}}, Reactor::make())),
         std::runtime_error);
     REQUIRE(base_free_evdns_base_nameserver_sockaddr_add_flag);
 }
@@ -98,7 +98,7 @@ TEST_CASE("throw error while fails evdns_base_nameserver_sockaddr_add") {
 TEST_CASE("throw error while fails evdns_base_nameserver_sockaddr_add and base_new") {
     REQUIRE_THROWS_AS((create_evdns_base<null_evdns_base_new,
                                          null_evdns_base_nameserver_sockaddr_add>(
-                          {{"dns/nameserver", "nexa"}}, Reactor::make())),
+                          {{"dns/nameserver", "antani"}}, Reactor::make())),
                       std::bad_alloc);
 }
 
@@ -106,7 +106,7 @@ TEST_CASE("throw error while fails evdns_set_options for attempts") {
     REQUIRE_THROWS_AS(
         (create_evdns_base<::evdns_base_new, ::evdns_base_nameserver_sockaddr_add,
                            base_free_evdns_set_options_attempts>(
-            {{"dns/attempts", "nexa"}}, Reactor::make())),
+            {{"dns/attempts", "antani"}}, Reactor::make())),
         std::runtime_error);
     REQUIRE(base_free_evdns_set_options_attempts_flag);
 }
@@ -115,7 +115,7 @@ TEST_CASE("throw error while fails evdns_set_options for timeout") {
     REQUIRE_THROWS_AS(
         (create_evdns_base<::evdns_base_new, ::evdns_base_nameserver_sockaddr_add,
                            base_free_evdns_set_options_timeout>(
-            {{"dns/attempts", "nexa"}}, Reactor::make())),
+            {{"dns/attempts", "antani"}}, Reactor::make())),
         std::runtime_error);
     REQUIRE(base_free_evdns_set_options_timeout_flag);
 }
@@ -345,11 +345,11 @@ TEST_CASE("The libevent resolver works as expected") {
 
     reactor->run_with_initial_event([=]() {
         query(
-            "IN", "REVERSE_A", "130.192.16.172", [=](Error e, SharedPtr<Message> message) {
+            "IN", "REVERSE_A", "8.8.8.8", [=](Error e, SharedPtr<Message> message) {
                 REQUIRE(!e);
                 REQUIRE(message->error_code == DNS_ERR_NONE);
                 REQUIRE(message->answers.size() == 1);
-                REQUIRE(message->answers[0].hostname == "server-nexa.polito.it");
+                REQUIRE(message->answers[0].hostname == "dns.google");
                 REQUIRE(message->rtt > 0.0);
                 REQUIRE(message->answers[0].ttl > 0);
                 reactor->stop();
@@ -357,12 +357,12 @@ TEST_CASE("The libevent resolver works as expected") {
     });
 
     reactor->run_with_initial_event([=]() {
-        query("IN", "PTR", "172.16.192.130.in-addr.arpa.", [=](Error e,
-                                                             SharedPtr<Message> message) {
+        query("IN", "PTR", "8.8.8.8.in-addr.arpa.", [=](Error e,
+                                                        SharedPtr<Message> message) {
             REQUIRE(!e);
             REQUIRE(message->error_code == DNS_ERR_NONE);
             REQUIRE(message->answers.size() == 1);
-            REQUIRE(message->answers[0].hostname == "server-nexa.polito.it");
+            REQUIRE(message->answers[0].hostname == "dns.google");
             REQUIRE(message->rtt > 0.0);
             REQUIRE(message->answers[0].ttl > 0);
             reactor->stop();

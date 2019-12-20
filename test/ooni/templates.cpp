@@ -18,11 +18,11 @@ TEST_CASE("dns query template works as expected") {
     reactor->run_with_initial_event([=]() {
         SharedPtr<nlohmann::json> entry(new nlohmann::json);
         templates::dns_query(
-            entry, "A", "IN", "nexa.polito.it", "8.8.8.8:53",
+            entry, "A", "IN", "dns.google", "8.8.8.8:53",
             [=](Error err, SharedPtr<dns::Message>) {
                 REQUIRE(!err);
                 templates::dns_query(
-                    entry, "A", "IN", "nexa.polito.it", "8.8.8.1:53",
+                    entry, "A", "IN", "dns.google", "8.8.8.1:53",
                     [=](Error err, SharedPtr<dns::Message>) {
                         REQUIRE(!!err);
                         nlohmann::json answers;
@@ -41,11 +41,17 @@ TEST_CASE("dns query template works as expected") {
                         REQUIRE((resolver_port == 53));
                         REQUIRE((query["failure"] == nullptr));
                         REQUIRE((query["query_type"] == "A"));
-                        REQUIRE((query["hostname"] == "nexa.polito.it"));
+                        REQUIRE((query["hostname"] == "dns.google"));
                         answers = query["answers"];
                         REQUIRE(answers.is_array());
                         REQUIRE((answers[0]["ttl"].is_number()));
-                        REQUIRE((answers[0]["ipv4"] == "130.192.16.171"));
+                        auto found = false;
+                        for (auto &answer : answers) {
+                          if ((found = (answer["ipv4"] == "8.8.8.8")) == true) {
+                            break;
+                          }
+                        }
+                        REQUIRE(found);
                         REQUIRE((answers[0]["answer_type"] == "A"));
                         /* Second query and response (should be error) */
                         query = queries[1];
@@ -54,7 +60,7 @@ TEST_CASE("dns query template works as expected") {
                         REQUIRE((resolver_port == 53));
                         REQUIRE((query["failure"] != nullptr));
                         REQUIRE((query["query_type"] == "A"));
-                        REQUIRE((query["hostname"] == "nexa.polito.it"));
+                        REQUIRE((query["hostname"] == "dns.google"));
                         answers = query["answers"];
                         REQUIRE(answers.is_array());
                         reactor->stop();
@@ -138,7 +144,7 @@ TEST_CASE("http requests template works as expected") {
     SharedPtr<Reactor> reactor = Reactor::make();
     reactor->run_with_initial_event([=]() {
         templates::http_request(
-            entry, {{"http/url", "https://ooni.torproject.org/"},
+            entry, {{"http/url", "https://httpbin.org/"},
                     {"net/ca_bundle_path", "cacert.pem"}}, {}, "",
             [=](Error err, SharedPtr<http::Response>) {
                 REQUIRE(!err);
