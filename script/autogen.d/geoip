@@ -3,17 +3,17 @@ set -e
 
 autogen_get_geoip() {
     echo "* Fetching geoip databases"
-    base=https://geolite.maxmind.com/download/geoip/database
+    echo ""
+    echo "WARNING: this geoip database version is old! Make sure you"
+    echo "download an up-to-date version in production"
+    echo ""
+    base=https://github.com/ooni/probe-assets/releases/download/20191226162429
     if [ ! -f "country.mmdb" ]; then
-        curl -fsSLO $base/GeoLite2-Country.tar.gz
-        tar -xf GeoLite2-Country.tar.gz
-        mv GeoLite2-Country_20??????/GeoLite2-Country.mmdb country.mmdb
-        rm -rf GeoLite2-Country_20??????
+        curl -fsSLO $base/country.mmdb.gz
+        gunzip country.mmdb.gz
     fi
     if [ ! -f "asn.mmdb" ]; then
-        curl -fsSLO $base/GeoLite2-ASN.tar.gz
-        tar -xf GeoLite2-ASN.tar.gz
-        mv GeoLite2-ASN_20??????/GeoLite2-ASN.mmdb asn.mmdb
-        rm -rf GeoLite2-ASN_20??????
+        curl -fsSLO $base/asn.mmdb.gz
+        gunzip asn.mmdb.gz
     fi
 }

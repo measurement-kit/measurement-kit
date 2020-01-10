@@ -1,4 +1,4 @@
-AC_INIT(measurement_kit, 0.10.8, bassosimone@gmail.com)
+AC_INIT(measurement_kit, 0.10.9, bassosimone@gmail.com)
 
 AC_CONFIG_SRCDIR([Makefile.am])
 AC_CONFIG_MACRO_DIR([m4])
