@@ -602,6 +602,18 @@ void task_run_legacy(Task *task, TaskImpl *pimpl, nlohmann::json &settings) {
                         }
                         break;
                     }
+                    if (key == "backend") {
+                        found = true;
+                        if (!value.is_string()) {
+                            std::stringstream ss;
+                            ss << "Found " << key << " option which has the "
+                               << "wrong type (fyi: it should be a "
+                               << "string)";
+                            emit_settings_warning(task, ss.str().data());
+                            // FALLTHROUGH
+                        }
+                        break;
+                    }
                     if (key == "all_endpoints") {
                         found = true;
                         if (!value.is_boolean()) {
