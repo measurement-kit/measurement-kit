@@ -233,7 +233,7 @@ static void tcp_many(host_to_ips_t host_to_ips, SharedPtr<nlohmann::json> entry,
             } else {
                 logger->info("tcp success to %s:%d", ip.c_str(), port);
                 result["status"]["success"] = true;
-                result["status"]["failure"] = false;
+                result["status"]["failure"] = nullptr;
                 if (this_ip_consistent) {
                     logger->info("removing %s from blocked_hostnames",
                             hostname.c_str());
