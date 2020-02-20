@@ -265,14 +265,27 @@ static void tcp_many(host_to_ips_t host_to_ips, SharedPtr<nlohmann::json> entry,
         bool this_host_consistent = false;
         for (auto const& ip : hostname_ipv.second) {
             bool this_ip_consistent;
+            //
+            // TODO(bassosimone): this code is broken. We cannot rely onto the
+            // list of CIDRs anymore. We are disabling this checking code as
+            // a temporary fix for the issue. The proper tacking issue is:
+            //
+            //     https://github.com/ooni/probe-engine/issues/341
+            //
+            // When we have a better fix we shall delete this comment.
+            //
+#ifdef BUG_341_FIXED_
             if (ip_in_nets(ip, WHATSAPP_NETS)) {
                 logger->info("%s seems to belong to Whatsapp", ip.c_str());
+#endif
                 this_host_consistent = true;
                 this_ip_consistent = true;
+#ifdef BUG_341_FIXED_
             } else {
                 logger->info("%s seems to NOT belong to Whatsapp", ip.c_str());
                 this_ip_consistent = false;
             }
+#endif
             // XXX hardcoded
             std::vector<int> ports{443, 5222};
             for (auto const &port : ports) {
@@ -314,7 +327,7 @@ static void dns_many(std::vector<std::string> hostnames, SharedPtr<nlohmann::jso
                     if (answer.ipv4 != "") {
                         logger->info("(1) %s ipv4: %s", hostname.c_str(),
                                 answer.ipv4.c_str());
-						this_ips.push_back(answer.ipv4);
+                        this_ips.push_back(answer.ipv4);
                     } else if (answer.hostname != "") {
                         logger->info("(2) %s hostname: %s", hostname.c_str(),
                                 answer.hostname.c_str());

@@ -10,7 +10,7 @@ namespace nettests {
 
 WhatsappRunnable::WhatsappRunnable() noexcept {
     test_name = "whatsapp";
-    test_version = "0.6.1";
+    test_version = "0.7.0";
     needs_input = false;
 }
 
