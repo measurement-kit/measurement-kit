@@ -388,6 +388,8 @@ TEST_CASE("The libevent resolver works as expected") {
               }, {{"dns/engine", "libevent"}}, reactor, logger);
     });
 
+    // Flaky test. See https://github.com/measurement-kit/measurement-kit/issues/1916
+    /*
     reactor->run_with_initial_event([=]() {
         query("IN", "REVERSE_AAAA", "2a01:4f8:172:1b46::abba:5:1",
               [=](Error e, SharedPtr<Message> message) {
@@ -414,4 +416,5 @@ TEST_CASE("The libevent resolver works as expected") {
                   reactor->stop();
               }, {{"dns/engine", "libevent"}}, reactor, logger);
     });
+    */
 }
