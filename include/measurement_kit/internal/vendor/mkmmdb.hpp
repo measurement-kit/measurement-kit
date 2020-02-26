@@ -241,7 +241,7 @@ bool Handle::Impl::finish_lookup_cc(
   MKMMDB_ABORT_IF_NULLPTR(entry);
   MMDB_entry_data_s data{};
   auto mmdb_error = MMDB_get_value(
-      entry, &data, "registered_country", "iso_code", nullptr);
+      entry, &data, "country", "iso_code", nullptr);
   auto ok = MMDB_get_value_check(
       mmdb_error, data, MMDB_DATA_TYPE_UTF8_STRING, logs);
   MKMMDB_HOOK(finish_lookup_cc_check, ok);
