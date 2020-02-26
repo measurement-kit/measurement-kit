@@ -42,23 +42,32 @@ AC_DEFUN([MK_AM_LIBEVENT], [
 ])
 
 AC_DEFUN([MK_AM_LIBCURL], [
+  mk_not_needed=0
   AC_ARG_WITH([libcurl],
               [AS_HELP_STRING([--with-libcurl],
                 [cURL library @<:@default=check@:>@])
               ],
               [
-                CPPFLAGS="$CPPFLAGS -I$withval/include"
-                LDFLAGS="$LDFLAGS -L$withval/lib"
+                if test "$withval" != "no"; then
+                  CPPFLAGS="$CPPFLAGS -I$withval/include"
+                  LDFLAGS="$LDFLAGS -L$withval/lib"
+                else
+                  mk_not_needed=1
+                fi
               ],
               [])
-  mk_not_found=""
-  AC_CHECK_HEADERS(curl/curl.h, [], [mk_not_found=1])
-  AC_CHECK_LIB(curl, curl_easy_init, [], [mk_not_found=1])
-  if test "$mk_not_found" = "1"; then
-    AC_MSG_WARN([Failed to find dependency: libcurl])
-    echo "    - to install on Debian: sudo apt-get install libcurl4-openssl-dev"
-    echo "    - to install on OSX: brew install curl"
-    AC_MSG_ERROR([Please, install libcurl and run configure again])
+  if test $mk_not_needed -eq 0; then
+    mk_not_found=""
+    AC_CHECK_HEADERS(curl/curl.h, [], [mk_not_found=1])
+    AC_CHECK_LIB(curl, curl_easy_init, [], [mk_not_found=1])
+    if test "$mk_not_found" = "1"; then
+      AC_MSG_WARN([Failed to find dependency: libcurl])
+      echo "    - to install on Debian: sudo apt-get install libcurl4-openssl-dev"
+      echo "    - to install on OSX: brew install curl"
+      AC_MSG_ERROR([Please, install libcurl and run configure again])
+    fi
+  else
+    CPPFLAGS="$CPPFLAGS -DMK_WITHOUT_CURL"
   fi
 ])
 
@@ -94,14 +103,14 @@ AC_DEFUN([MK_AM_OPENSSL], [
                 LDFLAGS="$LDFLAGS -L$withval/lib"
               ],
               [
-	        if test -d /usr/local/Cellar/openssl@1.1; then
-		  AC_MSG_WARN([Using the OpenSSL v1.1 installed via brew...])
-		  mk_openssl_v=`ls /usr/local/Cellar/openssl@1.1|tail -n1`
-		  mk_openssl_d="/usr/local/Cellar/openssl@1.1/$mk_openssl_v"
-		  CPPFLAGS="$CPPFLAGS -I$mk_openssl_d/include"
-		  LDFLAGS="$LDFLAGS -L$mk_openssl_d/lib"
-		fi
-	      ])
+                if test -d /usr/local/Cellar/openssl@1.1; then
+                  AC_MSG_WARN([Using the OpenSSL v1.1 installed via brew...])
+                  mk_openssl_v=`ls /usr/local/Cellar/openssl@1.1|tail -n1`
+                  mk_openssl_d="/usr/local/Cellar/openssl@1.1/$mk_openssl_v"
+                  CPPFLAGS="$CPPFLAGS -I$mk_openssl_d/include"
+                  LDFLAGS="$LDFLAGS -L$mk_openssl_d/lib"
+                fi
+              ])
 
   mk_not_found=""
   AC_CHECK_HEADERS(openssl/ssl.h, [], [mk_not_found=1])

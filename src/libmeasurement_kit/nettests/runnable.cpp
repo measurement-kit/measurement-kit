@@ -15,9 +15,12 @@
 #include "src/libmeasurement_kit/report/file_reporter.hpp"
 #include "src/libmeasurement_kit/report/ooni_reporter.hpp"
 
-#include <measurement_kit/internal/vendor/mkiplookup.hpp>
 #include <measurement_kit/internal/vendor/mkmmdb.hpp>
 #include <measurement_kit/internal/vendor/mkuuid4.hpp>
+
+#ifndef MK_WITHOUT_CURL
+#include <measurement_kit/internal/vendor/mkiplookup.hpp>
+#endif
 
 namespace mk {
 namespace nettests {
@@ -207,6 +210,7 @@ void Runnable::geoip_lookup(Callback<> cb) {
     bool no_geoip = options.get("no_geoip", false);
 
     std::string real_probe_ip = options.get("probe_ip", default_probe_ip);
+#ifndef MK_WITHOUT_CURL
     if (real_probe_ip == default_probe_ip && no_geoip == false) {
         double timeout = options.get("net/timeout", 10.0);
         std::string ca = options.get("net/ca_bundle_path", std::string{});
@@ -225,6 +229,7 @@ void Runnable::geoip_lookup(Callback<> cb) {
             logger->logsv(MK_LOG_DEBUG, res.logs);
         }
     }
+#endif
 
     std::string real_probe_cc = options.get("probe_cc", default_probe_cc);
     if (real_probe_cc == default_probe_cc && no_geoip == false) {
