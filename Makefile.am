@@ -13,7 +13,6 @@ measurement_kit_SOURCES       = # Empty
 bin_PROGRAMS = measurement_kit
 measurement_kit_LDADD = libmeasurement_kit.la
 
-noinst_LTLIBRARIES       = libtest_main.la
 libtest_main_la_CPPFLAGS = -DCATCH_CONFIG_MAIN
 libtest_main_la_SOURCES  = test/main.cpp
 
