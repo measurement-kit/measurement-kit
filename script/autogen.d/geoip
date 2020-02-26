@@ -4,10 +4,10 @@ set -e
 autogen_get_geoip() {
     echo "* Fetching geoip databases"
     echo ""
-    echo "WARNING: this geoip database version is old! Make sure you"
+    echo "WARNING: this geoip ASN database is old! Make sure you"
     echo "download an up-to-date version in production"
     echo ""
-    base=https://github.com/ooni/probe-assets/releases/download/20191226162429
+    base=https://github.com/ooni/probe-assets/releases/download/20200225143707
     if [ ! -f "country.mmdb" ]; then
         curl -fsSLO $base/country.mmdb.gz
         gunzip country.mmdb.gz
