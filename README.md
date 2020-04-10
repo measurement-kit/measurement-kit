@@ -5,10 +5,10 @@
 As of 2020-03-15, Measurement Kit is deprecated. This date has been chosen
 arbitrarily such that we could write:
 
-> Friends, OONItarians, developers, lend me your ears;
-> I come to bury Measurement Kit, not to praise it.
-> The bugs that software have live after them;
-> The good is oft interred with their remote branches;
+    Friends, OONItarians, developers, lend me your ears;
+    I come to bury Measurement Kit, not to praise it.
+    The bugs that software have live after them;
+    The good is oft interred with their remote branches;
 
 The rewrite of Measurement Kit in Go has been going on for quite some time now
 as [ooni/probe-engine](https://github.com/ooni/probe-engine). As part of this
