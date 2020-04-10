@@ -10,6 +10,10 @@ arbitrarily such that we could write:
     The bugs that software have live after them;
     The good is oft interred with their remote branches;
 
+And, of course, some good, old [piece of art](
+https://it.wikipedia.org/wiki/Cesaricidio#/media/File:Vincenzo_Camuccini_-_La_morte_di_Cesare.jpg
+) is also in order:
+
 ![cesaricidio](doc/cesaricidio.jpg
   "E se Cesare vuol fare anche il padre si abitui ai pugnali e a dormir male")
 
@@ -19,13 +23,14 @@ rewrite, we considered all the use cases addressed by Measurement Kit, as docume
 by [issue #1913](https://github.com/measurement-kit/measurement-kit/issues/1913).
 
 We will most likely never release v0.11.0 of Measurement Kit. We will keep
-maintaining the 0.10.x version until 2021-03-15. In the following, we'll discuss
+maintaining the 0.10.x version until 2021-03-14 (which is [another
+interesting date](https://en.wikipedia.org/wiki/Pi_Day)). In the following, we'll discuss
 what options you have for replacing Measurement Kit in your use case. The
 current README reflects the situation "here and now". We are still working to
 provide a smooth upgrade path. Please, let us know if the upgrade path we have
 designed is troubling you by voting/contributing to the issues indicated below.
 
-The content of the old README.md is still available as [OREADME.md](OREADME.md).
+(The content of the old README.md is still available as [OREADME.md](OREADME.md).)
 
 ## Changes in the settings JSON
 
@@ -35,7 +40,7 @@ https://github.com/measurement-kit/measurement-kit/tree/v0.10.11/include/measure
 There should be no differences in the emitted events. There are however some
 differences in the settings as discussed below.
 
-You should now add the following the settings JSON:
+You should now add the following three keys to the settings JSON:
 
 ```JSON
 {
@@ -50,16 +55,15 @@ GeoIP databases; `state_dir` is the directory where to store the
 authentication information used with OONI orchestra; `temp_dir`
 is the directory where to store temporary files. If these three
 keys are not present, the test will fail during the startup
-phase (i.e. it will not throw, but rather you will see a very
-short test with explanatory errors in the logs).
+phase (i.e. it will run for a very short time and you will see
+a bunch of `failure.startup` events emitted).
 
 Also, the Go code does recognize all the settings recognized by
-Measurement Kit, but some unfrequently used settings are not implemented
-yet. If are by chance using settings that it does not implement, it
-will also fail during the startup phase and tell you with log
-messages. If a not implemented setting is causing you issues, let us
-know by [voting in the corresponding bug tracking issue](
-https://github.com/ooni/probe-engine/issues/494).
+Measurement Kit, but we have only implemented the settings required
+by OONI. All the other settings, when used, cause a failure during
+the experiment startup phase. If a not implemented setting is causing
+you issues, let us know by [voting in the corresponding bug tracking
+issue](https://github.com/ooni/probe-engine/issues/494).
 
 ## Android
 
@@ -75,8 +79,45 @@ with
   implementation "org.ooni:oonimkall:$version"
 ```
 
-The `io.ooni.mk.MKAsyncTask` class has been replaced by `oonimkall.Task`. The
-following diff shows how you should be upgrading your code:
+(The new package is called oonimkall because it's a OONI probe-engine based
+implementation of the `mkall` API for iOS. In turn, `mkall` means that we
+are bundling together all the MK APIs (i.e. the API for running experiments
+and all the ancillary APIs). For historical reasons `android-libs` was
+named before we defined the concept of `mkall` and was never renamed.)
+
+The following differences apply between `android-libs` and `oonimkall`:
+
+1. the import path is `oonimkall` and you can use it directly as a scope
+for the classes, rather than doing `import oonimkall.Foo`;
+
+2. the `MKAsyncTask` class is replaced by `oonimkall.Task` and the
+`MKAsyncTask.start` factory is replaced by `oonimkall.Oonimkall.startTask`;
+
+3. the `MKGeoIPLookupResults` and `MKGeoIPLookupTask` classes are
+replaced by `oonimkall.GeoLookupResults` and `oonimkall.GeoLookupTask`;
+
+4. the `MKOrchestraResults` and `MKOrchestraTask` classes cannot be
+replaced, because [it seems we are moving away from the orchestra model
+and, in going forward, we will only use orchestra internally inside of
+probe-engine to authenticate probes when they fetch input](
+https://github.com/ooni/probe-engine/issues/14#issuecomment-599547695);
+
+5. the `MKReporterResults` and `MKReporterTask` classes are replaced
+by `oonimkall.CollectorResults` and `oonimkall.CollectorTask`;
+
+6. the `MKResourcesManager` class cannot be replaced, because the new
+code manages resources differently, by downloading them when needed
+into the `assets_dir` directory mentioned above;
+
+7. the `MKVersion` class cannot be replaced because version pinning in
+Go makes it much simpler to know which version of what software we compile;
+
+8. `oonimkall` throws `Exception` in much more cases than the code in
+`android-libs` that instead was using `RuntimeException` (using the latter
+was actually an _anti-pattern_ and we are fixing it with the new code).
+
+The following diff shows how to update code that runs an experiment, which
+is probably the most common use case of `android-libs`:
 
 ```diff
 --- MK.java	2020-04-10 11:54:53.973521643 +0200
@@ -97,15 +138,9 @@ following diff shows how you should be upgrading your code:
 ```
 
 The most striking difference is that the function to start a task
-will explicitly throw `Exception` on failure, where the old code
-would instead throw `RuntimeException`. The definition of settings has
-only slightly changed from Measurement Kit, as discussed above.
-
-We currently do not provide drop-in replacements for other functionality
-implemented by measurement-kit/android-libs, e.g., accessing the GeoIP
-lookup functionality, submitting reports. We will most likely do that since
-we need that in OONI for Android. We should be able to provide drop-in
-replacements, except perhaps some minor details.
+will explicitly throw `Exception` on failure. The old code
+would instead throw `RuntimeException`, as mentioned above. The
+required settings have slightly changed, as discussed above.
 
 ## iOS
 
@@ -120,11 +155,12 @@ with
 
 ```ruby
     pod 'oonimkall', :git => 'https://github.com/ooni/probe-engine',
-                     :tag => '$version'
+                     :branch => 'mobile-staging'
 ```
 
-The `MKAsyncTask` class has been replaced by `OonimkallTask`. The
-following diff should how you should be upgrading your code:
+The changes are similar to the ones described above for Android except
+that the `oonimkall.` prefix is `Oonimkall` for iOS. The following diff
+shows how you should be upgrading your `MKAsyncTask` code:
 
 ```diff
 --- MK.m	2020-04-10 12:06:14.252573662 +0200
@@ -153,15 +189,13 @@ following diff should how you should be upgrading your code:
 ```
 
 The most striking differences are the following. First, the function
-that starts a measurement task now fails explicitly (e.g., if the settings
+that starts a task now fails explicitly (e.g., if the settings
 are not valid JSON). Second, the new code takes in input and emits in
-output serialized JSONs rather than `NSDictionary *`. The definition of
-settings has only slighly changed from MK, as described above.
-
-We currently do not provide drop-in replacements for other functionality
-implemented by measurement-kit/mkall-ios, e.g., accessing the GeoIP
-lookup functionality, submitting reports. We will most likely do that since
-we need that in OONI for iOS.
+output serialized JSONs rather than `NSDictionary *`. You are welcome to
+adapt [code from MKAsyncTask](
+https://github.com/measurement-kit/mkall-ios/blob/v0.8.0/mkall/MKAsyncTask.mm)
+to reimplement the previous behaviour. Also, remember that
+some extra mandatory settings are required, as described above.
 
 ## Command Line
 
@@ -176,16 +210,18 @@ datetime when the experiment was started;
 
 - `miniooni` uses the `-i, --input <input>` flag to uniformly provide input for
 every experiment, while in `measurement_kit` different experiments use
-different command line flags _after_ the experiment name;
+different command line flags _after_ the experiment name (e.g., the `-u <URL>`
+flag is used by MK's Web Connectivity);
 
-- `miniooni` allows you to specify a proxy with `-P, --proxy <URL>` that
-will be used for interacting with OONI services, but no such option
-exists in `measurement_kit`;
+- `miniooni` allows you to specify a proxy (e.g. Tor, Psiphon) with
+`-P, --proxy <URL>` that will be used for interacting with OONI services,
+but no such option exists in `measurement_kit`;
 
 - `miniooni` does not yet implement `-s, --list` that lists all the
 available experiments;
 
-- `miniooni` does not implement `-l, --logfile <path>`;
+- `miniooni` does not implement `-l, --logfile <path>` but you can use
+output redirection and `tee` to save logs anyway;
 
 - `miniooni` does not implement `--ca-bundle-path <path>`, `--version`,
 `--geoip-country-path <path>`, `--geoip-asn-path <path>`, because
@@ -195,13 +231,12 @@ these resources are now downloaded and managed automatically;
 
 - `miniooni` writes state at `$HOME/.miniooni`.
 
-We automatically build `miniooni` for Windows/amd64, Linux/amd64,
-and macOS/amd64 at every commit. The Linux build is static and does not depend
+We automatically build `miniooni` for windows/amd64, linux/amd64,
+and darwin/amd64 at every commit. The Linux build is static and does not depend
 on any external shared library. You can find the builds by looking into the
 [GitHub actions of probe-engine](https://github.com/ooni/probe-engine/actions)
-and selecting for `cli-windows`, `cli-linux`, or `cli-darwin`. We are open to
-automatically publish such binaries also at every release of probe-engine at
-GitHub. Please, let us know if that is useful in your use case [by upvoting
+and selecting for `cli-windows`, `cli-linux`, or `cli-darwin`. If you want us
+to attach such binaries to every release, please [upvote
 the related issue](https://github.com/ooni/probe-engine/issues/495).
 
 ## Shared Library
@@ -209,10 +244,9 @@ the related issue](https://github.com/ooni/probe-engine/issues/495).
 The [libooniffi](https://github.com/ooni/probe-engine/tree/master/libooniffi)
 package of ooni/probe-engine is a drop-in replacement for the [Measurement
 Kit FFI API](include/measurement_kit). The new API is defined by the
-`libooniffi/ooniffi.h` header. It is ABI compatible with MK's API. The
-only required change is to replace the `mk_` prefix with `ooniffi_`. The
-following diff shows the changes you need to apply in order to run the
-tests using probe-engine:
+`ooniffi.h` header. It is ABI compatible with MK's API. The
+only required change is to replace the `mk_` prefix with `ooniffi_`. This
+diff shows the changes you typically need:
 
 ```diff
 --- MK.c	2020-04-10 12:32:13.582783743 +0200
@@ -246,34 +280,23 @@ tests using probe-engine:
  }
 ```
 
-Of course, you also need to add new variables to the settings
-as documented above. And you may need to deal with some of the
-settings not being supported, also documented above.
+Of course, you also need to take into account the changes to
+the settings documented above.
 
-We are not going to reimplement any other API provided by Measurement
-Kit. Most of the other APIs were marked as private anyway. The only
-meaningful public API we are not reimplementing is [nettests.hpp](
-https://github.com/measurement-kit/measurement-kit/blob/v0.10.11/include/measurement_kit/nettests.hpp).
-This was a deprecated API. But, should you really need to reimplement
-it, then you should vendor the relevant header and mechanically
-replace (1) the header name and (2) the `mk_` prefix with `ooniffi_`
-as shown above. This is enough to adapt `nettests.hpp`.
-
-
-and most of them were private anyway. We are not going to automatically
-publish libooniffi builds. You can generate your own builds with:
+You can generate your own builds with:
 
 ```bash
 # macOS from macOS or Linux from Linux
 go build -v -tags nomk -ldflags='-s -w' -buildmode c-shared -o libooniffi.so ./libooniffi
+rm libooniffi.h  # not needed
+cp libooniffi/ooniffi.h .  # use this header
 
 # Windows from Linux or macOS with mingw-w64 installed
 export CGO_ENABLED=1 GOOS=windows GOARCH=amd64 CC=x86_64-w64-mingw32-gcc
 go build -v -tags nomk -ldflags='-s -w' -buildmode c-shared -o libooniffi.dll ./libooniffi
+rm libooniffi.h  # not needed
+cp libooniffi/ooniffi.h .  # use this header
 ```
-
-Remember also to grab the corresponding header `./libooniffi/ooniffi.h`. Do
-not use the autogenerated `./libooniffi.h` since it's incomplete.
 
 Let us know if you want us to automatically publish `libooniffi` dynamic
 libraries [by upvoting the related issue](
