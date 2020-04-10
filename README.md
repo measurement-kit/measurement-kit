@@ -10,6 +10,9 @@ arbitrarily such that we could write:
     The bugs that software have live after them;
     The good is oft interred with their remote branches;
 
+![cesaricidio](doc/cesaricidio.jpg
+  "E se Cesare vuol fare anche il padre si abitui ai pugnali e a dormir male")
+
 The rewrite of Measurement Kit in Go has been going on for quite some time now
 as [ooni/probe-engine](https://github.com/ooni/probe-engine). As part of this
 rewrite, we considered all the use cases addressed by Measurement Kit, as documented
@@ -20,7 +23,7 @@ maintaining the 0.10.x version until 2021-03-15. In the following, we'll discuss
 what options you have for replacing Measurement Kit in your use case. The
 current README reflects the situation "here and now". We are still working to
 provide a smooth upgrade path. Please, let us know if the upgrade path we have
-designed is troubling you by opening an issue in this repository.
+designed is troubling you by voting/contributing to the issues indicated below.
 
 The content of the old README.md is still available as [OREADME.md](OREADME.md).
 
@@ -55,7 +58,8 @@ Measurement Kit, but some unfrequently used settings are not implemented
 yet. If are by chance using settings that it does not implement, it
 will also fail during the startup phase and tell you with log
 messages. If a not implemented setting is causing you issues, let us
-know by opening a bug in this repository.
+know by [voting in the corresponding bug tracking issue](
+https://github.com/ooni/probe-engine/issues/494).
 
 ## Android
 
@@ -162,21 +166,53 @@ we need that in OONI for iOS.
 ## Command Line
 
 The [miniooni](https://github.com/ooni/probe-engine#building-miniooni) binary
-is a drop-in interface for the `measurement_kit` binary you could build from
-this repository. We automatically build `miniooni` for Windows/amd64, Linux/amd64,
+mostly has the same CLI of the `measurement_kit` binary you could build from
+this repository. The following list describes the main differences between
+the two command line interfaces:
+
+- `miniooni` by default _appends_ measurements to `report.jsonl` while
+`measurement_kit` uses a file name including the experiment name and the
+datetime when the experiment was started;
+
+- `miniooni` uses the `-i, --input <input>` flag to uniformly provide input for
+every experiment, while in `measurement_kit` different experiments use
+different command line flags _after_ the experiment name;
+
+- `miniooni` allows you to specify a proxy with `-P, --proxy <URL>` that
+will be used for interacting with OONI services, but no such option
+exists in `measurement_kit`;
+
+- `miniooni` does not yet implement `-s, --list` that lists all the
+available experiments;
+
+- `miniooni` does not implement `-l, --logfile <path>`;
+
+- `miniooni` does not implement `--ca-bundle-path <path>`, `--version`,
+`--geoip-country-path <path>`, `--geoip-asn-path <path>`, because
+these resources are now downloaded and managed automatically;
+
+- `miniooni` does not implement `--no-resolver-lookup`;
+
+- `miniooni` writes state at `$HOME/.miniooni`.
+
+We automatically build `miniooni` for Windows/amd64, Linux/amd64,
 and macOS/amd64 at every commit. The Linux build is static and does not depend
 on any external shared library. You can find the builds by looking into the
 [GitHub actions of probe-engine](https://github.com/ooni/probe-engine/actions)
 and selecting for `cli-windows`, `cli-linux`, or `cli-darwin`. We are open to
 automatically publish such binaries also at every release of probe-engine at
-GitHub. Please, let us know if that is useful in your use case.
+GitHub. Please, let us know if that is useful in your use case [by upvoting
+the related issue](https://github.com/ooni/probe-engine/issues/495).
 
 ## Shared Library
 
 The [libooniffi](https://github.com/ooni/probe-engine/tree/master/libooniffi)
 package of ooni/probe-engine is a drop-in replacement for the [Measurement
-Kit FFI API](include/measurement_kit). The following diff shows the changes you
-need to apply in order to run the tests using probe-engine:
+Kit FFI API](include/measurement_kit). The new API is defined by the
+`libooniffi/ooniffi.h` header. It is ABI compatible with MK's API. The
+only required change is to replace the `mk_` prefix with `ooniffi_`. The
+following diff shows the changes you need to apply in order to run the
+tests using probe-engine:
 
 ```diff
 --- MK.c	2020-04-10 12:32:13.582783743 +0200
@@ -210,13 +246,27 @@ need to apply in order to run the tests using probe-engine:
  }
 ```
 
-We are not going to reimplement other APIs provided by Measurement Kit
+Of course, you also need to add new variables to the settings
+as documented above. And you may need to deal with some of the
+settings not being supported, also documented above.
+
+We are not going to reimplement any other API provided by Measurement
+Kit. Most of the other APIs were marked as private anyway. The only
+meaningful public API we are not reimplementing is [nettests.hpp](
+https://github.com/measurement-kit/measurement-kit/blob/v0.10.11/include/measurement_kit/nettests.hpp).
+This was a deprecated API. But, should you really need to reimplement
+it, then you should vendor the relevant header and mechanically
+replace (1) the header name and (2) the `mk_` prefix with `ooniffi_`
+as shown above. This is enough to adapt `nettests.hpp`.
+
+
 and most of them were private anyway. We are not going to automatically
 publish libooniffi builds. You can generate your own builds with:
 
 ```bash
 # macOS from macOS or Linux from Linux
 go build -v -tags nomk -ldflags='-s -w' -buildmode c-shared -o libooniffi.so ./libooniffi
+
 # Windows from Linux or macOS with mingw-w64 installed
 export CGO_ENABLED=1 GOOS=windows GOARCH=amd64 CC=x86_64-w64-mingw32-gcc
 go build -v -tags nomk -ldflags='-s -w' -buildmode c-shared -o libooniffi.dll ./libooniffi
@@ -225,5 +275,6 @@ go build -v -tags nomk -ldflags='-s -w' -buildmode c-shared -o libooniffi.dll ./
 Remember also to grab the corresponding header `./libooniffi/ooniffi.h`. Do
 not use the autogenerated `./libooniffi.h` since it's incomplete.
 
-Let us know if you want us to automatically publish `libooniffi` binaries
-at every commit and/or at every release.
+Let us know if you want us to automatically publish `libooniffi` dynamic
+libraries [by upvoting the related issue](
+https://github.com/ooni/probe-engine/issues/496).
