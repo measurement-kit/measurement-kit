@@ -29,7 +29,6 @@ The content of the old README.md is still available as [OREADME.md](OREADME.md).
 The ooni/probe-engine implementation exposes similar APIs to Measurement Kit
 and specifically honours the [data format of Measurement Kit v0.10.11](
 https://github.com/measurement-kit/measurement-kit/tree/v0.10.11/include/measurement_kit).
-
 There should be no differences in the emitted events. There are however some
 differences in the settings as discussed below.
 
