@@ -24,6 +24,40 @@ designed is troubling you by opening an issue in this repository.
 
 The content of the old README.md is still available as [OREADME.md](OREADME.md).
 
+## Changes in the settings JSON
+
+The ooni/probe-engine implementation exposes similar APIs to Measurement Kit
+and specifically honours the [data format of Measurement Kit v0.10.11](
+https://github.com/measurement-kit/measurement-kit/tree/v0.10.11/include/measurement_kit).
+
+There should be no differences in the emitted events. There are however some
+differences in the settings as discussed below.
+
+You should now add the following the settings JSON:
+
+```JSON
+{
+  "assets_dir": "",
+  "state_dir": "",
+  "temp_dir": ""
+}
+```
+
+where `assets_dir` is the directory where to store assets, e.g.
+GeoIP databases; `state_dir` is the directory where to store the
+authentication information used with OONI orchestra; `temp_dir`
+is the directory where to store temporary files. If these three
+keys are not present, the test will fail during the startup
+phase (i.e. it will not throw, but rather you will see a very
+short test with explanatory errors in the logs).
+
+Also, the Go code does recognize all the settings recognized by
+Measurement Kit, but some unfrequently used settings are not implemented
+yet. If are by chance using settings that it does not implement, it
+will also fail during the startup phase and tell you with log
+messages. If a not implemented setting is causing you issues, let us
+know by opening a bug in this repository.
+
 ## Android
 
 In your `app/build.gradle` file, replace
@@ -61,30 +95,8 @@ following diff shows how you should be upgrading your code:
 
 The most striking difference is that the function to start a task
 will explicitly throw `Exception` on failure, where the old code
-would instead throw `RuntimeException`. The definition of settings
-and events has only slightly changed from Measurement Kit. In
-particular, you should now add the following the settings JSON:
-
-```JSON
-{
-  "assets_dir": "",
-  "state_dir": "",
-  "temp_dir": ""
-}
-```
-
-where `assets_dir` is the directory where to store assets, e.g.
-GeoIP databases; `state_dir` is the directory where to store the
-authentication information used with OONI orchestra; `temp_dir`
-is the directory where to store temporary files. If these three
-keys are not present, the test will fail during the startup
-phase (i.e. it will not throw, but rather you will see a very
-short test with explanatory errors in the logs). The new code does
-recognize all the settings recognized by the old code, but some
-unfrequently used settings are not implemented yet. If are by chance
-using settings that it does not implement, it will also fail during
-the startup phase and tell you with log messages. If a not implemented
-setting is causing you issues, let us know.
+would instead throw `RuntimeException`. The definition of settings has
+only slightly changed from Measurement Kit, as discussed above.
 
 We currently do not provide drop-in replacements for other functionality
 implemented by measurement-kit/android-libs, e.g., accessing the GeoIP
@@ -140,11 +152,8 @@ following diff should how you should be upgrading your code:
 The most striking differences are the following. First, the function
 that starts a measurement task now fails explicitly (e.g., if the settings
 are not valid JSON). Second, the new code takes in input and emits in
-output serialized JSONs rather than `NSDictionary *`. Also, the same
-caveats described in the Android section apply: you need to add three
-extra keys into the JSON and some unfrequently used settings may not work
-anymore. If that happens, the logs should help you understand the issue. If
-a not implemented setting is causing you issues, let us know.
+output serialized JSONs rather than `NSDictionary *`. The definition of
+settings has only slighly changed from MK, as described above.
 
 We currently do not provide drop-in replacements for other functionality
 implemented by measurement-kit/mkall-ios, e.g., accessing the GeoIP
