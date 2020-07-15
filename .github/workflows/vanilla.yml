@@ -18,5 +18,5 @@ jobs:
         run: ./configure
       - name: make
         run: make V=0 -j`nproc`
-      - name: make V=0 check -j`nproc`
-        run: make check
+      - name: make check
+        run: make V=0 check -j`nproc`
