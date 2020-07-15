@@ -1,0 +1,20 @@
+name: vanilla
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: "${{ matrix.os }}"
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        go: ["1.14"]
+    steps:
+      - uses: actions/checkout@v2
+      - name: autogen
+        run: ./autogen.sh
+      - name: configure
+        run: ./configure
+      - name: make
+        run: make V=0 -j`nproc`
+      - name: make check V=0 -j`nproc`
+        run: make check
