@@ -10,6 +10,8 @@ jobs:
         go: ["1.14"]
     steps:
       - uses: actions/checkout@v2
+      - name: install library dependencies
+        run: sudo apt install libevent-dev libcurl4-openssl-dev libmaxminddb-dev libssl-dev
       - name: autogen
         run: ./autogen.sh
       - name: configure
