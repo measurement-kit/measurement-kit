@@ -579,6 +579,8 @@ TEST_CASE("http::request() correctly follows redirects") {
     });
 }
 
+// As of 2020-07-15, the URL below returns a 404
+#if 0
 TEST_CASE("Headers are preserved across redirects") {
     SharedPtr<Reactor> reactor = Reactor::make();
     reactor->run_with_initial_event([=]() {
@@ -606,6 +608,7 @@ TEST_CASE("Headers are preserved across redirects") {
             reactor, Logger::make());
     });
 }
+#endif
 
 TEST_CASE("We correctly deal with end-of-response signalled by EOF") {
     /*
@@ -641,6 +644,8 @@ TEST_CASE("We correctly deal with end-of-response signalled by EOF") {
     });
 }
 
+// As of 2020-07-15, the URL below returns a 404
+#if 0
 TEST_CASE("We correctly deal with schema-less redirect") {
     /*
      * At the moment of writing this test, http://bacardi.com redirects to
@@ -673,6 +678,7 @@ TEST_CASE("We correctly deal with schema-less redirect") {
             reactor, Logger::make());
     });
 }
+#endif
 
 TEST_CASE("http::request_connect_impl fails without an url") {
     SharedPtr<Reactor> reactor = Reactor::make();
