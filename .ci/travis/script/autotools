@@ -7,6 +7,7 @@ cd $REPOROOT
 env|grep -v TOKEN|sort
 
 # Install dependencies on the target system
+apt update
 apt install libevent-dev libcurl4-openssl-dev libmaxminddb-dev libssl-dev
 
 ./autogen.sh
