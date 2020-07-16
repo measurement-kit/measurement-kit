@@ -7,7 +7,7 @@ cd $REPOROOT
 env|grep -v TOKEN|sort
 
 # Install dependencies on the target system
-sudo apt install libevent-dev libcurl4-openssl-dev libmaxminddb-dev libssl-dev
+apt install libevent-dev libcurl4-openssl-dev libmaxminddb-dev libssl-dev
 
 ./autogen.sh
 # Enforce -Werror when building on Travis to make sure warnings are
