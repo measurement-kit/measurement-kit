@@ -10,13 +10,5 @@ jobs:
         go: ["1.14"]
     steps:
       - uses: actions/checkout@v2
-      - name: install library dependencies
-        run: sudo apt install libevent-dev libcurl4-openssl-dev libmaxminddb-dev libssl-dev
-      - name: autogen
-        run: ./autogen.sh
-      - name: configure
-        run: ./configure
-      - name: make
-        run: make V=0 -j`nproc`
-      - name: make check
-        run: make V=0 check -j`nproc`
+      - name: run the build inside docker
+        run: ./.ci/travis/script/travis vanilla
