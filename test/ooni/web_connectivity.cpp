@@ -29,7 +29,9 @@ TEST_CASE("Web connectivity works as expected") {
     SECTION("For website that advertises upgrade to http2") {
         auto reactor = Reactor::make();
         bool okay = false;
-        ooni::web_connectivity("http://www.aseansec.org", Settings{},
+        ooni::web_connectivity("http://www.aseansec.org", Settings{
+                    {"net/ca_bundle_path", "cacert.pem"},
+                },
                 [&](SharedPtr<nlohmann::json> entry) {
                     okay = ((*entry)["failure"] == nullptr);
                     reactor->stop();
