@@ -154,8 +154,8 @@ In your `Podfile` replace
 with
 
 ```ruby
-    pod 'oonimkall', :git => 'https://github.com/ooni/probe-engine',
-                     :branch => 'mobile-staging'
+    pod 'oonimkall', :podspec => 'https://dl.bintray.com/ooni/ios/oonimkall-$version.podspec'
+
 ```
 
 The changes are similar to the ones described above for Android except

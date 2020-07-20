@@ -1,0 +1,16 @@
+name: docker
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: "${{ matrix.os }}"
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        build-type: ["asan", "clang", "coverage", "ubsan", "vanilla"]
+    steps:
+      - uses: actions/checkout@v2
+      - name: run the build inside docker
+        run: ./.ci/docker/script/run "${{ matrix.build-type }}"
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}

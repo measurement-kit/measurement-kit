@@ -6,8 +6,27 @@ REPOROOT=$(cd $(dirname $0)/../../../ && pwd -P)
 cd $REPOROOT
 env|grep -v TOKEN|sort
 
+# Install dependencies on the target system
+apt update
+apt install -y autoconf               \
+               automake               \
+               clang                  \
+               curl                   \
+               g++                    \
+               git                    \
+               iproute2               \
+               lcov                   \
+               libc++-dev             \
+               libc++abi-dev          \
+               libcurl4-openssl-dev   \
+               libevent-dev           \
+               libmaxminddb-dev       \
+               libssl-dev             \
+               libtool                \
+               make
+
 ./autogen.sh
-# Enforce -Werror when building on Travis to make sure warnings are
+# Enforce -Werror when building on Docker to make sure warnings are
 # not going to be neglected and instead block automatic builds.
 export CXXFLAGS="$CXXFLAGS -Werror"
 export CFLAGS="$CFLAGS -Werror"
@@ -54,7 +73,7 @@ if [ "$BUILD_TYPE" = "coverage" ]; then
     '/mk/example/*' '/mk/src/measurement_kit/*'                                \
     -o lcov.info
   curl -fsSL -o codecov.sh https://codecov.io/bash
-  bash codecov.sh -X gcov -f lcov.info
+  bash codecov.sh -Z -X gcov -f lcov.info
 fi
 
 make install
