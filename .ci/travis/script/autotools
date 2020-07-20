@@ -73,7 +73,7 @@ if [ "$BUILD_TYPE" = "coverage" ]; then
     '/mk/example/*' '/mk/src/measurement_kit/*'                                \
     -o lcov.info
   curl -fsSL -o codecov.sh https://codecov.io/bash
-  bash codecov.sh -X gcov -f lcov.info
+  bash codecov.sh -Z -X gcov -f lcov.info
 fi
 
 make install
