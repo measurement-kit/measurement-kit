@@ -103,7 +103,7 @@ TEST_CASE("format_connect_request() works as expected") {
         REQUIRE(msg[1] == '\1');
         REQUIRE(msg[2] == '\0');
         REQUIRE(msg[3] == '\3');
-        REQUIRE(msg[4] == address.length());
+        REQUIRE((unsigned char)msg[4] == address.length());
         REQUIRE(msg.substr(5, address.length()) == address);
         // XXX This part of the test is currently not possible:
         // uint16_t port = rc->read_uint16();
