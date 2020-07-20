@@ -62,4 +62,4 @@ else
   echo "$0: cannot determine build system type" 1>&2
   exit 1
 fi
-$ROOTDIR/.ci/travis/script/docker-run ubuntu:bionic $BUILD_TOOL
+$ROOTDIR/.ci/docker/script/docker-run ubuntu:bionic $BUILD_TOOL

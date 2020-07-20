@@ -1,4 +1,4 @@
-name: build
+name: docker
 on: [push, pull_request]
 jobs:
   test:
@@ -11,6 +11,6 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: run the build inside docker
-        run: ./.ci/travis/script/travis "${{ matrix.build-type }}"
+        run: ./.ci/docker/script/run "${{ matrix.build-type }}"
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}

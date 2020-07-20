@@ -26,7 +26,7 @@ apt install -y autoconf               \
                make
 
 ./autogen.sh
-# Enforce -Werror when building on Travis to make sure warnings are
+# Enforce -Werror when building on Docker to make sure warnings are
 # not going to be neglected and instead block automatic builds.
 export CXXFLAGS="$CXXFLAGS -Werror"
 export CFLAGS="$CFLAGS -Werror"

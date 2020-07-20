@@ -43,10 +43,9 @@ docker run                                                                     \
     -e "LDFLAGS=$LDFLAGS"                                                      \
     -e "MAKE_CHECK_OPTIONS=$MAKE_CHECK_OPTIONS"                                \
     -e "MAKE_OPTIONS=$MAKE_OPTIONS"                                            \
-    -e "TRAVIS_BRANCH=$TRAVIS_BRANCH"                                          \
     -e "VERBOSE=$VERBOSE"                                                      \
     -e "V=$V"                                                                  \
     -v $REPOROOT:/mk                                                           \
     $DOCKER_OPTIONS                                                            \
     $docker_image                                                              \
-    /mk/.ci/travis/script/$script_name
+    /mk/.ci/docker/script/$script_name
