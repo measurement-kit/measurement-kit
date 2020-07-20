@@ -1,7 +1,6 @@
 #!/bin/sh
-set -ex
-
 # This runs docker and forwards relevant environment variables
+set -ex
 
 REPOROOT=$(cd $(dirname $0)/../../../ && pwd -P)
 
@@ -13,15 +12,6 @@ fi
 docker_image=$1
 script_name=$2
 
-# Travis overrides the CC and CXX set by us. Re-instate them.
-if [ "$TRAVIS_BRANCH" != "" -a "$MK_CC" != "" ]; then
-    CC=$MK_CC
-fi
-if [ "$TRAVIS_BRANCH" != "" -a "$MK_CXX" != "" ]; then
-    CXX=$MK_CXX
-fi
-
-#
 # The following code creates network emulation such that downloading is
 # comparable to the performance of a cable network.
 #
@@ -53,10 +43,9 @@ docker run                                                                     \
     -e "LDFLAGS=$LDFLAGS"                                                      \
     -e "MAKE_CHECK_OPTIONS=$MAKE_CHECK_OPTIONS"                                \
     -e "MAKE_OPTIONS=$MAKE_OPTIONS"                                            \
-    -e "TRAVIS_BRANCH=$TRAVIS_BRANCH"                                          \
     -e "VERBOSE=$VERBOSE"                                                      \
     -e "V=$V"                                                                  \
     -v $REPOROOT:/mk                                                           \
     $DOCKER_OPTIONS                                                            \
     $docker_image                                                              \
-    /mk/.ci/travis/script/$script_name
+    /mk/.ci/docker/script/$script_name
