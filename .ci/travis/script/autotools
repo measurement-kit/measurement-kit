@@ -8,8 +8,22 @@ env|grep -v TOKEN|sort
 
 # Install dependencies on the target system
 apt update
-apt install -y curl libevent-dev libcurl4-openssl-dev libmaxminddb-dev libssl-dev \
-  autoconf automake libtool g++ git iproute2 make
+apt install -y autoconf               \
+               automake               \
+               clang                  \
+               curl                   \
+               g++                    \
+               git                    \
+               iproute2               \
+               lcov                   \
+               libc++-dev             \
+               libc++abi-dev          \
+               libcurl4-openssl-dev   \
+               libevent-dev           \
+               libmaxminddb-dev       \
+               libssl-dev             \
+               libtool                \
+               make
 
 ./autogen.sh
 # Enforce -Werror when building on Travis to make sure warnings are

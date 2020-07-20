@@ -1,4 +1,4 @@
-name: vanilla
+name: build
 on: [push, pull_request]
 jobs:
   test:
@@ -7,8 +7,8 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest]
-        go: ["1.14"]
+        build-type: ["asan", "clang", "coverage", "ubsan", "vanilla"]
     steps:
       - uses: actions/checkout@v2
       - name: run the build inside docker
-        run: ./.ci/travis/script/travis vanilla
+        run: ./.ci/travis/script/travis "${{ matrix.build-type }}"
