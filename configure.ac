@@ -13,8 +13,8 @@ AC_PROG_INSTALL
 
 case "$host" in
   *-w64-mingw32)
-    # Must link with ws2_32
-    LIBS="$LIBS -lws2_32"
+    # Must link with ws2_32 and iphlpapi for if_nametoindex (since libevent 2.1.12)
+    LIBS="$LIBS -lws2_32 -liphlpapi"
     # Required to expose inet_pton()
     CPPFLAGS="$CPPFLAGS -D_WIN32_WINNT=0x0600 -D_POSIX_C_SOURCE"
   ;;
