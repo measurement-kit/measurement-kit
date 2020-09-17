@@ -38,7 +38,7 @@ void post_net_tests(std::string base_bouncer_url, std::string test_name,
                     Callback<Error, SharedPtr<BouncerReply>> cb, Settings settings,
                     SharedPtr<Reactor> reactor, SharedPtr<Logger> logger);
 
-#define MK_OONI_PRODUCTION_BOUNCER_URL "https://bouncer.ooni.io"
+#define MK_OONI_PRODUCTION_BOUNCER_URL "https://ps1.ooni.io"
 #define MK_OONI_TESTING_BOUNCER_URL "https://ps-test.ooni.io"
 
 std::string production_bouncer_url();

@@ -176,7 +176,7 @@ def main():
     options = [Attribute("std::string", "address"),
                Attribute("bool", "all_endpoints", "false"),
                Attribute("std::string", "backend"),
-               Attribute("std::string", "bouncer_base_url", json.dumps("https://bouncer.ooni.io")),
+               Attribute("std::string", "bouncer_base_url", json.dumps("https://ps1.ooni.io")),
                Attribute("std::string", "collector_base_url"),
                Attribute("int64_t", "constant_bitrate", "0"),
                Attribute("std::string", "dns/nameserver"),

@@ -15,7 +15,7 @@ namespace collector {
     the library uses the `production` collector.
 */
 
-#define MK_OONI_PRODUCTION_COLLECTOR_URL "https://b.collector.ooni.io"
+#define MK_OONI_PRODUCTION_COLLECTOR_URL "https://ps1.ooni.io"
 #define MK_OONI_TESTING_COLLECTOR_URL "https://ps-test.ooni.io"
 
 std::string production_collector_url();
