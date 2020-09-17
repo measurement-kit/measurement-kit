@@ -394,9 +394,9 @@ class MK_NETTESTS_DEPRECATED BaseTest {
             doc["speed"] = {speed_kbps, "kbit/s"};
             // Serializing may throw but we expect MK to pass us a good
             // JSON so don't consider this possible error condition.
-            const char *s = doc.dump().c_str();
+            auto s = doc.dump();
             for (auto &cb : tip->event_cbs) {
-                MK_NETTESTS_CALL_AND_SUPPRESS(cb, (s));
+                MK_NETTESTS_CALL_AND_SUPPRESS(cb, (s.c_str()));
             }
         } else if (key == "status.update.websites") {
             // NOTHING

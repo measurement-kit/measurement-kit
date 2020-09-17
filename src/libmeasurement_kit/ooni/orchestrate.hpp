@@ -21,11 +21,11 @@ namespace orchestrate {
  */
 
 #define MK_OONI_PRODUCTION_PROTEUS_REGISTRY_URL                                \
-    "https://registry.ooni.io"
+    "https://ps1.ooni.io"
 #define MK_OONI_TESTING_PROTEUS_REGISTRY_URL                                   \
-    "https://ps-test.ooni.io"
-#define MK_OONI_PRODUCTION_PROTEUS_EVENTS_URL "https://orchestrate.ooni.io"
-#define MK_OONI_TESTING_PROTEUS_EVENTS_URL "https://ps-test.ooni.io"
+    "https://ams-pg.ooni.org"
+#define MK_OONI_PRODUCTION_PROTEUS_EVENTS_URL "https://ps1.ooni.io"
+#define MK_OONI_TESTING_PROTEUS_EVENTS_URL "https://ams-pg.ooni.org"
 
 std::string production_registry_url();
 std::string testing_registry_url();

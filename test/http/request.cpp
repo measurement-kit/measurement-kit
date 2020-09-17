@@ -162,7 +162,7 @@ TEST_CASE("http::request() works as expected over Tor") {
     reactor->run_with_initial_event([=]() {
         request(
             {
-                {"http/url", "http://ps-test.ooni.io/"},
+                {"http/url", "http://ams-pg.ooni.org/"},
                 {"http/method", "GET"},
                 {"http/http_version", "HTTP/1.1"},
                 {"Connection", "close"},
