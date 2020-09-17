@@ -191,7 +191,7 @@ tcp_many(Error error, SharedPtr<nlohmann::json> entry,
         std::string service = service_and_ips.first;
         // if ANY ips for this service are in FB's ASN, switch to true
         (*entry)["facebook_" + service + "_dns_consistent"] = false;
-        for (auto const ip : service_and_ips.second) {
+        for (auto const &ip : service_and_ips.second) {
             bool this_ip_consistent = ip_in_fb_asn(options, ip);
             if (this_ip_consistent) {
                 logger->info("%s is in FB's ASN", ip.c_str());

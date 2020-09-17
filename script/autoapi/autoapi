@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 """ Automatically generate API headers from a specification of the JSON
     messsages that are part of Measurement Kit's FFI API. """
