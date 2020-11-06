@@ -32,7 +32,7 @@ template <typename T> void with_test(with_test_cb &&lambda) {
                 .set_option("net/ca_bundle_path", "cacert.pem")
                 .set_verbosity(MK_LOG_INFO)
                 .set_option("collector_base_url",
-                            "https://ams-pg.ooni.org")
+                            "https://ams-pg-test.ooni.org")
                 .set_option("bouncer_base_url",
                              mk::ooni::bouncer::production_bouncer_url()));
     /*
@@ -57,7 +57,7 @@ with_runnable(std::function<void(mk::nettests::Runnable &)> lambda) {
     mk::nettests::Runnable test;
     test.annotations["continuous_integration"] = "true";
     test.options["net/ca_bundle_path"] = "cacert.pem";
-    test.options["collector_base_url"] = "https://ams-pg.ooni.org";
+    test.options["collector_base_url"] = "https://ams-pg-test.ooni.org";
     test.options["bouncer_base_url"] =
           mk::ooni::bouncer::production_bouncer_url();
     /*
