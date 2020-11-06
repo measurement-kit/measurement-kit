@@ -119,22 +119,6 @@ TEST_CASE("post_net_tests() works") {
         });
     }
 
-    SECTION("When the collector is not found") {
-        SharedPtr<Reactor> reactor = Reactor::make();
-        Settings settings;
-        settings["net/ca_bundle_path"] = "cacert.pem";
-        reactor->run_with_initial_event([=]() {
-            ooni::bouncer::post_net_tests(
-                ooni::bouncer::production_bouncer_url(), "antani", "0.0.1",
-                {"antani"},
-                [=](Error e, SharedPtr<ooni::BouncerReply>) {
-                    REQUIRE(e == JsonProcessingError());
-                    reactor->stop();
-                },
-                settings, reactor, Logger::make());
-        });
-    }
-
     SECTION("When the input is correct") {
         SharedPtr<Reactor> reactor = Reactor::make();
         Settings settings;
