@@ -1,6 +1,6 @@
 #!/bin/sh
 set -ex
-version=v3.8.0
+version=v3.9.1
 url=https://github.com/nlohmann/json/releases/download/$version/json.hpp
 curl -fsSLO $url
 mv json.hpp include/measurement_kit/internal/vendor
