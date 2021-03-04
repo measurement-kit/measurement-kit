@@ -14,7 +14,7 @@
 // MK_VERSION is measurement-kit version according to manual tagging. This is
 // updated when we bless a new release. It does not accurately describe a
 // development build, for which MK_VERSION_FULL may be better.
-#define MK_VERSION "0.10.13"
+#define MK_VERSION "0.10.14"
 
 // MEASUREMENT_KIT_VERSION is a backward compatibility alias for MK_VERSION.
 #define MEASUREMENT_KIT_VERSION MK_VERSION
